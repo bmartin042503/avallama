@@ -3,6 +3,7 @@
         xmlns:vm="using:avallama.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:localization="clr-namespace:avallama.Assets.Localization"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="avallama.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -29,8 +30,8 @@
                     HorizontalAlignment="Center"
                     Margin="0,70,0,0"
                     FontSize="16"
-                    Padding="30,8">
-                Get Started
+                    Padding="30,8"
+                    Content="{x:Static localization:Resources.Get_Started}">
             </Button>
         </StackPanel>
 
