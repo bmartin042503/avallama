@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
@@ -19,10 +18,9 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // magyar nyelv beállítása
-        // CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("hu-HU");
-        // CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("hu-HU");
-
+        // alapértelmezett értékek használata (angol)
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 

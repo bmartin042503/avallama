@@ -18,25 +18,31 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="Greeting_Text" xml:space="preserve">
+    <data name="GREETING_TEXT" xml:space="preserve">
         <value>Welcome to Avallama!</value>
     </data>
-    <data name="Greeting_Subtext" xml:space="preserve">
+    <data name="GREETING_SUBTEXT" xml:space="preserve">
         <value>Run any open source LLM locally</value>
     </data>
-    <data name="Get_Started" xml:space="preserve">
+    <data name="GET_STARTED" xml:space="preserve">
         <value>Get started</value>
     </data>
-    <data name="Settings" xml:space="preserve">
+    <data name="SETTINGS" xml:space="preserve">
         <value>Settings</value>
     </data>
-    <data name="Cancel" xml:space="preserve">
+    <data name="CANCEL" xml:space="preserve">
         <value>Cancel</value>
     </data>
-    <data name="Save" xml:space="preserve">
+    <data name="SAVE" xml:space="preserve">
         <value>Save</value>
     </data>
-    <data name="Token_Sec" xml:space="preserve">
+    <data name="TOKEN_SEC" xml:space="preserve">
         <value>token/sec</value>
+    </data>
+    <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
+        <value>Currently, the only supported model is {0}</value>
+    </data>
+    <data name="SEND_MESSAGE" xml:space="preserve">
+        <value>Send a message..</value>
     </data>
 </root>

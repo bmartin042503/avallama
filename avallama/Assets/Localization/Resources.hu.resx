@@ -11,25 +11,31 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="Cancel" xml:space="preserve">
+    <data name="CANCEL" xml:space="preserve">
         <value>Vissza</value>
     </data>
-    <data name="Get_Started" xml:space="preserve">
+    <data name="GET_STARTED" xml:space="preserve">
         <value>Vágjunk bele</value>
     </data>
-    <data name="Greeting_Subtext" xml:space="preserve">
+    <data name="GREETING_SUBTEXT" xml:space="preserve">
         <value>Futtass bármilyen LLM modelt lokálisan</value>
     </data>
-    <data name="Greeting_Text" xml:space="preserve">
+    <data name="GREETING_TEXT" xml:space="preserve">
         <value>Üdvözlünk az Avallamában!</value>
     </data>
-    <data name="Save" xml:space="preserve">
+    <data name="SAVE" xml:space="preserve">
         <value>Mentés</value>
     </data>
-    <data name="Settings" xml:space="preserve">
+    <data name="SETTINGS" xml:space="preserve">
         <value>Beállítások</value>
     </data>
-    <data name="Token_Sec" xml:space="preserve">
+    <data name="TOKEN_SEC" xml:space="preserve">
         <value>token/másodperc</value>
+    </data>
+    <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
+        <value>Jelenleg, csak a(z) {0} model érhető el</value>
+    </data>
+    <data name="SEND_MESSAGE" xml:space="preserve">
+        <value>Küldj üzenetet..</value>
     </data>
 </root>
