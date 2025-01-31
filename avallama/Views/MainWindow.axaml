@@ -29,8 +29,8 @@
                     HorizontalAlignment="Center"
                     Margin="0,70,0,0"
                     FontSize="16"
-                    Padding="30,8">
-                Get Started
+                    Padding="30,8"
+					Content="{Binding GetStarted}">
             </Button>
         </StackPanel>
 
