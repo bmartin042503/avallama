@@ -1,10 +1,28 @@
-﻿namespace avallama.ViewModels;
-using avallama.Services;
+﻿using System;
+using System.Windows.Input;
+using Avalonia.Rendering.Composition;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+namespace avallama.ViewModels;
+
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    public string Greeting { get; } = LocalizationService.GetString("GREETING_TEXT");
-    public string Version { get; } = "v0.1.0-alpha";
-    public string Info { get; } = LocalizationService.GetString("GREETING_SUBTEXT");
-    public string GetStarted { get; } = LocalizationService.GetString("GET_STARTED");
+    
+    [ObservableProperty]
+    private ViewModelBase _currentViewModel;
+
+    private readonly HomeViewModel _homeViewModel = new();
+    private readonly GreetingViewModel _greetingViewModel = new();
+
+    public MainWindowViewModel()
+    {
+        CurrentViewModel = _greetingViewModel; // *cries*
+    }
+
+    [RelayCommand]
+    private void GoToHome()
+    {
+        CurrentViewModel = _homeViewModel;
+    }
 }

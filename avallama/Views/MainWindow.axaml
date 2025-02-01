@@ -15,30 +15,5 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid>
-        <StackPanel Orientation="Vertical" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="{Binding Greeting}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       FontSize="48"/>
-            <TextBlock Text="{Binding Info}"
-                       HorizontalAlignment="Center"
-                       Opacity="0.7"
-                       FontSize="18"></TextBlock>
-            <Button CornerRadius="20"
-                    HorizontalAlignment="Center"
-                    Margin="0,70,0,0"
-                    FontSize="16"
-                    Padding="30,8"
-					Content="{Binding GetStarted}">
-            </Button>
-        </StackPanel>
-
-
-        <TextBlock Text="{Binding Version}"
-                   HorizontalAlignment="Right"
-                   VerticalAlignment="Bottom"
-                   Margin="10"
-                   Opacity="0.6" />
-    </Grid>
+    <ContentControl Content="{Binding CurrentViewModel}" />
 </Window>

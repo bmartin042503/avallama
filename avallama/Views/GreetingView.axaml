@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:avallama.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="avallama.Views.GreetingView"
+             x:DataType="vm:GreetingViewModel">
+    <Grid>
+        <StackPanel Orientation="Vertical" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="{Binding Greeting}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="48"/>
+            <TextBlock Text="{Binding Info}"
+                       HorizontalAlignment="Center"
+                       Opacity="0.7"
+                       FontSize="18"></TextBlock>
+            <Button CornerRadius="20"
+                    HorizontalAlignment="Center"
+                    Margin="0,70,0,0"
+                    FontSize="16"
+                    Padding="30,8"
+                    IsEnabled="True"
+                    Content="{Binding GetStarted}"
+                    Command="{Binding ((vm:MainWindowViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
+            </Button>
+        </StackPanel>
+
+
+        <TextBlock Text="{Binding Version}"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Bottom"
+                   Margin="10"
+                   Opacity="0.6" />
+    </Grid>
+</UserControl>

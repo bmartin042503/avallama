@@ -5,7 +5,7 @@ namespace avallama.Services;
 // DI esetén konstruktor kell
 public class LocalizationService
 {
-    private static global::System.Resources.ResourceManager _resourceMan;
+    private static global::System.Resources.ResourceManager? _resourceMan;
     private static global::System.Globalization.CultureInfo _resourceCulture = CultureInfo.CurrentUICulture;
     
     // ResourceManager példány lekérése
