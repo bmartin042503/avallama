@@ -40,7 +40,7 @@
         <value>token/sec</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
-        <value>Currently, the only supported model is {0}</value>
+        <value>Currently the only supported model is llama3.2</value>
     </data>
     <data name="SEND_MESSAGE" xml:space="preserve">
         <value>Send a message..</value>

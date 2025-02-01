@@ -10,5 +10,37 @@
         <viewModels:HomeViewModel />
     </Design.DataContext>
     
-    <TextBlock Text="fasz" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="32"/>
+    <StackPanel>
+        <Grid ColumnDefinitions="*,Auto,*">
+            <TextBlock Text="avallama"
+                       Grid.Column="0"
+                       HorizontalAlignment="Left"
+                       Margin="10"
+                       FontSize="24" />
+            <ComboBox Grid.Column="1"
+                      HorizontalAlignment="Center"
+                      Width="150"
+                      Margin="10"
+                      SelectedIndex="0"
+                      IsEnabled="False">
+                <ComboBoxItem Content="llama3.2" />
+            </ComboBox>
+        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Image Source="{SvgImage /Assets/error_24dp.svg}" 
+                   Width="20"
+                   Margin="0,0,5,0"/>
+            <TextBlock Text="{Binding LanguageLimitationWarning}"
+                       Foreground="Gray" />
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Image Source="{SvgImage /Assets/error_24dp.svg}" 
+                   Width="20"
+                   Margin="0,0,5,0"/>
+            <TextBlock Text="{Binding ResourceLimitWarning}"
+                       Foreground="Gold"/>
+        </StackPanel>
+        
+    </StackPanel>
 </UserControl>

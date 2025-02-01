@@ -33,7 +33,7 @@
         <value>token/másodperc</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
-        <value>Jelenleg, csak a(z) {0} model érhető el</value>
+        <value>Jelenleg csak a(z) llama3.2 model támogatott</value>
     </data>
     <data name="SEND_MESSAGE" xml:space="preserve">
         <value>Küldj üzenetet..</value>
