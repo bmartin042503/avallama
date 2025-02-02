@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using avallama.ViewModels;
 using avallama.Views;
 using System.Globalization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;
 
@@ -18,9 +19,17 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // alapértelmezett értékek használata (angol)
+        // TODO: kiszedni az alapértelmezett (angol) culturet és beállítani user preference szerint
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+        
+        // Az összes dependency létrehozása és eltárolása egy ServiceCollectionben
+        var collection = new ServiceCollection();
+        collection.AddCommonServices();
+        
+        // ServiceProvider ami biztosítja a létrehozott dependencyket
+        var services = collection.BuildServiceProvider();
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
@@ -28,7 +37,7 @@ public partial class App : Application
             DisableAvaloniaDataAnnotationValidation();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                DataContext = services.GetRequiredService<MainViewModel>()
             };
         }
 

@@ -16,6 +16,8 @@
                        HorizontalAlignment="Center"
                        Opacity="0.7"
                        FontSize="18"></TextBlock>
+            
+            <!-- TODO: INavigationService amit megvalósít a GreetingViewModel (?) -->
             <Button CornerRadius="20"
                     HorizontalAlignment="Center"
                     Margin="0,70,0,0"
@@ -23,7 +25,7 @@
                     Padding="30,8"
                     IsEnabled="True"
                     Content="{Binding GetStarted}"
-                    Command="{Binding ((vm:MainWindowViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
+                    Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
             </Button>
         </StackPanel>
 
