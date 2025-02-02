@@ -1,15 +1,15 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModels="clr-namespace:avallama.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="avallama.Views.HomeView"
-        x:DataType="viewModels:HomeViewModel">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:avallama.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="avallama.Views.HomeView"
+             x:DataType="viewModels:HomeViewModel">
     <Design.DataContext>
         <viewModels:HomeViewModel />
     </Design.DataContext>
-    
+
     <StackPanel>
         <Grid ColumnDefinitions="*,Auto,*">
             <TextBlock Text="avallama"
@@ -27,20 +27,24 @@
             </ComboBox>
         </Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Image Source="{SvgImage /Assets/error_24dp.svg}" 
-                   Width="20"
-                   Margin="0,0,5,0"/>
+            <Svg Path="/Assets/error_24dp.svg"
+                 Width="18"
+                 Margin="0,0,5,0"
+                 Css="path { fill: #808080; }"  />
+
+
             <TextBlock Text="{Binding LanguageLimitationWarning}"
-                       Foreground="Gray" />
+                       Foreground="#808080" />
         </StackPanel>
-        
+
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Image Source="{SvgImage /Assets/error_24dp.svg}" 
-                   Width="20"
-                   Margin="0,0,5,0"/>
+            <Svg Path="/Assets/error_24dp.svg"
+                 Width="18"
+                 Margin="0,0,5,0"
+                 Css="path { fill: #FFD700; }"  />
             <TextBlock Text="{Binding ResourceLimitWarning}"
-                       Foreground="Gold"/>
+                       Foreground="#FFD700" />
         </StackPanel>
-        
+
     </StackPanel>
 </UserControl>
