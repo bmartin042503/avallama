@@ -3,14 +3,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:avallama.ViewModels"
+             xmlns:models="clr-namespace:avallama.Models"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
              x:DataType="viewModels:HomeViewModel">
     <Design.DataContext>
         <viewModels:HomeViewModel />
     </Design.DataContext>
-
-    <StackPanel>
+    
+    <!-- TODO: Hardcoded értékek helyett definiált stílusok, relatív értékek (?) width, height, margin, padding -->
+    
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
         <Grid ColumnDefinitions="*,Auto,*">
             <TextBlock Text="avallama"
                        Grid.Column="0"
@@ -26,25 +29,83 @@
                 <ComboBoxItem Content="llama3.2" />
             </ComboBox>
         </Grid>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Svg Path="/Assets/error_24dp.svg"
-                 Width="18"
-                 Margin="0,0,5,0"
-                 Css="path { fill: #808080; }"  />
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Svg Path="/Assets/error_24dp.svg"
+                     Width="18"
+                     Margin="0,0,5,5"
+                     Css="path { fill: #808080; }"  />
 
 
-            <TextBlock Text="{Binding LanguageLimitationWarning}"
-                       Foreground="#808080" />
+                <TextBlock Text="{Binding LanguageLimitationWarning}"
+                           Foreground="#808080"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Svg Path="/Assets/error_24dp.svg"
+                     Width="18"
+                     Margin="0,0,5,5"
+                     Css="path { fill: #FFD700; }"  />
+                <TextBlock Text="{Binding ResourceLimitWarning}"
+                           Foreground="#FFD700"/>
+            </StackPanel>
         </StackPanel>
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Svg Path="/Assets/error_24dp.svg"
-                 Width="18"
-                 Margin="0,0,5,0"
-                 Css="path { fill: #FFD700; }"  />
-            <TextBlock Text="{Binding ResourceLimitWarning}"
-                       Foreground="#FFD700" />
-        </StackPanel>
-
-    </StackPanel>
+        <Grid Grid.Row="2" RowDefinitions="*,Auto">
+            <ScrollViewer Grid.Row="0" HorizontalAlignment="Center"
+                          Margin="0, 15, 0, 0"
+                          Padding="10,0,10,0"
+                          Width="600">
+                <ItemsControl ItemsSource="{Binding Messages}">
+                    <ItemsControl.DataTemplates>
+                        <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
+                        <DataTemplate DataType="models:GeneratedMessage">
+                            <Border CornerRadius="20"
+                                    Background="#c8c8c8"
+                                    Margin="0,20,0,0"
+                                    HorizontalAlignment="Left"
+                                    MaxWidth="300">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="{Binding Content}"
+                                               Padding="15,10,15,10"
+                                               TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding GenerationSpeed}" 
+                                                   FontSize="10"
+                                                   Padding="0,0,2,10"/>
+                                        <TextBlock Text="{Binding Path=((viewModels:HomeViewModel)DataContext).TokenSec, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" 
+                                                   FontSize="10"
+                                                   Padding="0,0,10,10"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate DataType="models:Message">
+                            <Border CornerRadius="20"
+                                    Background="#eeeeee"
+                                    Margin="0, 20, 0, 0"
+                                    HorizontalAlignment="Right"
+                                    MaxWidth="300">
+                                <TextBlock Text="{Binding Content}"
+                                           Padding="15,10,15,10"
+                                           TextWrapping="Wrap"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </ScrollViewer>
+            <TextBox Grid.Row="1" Width="600"
+                Watermark="{Binding SendMessagePlaceholder}"
+                Background="#EEEEEE"
+                BorderThickness="0"
+                CornerRadius="25"
+                Padding="15,10,0,10"
+                Margin="0,30,0,10"
+                Text="{Binding NewMessageText, Mode=TwoWay}">
+                <TextBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding SendMessageCommand}"></KeyBinding>
+                </TextBox.KeyBindings>
+            </TextBox>
+        </Grid>
+    </Grid>
 </UserControl>

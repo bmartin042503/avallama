@@ -3,7 +3,7 @@
 namespace avallama.Services;
 public static class LocalizationService
 {
-    private static readonly object Lock = new();
+    private static readonly System.Threading.Lock Lock = new();
     private static System.Resources.ResourceManager? _resourceMan;
     private static CultureInfo _resourceCulture = CultureInfo.CurrentUICulture;
     
@@ -11,14 +11,13 @@ public static class LocalizationService
     private static System.Resources.ResourceManager ResourceManager {
         get {
             // szálbiztos inicializálás
-            if (_resourceMan == null) {
-                lock (Lock) {
-                    if (_resourceMan == null) {
-                        _resourceMan = new System.Resources.ResourceManager("avallama.Assets.Localization.Resources", typeof(LocalizationService).Assembly);
-                    }
-                }
+            if (_resourceMan != null) return _resourceMan;
+            lock (Lock)
+            {
+                _resourceMan = new System.Resources.ResourceManager("avallama.Assets.Localization.Resources",
+                    typeof(LocalizationService).Assembly);
             }
-            return _resourceMan!;
+            return _resourceMan;
         }
     }
     

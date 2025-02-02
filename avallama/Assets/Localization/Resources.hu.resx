@@ -33,9 +33,12 @@
         <value>token/másodperc</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
-        <value>Jelenleg csak a(z) llama3.2 model támogatott</value>
+        <value>Jelenleg csak a(z) {0} model támogatott</value>
     </data>
     <data name="SEND_MESSAGE" xml:space="preserve">
         <value>Küldj üzenetet..</value>
+    </data>
+    <data name="LOW_VRAM_WARNING" xml:space="preserve">
+        <value>A model optimális futtatásához {1} GB VRAM szükséges. Jelenleg elérhető: {0} GB VRAM</value>
     </data>
 </root>

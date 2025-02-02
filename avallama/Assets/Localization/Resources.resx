@@ -40,9 +40,12 @@
         <value>token/sec</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
-        <value>Currently the only supported model is llama3.2</value>
+        <value>Currently the only supported model is {0}</value>
     </data>
     <data name="SEND_MESSAGE" xml:space="preserve">
         <value>Send a message..</value>
+    </data>
+    <data name="LOW_VRAM_WARNING" xml:space="preserve">
+        <value>This model may not run optimally because you have {0} GB of VRAM, and this model requires {1} GB at least</value>
     </data>
 </root>
