@@ -37,7 +37,7 @@
         <value>Save</value>
     </data>
     <data name="TOKEN_SEC" xml:space="preserve">
-        <value>token/sec</value>
+        <value>tokens/sec</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
         <value>Currently the only supported model is {0}</value>
@@ -47,5 +47,8 @@
     </data>
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
         <value>This model may not run optimally because you have {0} GB of VRAM, and this model requires {1} GB at least</value>
+    </data>
+    <data name="VERSION" xml:space="preserve">
+        <value>v0.1.0-alpha</value>
     </data>
 </root>

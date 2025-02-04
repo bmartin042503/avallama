@@ -13,9 +13,6 @@ public partial class HomeViewModel : PageViewModel
 {
     public string LanguageLimitationWarning { get; } = String.Format(LocalizationService.GetString("ONLY_SUPPORTED_MODEL"), "llama3.2");
     public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"), 69, 420);
-
-    public string SendMessagePlaceholder { get; } = LocalizationService.GetString("SEND_MESSAGE");
-    public string TokenSec { get;  } = LocalizationService.GetString("TOKEN_SEC");
     
     private ObservableCollection<Message> _messages;
 
@@ -42,8 +39,8 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     private void SendMessage()
     {
-        var rnd = new Random();
         if (NewMessageText.Length == 0) return;
+        var rnd = new Random();
         Messages.Add(new Message(NewMessageText));
 
         var gm = new GeneratedMessage(_testMessages[rnd.Next(7)])
@@ -56,7 +53,9 @@ public partial class HomeViewModel : PageViewModel
     
     public HomeViewModel()
     {
+        // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
+        
         _messages = new ObservableCollection<Message>();
     }
 }

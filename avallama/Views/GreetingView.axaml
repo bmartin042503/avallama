@@ -3,16 +3,17 @@
              xmlns:vm="using:avallama.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:localization="clr-namespace:avallama.Services"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.GreetingView"
              x:DataType="vm:GreetingViewModel">
     <Grid>
         <StackPanel Orientation="Vertical" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="{Binding Greeting}"
+            <TextBlock Text="{localization:LocalizationService Key='GREETING_TEXT'}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        FontSize="48"/>
-            <TextBlock Text="{Binding Info}"
+            <TextBlock Text="{localization:LocalizationService Key='GREETING_SUBTEXT'}"
                        HorizontalAlignment="Center"
                        Opacity="0.7"
                        FontSize="18"></TextBlock>
@@ -24,13 +25,13 @@
                     FontSize="16"
                     Padding="30,8"
                     IsEnabled="True"
-                    Content="{Binding GetStarted}"
+                    Content="{localization:LocalizationService Key='GET_STARTED'}"
                     Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
             </Button>
         </StackPanel>
 
 
-        <TextBlock Text="{Binding Version}"
+        <TextBlock Text="{localization:LocalizationService Key='VERSION'}"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Bottom"
                    Margin="10"

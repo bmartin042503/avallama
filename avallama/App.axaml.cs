@@ -19,9 +19,10 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // TODO: kiszedni az alapértelmezett (angol) culturet és beállítani user preference szerint
-        // CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-        // CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+        // TODO: beállítani user preference szerint a nyelvet
+        // beállítás alapértelmezett culturera (angol nyelv)
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         
         // Az összes dependency létrehozása és eltárolása egy ServiceCollectionben
         var collection = new ServiceCollection();

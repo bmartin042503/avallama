@@ -30,7 +30,7 @@
         <value>Beállítások</value>
     </data>
     <data name="TOKEN_SEC" xml:space="preserve">
-        <value>token/másodperc</value>
+        <value>token/mp</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
         <value>Jelenleg csak a(z) {0} model támogatott</value>
@@ -40,5 +40,8 @@
     </data>
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
         <value>A model optimális futtatásához {1} GB VRAM szükséges. Jelenleg elérhető: {0} GB VRAM</value>
+    </data>
+    <data name="VERSION" xml:space="preserve">
+        <value>v0.1.0-alpha</value>
     </data>
 </root>

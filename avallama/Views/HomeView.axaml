@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:avallama.ViewModels"
              xmlns:models="clr-namespace:avallama.Models"
+             xmlns:localization="clr-namespace:avallama.Services"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
              x:DataType="viewModels:HomeViewModel">
@@ -15,11 +16,6 @@
     
     <Grid RowDefinitions="Auto,Auto,*,Auto">
         <Grid ColumnDefinitions="*,Auto,*">
-            <TextBlock Text="avallama"
-                       Grid.Column="0"
-                       HorizontalAlignment="Left"
-                       Margin="10"
-                       FontSize="24" />
             <ComboBox Grid.Column="1"
                       HorizontalAlignment="Center"
                       Width="150"
@@ -71,10 +67,10 @@
                                     <StackPanel Orientation="Horizontal"
                                                 HorizontalAlignment="Right">
                                         <TextBlock Text="{Binding GenerationSpeed}" 
-                                                   FontSize="10"
+                                                   FontSize="9"
                                                    Padding="0,0,2,10"/>
-                                        <TextBlock Text="{Binding Path=((viewModels:HomeViewModel)DataContext).TokenSec, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" 
-                                                   FontSize="10"
+                                        <TextBlock Text="{localization:LocalizationService Key='TOKEN_SEC'}" 
+                                                   FontSize="9"
                                                    Padding="0,0,10,10"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -95,7 +91,7 @@
                 </ItemsControl>
             </ScrollViewer>
             <TextBox Grid.Row="1" Width="600"
-                Watermark="{Binding SendMessagePlaceholder}"
+                Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
                 Background="#EEEEEE"
                 BorderThickness="0"
                 CornerRadius="25"
