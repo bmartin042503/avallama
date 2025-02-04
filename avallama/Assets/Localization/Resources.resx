@@ -51,4 +51,7 @@
     <data name="VERSION" xml:space="preserve">
         <value>v0.1.0-alpha</value>
     </data>
+    <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
+        <value>Conversations are not supported currently</value>
+    </data>
 </root>

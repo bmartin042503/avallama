@@ -13,9 +13,19 @@
     </Design.DataContext>
     
     <!-- TODO: Hardcoded értékek helyett definiált stílusok, relatív értékek (?) width, height, margin, padding -->
-    
-    <Grid RowDefinitions="Auto,Auto,*,Auto">
-        <Grid ColumnDefinitions="*,Auto,*">
+    <Grid ColumnDefinitions="*,3*" RowDefinitions="Auto,Auto,*,Auto">
+        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4"
+                    Orientation="Vertical" VerticalAlignment="Stretch" Background="#f1f1f1">
+            <TextBlock HorizontalAlignment="Center"
+                       Text="{localization:LocalizationService Key='CONVERSATIONS_NOT_AVAILABLE'}"
+                       TextWrapping="Wrap"
+                       FontSize="14"
+                       Foreground="#808080"
+                       Padding="10"
+                       Margin="0,60,0,0"
+                       TextAlignment="Center"/>
+        </StackPanel>
+        <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto,*">
             <ComboBox Grid.Column="1"
                       HorizontalAlignment="Center"
                       Width="150"
@@ -25,7 +35,7 @@
                 <ComboBoxItem Content="llama3.2" />
             </ComboBox>
         </Grid>
-        <StackPanel Grid.Row="1" Orientation="Vertical">
+        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Svg Path="/Assets/error_24dp.svg"
                      Width="18"
@@ -34,7 +44,9 @@
 
 
                 <TextBlock Text="{Binding LanguageLimitationWarning}"
-                           Foreground="#808080"/>
+                           Foreground="#808080"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -43,14 +55,15 @@
                      Margin="0,0,5,5"
                      Css="path { fill: #FFD700; }"  />
                 <TextBlock Text="{Binding ResourceLimitWarning}"
-                           Foreground="#FFD700"/>
+                           Foreground="#FFD700"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"/>
             </StackPanel>
         </StackPanel>
-        <Grid Grid.Row="2" RowDefinitions="*,Auto">
-            <ScrollViewer Grid.Row="0" HorizontalAlignment="Center"
+        <Grid Grid.Column="1" Grid.Row="2" RowDefinitions="*,Auto" Margin="25,0,25,0">
+            <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch"
                           Margin="0, 15, 0, 0"
-                          Padding="10,0,10,0"
-                          Width="600">
+                          Padding="10,0,10,0">
                 <ItemsControl ItemsSource="{Binding Messages}">
                     <ItemsControl.DataTemplates>
                         <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
@@ -59,7 +72,7 @@
                                     Background="#c8c8c8"
                                     Margin="0,20,0,0"
                                     HorizontalAlignment="Left"
-                                    MaxWidth="300">
+                                    MaxWidth="450">
                                 <StackPanel Orientation="Vertical">
                                     <TextBlock Text="{Binding Content}"
                                                Padding="15,10,15,10"
@@ -81,7 +94,7 @@
                                     Background="#eeeeee"
                                     Margin="0, 20, 0, 0"
                                     HorizontalAlignment="Right"
-                                    MaxWidth="300">
+                                    MaxWidth="450">
                                 <TextBlock Text="{Binding Content}"
                                            Padding="15,10,15,10"
                                            TextWrapping="Wrap"/>
@@ -90,7 +103,7 @@
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
             </ScrollViewer>
-            <TextBox Grid.Row="1" Width="600"
+            <TextBox Grid.Row="1"
                 Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
                 Background="#EEEEEE"
                 BorderThickness="0"
