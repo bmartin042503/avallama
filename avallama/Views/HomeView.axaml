@@ -112,7 +112,8 @@
                 Margin="0,30,0,10"
                 Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>
-                    <KeyBinding Gesture="Enter" Command="{Binding SendMessageCommand}"></KeyBinding>
+                    <KeyBinding Gesture="Enter" 
+                                Command="{Binding SendMessageCommand}"/>
                 </TextBox.KeyBindings>
             </TextBox>
         </Grid>
