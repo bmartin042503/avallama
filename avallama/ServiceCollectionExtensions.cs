@@ -2,6 +2,8 @@
 using avallama.Constants;
 using avallama.ViewModels;
 using avallama.Factories;
+using avallama.Services;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;
@@ -19,6 +21,9 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<HomeViewModel>();
 
         collection.AddSingleton<PageFactory>();
+        collection.AddSingleton<OllamaService>();
+
+        collection.AddSingleton<IMessenger, WeakReferenceMessenger>();
 
         // PageFactoryba injektálandó delegate dependency
         // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint
@@ -29,5 +34,9 @@ public static class ServiceCollectionExtensions
             ApplicationPage.Home => serviceProvider.GetRequiredService<HomeViewModel>(),
             _ => throw new InvalidOperationException() // ha még nincs adott Page regisztrálva akkor kivétel
         });
+        
+        
+        
+        
     }
 }

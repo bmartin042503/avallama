@@ -54,4 +54,13 @@
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>Conversations are not supported currently</value>
     </data>
+    <data name="PROCESS_STARTED" xml:space="preserve">
+        <value>Ollama has been successfully started</value>
+    </data>
+    <data name="PROCESS_FAILED" xml:space="preserve">
+        <value>An error occurred while starting ollama: {0}</value>
+    </data>
+    <data name="PROCESS_STARTING" xml:space="preserve">
+        <value>Starting ollama.. </value>
+    </data>
 </root>

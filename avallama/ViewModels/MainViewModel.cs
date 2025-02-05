@@ -1,8 +1,13 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using avallama.Constants;
 using avallama.Factories;
+using avallama.Services;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+
 namespace avallama.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
@@ -15,9 +20,35 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private PageViewModel _currentPageViewModel;
 
-    public MainViewModel(PageFactory pageFactory)
+    [ObservableProperty] 
+    private bool _ollamaProcessRunning;
+    
+    [ObservableProperty]
+    private string? _ollamaProcessMessage;
+    
+    [ObservableProperty]
+    private SolidColorBrush _processColor;
+
+    public MainViewModel(PageFactory pageFactory, IMessenger messenger)
     {
         _pageFactory = pageFactory;
+        OllamaProcessMessage = LocalizationService.GetString("PROCESS_STARTING");
+        _processColor = new SolidColorBrush(Colors.Black);
+        messenger.Register<OllamaProcessInfo>(this, (recipient, processInfo) =>
+        {
+            if (processInfo.Status == ProcessStatus.Failed)
+            {
+                OllamaProcessMessage = String.Format(LocalizationService.GetString("PROCESS_FAILED"), processInfo.Message);
+                OllamaProcessRunning = false;
+                ProcessColor = new SolidColorBrush(Colors.Red);
+            }
+            else if(processInfo.Status == ProcessStatus.Running)
+            {
+                OllamaProcessMessage = LocalizationService.GetString("PROCESS_STARTED");
+                OllamaProcessRunning = true;
+                ProcessColor = new SolidColorBrush(Colors.Green);
+            }
+        });
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Greeting);
     }
 

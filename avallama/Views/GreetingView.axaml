@@ -20,13 +20,19 @@
             
             <Button CornerRadius="20"
                     HorizontalAlignment="Center"
-                    Margin="0,70,0,0"
+                    Margin="0,20,0,0"
                     FontSize="16"
                     Padding="30,8"
-                    IsEnabled="True"
+                    IsEnabled="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessRunning, RelativeSource={RelativeSource AncestorType=Window}}"
                     Content="{localization:LocalizationService Key='GET_STARTED'}"
                     Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
             </Button>
+            <TextBlock
+                Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
+                FontSize="14"
+                TextAlignment="Center"
+                Margin="0,60,0,0"
+                Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
 
 

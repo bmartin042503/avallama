@@ -47,4 +47,13 @@
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>A beszélgetések funkció jelenleg nem elérhető</value>
     </data>
+    <data name="PROCESS_STARTED" xml:space="preserve">
+        <value>Az ollama sikeresen elindult</value>
+    </data>
+    <data name="PROCESS_FAILED" xml:space="preserve">
+        <value>Hiba történt az ollama elindítása során: {0}</value>
+    </data>
+    <data name="PROCESS_STARTING" xml:space="preserve">
+        <value>Ollama indítása folyamatban..</value>
+    </data>
 </root>
