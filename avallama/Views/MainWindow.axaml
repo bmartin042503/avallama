@@ -1,20 +1,35 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:avallama.ViewModels"
-        xmlns:animations="clr-namespace:Avalonia.Animation;assembly=Avalonia.Animation"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="avallama.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
+        WindowStartupLocation="CenterScreen"
+        PointerPressed="Window_PointerPressed"
         Title="avallama">
-
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
-
-    <ContentControl Content="{Binding CurrentPageViewModel}" />
+    <Canvas>
+        <StackPanel Canvas.Right="0" Canvas.Top="0" Margin="10" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Click="HideButton_OnClick" Background="Transparent">
+                <Svg Path="/Assets/Svg/hide.svg"
+                     Width="12"/>
+            </Button>
+            <Button Click="MinMaxButton_OnClick" Background="Transparent">
+                <Svg x:Name="MinMaxSvg" Path="/Assets/Svg/maximize.svg"
+                     Width="12"/>
+            </Button>
+            <Button Click="CloseButton_OnClick" Background="Transparent">
+                <Svg Path="/Assets/Svg/close.svg"
+                     Width="12"/>
+            </Button>
+        </StackPanel>
+        <ContentControl 
+            Canvas.Left="0" 
+            Canvas.Top="0" 
+            Content="{Binding CurrentPageViewModel}" 
+            Width="{Binding Width, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" 
+            Height="{Binding Height, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" />
+    </Canvas>
 </Window>

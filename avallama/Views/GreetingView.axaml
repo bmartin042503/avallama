@@ -18,7 +18,6 @@
                        Opacity="0.7"
                        FontSize="18"></TextBlock>
             
-            <!-- TODO: INavigationService amit megvalósít a GreetingViewModel (?) -->
             <Button CornerRadius="20"
                     HorizontalAlignment="Center"
                     Margin="0,70,0,0"

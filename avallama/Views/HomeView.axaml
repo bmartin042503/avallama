@@ -37,7 +37,7 @@
         </Grid>
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Svg Path="/Assets/error_24dp.svg"
+                <Svg Path="/Assets/Svg/error_24dp.svg"
                      Width="18"
                      Margin="0,0,5,5"
                      Css="path { fill: #808080; }"  />
@@ -50,7 +50,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Svg Path="/Assets/error_24dp.svg"
+                <Svg Path="/Assets/Svg/error_24dp.svg"
                      Width="18"
                      Margin="0,0,5,5"
                      Css="path { fill: #FFD700; }"  />

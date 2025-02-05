@@ -1,4 +1,5 @@
-﻿using avallama.Constants;
+﻿using System.Runtime.InteropServices;
+using avallama.Constants;
 using avallama.Factories;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,6 +9,8 @@ public partial class MainViewModel : ViewModelBase
 {
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
+
+    public readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     
     [ObservableProperty]
     private PageViewModel _currentPageViewModel;
