@@ -29,7 +29,7 @@
             <ComboBox Grid.Column="1"
                       HorizontalAlignment="Center"
                       Width="150"
-                      Margin="10"
+                      Margin="0,20,0,10"
                       SelectedIndex="0"
                       IsEnabled="False">
                 <ComboBoxItem Content="llama3.2" />
@@ -63,7 +63,8 @@
         <Grid Grid.Column="1" Grid.Row="2" RowDefinitions="*,Auto" Margin="25,0,25,0">
             <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch"
                           Margin="0, 15, 0, 0"
-                          Padding="10,0,10,0">
+                          Padding="10,0,10,0"
+                          ScrollChanged="ScrollViewer_OnScrollChanged">
                 <ItemsControl ItemsSource="{Binding Messages}">
                     <ItemsControl.DataTemplates>
                         <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
@@ -109,10 +110,11 @@
                 BorderThickness="0"
                 CornerRadius="25"
                 Padding="15,10,0,10"
-                Margin="0,30,0,10"
+                Margin="0,30,0,20"
                 Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>
-                    <KeyBinding Gesture="Enter" Command="{Binding SendMessageCommand}"></KeyBinding>
+                    <KeyBinding Gesture="Enter" 
+                                Command="{Binding SendMessageCommand}"/>
                 </TextBox.KeyBindings>
             </TextBox>
         </Grid>

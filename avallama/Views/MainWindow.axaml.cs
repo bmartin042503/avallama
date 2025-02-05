@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -11,7 +12,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         // Title bar eltüntetése (csak Windowson)
-        // Linuxon sok desktop environment van, nem biztos hogy általánosan mindegyikről el tudnánk tüntetni
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             ExtendClientAreaToDecorationsHint = true;
@@ -23,7 +23,12 @@ public partial class MainWindow : Window
     
     private void Window_PointerPressed(object? sender, RoutedEventArgs e)
     {
-        BeginMoveDrag((PointerPressedEventArgs)e);
+        var args = e as PointerPressedEventArgs;
+        if (args == null) return;
+        var positionY = args.GetPosition(this).Y;
+        
+        // ablakot csak Y:25 alatt lehet mozgatni, vagyis az ablak felső részén
+        if(positionY < 25) BeginMoveDrag((PointerPressedEventArgs)e);
     }
 
     private void CloseButton_OnClick(object? sender, RoutedEventArgs e)

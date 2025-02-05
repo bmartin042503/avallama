@@ -10,7 +10,7 @@ public partial class MainViewModel : ViewModelBase
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
 
-    public readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     
     [ObservableProperty]
     private PageViewModel _currentPageViewModel;
