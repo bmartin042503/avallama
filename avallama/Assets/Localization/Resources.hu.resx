@@ -45,7 +45,7 @@
         <value>v0.1.0-alpha</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
-        <value>A beszélgetések funkció jelenleg nem elérhető</value>
+        <value>A beszélgetések funkciómég nem elérhető</value>
     </data>
     <data name="PROCESS_STARTED" xml:space="preserve">
         <value>Az ollama sikeresen elindult</value>
