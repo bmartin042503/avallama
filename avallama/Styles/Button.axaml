@@ -1,5 +1,6 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:avallama.Controls">
     <!-- Preview -->
     <Design.PreviewWith>
         <Border Padding="20">
@@ -29,7 +30,7 @@
     <Style Selector="Button /template/ ContentPresenter">
         <Setter Property="Transitions">
             <Transitions>
-                <BrushTransition Property="Background" Duration="0:0:0.10"/>
+                <BrushTransition Property="Background" Duration="0:0:0.12"/>
             </Transitions>
         </Setter>
     </Style>
@@ -43,11 +44,25 @@
     <!-- Ablakkezelő gombok -->
     <Style Selector="Button.windowManager">
         <Setter Property="Background" Value="Transparent"/>
-        <!-- TODO megadni vhogy ha lehet az svg színváltoztatást témától függően -->
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+    
+    <Style Selector="Button.windowManager controls|DynamicSvg">
+        <Setter Property="FillColor" Value="{DynamicResource OnBackground}"/>
     </Style>
     
     <Style Selector="Button.windowManager:pointerover /template/ ContentPresenter">
-        <!-- TODO megadni vhogy ha lehet az svg színváltoztatást témától függően -->
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
     </Style>
+    
+    <Style Selector="Button.windowManager:pointerover controls|DynamicSvg">
+        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+    
+    <Style Selector="Button.closeWindow:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Error}"/>
+    </Style>
+    
     <!-- ========================== -->
 </Styles>

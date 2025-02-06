@@ -5,6 +5,7 @@
              xmlns:viewModels="clr-namespace:avallama.ViewModels"
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:localization="clr-namespace:avallama.Services"
+             xmlns:controls="clr-namespace:avallama.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
              x:DataType="viewModels:HomeViewModel">
@@ -37,10 +38,10 @@
         </Grid>
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Svg Path="/Assets/Svg/error_24dp.svg"
+                <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
+                     FillColor="#808080"
                      Width="18"
-                     Margin="0,0,5,5"
-                     Css="path { fill: #808080; }"  />
+                     Margin="0,0,5,5"  />
 
 
                 <TextBlock Text="{Binding LanguageLimitationWarning}"
@@ -50,10 +51,10 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Svg Path="/Assets/Svg/error_24dp.svg"
+                <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
+                     FillColor="#FFD700"
                      Width="18"
-                     Margin="0,0,5,5"
-                     Css="path { fill: #FFD700; }"  />
+                     Margin="0,0,5,5"  />
                 <TextBlock Text="{Binding ResourceLimitWarning}"
                            Foreground="#FFD700"
                            TextAlignment="Center"
