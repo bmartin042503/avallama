@@ -28,14 +28,14 @@
                     Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
             </Button>
             <Grid>
-                <!-- Loading Spinner -->
+                <!-- Töltő cucc -->
                 <ProgressBar IsIndeterminate="True"
                              IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessLoading, RelativeSource={RelativeSource AncestorType=Window}}"
                              Width="200" Height="10" 
                              HorizontalAlignment="Center" VerticalAlignment="Top"
                              Margin="0,20,0,0"/>
     
-                <!-- Process Message -->
+                <!-- Folyamat üzenet -->
                 <TextBlock
                     Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
                     FontSize="14"
