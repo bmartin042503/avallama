@@ -9,32 +9,32 @@
              x:DataType="vm:GreetingViewModel">
     <Grid>
         <StackPanel Orientation="Vertical" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Svg Path="/Assets/Svg/avallama-logo.svg" Width="120" Margin="0,0,0,7.5"/>
             <TextBlock Text="{localization:LocalizationService Key='GREETING_TEXT'}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
-                       FontSize="48"/>
+                       FontSize="40"
+                       Margin="0,0,0,5"/>
             <TextBlock Text="{localization:LocalizationService Key='GREETING_SUBTEXT'}"
                        HorizontalAlignment="Center"
                        Opacity="0.7"
                        FontSize="18"></TextBlock>
-            
-            <Button CornerRadius="20"
+            <Button
                     HorizontalAlignment="Center"
-                    Margin="0,20,0,0"
-                    FontSize="16"
-                    Padding="30,8"
+                    Margin="0,50,0,0"
                     IsEnabled="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessRunning, RelativeSource={RelativeSource AncestorType=Window}}"
                     Content="{localization:LocalizationService Key='GET_STARTED'}"
                     Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
             </Button>
-            <TextBlock
-                Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
-                FontSize="14"
-                TextAlignment="Center"
-                Margin="0,60,0,0"
-                Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
-
+        <TextBlock
+            Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
+            FontSize="14"
+            TextAlignment="Center"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,15"
+            Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
 
         <TextBlock Text="{localization:LocalizationService Key='VERSION'}"
                    HorizontalAlignment="Right"

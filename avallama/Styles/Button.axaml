@@ -1,0 +1,53 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Preview -->
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <StackPanel Orientation="Vertical" Spacing="15">
+                <Button>
+                    Default Button
+                </Button>
+                <Button Classes="windowManager">
+                    <Svg Path="/Assets/Svg/hide.svg"
+                         Width="12"/>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+
+    <!-- TODO: Különböző méretű gombok, pl. nagyobb gombok (GreetingViewre a Get Started) -->
+    
+    <!-- Alapértelmezett gombok -->
+    <Style Selector="Button">
+        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+        <Setter Property="CornerRadius" Value="25"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Padding" Value="25, 10"/>
+    </Style>
+    
+    <Style Selector="Button /template/ ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.10"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+    <!-- ========================== -->
+    
+    <!-- Ablakkezelő gombok -->
+    <Style Selector="Button.windowManager">
+        <Setter Property="Background" Value="Transparent"/>
+        <!-- TODO megadni vhogy ha lehet az svg színváltoztatást témától függően -->
+    </Style>
+    
+    <Style Selector="Button.windowManager:pointerover /template/ ContentPresenter">
+        <!-- TODO megadni vhogy ha lehet az svg színváltoztatást témától függően -->
+    </Style>
+    <!-- ========================== -->
+</Styles>

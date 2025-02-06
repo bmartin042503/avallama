@@ -4,7 +4,19 @@
              xmlns:local="using:avallama"
              RequestedThemeVariant="Light">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
+             
+     <Application.Resources>
+         <ResourceDictionary>
+             <ResourceDictionary.MergedDictionaries>
+                 <MergeResourceInclude Source="/Styles/Colors.axaml" />
+             </ResourceDictionary.MergedDictionaries>
+         </ResourceDictionary>
+     </Application.Resources>
+             
+     <Application.Styles>
+         <StyleInclude Source="Styles/Button.axaml"/>
+     </Application.Styles>
+             
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
