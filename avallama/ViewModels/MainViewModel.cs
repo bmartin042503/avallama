@@ -22,6 +22,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty] 
     private bool _ollamaProcessRunning;
+
+    [ObservableProperty] 
+    private bool _ollamaProcessLoading;
     
     [ObservableProperty]
     private string? _ollamaProcessMessage;
@@ -33,6 +36,7 @@ public partial class MainViewModel : ViewModelBase
     {
         _pageFactory = pageFactory;
         OllamaProcessMessage = LocalizationService.GetString("PROCESS_STARTING");
+        OllamaProcessLoading = true;
         ProcessTextColor = new SolidColorBrush(Colors.Black);
         messenger.Register<OllamaProcessInfo>(this, (recipient, processInfo) =>
         {
@@ -40,11 +44,13 @@ public partial class MainViewModel : ViewModelBase
             {
                 OllamaProcessMessage = String.Format(LocalizationService.GetString("PROCESS_FAILED"), processInfo.Message);
                 OllamaProcessRunning = false;
+                OllamaProcessLoading = false;
                 ProcessTextColor = new SolidColorBrush(Colors.Red);
             }
             else if(processInfo.Status == ProcessStatus.Running)
             {
                 OllamaProcessMessage = LocalizationService.GetString("PROCESS_STARTED");
+                OllamaProcessLoading = false;
                 OllamaProcessRunning = true;
                 ProcessTextColor = new SolidColorBrush(Colors.Green);
             }

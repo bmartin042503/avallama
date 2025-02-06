@@ -26,15 +26,24 @@
                     Content="{localization:LocalizationService Key='GET_STARTED'}"
                     Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
             </Button>
+            <Grid>
+                <!-- Töltő cucc -->
+                <ProgressBar IsIndeterminate="True"
+                             IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessLoading, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Width="200" Height="10" 
+                             HorizontalAlignment="Center" VerticalAlignment="Top"
+                             Margin="0,20,0,0"/>
+    
+                <!-- Folyamat üzenet -->
+                <TextBlock
+                    Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
+                    FontSize="14"
+                    TextAlignment="Center"
+                    Margin="0,60,0,0"
+                    Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </Grid>
         </StackPanel>
-        <TextBlock
-            Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
-            FontSize="14"
-            TextAlignment="Center"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Bottom"
-            Margin="0,0,0,15"
-            Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+
 
         <TextBlock Text="{localization:LocalizationService Key='VERSION'}"
                    HorizontalAlignment="Right"
