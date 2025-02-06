@@ -58,7 +58,7 @@ public partial class App : Application
          ide kell egy kis delay kulonben elobb inditja a servicet mint hogy betoltene a UI-t es ugy nem igazan
          lehet kiirni a hibakat UI-ra
         */
-        _ollamaService?.StartWithDelay(TimeSpan.FromSeconds(5));
+        _ollamaService?.StartWithDelay(TimeSpan.FromSeconds(1));
     }
 
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)

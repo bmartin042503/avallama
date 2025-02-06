@@ -32,7 +32,7 @@
                 FontSize="14"
                 TextAlignment="Center"
                 Margin="0,60,0,0"
-                Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
 
 
