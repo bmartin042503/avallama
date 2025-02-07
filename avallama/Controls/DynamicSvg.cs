@@ -6,9 +6,10 @@ using Avalonia.Media.Immutable;
 
 namespace avallama.Controls;
 
-// Saját Svg Control, melynek dinamikusan módosítható a színe (komplexebb SVG fájlokkal nem működhet teljesen)
-// Használatához be kell importálni a axaml-ben a Controls dir-t és <controls:DynamicSvg FillColor="">
-// FillColorban megadható bármi - pl. "Aqua", "#ff0000", "{DynamicResource OnPrimary}"
+/// <summary>
+/// Svg megjelenítésére használható. A FillColor-al megadható az SVG színe.
+/// (Komplexebb objektumok esetén, illetve beágyazott színbeállításoknál nem működik jelenleg)
+/// </summary>
 
 public class DynamicSvg : Avalonia.Svg.Svg
 {

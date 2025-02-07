@@ -6,6 +6,7 @@
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:localization="clr-namespace:avallama.Services"
              xmlns:controls="clr-namespace:avallama.Controls"
+             Background="{DynamicResource Surface}"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
              x:DataType="viewModels:HomeViewModel">
@@ -13,15 +14,14 @@
         <viewModels:HomeViewModel />
     </Design.DataContext>
     
-    <!-- TODO: Hardcoded értékek helyett definiált stílusok, relatív értékek (?) width, height, margin, padding -->
     <Grid ColumnDefinitions="*,3*" RowDefinitions="Auto,Auto,*,Auto">
         <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4"
-                    Orientation="Vertical" VerticalAlignment="Stretch" Background="#f1f1f1">
+                    Orientation="Vertical" VerticalAlignment="Stretch" Background="{DynamicResource SurfaceContainer}">
             <TextBlock HorizontalAlignment="Center"
                        Text="{localization:LocalizationService Key='CONVERSATIONS_NOT_AVAILABLE'}"
                        TextWrapping="Wrap"
                        FontSize="14"
-                       Foreground="#808080"
+                       Foreground="{DynamicResource OnSurface}"
                        Padding="10"
                        Margin="0,60,0,0"
                        TextAlignment="Center"/>
@@ -70,47 +70,27 @@
                     <ItemsControl.DataTemplates>
                         <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
                         <DataTemplate DataType="models:GeneratedMessage">
-                            <Border CornerRadius="20"
-                                    Background="#c8c8c8"
-                                    Margin="0,20,0,0"
-                                    HorizontalAlignment="Left"
-                                    MaxWidth="450">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="{Binding Content}"
-                                               Padding="15,10,15,10"
-                                               TextWrapping="Wrap"/>
-                                    <StackPanel Orientation="Horizontal"
-                                                HorizontalAlignment="Right">
-                                        <TextBlock Text="{Binding GenerationSpeed}" 
-                                                   FontSize="9"
-                                                   Padding="0,0,2,10"/>
-                                        <TextBlock Text="{localization:LocalizationService Key='TOKEN_SEC'}" 
-                                                   FontSize="9"
-                                                   Padding="0,0,10,10"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
+                            <controls:MessageBlock 
+                                Classes="generatedMessage"
+                                Text="{Binding Content}"
+                                TextColor="{DynamicResource SurfaceContainerHighest}"
+                                SubText="{Binding GenerationSpeed}"
+                                Background="{DynamicResource OutlineVariant}"
+                                Unit="{localization:LocalizationService Key='TOKEN_SEC'}"/>
                         </DataTemplate>
                         <DataTemplate DataType="models:Message">
-                            <Border CornerRadius="20"
-                                    Background="#eeeeee"
-                                    Margin="0, 20, 0, 0"
-                                    HorizontalAlignment="Right"
-                                    MaxWidth="450">
-                                <TextBlock Text="{Binding Content}"
-                                           Padding="15,10,15,10"
-                                           TextWrapping="Wrap"/>
-                            </Border>
+                            <controls:MessageBlock 
+                                HorizontalAlignment="Right"
+                                Classes="userMessage"
+                                Text="{Binding Content}"
+                                TextColor="{DynamicResource OnPrimary}"
+                                Background="{DynamicResource Primary}"/>
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
             </ScrollViewer>
             <TextBox Grid.Row="1"
                 Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
-                Background="#EEEEEE"
-                BorderThickness="0"
-                CornerRadius="25"
-                Padding="15,10,0,10"
                 Margin="0,30,0,20"
                 Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>

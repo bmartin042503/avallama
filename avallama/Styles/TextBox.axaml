@@ -1,0 +1,34 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Padding="20" Background="{DynamicResource Surface}">
+                <TextBox 
+                         Watermark="TextBox Watermark"
+                         Margin="0,30,0,20"/>
+            </Border>
+        </ThemeVariantScope>
+    </Design.PreviewWith>
+
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="25"/>
+        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="MaxLines" Value="8"/>
+        <Setter Property="AcceptsReturn" Value="True"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
+    </Style>
+    
+    <Style Selector="TextBox:focus, TextBox:pointerover">
+        <Style Selector="^ /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
+        </Style>
+        <Style Selector="^ /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+    </Style>
+</Styles>

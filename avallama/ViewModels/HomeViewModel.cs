@@ -40,6 +40,7 @@ public partial class HomeViewModel : PageViewModel
     private void SendMessage()
     {
         if (NewMessageText.Length == 0) return;
+        NewMessageText = NewMessageText.Trim();
         var rnd = new Random();
         Messages.Add(new Message(NewMessageText));
 

@@ -3,28 +3,28 @@
         xmlns:controls="clr-namespace:avallama.Controls">
     <!-- Preview -->
     <Design.PreviewWith>
-        <Border Padding="20">
-            <StackPanel Orientation="Vertical" Spacing="15">
-                <Button>
-                    Default Button
-                </Button>
-                <Button Classes="windowManager">
-                    <Svg Path="/Assets/Svg/hide.svg"
-                         Width="12"/>
-                </Button>
-            </StackPanel>
-        </Border>
+        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Padding="20" Background="{DynamicResource Surface}">
+                <StackPanel Orientation="Vertical" Spacing="15" Background="{DynamicResource Surface}">
+                    <Button Content="Default Button"/>
+                    <Button Classes="large" Content="Large Button"/>
+                    <Button Classes="windowManager">
+                        <controls:DynamicSvg Path="/Assets/Svg/hide.svg"
+                             Width="12"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </ThemeVariantScope>
     </Design.PreviewWith>
-
-    <!-- TODO: Különböző méretű gombok, pl. nagyobb gombok (GreetingViewre a Get Started) -->
     
     <!-- Alapértelmezett gombok -->
     <Style Selector="Button">
         <Setter Property="Background" Value="{DynamicResource Secondary}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
         <Setter Property="CornerRadius" Value="25"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="25, 10"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="25, 7.5"/>
     </Style>
     
     <Style Selector="Button /template/ ContentPresenter">
@@ -41,6 +41,13 @@
     </Style>
     <!-- ========================== -->
     
+    <!-- Nagy gombok -->
+    <Style Selector="Button.large">
+        <Setter Property="CornerRadius" Value="30"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Padding" Value="40, 10"/>
+    </Style>
+    
     <!-- Ablakkezelő gombok -->
     <Style Selector="Button.windowManager">
         <Setter Property="Background" Value="Transparent"/>
@@ -48,8 +55,12 @@
         <Setter Property="Padding" Value="12"/>
     </Style>
     
+    <Style Selector="Button.windowManager /template/ ContentPresenter">
+        <Setter Property="Transitions"><Transitions/></Setter>
+    </Style>
+    
     <Style Selector="Button.windowManager controls|DynamicSvg">
-        <Setter Property="FillColor" Value="{DynamicResource OnBackground}"/>
+        <Setter Property="FillColor" Value="{DynamicResource OnSurface}"/>
     </Style>
     
     <Style Selector="Button.windowManager:pointerover /template/ ContentPresenter">

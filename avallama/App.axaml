@@ -8,13 +8,15 @@
      <Application.Resources>
          <ResourceDictionary>
              <ResourceDictionary.MergedDictionaries>
-                 <MergeResourceInclude Source="/Styles/Colors.axaml" />
+                 <MergeResourceInclude Source="/Styles/AppColors.axaml" />
              </ResourceDictionary.MergedDictionaries>
          </ResourceDictionary>
      </Application.Resources>
              
      <Application.Styles>
          <StyleInclude Source="Styles/Button.axaml"/>
+         <StyleInclude Source="Styles/TextBox.axaml"/>
+         <StyleInclude Source="Styles/MessageBlock.axaml"/>
      </Application.Styles>
              
     <Application.DataTemplates>
