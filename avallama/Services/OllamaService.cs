@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
 using CommunityToolkit.Mvvm.Messaging;
@@ -29,13 +32,31 @@ public class OllamaService
         _messenger = messenger;
     }
 
-    public void Start()
+    private async void Start()
     {
-        // ez eddig csak Windows specifikus
-        string ollamaPath = Path.Combine(
+        string ollamaPath = "";
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            ollamaPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             @"Programs\Ollama\ollama"
-        );
+            );
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            ollamaPath = "/usr/local/bin/ollama";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, LocalizationService.GetString("MACOS_NOT_SUPPORTED")));
+            return;
+        }
+
+        if (await IsOllamaRunning())
+        {
+            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Running, LocalizationService.GetString("PROCESS_ALREADY_RUNNING")));
+            return;
+        }
 
         var startInfo = new ProcessStartInfo
         {
@@ -57,6 +78,20 @@ public class OllamaService
         if (_ollamaProcess != null)
         {
             _messenger.Send(new OllamaProcessInfo(ProcessStatus.Running));
+        }
+    }
+    
+    private static async Task<bool> IsOllamaRunning()
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.GetAsync("http://localhost:11434/api/version");
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+        catch
+        {
+            return false;
         }
     }
 

@@ -56,4 +56,10 @@
     <data name="PROCESS_STARTING" xml:space="preserve">
         <value>Ollama indítása folyamatban..</value>
     </data>
+    <data name="MACOS_NOT_SUPPORTED" xml:space="preserve">
+        <value>A MacOS nem támogatott</value>
+    </data>
+    <data name="PROCESS_ALREADY_RUNNING" xml:space="preserve">
+        <value>Az ollama már fut</value>
+    </data>
 </root>
