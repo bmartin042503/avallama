@@ -1,0 +1,32 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Padding="20" Background="{DynamicResource Surface}">
+                <StackPanel Orientation="Vertical" Spacing="0">
+                    <TextBlock
+                        Text="avallama"
+                        Classes="mainText"
+                        TextAlignment="Center"/>
+                    <TextBlock
+                        Text="Run any open source LLM locally"
+                        Classes="subText"/>
+                </StackPanel>
+            </Border>
+        </ThemeVariantScope>
+    </Design.PreviewWith>
+    
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="Manrope"/>
+    </Style>
+
+    <Style Selector="TextBlock.mainText">
+        <Setter Property="FontSize" Value="40"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+    
+    <Style Selector="TextBlock.subText">
+        <Setter Property="FontSize" Value="16"/>
+    </Style>
+</Styles>

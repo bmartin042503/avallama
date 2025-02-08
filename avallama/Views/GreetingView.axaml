@@ -5,51 +5,48 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:localization="clr-namespace:avallama.Services"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Background="{DynamicResource Surface}"
              x:Class="avallama.Views.GreetingView"
              x:DataType="vm:GreetingViewModel">
-    <Grid>
-        <StackPanel Orientation="Vertical" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Svg Path="/Assets/Svg/avallama-logo.svg" Width="120" Margin="0,0,0,7.5"/>
-            <TextBlock Text="{localization:LocalizationService Key='GREETING_TEXT'}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       FontSize="40"
-                       Margin="0,0,0,5"/>
-            <TextBlock Text="{localization:LocalizationService Key='GREETING_SUBTEXT'}"
-                       HorizontalAlignment="Center"
-                       Opacity="0.7"
-                       FontSize="18"></TextBlock>
-            <Button
-                    Classes="large"
-                    HorizontalAlignment="Center"
-                    Margin="0,30,0,30"
-                    IsEnabled="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessRunning, RelativeSource={RelativeSource AncestorType=Window}}"
-                    Content="{localization:LocalizationService Key='GET_STARTED'}"
-                    Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}">                
-            </Button>
-            <Grid>
-                <!-- Töltő cucc -->
-                <ProgressBar IsIndeterminate="True"
-                             IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessLoading, RelativeSource={RelativeSource AncestorType=Window}}"
-                             Width="200" Height="10" 
-                             HorizontalAlignment="Center" VerticalAlignment="Top"
-                             Margin="0,0,0,0"/>
     
-                <!-- Folyamat üzenet -->
-                <TextBlock
-                    Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
-                    FontSize="14"
-                    TextAlignment="Center"
-                    Margin="0,60,0,0"
-                    Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
-            </Grid>
+    <Grid>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="20">
+            <Svg Path="/Assets/Svg/avallama-logo.svg" Width="90" Margin="0,0,0,7.5"/>
+            <TextBlock Text="{localization:LocalizationService Key='GREETING_TEXT'}"
+                       Classes="mainText"
+                       TextAlignment="Center"
+                       Foreground="{DynamicResource OnSurface}"/>
+            <TextBlock Text="{localization:LocalizationService Key='GREETING_SUBTEXT'}"
+                       Classes="subText"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource OnSurfaceVariant}"/>
+            <Button
+                Classes="large"
+                HorizontalAlignment="Center"
+                Margin="0,50,0,0"
+                IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessRunning, RelativeSource={RelativeSource AncestorType=Window}}"
+                Content="{localization:LocalizationService Key='GET_STARTED'}"
+                Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>   
+            <ProgressBar IsIndeterminate="True"
+                         IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessLoading, RelativeSource={RelativeSource AncestorType=Window}}"
+                         Width="200" Height="10" 
+                         HorizontalAlignment="Center" VerticalAlignment="Top"
+                         Foreground="{DynamicResource Primary}"
+                         Background="Transparent"
+                         Margin="0,30,0,0"/>
+    
+            <TextBlock
+                Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
+                FontSize="14"
+                TextAlignment="Center"
+                Margin="0,30,0,0"
+                Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
-
-
+        
         <TextBlock Text="{localization:LocalizationService Key='VERSION'}"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Bottom"
                    Margin="10"
-                   Opacity="0.6" />
+                   Foreground="{DynamicResource OnSurfaceVariant}"/>
     </Grid>
 </UserControl>

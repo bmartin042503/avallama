@@ -5,25 +5,28 @@
              RequestedThemeVariant="Light">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
              
+    <!-- Resources beállítása (színek, font stb.) -->
      <Application.Resources>
          <ResourceDictionary>
              <ResourceDictionary.MergedDictionaries>
                  <MergeResourceInclude Source="/Styles/AppColors.axaml" />
              </ResourceDictionary.MergedDictionaries>
          </ResourceDictionary>
+         <FontFamily x:Key="Manrope">avares://Assets/Fonts/#Manrope</FontFamily>
      </Application.Resources>
              
      <Application.Styles>
+         <!-- Saját styleok használata globálisan -->
          <StyleInclude Source="Styles/Button.axaml"/>
          <StyleInclude Source="Styles/TextBox.axaml"/>
+         <StyleInclude Source="Styles/TextBlock.axaml"/>
          <StyleInclude Source="Styles/MessageBlock.axaml"/>
+         
+         <FluentTheme />
      </Application.Styles>
              
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
-    <Application.Styles>
-        <FluentTheme />
-    </Application.Styles>
+             
 </Application>

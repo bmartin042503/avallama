@@ -40,6 +40,7 @@ public partial class MainViewModel : ViewModelBase
         ProcessTextColor = new SolidColorBrush(Colors.Black);
         messenger.Register<OllamaProcessInfo>(this, (recipient, processInfo) =>
         {
+            // TODO: saját popup dialog control ahol megjelenne a progressbar és azt követően a hiba üzenet ha van
             if (processInfo.Status == ProcessStatus.Failed)
             {
                 OllamaProcessMessage = String.Format(LocalizationService.GetString("PROCESS_FAILED"), processInfo.Message);

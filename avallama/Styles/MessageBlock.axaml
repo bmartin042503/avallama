@@ -23,8 +23,8 @@
     <Style Selector="controls|MessageBlock">
         <Setter Property="TextAlignment" Value="Left"/>
         <Setter Property="TextFontSize" Value="14"/>
-        <Setter Property="CornerRadius" Value="25"/>
-        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="CornerRadius" Value="15"/>
+        <Setter Property="Padding" Value="15,10"/>
         <Setter Property="MaxWidth" Value="350"/>
     </Style>
     
