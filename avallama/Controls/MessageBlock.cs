@@ -12,7 +12,7 @@ namespace avallama.Controls;
 /// </summary>
 public class MessageBlock : Control
 {
-    
+    // AXAML Styled Propertyk
     public static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<MessageBlock, string?>("Text");
     
@@ -54,15 +54,7 @@ public class MessageBlock : Control
     
     public static readonly StyledProperty<string?> UnitProperty =
         AvaloniaProperty.Register<MessageBlock, string?>("Unit");
-
-    private TextLayout? _textLayout;
-    private TextLayout? _subTextLayout;
-
-    private Size _constraint = Size.Infinity;
-
-    public TextLayout? TextLayout => _textLayout ??= CreateTextLayout();
-    public TextLayout? SubTextLayout => _subTextLayout ??= CreateSubTextLayout();
-
+    
     public string? Text
     {
         get => GetValue(TextProperty);
@@ -147,14 +139,27 @@ public class MessageBlock : Control
         set => SetValue(UnitProperty, value);
     }
     
+    private TextLayout? _textLayout;
+    private TextLayout? _subTextLayout;
+
+    // a MaxWidth és MaxHeight megfelelő beállításához kell a Create(Sub)TextLayoutnak
+    private Size _constraint = Size.Infinity;
+
+    public TextLayout? TextLayout => _textLayout ??= CreateTextLayout();
+    public TextLayout? SubTextLayout => _subTextLayout ??= CreateSubTextLayout();
+    
     public override void Render(DrawingContext context)
     {
+        // Háttér renderelése
         RenderBackground(context);
+        
+        // Szövegek renderelése
         RenderText(context);
     }
 
     private void RenderBackground(DrawingContext context)
     {
+        // Ha van háttér megadva akkor lerendereljük a CornerRadius alapján (ami lehet 0 is)
         var bg = Background;
         if (bg != null)
         {
@@ -171,12 +176,14 @@ public class MessageBlock : Control
         }
     }
 
+    // Létrehozott TextLayoutok renderelése (amennyiben nem null)
     private void RenderText(DrawingContext context)
     {
         TextLayout?.Draw(context, CalculateTextPosition(TextAlignment));
         SubTextLayout?.Draw(context, CalculateSubTextPosition(SubTextAlignment));
     }
 
+    // Létrehozza az alap szöveget (amennyiben meg van adva)
     private TextLayout? CreateTextLayout()
     {
         if (!string.IsNullOrEmpty(Text))
@@ -198,6 +205,7 @@ public class MessageBlock : Control
         return null;
     }
 
+    // Létrehozza az alsó szöveget (amennyiben meg van adva)
     private TextLayout? CreateSubTextLayout()
     {
         if (!string.IsNullOrEmpty(SubText))
@@ -220,6 +228,7 @@ public class MessageBlock : Control
         return null;
     }
 
+    // Invalidálja a vizuális elemeket és az elemek leméretezését, és egy újat kér helyette
     private void InvalidateTextLayouts()
     {
         InvalidateVisual();
@@ -228,6 +237,7 @@ public class MessageBlock : Control
 
     protected override void OnMeasureInvalidated()
     {
+        // felszabadítja a textLayoutokat
         _textLayout?.Dispose();
         _textLayout = null;
         _subTextLayout?.Dispose();
@@ -235,12 +245,16 @@ public class MessageBlock : Control
         base.OnMeasureInvalidated();
     }
 
+    // Felméri hogy mennyi helyre van szüksége a Controlnak
     protected override Size MeasureOverride(Size availableSize)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
+        
+        // LayoutHelperrel roundolja a Thicknesst (megadott Paddingot) a megfelelő DPI koordinátákhoz
         var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
-        var deflatedSize = availableSize.Deflate(padding);
-
+        var deflatedSize = availableSize.Deflate(padding); // kiveszi az elérhető helyből a paddingot
+        
+        // ha a constraint nem egyezik akkor reseteli a textLayoutokat és újraigazítja őket
         if (_constraint != deflatedSize)
         {
             _textLayout?.Dispose();
@@ -251,16 +265,20 @@ public class MessageBlock : Control
             InvalidateArrange();
         }
         
+        // implicit létrehozza az új textlayoutokat
         var textLayout = TextLayout;
         var subTextLayout = SubTextLayout;
         
+        // a lehető legnagyobb szélesség a textlayoutokra nézve
         var textLayoutWidth = textLayout == null ? 0 : textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
         var subTextLayoutWidth = subTextLayout == null ? 0 : subTextLayout.OverhangLeading + subTextLayout.WidthIncludingTrailingWhitespace + subTextLayout.OverhangTrailing;
 
+        // a lehető legnagyobb hosszúság a textlayoutokra nézve
         var textLayoutHeight = textLayout?.Height ?? 0;
         var subTextLayoutHeight = subTextLayout?.Height ?? 0;
 
         double spacing;
+        // ha valamelyik textlayout hiányzik a spacingot 0-ra állítjuk
         if (textLayoutHeight == 0 || subTextLayoutHeight == 0 || Spacing == null)
         {
             spacing = 0.0;
@@ -270,12 +288,17 @@ public class MessageBlock : Control
             spacing = Spacing.Value;
         }
         
+        // max szélesség a kettő között
         var width = Math.Max(textLayoutWidth, subTextLayoutWidth);
+        
+        // végső méret a szélességgel és a max magassággal inflatelve a paddinggel
         var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayoutHeight + subTextLayoutHeight + spacing).Inflate(padding), 1, 1);
 
         return size;
     }
 
+    // pozicionálja az elemeket a számukra elérhető hely alapján több metódussal együtt dolgozva (Arrange, ArrangeCore)
+    // több infó: https://docs.avaloniaui.net/docs/basics/user-interface/building-layouts/#measuring-and-arranging-children
     protected override Size ArrangeOverride(Size finalSize)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
@@ -293,23 +316,32 @@ public class MessageBlock : Control
 
         return finalSize;
     }
-
+    
+    // Kiszámítja az alap szöveg TextLayoutjának a pozícióját egy megadott igazítás szerint
     private Point CalculateTextPosition(TextAlignment? alignment)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
         var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
 
-        // alapértelmezett balra igazítás
+        // alapértelmezett balra igazítás, a kezdő pozíciót a paddingtől adjuk meg, hogy a padding benne legyen
         var x = padding.Left;
-        var y = padding.Top;
+        var y = padding.Top; 
         
         var subTextLayoutWidth = SubTextLayout?.Width ?? 0;
 
         switch (alignment)
         {
+            // ha középre igazítás van akkor vesszük a Control szélességét és a textlayoutok közül a legnagyobbat
+            // ez úgy igazítja a szöveget hogy a kezdőpozíciója bal oldalról haladva ott legyen hogy pont középre álljon
+            // pl. ha 200 a control szélesség és 100 a leghosszabb textlayout akkor 50 lesz a kezdőpozíció
+            // és mivel a textLayout legnagyobb szélessége még 100-at megy így ugyanúgy 50 fog kimaradni a jobb oldalt is
             case Avalonia.Media.TextAlignment.Center:
                 x = (Bounds.Width - Math.Max(subTextLayoutWidth, TextLayout!.Width)) / 2;
                 break;
+            // vesszük a Control szélességet amiből szintén kivonjuk a leghosszabb textlayout szélességet és a jobb paddinget is
+            // ugyanúgy ha 200 a bounds és 100 a textlayout maxwidth akkor abból a 100-ból még kivonjuk a paddinget ami
+            // mondjuk 20, így a kezdőpozíció ebben az esetben 80 lenne
+            // tehát a textlayout kezdene 80-ről bal oldalt, megy 100-at és marad 20 a paddingnek, így jobbra lesz igazítva
             case Avalonia.Media.TextAlignment.Right or Avalonia.Media.TextAlignment.End:
                 x = Bounds.Width - Math.Max(subTextLayoutWidth, TextLayout!.Width) - padding.Right;
                 break;
@@ -318,6 +350,7 @@ public class MessageBlock : Control
         return new Point(x, y);
     }
     
+    // hasonlóan az alap szöveghez itt is kiszámolja a pozíciót, de a spacinget is figyelembe veszi
     private Point CalculateSubTextPosition(TextAlignment? alignment)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
@@ -337,7 +370,7 @@ public class MessageBlock : Control
 
         // alapértelmezett balra igazítás
         var x = padding.Left;
-        var y = padding.Top + textLayoutHeight + spacing;
+        var y = padding.Top + textLayoutHeight + spacing; // spacing hozzáadása ha van
 
         switch (alignment)
         {
@@ -352,6 +385,7 @@ public class MessageBlock : Control
         return new Point(x, y);
     }
     
+    // ha bármelyik property megváltozik akkor invalidáljuk a jelenlegi textlayoutokat és újat hozunk létre
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
