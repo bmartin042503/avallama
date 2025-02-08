@@ -10,25 +10,33 @@
             </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
+    
+    <!-- TODO: fix - textbox fel-le ugrál ha beleírsz/kitörlöd az üzenetet -->
 
     <Style Selector="TextBox">
-        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="25"/>
         <Setter Property="Padding" Value="20,10"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="MaxLines" Value="8"/>
         <Setter Property="AcceptsReturn" Value="True"/>
+        <Setter Property="FontFamily" Value="Manrope"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
     </Style>
     
     <Style Selector="TextBox:focus, TextBox:pointerover">
         <Style Selector="^ /template/ TextBlock#PART_Watermark">
             <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
+            <Setter Property="FontFamily" Value="Manrope"/>
         </Style>
         <Style Selector="^ /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
             <Setter Property="BorderThickness" Value="0" />
         </Style>
+    </Style>
+    
+    <Style Selector="TextBox:not(:focus)">
+        <Setter Property="CaretBrush" Value="Transparent"/>
     </Style>
 </Styles>

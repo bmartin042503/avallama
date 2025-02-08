@@ -22,7 +22,7 @@
                        TextWrapping="Wrap"
                        FontSize="14"
                        Foreground="{DynamicResource OnSurface}"
-                       Padding="10"
+                       Padding="15,0"
                        Margin="0,60,0,0"
                        TextAlignment="Center"/>
         </StackPanel>

@@ -26,6 +26,8 @@
         <Setter Property="CornerRadius" Value="25"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="Padding" Value="25, 7.5"/>
+        <Setter Property="FontFamily" Value="Manrope"/>
+        <Setter Property="FontWeight" Value="Medium"/>
     </Style>
     
     <Style Selector="Button /template/ ContentPresenter">

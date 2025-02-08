@@ -1,0 +1,46 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Padding="20,20,20,150" Background="{DynamicResource Surface}">
+                <StackPanel Orientation="Horizontal" Spacing="20" Background="{DynamicResource Surface}">
+                    <ComboBox HorizontalAlignment="Center"
+                              Width="150"
+                              SelectedIndex="0"
+                              IsEnabled="True">
+                        <ComboBoxItem Content="llama3.1" />
+                        <ComboBoxItem Content="llama3.2" />
+                        <ComboBoxItem Content="llama3.3" />
+                        <ComboBoxItem Content="llama3.4" />
+                    </ComboBox>
+                    <ComboBox HorizontalAlignment="Center"
+                              Width="150"
+                              SelectedIndex="0"
+                              IsEnabled="False">
+                        <ComboBoxItem Content="llama3.2" />
+                    </ComboBox>
+                </StackPanel>
+            </Border>
+        </ThemeVariantScope>
+    </Design.PreviewWith>
+
+    <Style Selector="ComboBox">
+        <Setter Property="CornerRadius" Value="5"/>
+        <Setter Property="Padding" Value="14, 5"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    
+    <Style Selector="ComboBox:pressed, ComboBox:pointerover">
+        <Style Selector="^ /template/ Border#Background">
+            <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
+        </Style>
+    </Style>
+    
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+</Styles>

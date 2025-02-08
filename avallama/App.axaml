@@ -21,6 +21,7 @@
          <StyleInclude Source="Styles/TextBox.axaml"/>
          <StyleInclude Source="Styles/TextBlock.axaml"/>
          <StyleInclude Source="Styles/MessageBlock.axaml"/>
+         <StyleInclude Source="Styles/ComboBox.axaml"/>
          
          <FluentTheme />
      </Application.Styles>
