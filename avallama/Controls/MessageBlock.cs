@@ -250,7 +250,7 @@ public class MessageBlock : Control
     {
         var scale = LayoutHelper.GetLayoutScale(this);
         
-        // LayoutHelperrel roundolja a Thicknesst (megadott Paddingot) a megfelelő DPI koordinátákhoz
+        // LayoutHelperrel roundolja a Thicknesst (megadott Paddingot) magas dpi képernyőkre, a megfelelő koordinátákhoz
         var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
         var deflatedSize = availableSize.Deflate(padding); // kiveszi az elérhető helyből a paddingot
         

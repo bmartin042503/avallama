@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.ViewModels;
 using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.Services;
@@ -30,6 +31,13 @@ public class OllamaService
     public OllamaService(IMessenger messenger)
     {
         _messenger = messenger;
+        _messenger.Register<ViewInteraction>(this, (recipient, viewInteraction) =>
+        {
+            if (viewInteraction.InteractionType == InteractionType.RestartProcess)
+            {
+                Start();
+            } 
+        });
     }
 
     private async void Start()

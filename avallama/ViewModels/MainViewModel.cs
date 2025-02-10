@@ -14,6 +14,7 @@ public partial class MainViewModel : ViewModelBase
 {
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
+    private readonly IMessenger _messenger;
 
     public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     
@@ -34,11 +35,12 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(PageFactory pageFactory, IMessenger messenger)
     {
+        _messenger = messenger;
         _pageFactory = pageFactory;
         OllamaProcessMessage = LocalizationService.GetString("PROCESS_STARTING");
         OllamaProcessLoading = true;
         ProcessTextColor = new SolidColorBrush(Colors.Black);
-        messenger.Register<OllamaProcessInfo>(this, (recipient, processInfo) =>
+        _messenger.Register<OllamaProcessInfo>(this, (recipient, processInfo) =>
         {
             // TODO: saját popup dialog control ahol megjelenne a progressbar és azt követően a hiba üzenet ha van
             if (processInfo.Status == ProcessStatus.Failed)
@@ -63,5 +65,12 @@ public partial class MainViewModel : ViewModelBase
     private void GoToHome()
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
+    }
+    
+    // ezt lehet majd használni viewban commandként a retry gombra
+    [RelayCommand]
+    public void RetryOllamaService()
+    {
+        _messenger.Send(new ViewInteraction(InteractionType.RestartProcess));
     }
 }
