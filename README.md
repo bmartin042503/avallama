@@ -3,7 +3,6 @@
 </p>
 <h1 align="center">Avallama</h1>
 
----
 
 Avallama is a multi-platform desktop app designed to enable a user-friendly GUI for Ollama using the Avalonia framework.
 
