@@ -69,4 +69,13 @@
     <data name="PROCESS_ALREADY_RUNNING" xml:space="preserve">
         <value>Ollama is already running</value>
     </data>
+    <data name="SERVER_CONN_FAILED" xml:space="preserve">
+        <value>Failed to establish connection with Ollama local server</value>
+    </data>
+    <data name="UNKNOWN_ERROR" xml:space="preserve">
+        <value>An unknown error occured</value>
+    </data>
+    <data name="CLOSE_ALL_PROCESSES_ERROR" xml:space="preserve">
+        <value>Multiple Ollama processes detected. Please close all processes and restart the app.</value>
+    </data>
 </root>

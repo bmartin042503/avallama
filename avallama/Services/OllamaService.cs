@@ -27,6 +27,8 @@ public class OllamaService
 {
     private readonly IMessenger _messenger;
     private Process? _ollamaProcess;
+    private string OllamaPath { get; set; }
+    private uint OllamaProcesses { get; set; }
 
     public OllamaService(IMessenger messenger)
     {
@@ -38,37 +40,45 @@ public class OllamaService
                 Start();
             } 
         });
+        OllamaPath = "";
     }
 
     private async void Start()
     {
-        string ollamaPath = "";
         if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            ollamaPath = Path.Combine(
+            OllamaPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             @"Programs\Ollama\ollama"
             );
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            ollamaPath = "/usr/local/bin/ollama";
+            OllamaPath = @"/usr/local/bin/ollama";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
+            // thank you tim apple
             _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, LocalizationService.GetString("MACOS_NOT_SUPPORTED")));
             return;
         }
 
-        if (await IsOllamaRunning())
+        CheckOllamaProcess();
+        switch (OllamaProcesses)
         {
-            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Running, LocalizationService.GetString("PROCESS_ALREADY_RUNNING")));
-            return;
+            case 0:
+                break;
+            case 1:
+                _messenger.Send(new OllamaProcessInfo(ProcessStatus.Running, LocalizationService.GetString("PROCESS_ALREADY_RUNNING")));
+                return;
+            case >=2:
+                _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, LocalizationService.GetString("CLOSE_ALL_PROCESSES_ERROR")));
+                return;
         }
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = ollamaPath,
+            FileName = OllamaPath,
             Arguments = "serve",
             UseShellExecute = false,
             CreateNoWindow = true
@@ -83,13 +93,30 @@ public class OllamaService
             _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, ex.Message));
         }
 
-        if (_ollamaProcess != null)
+        if (_ollamaProcess == null)
+        {
+            //ez gyakorlatilag nem tud előfordulni szerintem, bármi processz kivétel már elkapódott volna, de azé itt hagyom
+            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, LocalizationService.GetString("UNKNOWN_ERROR")));
+        }
+        
+        bool isServerWorking = await TestOllamaConnection();
+        if (isServerWorking)
         {
             _messenger.Send(new OllamaProcessInfo(ProcessStatus.Running));
         }
+        else
+        {
+            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed), LocalizationService.GetString("SERVER_CONN_FAILED"));
+        }
     }
     
-    private static async Task<bool> IsOllamaRunning()
+    private void CheckOllamaProcess()
+    {
+        Process[] ollamaProcesses = Process.GetProcessesByName("ollama");
+        OllamaProcesses = (uint)ollamaProcesses.Length;
+    }
+
+    private static async Task<bool> TestOllamaConnection()
     {
         try
         {

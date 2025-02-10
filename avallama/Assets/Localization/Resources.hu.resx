@@ -62,4 +62,13 @@
     <data name="PROCESS_ALREADY_RUNNING" xml:space="preserve">
         <value>Az ollama már fut</value>
     </data>
+    <data name="SERVER_CONN_FAILED" xml:space="preserve">
+        <value>Nem sikerült kapcsolatot teremteni az Ollama lokális szerverrel</value>
+    </data>
+    <data name="UNKNOWN_ERROR" xml:space="preserve">
+        <value>Ismeretlen hiba történt</value>
+    </data>
+    <data name="CLOSE_ALL_PROCESSES_ERROR" xml:space="preserve">
+        <value>Több ollama processz is lett észlelve. Állítsa le az összeset, majd próbálja újra.</value>
+    </data>
 </root>
