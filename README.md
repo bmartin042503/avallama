@@ -19,4 +19,4 @@ alternatively, compile from source
 
 ## License
 
-This project is license under the [MIT License](./LICENSE)
+This project is licensed under the [MIT License](./LICENSE)
