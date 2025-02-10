@@ -5,7 +5,7 @@ This project is currently being developed by Márk Csörgő and Martin Bartos.
 
 ## Contributions
 
-We currently aren't accepting any outside contributions.
+We are currently not accepting outside contributions, please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
 
 ## Releases
 
@@ -16,3 +16,7 @@ We currently aren't accepting any outside contributions.
 ¯\_(ツ)_/¯
 
 alternatively, compile from source
+
+## License
+
+This project is license under the [MIT License](./LICENSE)
