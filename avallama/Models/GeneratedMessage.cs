@@ -2,5 +2,5 @@
 
 public class GeneratedMessage(string content) : Message(content)
 {
-    public int GenerationSpeed { get; set; } // token/sec 
+    public double GenerationSpeed { get; set; } // token/sec 
 }

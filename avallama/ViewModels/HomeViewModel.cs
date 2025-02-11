@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
@@ -43,14 +47,62 @@ public partial class HomeViewModel : PageViewModel
         NewMessageText = NewMessageText.Trim();
         var rnd = new Random();
         Messages.Add(new Message(NewMessageText));
+        PostMessage(NewMessageText);
+        NewMessageText = string.Empty;
+    }
 
-        var gm = new GeneratedMessage(_testMessages[rnd.Next(7)])
+    private async void PostMessage(string prompt)
+    {
+        const string url = "http://localhost:11434/api/generate";
+        
+        var data = new
         {
-            GenerationSpeed = rnd.Next(10, 60)
+            model = "llama3.2",
+            prompt = prompt,
+            stream = false
+        };
+        
+        using (var client = new HttpClient())
+        {
+            var jsonData = JsonSerializer.Serialize(data);
+            var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+
+            try
+            {
+                HttpResponseMessage response = await client.PostAsync(url, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseString);
+
+                    if (jsonResponse.TryGetProperty("response", out var answer) && 
+                        jsonResponse.TryGetProperty("eval_count", out var evalCount) &&
+                        jsonResponse.TryGetProperty("eval_duration", out var evalDuration))
+                    {
+                        AddMessage(answer.GetString(), (double)evalCount.GetInt32()/evalDuration.GetInt64() * 1e9);
+                    }
+                }
+                else
+                {
+                    AddMessage("An error occured, please restart the application. Error message: " + response.StatusCode, 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                AddMessage("Exception occured, please restart the application: " + ex.Message, 0);
+            }
+        }
+    }
+
+    private async void AddMessage(string message, double speed)
+    {
+        var gm = new GeneratedMessage(message)
+        {
+            GenerationSpeed = Math.Round(speed, 2)
         };
         Messages.Add(gm);
-        NewMessageText = string.Empty;
-    } 
+    }
     
     public HomeViewModel()
     {
