@@ -14,51 +14,35 @@ public partial class MainViewModel : ViewModelBase
 {
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
-    private readonly IMessenger _messenger;
-
     public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     
     [ObservableProperty]
     private PageViewModel _currentPageViewModel;
 
     [ObservableProperty] 
-    private bool _ollamaProcessRunning;
+    private bool _ollamaServiceRunning;
 
     [ObservableProperty] 
-    private bool _ollamaProcessLoading;
+    private bool _ollamaServiceLoading;
     
     [ObservableProperty]
-    private string? _ollamaProcessMessage;
+    private string? _ollamaServiceStatusText;
     
     [ObservableProperty]
-    private SolidColorBrush _processTextColor;
+    private SolidColorBrush _ollamaServiceStatusTextColor;
+    
+    private OllamaService _ollamaService;
 
-    public MainViewModel(PageFactory pageFactory, IMessenger messenger)
+    public MainViewModel(PageFactory pageFactory, OllamaService ollamaService)
     {
-        _messenger = messenger;
         _pageFactory = pageFactory;
-        OllamaProcessMessage = LocalizationService.GetString("PROCESS_STARTING");
-        OllamaProcessLoading = true;
-        ProcessTextColor = new SolidColorBrush(Colors.Black);
-        _messenger.Register<OllamaProcessInfo>(this, (recipient, processInfo) =>
-        {
-            // TODO: saját popup dialog control ahol megjelenne a progressbar és azt követően a hiba üzenet ha van
-            if (processInfo.Status == ProcessStatus.Failed)
-            {
-                OllamaProcessMessage = String.Format(LocalizationService.GetString("PROCESS_FAILED"), processInfo.Message);
-                OllamaProcessRunning = false;
-                OllamaProcessLoading = false;
-                ProcessTextColor = new SolidColorBrush(Colors.Red);
-            }
-            else if(processInfo.Status == ProcessStatus.Running)
-            {
-                OllamaProcessMessage = LocalizationService.GetString("PROCESS_STARTED");
-                OllamaProcessLoading = false;
-                OllamaProcessRunning = true;
-                ProcessTextColor = new SolidColorBrush(Colors.Green);
-            }
-        });
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Greeting);
+        
+        _ollamaService = ollamaService;
+        _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
+        OllamaServiceStatusText = LocalizationService.GetString("OLLAMA_STARTING");
+        OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Black);
+        OllamaServiceLoading = true;
     }
 
     [RelayCommand]
@@ -71,6 +55,27 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void RetryOllamaService()
     {
-        _messenger.Send(new ViewInteraction(InteractionType.RestartProcess));
+        // TODO: Start() metódus
+    }
+
+    // a metódus ami feliratkozik az OllamaServiceben lévő eventre, és ha az event meghívódik akkor ez elkapja
+    // és felfalja
+    private void OllamaServiceStatusChanged(ServiceStatus status, string? message)
+    {
+        if(message != null) OllamaServiceStatusText = message;
+        switch(status)
+        {
+            case ServiceStatus.Running:
+                OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Green);
+                OllamaServiceLoading = false;
+                OllamaServiceRunning = true;
+                break;
+            case ServiceStatus.Failed:
+                OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Red);
+                break;
+            default:
+                OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Black);
+                break;
+        }
     }
 }

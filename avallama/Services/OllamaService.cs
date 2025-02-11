@@ -6,50 +6,41 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
-using avallama.ViewModels;
-using CommunityToolkit.Mvvm.Messaging;
+using System.Text;
+using System.Text.Json;
+using avallama.Models;
 
 namespace avallama.Services;
 
-public class OllamaProcessInfo
-{
-    public ProcessStatus Status { get; }
-    public string? Message { get; }
-
-    public OllamaProcessInfo(ProcessStatus status, string? message = null)
-    {
-        Status = status;
-        Message = message;
-    }
-}
+// TODO: ollama-llama-server process megfelelő kezelése (különben csemegézni fog a memóriából)
+// TODO: 'Ollama' és 'ollama' process közti különbség (?) esetlegesen 'Ollama' ellenőrzése/bezárása
 
 public class OllamaService
 {
-    private readonly IMessenger _messenger;
     private Process? _ollamaProcess;
     private string OllamaPath { get; set; }
-    private uint OllamaProcesses { get; set; }
+    
+    // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
+    // ebben az esetben void visszatérésű ami ServiceStatus-t és string? típust vár
+    public delegate void ServiceStatusChangedHandler(ServiceStatus status, string? message);
+    
+    // az event létrehozása, ami ugye az előzőleg létrehozott delegate típusú, tehát a megfelelő szignatúrájú metódusok
+    // tudnak feliratkozni rá
+    // a MainViewModelben az OllamaServiceStatusChanged iratkozik fel ide erre az eventre
+    public event ServiceStatusChangedHandler? ServiceStatusChanged;
 
-    public OllamaService(IMessenger messenger)
+    public OllamaService()
     {
-        _messenger = messenger;
-        _messenger.Register<ViewInteraction>(this, (recipient, viewInteraction) =>
-        {
-            if (viewInteraction.InteractionType == InteractionType.RestartProcess)
-            {
-                Start();
-            } 
-        });
         OllamaPath = "";
     }
 
-    private async void Start()
+    private async Task Start()
     {
         if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             OllamaPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            @"Programs\Ollama\ollama"
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                @"Programs\Ollama\ollama"
             );
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -59,20 +50,28 @@ public class OllamaService
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             // thank you tim apple
-            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, LocalizationService.GetString("MACOS_NOT_SUPPORTED")));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed, 
+                LocalizationService.GetString("MACOS_NOT_SUPPORTED")
+            );
             return;
         }
 
-        CheckOllamaProcess();
-        switch (OllamaProcesses)
+        var processCount = OllamaProcessCount();
+        switch (processCount)
         {
-            case 0:
-                break;
+            case 0: break;
             case 1:
-                _messenger.Send(new OllamaProcessInfo(ProcessStatus.Running, LocalizationService.GetString("PROCESS_ALREADY_RUNNING")));
+                OnServiceStatusChanged(
+                    ServiceStatus.Running, 
+                    LocalizationService.GetString("OLLAMA_ALREADY_RUNNING")
+                );
                 return;
             case >=2:
-                _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, LocalizationService.GetString("CLOSE_ALL_PROCESSES_ERROR")));
+                OnServiceStatusChanged(
+                    ServiceStatus.Failed, 
+                    LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR")
+                );
                 return;
         }
 
@@ -90,33 +89,48 @@ public class OllamaService
         }
         catch (Exception ex)
         {
-            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, ex.Message));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed, 
+                string.Format(LocalizationService.GetString("OLLAMA_FAILED"), ex.Message)
+            );
+            return;
         }
 
+        // ha nem tud elindítani 'ollama' processt akkor null, tehát nincs telepítve
+        // máshogy nem lehet null (szerintem)
         if (_ollamaProcess == null)
         {
-            //ez gyakorlatilag nem tud előfordulni szerintem, bármi processz kivétel már elkapódott volna, de azé itt hagyom
-            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed, LocalizationService.GetString("UNKNOWN_ERROR")));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed, 
+                LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
+            );
+            return;
         }
         
-        bool isServerWorking = await TestOllamaConnection();
-        if (isServerWorking)
+        var isServerRunning = await IsOllamaServerRunning();
+        if (isServerRunning)
         {
-            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Running));
+            OnServiceStatusChanged(
+                ServiceStatus.Running,
+                LocalizationService.GetString("OLLAMA_STARTED")
+            );
         }
         else
         {
-            _messenger.Send(new OllamaProcessInfo(ProcessStatus.Failed), LocalizationService.GetString("SERVER_CONN_FAILED"));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed, 
+                LocalizationService.GetString("SERVER_CONN_FAILED")
+            );
         }
     }
     
-    private void CheckOllamaProcess()
+    private uint OllamaProcessCount()
     {
-        Process[] ollamaProcesses = Process.GetProcessesByName("ollama");
-        OllamaProcesses = (uint)ollamaProcesses.Length;
+        var ollamaProcesses = Process.GetProcessesByName("ollama");
+        return (uint)ollamaProcesses.Length;
     }
 
-    private static async Task<bool> TestOllamaConnection()
+    private static async Task<bool> IsOllamaServerRunning()
     {
         try
         {
@@ -132,16 +146,67 @@ public class OllamaService
 
     public void Stop()
     {
-        if (_ollamaProcess != null && !_ollamaProcess.HasExited)
-        {
-            _ollamaProcess.Kill();
-            _ollamaProcess.Dispose();
-        }
+        if (_ollamaProcess == null || _ollamaProcess.HasExited) return;
+        _ollamaProcess.Kill();
+        _ollamaProcess.Dispose();
+        
     }
 
     public async Task StartWithDelay(TimeSpan delay)
     {
         await Task.Delay(delay);
-        Start();
+        await Start();
+    }
+
+    // meghívjuk az eventet, ami azt jelenti hogy a feliratkozott metódusok is meghívódnak
+    // ebben az eseteben a MainViewModelben lévő hívódik meg és átadja neki az értékeket
+    private void OnServiceStatusChanged(ServiceStatus status, string? message = null)
+    {
+        ServiceStatusChanged?.Invoke(status, message);
+    }
+    
+    public async Task<GeneratedMessage?> GenerateMessage(string prompt)
+    {
+        const string url = "http://localhost:11434/api/generate";
+        GeneratedMessage? generatedMessage = null;
+        
+        var data = new
+        {
+            model = "llama3.2",
+            prompt = prompt,
+            stream = false
+        };
+
+        using var client = new HttpClient();
+        var jsonData = JsonSerializer.Serialize(data);
+        var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+
+        try
+        {
+            HttpResponseMessage response = await client.PostAsync(url, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseString = await response.Content.ReadAsStringAsync();
+                var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseString);
+
+                if (jsonResponse.TryGetProperty("response", out var answer) && 
+                    jsonResponse.TryGetProperty("eval_count", out var evalCount) &&
+                    jsonResponse.TryGetProperty("eval_duration", out var evalDuration))
+                {
+                    generatedMessage = new GeneratedMessage(answer.GetString() ?? string.Empty, (double)evalCount.GetInt32()/evalDuration.GetInt64() * 1e9);
+                }
+            }
+            else
+            {
+                generatedMessage = new GeneratedMessage("An error occured, please restart the application. Error message: " + response.StatusCode, 0);
+            }
+        }
+        catch (Exception ex)
+        {
+            generatedMessage = new GeneratedMessage("Exception occured, please restart the application: " + ex.Message, 0);
+        }
+
+        return generatedMessage;
     }
 }

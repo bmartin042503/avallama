@@ -26,7 +26,8 @@ public class LocalizationService : MarkupExtension
     // Lokalizált szöveg lekérése kulcs alapján
     public static string GetString(string key)
     {
-        return ResourceManager.GetString(key, ResourceCulture) ?? "undefined key";
+        // nagy, izmos undefined szöveg xd csak hogy feltűnjön ha valamelyik ui elemre rossz a kulcs
+        return ResourceManager.GetString(key, ResourceCulture) ?? "[UNDEFINED_LOCALIZATION_KEY]";
     }
 
     // MarkupExtension

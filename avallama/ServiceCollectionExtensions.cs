@@ -23,8 +23,6 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<OllamaService>();
 
-        collection.AddSingleton<IMessenger, WeakReferenceMessenger>();
-
         // PageFactoryba injektálandó delegate dependency
         // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint
         // Func<ApplicationPage, PageViewModel> - adott ApplicationPage-re vissza ad egy PageViewModelt

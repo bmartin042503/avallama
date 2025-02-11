@@ -24,11 +24,11 @@
                 Classes="large"
                 HorizontalAlignment="Center"
                 Margin="0,50,0,0"
-                IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessRunning, RelativeSource={RelativeSource AncestorType=Window}}"
+                IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceRunning, RelativeSource={RelativeSource AncestorType=Window}}"
                 Content="{localization:LocalizationService Key='GET_STARTED'}"
                 Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>   
             <ProgressBar IsIndeterminate="True"
-                         IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessLoading, RelativeSource={RelativeSource AncestorType=Window}}"
+                         IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceLoading, RelativeSource={RelativeSource AncestorType=Window}}"
                          Width="200" Height="10" 
                          HorizontalAlignment="Center" VerticalAlignment="Top"
                          Foreground="{DynamicResource Primary}"
@@ -36,11 +36,11 @@
                          Margin="0,30,0,0"/>
     
             <TextBlock
-                Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaProcessMessage, RelativeSource={RelativeSource AncestorType=Window}}"
+                Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceStatusText, RelativeSource={RelativeSource AncestorType=Window}}"
                 FontSize="14"
                 TextAlignment="Center"
                 Margin="0,30,0,0"
-                Foreground="{Binding Path=((vm:MainViewModel)DataContext).ProcessTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                Foreground="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceStatusTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
         
         <TextBlock Text="{localization:LocalizationService Key='VERSION'}"

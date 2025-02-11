@@ -21,7 +21,7 @@
         <value>Futtass bármilyen LLM modelt lokálisan</value>
     </data>
     <data name="GREETING_TEXT" xml:space="preserve">
-        <value>avallama</value>
+        <value>Avallama</value>
     </data>
     <data name="SAVE" xml:space="preserve">
         <value>Mentés</value>
@@ -47,28 +47,31 @@
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>A beszélgetések funkció még nem elérhető</value>
     </data>
-    <data name="PROCESS_STARTED" xml:space="preserve">
-        <value>Az ollama sikeresen elindult</value>
+    <data name="OLLAMA_STARTED" xml:space="preserve">
+        <value>Az Ollama sikeresen elindult</value>
     </data>
-    <data name="PROCESS_FAILED" xml:space="preserve">
+    <data name="OLLAMA_FAILED" xml:space="preserve">
         <value>Hiba történt az ollama elindítása során: {0}</value>
     </data>
-    <data name="PROCESS_STARTING" xml:space="preserve">
+    <data name="OLLAMA_STARTING" xml:space="preserve">
         <value>Ollama indítása folyamatban..</value>
     </data>
     <data name="MACOS_NOT_SUPPORTED" xml:space="preserve">
-        <value>A MacOS nem támogatott</value>
+        <value>Az Avallama nem támogatott macOS rendszeren</value>
     </data>
-    <data name="PROCESS_ALREADY_RUNNING" xml:space="preserve">
-        <value>Az ollama már fut</value>
+    <data name="OLLAMA_ALREADY_RUNNING" xml:space="preserve">
+        <value>Az Ollama már fut</value>
     </data>
     <data name="SERVER_CONN_FAILED" xml:space="preserve">
-        <value>Nem sikerült kapcsolatot teremteni az Ollama lokális szerverrel</value>
+        <value>Nem sikerült kapcsolatot létesíteni az Ollama lokális szerverével</value>
     </data>
     <data name="UNKNOWN_ERROR" xml:space="preserve">
         <value>Ismeretlen hiba történt</value>
     </data>
-    <data name="CLOSE_ALL_PROCESSES_ERROR" xml:space="preserve">
-        <value>Több ollama processz is lett észlelve. Állítsa le az összeset, majd próbálja újra.</value>
+    <data name="MULTIPLE_INSTANCES_ERROR" xml:space="preserve">
+        <value>Több Ollama példány fut. Kérjük zárja be az összeset, majd indítsa újra az alkalmazást.</value>
+    </data>
+    <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
+        <value>Az Ollama nincs telepítve</value>
     </data>
 </root>

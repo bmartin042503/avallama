@@ -19,7 +19,7 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
     <data name="GREETING_TEXT" xml:space="preserve">
-        <value>avallama</value>
+        <value>Avallama</value>
     </data>
     <data name="GREETING_SUBTEXT" xml:space="preserve">
         <value>Run any open source LLM locally</value>
@@ -54,28 +54,31 @@
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>Conversations are not yet avaliable</value>
     </data>
-    <data name="PROCESS_STARTED" xml:space="preserve">
+    <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Ollama has been successfully started</value>
     </data>
-    <data name="PROCESS_FAILED" xml:space="preserve">
+    <data name="OLLAMA_FAILED" xml:space="preserve">
         <value>An error occurred while starting ollama: {0}</value>
     </data>
-    <data name="PROCESS_STARTING" xml:space="preserve">
-        <value>Starting ollama.. </value>
+    <data name="OLLAMA_STARTING" xml:space="preserve">
+        <value>Starting Ollama.. </value>
     </data>
     <data name="MACOS_NOT_SUPPORTED" xml:space="preserve">
-        <value>MacOS is not supported</value>
+        <value>Avallama is not supported on macOS</value>
     </data>
-    <data name="PROCESS_ALREADY_RUNNING" xml:space="preserve">
+    <data name="OLLAMA_ALREADY_RUNNING" xml:space="preserve">
         <value>Ollama is already running</value>
     </data>
     <data name="SERVER_CONN_FAILED" xml:space="preserve">
-        <value>Failed to establish connection with Ollama local server</value>
+        <value>Failed to establish connection with Ollama's local server</value>
     </data>
     <data name="UNKNOWN_ERROR" xml:space="preserve">
         <value>An unknown error occured</value>
     </data>
-    <data name="CLOSE_ALL_PROCESSES_ERROR" xml:space="preserve">
-        <value>Multiple Ollama processes detected. Please close all processes and restart the app.</value>
+    <data name="MULTIPLE_INSTANCES_ERROR" xml:space="preserve">
+        <value>Multiple instances of Ollama are running. Please close all instances and restart the app.</value>
+    </data>
+    <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
+        <value>Ollama is not installed</value>
     </data>
 </root>
