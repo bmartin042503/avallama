@@ -95,7 +95,7 @@ public partial class HomeViewModel : PageViewModel
         }
     }
 
-    private async void AddMessage(string message, double speed)
+    private void AddMessage(string message, double speed)
     {
         var gm = new GeneratedMessage(message)
         {
