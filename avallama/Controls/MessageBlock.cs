@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -55,6 +57,12 @@ public class MessageBlock : Control
     public static readonly StyledProperty<string?> UnitProperty =
         AvaloniaProperty.Register<MessageBlock, string?>("Unit");
     
+    public static readonly StyledProperty<double?> LineHeightProperty =
+        AvaloniaProperty.Register<MessageBlock, double?>("LineHeight");
+
+    public static readonly StyledProperty<IBrush?> SelectionColorProperty =
+        AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
+
     public string? Text
     {
         get => GetValue(TextProperty);
@@ -138,6 +146,18 @@ public class MessageBlock : Control
         get => GetValue(UnitProperty);
         set => SetValue(UnitProperty, value);
     }
+
+    public double? LineHeight
+    {
+        get => GetValue(LineHeightProperty);
+        set => SetValue(LineHeightProperty, value);
+    }
+
+    public IBrush? SelectionColor
+    {
+        get => GetValue(SelectionColorProperty);
+        set => SetValue(SelectionColorProperty, value);
+    }
     
     private TextLayout? _textLayout;
     private TextLayout? _subTextLayout;
@@ -147,6 +167,8 @@ public class MessageBlock : Control
 
     public TextLayout? TextLayout => _textLayout ??= CreateTextLayout();
     public TextLayout? SubTextLayout => _subTextLayout ??= CreateSubTextLayout();
+
+    private Point? _textLayoutPosition;
     
     public override void Render(DrawingContext context)
     {
@@ -181,6 +203,32 @@ public class MessageBlock : Control
     {
         TextLayout?.Draw(context, CalculateTextPosition(TextAlignment));
         SubTextLayout?.Draw(context, CalculateSubTextPosition(SubTextAlignment));
+        /* szöveg piros border render debug
+        if (TextLayout != null)
+        {
+            var heightDifference = 
+                (TextLayout.TextLines[0].Height - TextLayout.TextLines[0].Baseline);
+            for(int i = 0; i < TextLayout.TextLines.Count; i++)
+            {
+                double modifier = 0.0;
+                if (i == 0)
+                {
+                    modifier = heightDifference;
+                }
+                else if(i == TextLayout.TextLines.Count - 1)
+                {
+                    modifier = heightDifference * -1;
+                }
+                var line = TextLayout.TextLines[i];
+                var size = new Size(line.Width, line.Height);
+                var pos = new Point(
+                    _textLayoutPosition.Value.X, 
+                    _textLayoutPosition.Value.Y+(i*line.Height)+modifier
+                );
+                var rect = new Rect(pos, size);
+                context.DrawRectangle(null, new Pen(Brushes.Red, 2.0), rect);
+            }
+        }*/
     }
 
     // Létrehozza az alap szöveget (amennyiben meg van adva)
@@ -199,7 +247,8 @@ public class MessageBlock : Control
                 null,
                 FlowDirection.LeftToRight,
                 _constraint.Width,
-                _constraint.Height
+                _constraint.Height,
+                LineHeight ?? double.NaN
             );
         }
         return null;
@@ -325,7 +374,7 @@ public class MessageBlock : Control
 
         // alapértelmezett balra igazítás, a kezdő pozíciót a paddingtől adjuk meg, hogy a padding benne legyen
         var x = padding.Left;
-        var y = padding.Top; 
+        var y = padding.Top;
         
         var subTextLayoutWidth = SubTextLayout?.Width ?? 0;
 
@@ -347,7 +396,10 @@ public class MessageBlock : Control
                 break;
         }
 
-        return new Point(x, y);
+        var calculatedPosition = new Point(x, y);
+        _textLayoutPosition = calculatedPosition;
+
+        return calculatedPosition;
     }
     
     // hasonlóan az alap szöveghez itt is kiszámolja a pozíciót, de a spacinget is figyelembe veszi
@@ -405,10 +457,73 @@ public class MessageBlock : Control
             case nameof(SubTextAlignment):
             case nameof(Padding):
             case nameof(CornerRadius):
+            case nameof(LineHeight):
+            case nameof(SelectionColor):
             {
                 InvalidateTextLayouts();
                 break;
             }
         }
     }
+
+    // IBeam kurzor kiválasztása szöveg felett (no genAI)
+    // TODO: szöveg kijelölése, kimásolása, háttér kijelölés esetén
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        if (TextLayout == null || _textLayoutPosition == null) return;
+        
+        var pointerPosition = e.GetPosition(this);
+        
+        var textFromX = _textLayoutPosition.Value.X;
+        var textToX = (_textLayoutPosition.Value.X + TextLayout.Width);
+        
+        var textFromY = _textLayoutPosition.Value.Y;
+        var textToY = _textLayoutPosition.Value.Y + TextLayout.Height;
+        
+        // ha benne van a szövegdobozban
+        if (pointerPosition.X >= textFromX && pointerPosition.X <= textToX
+            && pointerPosition.Y >= textFromY && pointerPosition.Y <= textToY)
+        {
+            // pointer pozíciója a szövegdobozon belül, lekerekítve hogy ne legyenek kisebb eltérések double miatt
+            var pointerPosYInBox = Math.Round(pointerPosition.Y, 2) - Math.Round(textFromY, 2);
+            var pointerPosXInBox = Math.Round(pointerPosition.X, 2) - Math.Round(textFromX, 2);
+        
+            var textLineHeight = Math.Round(TextLayout.Height / TextLayout.TextLines.Count, 2);
+            
+            // hanyadik szövegsorban van a kurzor
+            // lefele kerekítés intre konverzióval, hogy az a sor legyen kiválasztva amihez a legközelebb van a kurzor
+            var linePointerPosY = Math.Round(pointerPosYInBox/textLineHeight, 2);
+            var linePointerIndex = (int)linePointerPosY;
+            
+            // kivonjuk az adott sor magasságából a pixelpontos magasságot
+            // de leosztjuk kettővel mert a pixelpontos magasság középen lesz, és külön kezeljük a felső és az alsó részt
+            var heightDifference = (textLineHeight - TextLayout.TextLines[linePointerIndex].Extent) / 2;
+            
+            // a kiválasztott sor kezdési és végződési pozíciója függőlegesen
+            var lineStartingPosY = textLineHeight * linePointerIndex;
+            var lineEndingPosY = textLineHeight * (linePointerIndex + 1);
+            
+            // a sorban lévő extent kezdési és végződési pozíciója függőlegesen
+            // itt figyeljük majd, hogy ebben benne van-e a cursor pointer, és ha igen akkor az szöveg
+            var extentStartingPosY = lineStartingPosY + heightDifference;
+            var extentEndingPosY = lineEndingPosY - heightDifference;
+            
+            // ha vízszintesen és függőlegesen nincs a kurzor a szövegen
+            // vízszintesen ellenőrzi úgy hogy veszi az adott sor legnagyobb szélességét és ha az alatti akkor nincs ott
+            // az alignmentet nem kell figyelni mert a szövegdoboz kerete az alignmenthez már igazodott
+            // függőlegesen pedig veszi a pixelpontos magasságot és a sormagasságot, és ha az extenten kívül van akkor
+            // nincs a szövegen
+            if (TextLayout.TextLines[linePointerIndex].Width < pointerPosXInBox 
+                || (pointerPosYInBox < extentStartingPosY || pointerPosYInBox > extentEndingPosY))
+            {
+                Cursor = new Cursor(StandardCursorType.Arrow);
+                return;
+            } 
+            Cursor = new Cursor(StandardCursorType.Ibeam);
+            return;
+        }
+        Cursor = new Cursor(StandardCursorType.Arrow);
+    }
+    
+    
 }
