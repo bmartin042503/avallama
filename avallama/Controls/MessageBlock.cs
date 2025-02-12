@@ -169,6 +169,12 @@ public class MessageBlock : Control
     public TextLayout? SubTextLayout => _subTextLayout ??= CreateSubTextLayout();
 
     private Point? _textLayoutPosition;
+
+    private bool _selectionStarted;
+    private int _pointedLineIndex = -1;
+    private Point? _selectionPointerLastPosition;
+    private Point? _selectionPointerCurrentPosition;
+    private Point? _selectionPointerStartPosition;
     
     public override void Render(DrawingContext context)
     {
@@ -177,6 +183,7 @@ public class MessageBlock : Control
         
         // Szövegek renderelése
         RenderText(context);
+        
     }
 
     private void RenderBackground(DrawingContext context)
@@ -203,32 +210,61 @@ public class MessageBlock : Control
     {
         TextLayout?.Draw(context, CalculateTextPosition(TextAlignment));
         SubTextLayout?.Draw(context, CalculateSubTextPosition(SubTextAlignment));
-        /* szöveg piros border render debug
-        if (TextLayout != null)
+        RenderTextSelection(context);
+    }
+
+    private void RenderTextSelection(DrawingContext context)
+    {
+        if (TextLayout == null || _selectionStarted == false 
+                               || _selectionPointerCurrentPosition == null
+                               || _selectionPointerLastPosition == null
+                               || _selectionPointerStartPosition == null) return;
+        var pointedLine = TextLayout.TextLines[_pointedLineIndex];
+
+        var yPositionChange = _selectionPointerCurrentPosition.Value.Y - _selectionPointerLastPosition.Value.Y;
+        var xPositionChange = _selectionPointerCurrentPosition.Value.X - _selectionPointerLastPosition.Value.X;
+        
+        SolidColorBrush selectionBrush;
+        
+        if (SelectionColor != null)
         {
-            var heightDifference = 
-                (TextLayout.TextLines[0].Height - TextLayout.TextLines[0].Baseline);
-            for(int i = 0; i < TextLayout.TextLines.Count; i++)
-            {
-                double modifier = 0.0;
-                if (i == 0)
-                {
-                    modifier = heightDifference;
-                }
-                else if(i == TextLayout.TextLines.Count - 1)
-                {
-                    modifier = heightDifference * -1;
-                }
-                var line = TextLayout.TextLines[i];
-                var size = new Size(line.Width, line.Height);
-                var pos = new Point(
-                    _textLayoutPosition.Value.X, 
-                    _textLayoutPosition.Value.Y+(i*line.Height)+modifier
-                );
-                var rect = new Rect(pos, size);
-                context.DrawRectangle(null, new Pen(Brushes.Red, 2.0), rect);
-            }
-        }*/
+            selectionBrush = (SolidColorBrush)SelectionColor;
+        }
+        else
+        {
+            selectionBrush = new SolidColorBrush(Colors.Teal);
+        }
+        
+        // a selectionBrush invertálása, hogy mindig látható legyen a szöveg a kijelölésnél
+        SolidColorBrush inverseSelectionBrush = new SolidColorBrush(
+            new Color(
+                selectionBrush.Color.A,
+                (byte)(255 - selectionBrush.Color.R),
+                (byte)(255 - selectionBrush.Color.G),
+                (byte)(255 - selectionBrush.Color.B)
+            )
+        );
+
+        var selectedCharactersLength = (int)xPositionChange;
+
+        var characterSize = new Size(
+            (pointedLine.Width / pointedLine.Length),
+            pointedLine.Extent
+        );
+        var selectionRectSize = new Size(
+            characterSize.Width * selectedCharactersLength,
+            characterSize.Height    
+        );
+
+        var selectionRectPosition = _selectionPointerStartPosition!.Value;
+
+        context.FillRectangle(
+            selectionBrush,
+            new Rect(
+                selectionRectPosition,
+                characterSize
+            )
+        );
     }
 
     // Létrehozza az alap szöveget (amennyiben meg van adva)
@@ -465,15 +501,44 @@ public class MessageBlock : Control
             }
         }
     }
-
-    // IBeam kurzor kiválasztása szöveg felett (no genAI)
-    // TODO: szöveg kijelölése, kimásolása, háttér kijelölés esetén
+    
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         if (TextLayout == null || _textLayoutPosition == null) return;
         
         var pointerPosition = e.GetPosition(this);
+
+        var isPointerOverText = IsPointerOverText(pointerPosition);
+        Cursor = isPointerOverText ? new Cursor(StandardCursorType.Ibeam) : new Cursor(StandardCursorType.Arrow);
+
+        if (!isPointerOverText || !_selectionStarted) return;
+        _selectionPointerLastPosition ??= _selectionPointerCurrentPosition;
+        _selectionPointerCurrentPosition ??= pointerPosition;
         
+        InvalidateTextLayouts();
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    { 
+        if(IsPointerOverText(e.GetPosition(this))) _selectionStarted = true;
+        _selectionPointerStartPosition = e.GetPosition(this);
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        _selectionStarted = false;
+        _selectionPointerStartPosition = null;
+    }
+
+    /// <summary>
+    /// Ellenőrzi, hogy rajta van-e a cursor pointer a szövegen
+    /// </summary>
+    /// <returns>
+    /// Egy <see cref="bool"/> érték arra vonatkozóan hogy a pointer a szövegen van-e
+    /// </returns>
+    private bool IsPointerOverText(Point pointerPosition)
+    {
+        if (TextLayout == null || _textLayoutPosition == null) return false;
         var textFromX = _textLayoutPosition.Value.X;
         var textToX = (_textLayoutPosition.Value.X + TextLayout.Width);
         
@@ -481,49 +546,43 @@ public class MessageBlock : Control
         var textToY = _textLayoutPosition.Value.Y + TextLayout.Height;
         
         // ha benne van a szövegdobozban
-        if (pointerPosition.X >= textFromX && pointerPosition.X <= textToX
-            && pointerPosition.Y >= textFromY && pointerPosition.Y <= textToY)
-        {
-            // pointer pozíciója a szövegdobozon belül, lekerekítve hogy ne legyenek kisebb eltérések double miatt
-            var pointerPosYInBox = Math.Round(pointerPosition.Y, 2) - Math.Round(textFromY, 2);
-            var pointerPosXInBox = Math.Round(pointerPosition.X, 2) - Math.Round(textFromX, 2);
+        if (!(pointerPosition.X >= textFromX) || !(pointerPosition.X <= textToX)
+                                              || !(pointerPosition.Y >= textFromY) ||
+                                              !(pointerPosition.Y <= textToY)) return false;
         
-            var textLineHeight = Math.Round(TextLayout.Height / TextLayout.TextLines.Count, 2);
+        // pointer pozíciója a szövegdobozon belül, lekerekítve hogy ne legyenek kisebb eltérések double miatt
+        var pointerPosYInBox = Math.Round(pointerPosition.Y, 2) - Math.Round(textFromY, 2);
+        var pointerPosXInBox = Math.Round(pointerPosition.X, 2) - Math.Round(textFromX, 2);
+        
+        var textLineHeight = Math.Round(TextLayout.Height / TextLayout.TextLines.Count, 2);
+
+        // hanyadik szövegsorban van a kurzor
+        // lefele kerekítés intre konverzióval, hogy az a sor legyen kiválasztva amihez a legközelebb van a kurzor
+        var linePointerPosY = Math.Round(pointerPosYInBox/textLineHeight, 2);
+        var linePointerIndex = (int)linePointerPosY;
+        
+        // az adott szöveg sorának az indexét elmentjük, amin a kurzor van
+        _pointedLineIndex = linePointerIndex;
             
-            // hanyadik szövegsorban van a kurzor
-            // lefele kerekítés intre konverzióval, hogy az a sor legyen kiválasztva amihez a legközelebb van a kurzor
-            var linePointerPosY = Math.Round(pointerPosYInBox/textLineHeight, 2);
-            var linePointerIndex = (int)linePointerPosY;
+        // kivonjuk az adott sor magasságából a pixelpontos magasságot
+        // de leosztjuk kettővel mert a pixelpontos magasság középen lesz, és külön kezeljük a felső és az alsó részt
+        var heightDifference = (textLineHeight - TextLayout.TextLines[linePointerIndex].Extent) / 2;
             
-            // kivonjuk az adott sor magasságából a pixelpontos magasságot
-            // de leosztjuk kettővel mert a pixelpontos magasság középen lesz, és külön kezeljük a felső és az alsó részt
-            var heightDifference = (textLineHeight - TextLayout.TextLines[linePointerIndex].Extent) / 2;
+        // a kiválasztott sor kezdési és végződési pozíciója függőlegesen
+        var lineStartingPosY = textLineHeight * linePointerIndex;
+        var lineEndingPosY = textLineHeight * (linePointerIndex + 1);
             
-            // a kiválasztott sor kezdési és végződési pozíciója függőlegesen
-            var lineStartingPosY = textLineHeight * linePointerIndex;
-            var lineEndingPosY = textLineHeight * (linePointerIndex + 1);
+        // a sorban lévő extent kezdési és végződési pozíciója függőlegesen
+        // itt figyeljük majd, hogy ebben benne van-e a cursor pointer, és ha igen akkor az szöveg
+        var extentStartingPosY = lineStartingPosY + heightDifference;
+        var extentEndingPosY = lineEndingPosY - heightDifference;
             
-            // a sorban lévő extent kezdési és végződési pozíciója függőlegesen
-            // itt figyeljük majd, hogy ebben benne van-e a cursor pointer, és ha igen akkor az szöveg
-            var extentStartingPosY = lineStartingPosY + heightDifference;
-            var extentEndingPosY = lineEndingPosY - heightDifference;
-            
-            // ha vízszintesen és függőlegesen nincs a kurzor a szövegen
-            // vízszintesen ellenőrzi úgy hogy veszi az adott sor legnagyobb szélességét és ha az alatti akkor nincs ott
-            // az alignmentet nem kell figyelni mert a szövegdoboz kerete az alignmenthez már igazodott
-            // függőlegesen pedig veszi a pixelpontos magasságot és a sormagasságot, és ha az extenten kívül van akkor
-            // nincs a szövegen
-            if (TextLayout.TextLines[linePointerIndex].Width < pointerPosXInBox 
-                || (pointerPosYInBox < extentStartingPosY || pointerPosYInBox > extentEndingPosY))
-            {
-                Cursor = new Cursor(StandardCursorType.Arrow);
-                return;
-            } 
-            Cursor = new Cursor(StandardCursorType.Ibeam);
-            return;
-        }
-        Cursor = new Cursor(StandardCursorType.Arrow);
+        // vízszintesen ellenőrzi úgy hogy veszi az adott sor legnagyobb szélességét és ha az alatti akkor nincs ott
+        // az alignmentet nem kell figyelni mert a szövegdoboz kerete az alignmenthez már igazodott
+        // függőlegesen pedig veszi a pixelpontos magasságot és a sormagasságot, és ha az extenten kívül van akkor nincs a szövegen
+        return !(TextLayout.TextLines[linePointerIndex].Width < pointerPosXInBox)
+               && (!(pointerPosYInBox < extentStartingPosY) && !(pointerPosYInBox > extentEndingPosY));
+
     }
-    
     
 }

@@ -91,7 +91,7 @@
             </ScrollViewer>
             <TextBox Grid.Row="1"
                 Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
-                Margin="0,30,0,10"
+                Margin="0,30,0,20"
                 Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" 
