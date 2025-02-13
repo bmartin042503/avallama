@@ -1,13 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Utilities;
 
 namespace avallama.Controls;
+
+/* TODO:
+- Egyszerre több MessageBlock-on belül is ki lehet jelölni.
+- HitTestResult által visszaadott TextPosition nem megfelelő (megnézni TextLayout implementációt és javítani rajta)
+- Controlon kívül is lehessen törölni kijelölést
+- Kattintásra folytatódik a kijelölés, és nem így kellene működnie
+- Optimalizálás, csak azokat az elemeket renderelje újra amiket kell + hatékonyabban kezelje a renderelést
+- CTRL+C, CTRL+V-s kimásolás, jobb klikk másolás fül (?), Másolás vágólapra kattintható ikon
+*/
 
 /// <summary>
 /// Szövegdoboz állítható háttérrel, két szöveggel, személyre szabott propertykkel
@@ -62,6 +74,9 @@ public class MessageBlock : Control
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
         AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
+    
+    public static readonly StyledProperty<IBrush?> SelectionInverseColorProperty =
+        AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionInverseColor");
 
     public string? Text
     {
@@ -158,6 +173,12 @@ public class MessageBlock : Control
         get => GetValue(SelectionColorProperty);
         set => SetValue(SelectionColorProperty, value);
     }
+
+    public IBrush? SelectionInverseColor
+    {
+        get => GetValue(SelectionInverseColorProperty);
+        set => SetValue(SelectionInverseColorProperty, value);
+    }
     
     private TextLayout? _textLayout;
     private TextLayout? _subTextLayout;
@@ -172,9 +193,8 @@ public class MessageBlock : Control
 
     private bool _selectionStarted;
     private int _pointedLineIndex = -1;
-    private Point? _selectionPointerLastPosition;
-    private Point? _selectionPointerCurrentPosition;
-    private Point? _selectionPointerStartPosition;
+    private int _selectionStart = 0;
+    private int _selectionEnd = 0;
     
     public override void Render(DrawingContext context)
     {
@@ -190,104 +210,121 @@ public class MessageBlock : Control
     {
         // Ha van háttér megadva akkor lerendereljük a CornerRadius alapján (ami lehet 0 is)
         var bg = Background;
-        if (bg != null)
-        {
-            var cornerRadius = CornerRadius ?? new CornerRadius(0,0,0,0);
-            context.DrawRectangle(bg, null,
-                new RoundedRect(
-                    new Rect(Bounds.Size),
-                    cornerRadius.TopLeft,
-                    cornerRadius.TopRight,
-                    cornerRadius.BottomRight,
-                    cornerRadius.BottomLeft
-                )
-            );
-        }
+        if (bg == null) return;
+        var cornerRadius = CornerRadius ?? new CornerRadius(0,0,0,0);
+        context.DrawRectangle(bg, null,
+            new RoundedRect(
+                new Rect(Bounds.Size),
+                cornerRadius.TopLeft,
+                cornerRadius.TopRight,
+                cornerRadius.BottomRight,
+                cornerRadius.BottomLeft
+            )
+        );
     }
 
     // Létrehozott TextLayoutok renderelése (amennyiben nem null)
     private void RenderText(DrawingContext context)
     {
+        // megnézzük hogy van kijelölés, és ha igen annak megfelelően rendereljük először a hátterét
+        // és ezt követően arra rárendereljük a módosított (kijelölt inverz színekkel rendelkező) szöveget
+
+        if (_selectionStart != _selectionEnd && TextLayout != null)
+        {
+            // mínusz értékek elkerülése miatt min, max
+            var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
+            var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
+        
+            var rects = TextLayout.HitTestTextRange(selectionFrom, selectionRange);
+            var selectionBrush = SelectionColor ?? new SolidColorBrush(Colors.Teal);
+            var paddingLeft = Padding?.Left ?? 0;
+            var paddingTop = Padding?.Top ?? 0;
+            var origin = new Point(paddingLeft, paddingTop);
+            using (context.PushTransform(Matrix.CreateTranslation(origin)))
+            {
+                foreach (var rect in rects)
+                {
+                    context.FillRectangle(selectionBrush, PixelRect.FromRect(rect, 1).ToRect(1));
+                }
+            }
+        }
+        
         TextLayout?.Draw(context, CalculateTextPosition(TextAlignment));
         SubTextLayout?.Draw(context, CalculateSubTextPosition(SubTextAlignment));
-        RenderTextSelection(context);
-    }
-
-    private void RenderTextSelection(DrawingContext context)
-    {
-        if (TextLayout == null || _selectionStarted == false 
-                               || _selectionPointerCurrentPosition == null
-                               || _selectionPointerLastPosition == null
-                               || _selectionPointerStartPosition == null) return;
-        var pointedLine = TextLayout.TextLines[_pointedLineIndex];
-
-        var yPositionChange = _selectionPointerCurrentPosition.Value.Y - _selectionPointerLastPosition.Value.Y;
-        var xPositionChange = _selectionPointerCurrentPosition.Value.X - _selectionPointerLastPosition.Value.X;
-        
-        SolidColorBrush selectionBrush;
-        
-        if (SelectionColor != null)
-        {
-            selectionBrush = (SolidColorBrush)SelectionColor;
-        }
-        else
-        {
-            selectionBrush = new SolidColorBrush(Colors.Teal);
-        }
-        
-        // a selectionBrush invertálása, hogy mindig látható legyen a szöveg a kijelölésnél
-        SolidColorBrush inverseSelectionBrush = new SolidColorBrush(
-            new Color(
-                selectionBrush.Color.A,
-                (byte)(255 - selectionBrush.Color.R),
-                (byte)(255 - selectionBrush.Color.G),
-                (byte)(255 - selectionBrush.Color.B)
-            )
-        );
-
-        var selectedCharactersLength = (int)xPositionChange;
-
-        var characterSize = new Size(
-            (pointedLine.Width / pointedLine.Length),
-            pointedLine.Extent
-        );
-        var selectionRectSize = new Size(
-            characterSize.Width * selectedCharactersLength,
-            characterSize.Height    
-        );
-
-        var selectionRectPosition = _selectionPointerStartPosition!.Value;
-
-        context.FillRectangle(
-            selectionBrush,
-            new Rect(
-                selectionRectPosition,
-                characterSize
-            )
-        );
     }
 
     // Létrehozza az alap szöveget (amennyiben meg van adva)
     private TextLayout? CreateTextLayout()
     {
-        if (!string.IsNullOrEmpty(Text))
+        if (string.IsNullOrEmpty(Text)) return null;
+        
+        // typeface beállítása
+        var typeface = new Typeface(FontFamily ?? FontFamily.Default);
+        
+        // egy readonly listában tároljuk hogy mettől meddig milyen stílusban legyen módosítva a szöveg
+        IReadOnlyList<ValueSpan<TextRunProperties>>? selectionStyleOverrides = null;
+        
+        // mínusz értékek elkerülése miatt min, max
+        var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
+        var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
+            
+        ImmutableSolidColorBrush selectionBrush;
+        if (SelectionColor != null)
         {
-            return new TextLayout(
-                Text,
-                new Typeface(FontFamily ?? FontFamily.Default),
-                TextFontSize ?? 12,
-                TextColor ?? Brushes.Black,
-                TextAlignment ?? Avalonia.Media.TextAlignment.Center,
-                TextWrapping.Wrap,
-                null,
-                null,
-                FlowDirection.LeftToRight,
-                _constraint.Width,
-                _constraint.Height,
-                LineHeight ?? double.NaN
+            selectionBrush = (ImmutableSolidColorBrush)SelectionColor;
+        }
+        else
+        {
+            selectionBrush = new ImmutableSolidColorBrush(Colors.Teal);
+        }
+        
+        // a selectionBrush invertálása, hogy mindig látható legyen a szöveg a kijelölésnél
+        ImmutableSolidColorBrush selectionInverseBrush;
+        if (SelectionInverseColor != null)
+        {
+            selectionInverseBrush = (ImmutableSolidColorBrush)SelectionInverseColor;
+        }
+        else
+        {
+            selectionInverseBrush = new ImmutableSolidColorBrush(
+                new Color(
+                    selectionBrush.Color.A,
+                    (byte)(255 - selectionBrush.Color.R),
+                    (byte)(255 - selectionBrush.Color.G),
+                    (byte)(255 - selectionBrush.Color.B)
+                )
             );
         }
-        return null;
+
+        if (selectionRange > 0)
+        {
+            selectionStyleOverrides =
+            [
+                // új kijelölt elem stílusok hozzáadása
+                new ValueSpan<TextRunProperties>(selectionFrom, selectionRange,
+                    new GenericTextRunProperties(typeface, null, TextFontSize ?? 12,
+                        foregroundBrush: selectionInverseBrush))
+            ];
+        }
+            
+        return new TextLayout(
+            Text,
+            typeface,
+            null,
+            TextFontSize ?? 12,
+            TextColor ?? Brushes.Black,
+            TextAlignment ?? Avalonia.Media.TextAlignment.Left,
+            TextWrapping.Wrap,
+            TextTrimming.None,
+            null,
+            FlowDirection.LeftToRight,
+            _constraint.Width,
+            _constraint.Height,
+            LineHeight ?? double.NaN,
+            0,
+            0,
+            selectionStyleOverrides
+        );
     }
 
     // Létrehozza az alsó szöveget (amennyiben meg van adva)
@@ -495,6 +532,7 @@ public class MessageBlock : Control
             case nameof(CornerRadius):
             case nameof(LineHeight):
             case nameof(SelectionColor):
+            case nameof(SelectionInverseColor):
             {
                 InvalidateTextLayouts();
                 break;
@@ -509,25 +547,42 @@ public class MessageBlock : Control
         var pointerPosition = e.GetPosition(this);
 
         var isPointerOverText = IsPointerOverText(pointerPosition);
-        Cursor = isPointerOverText ? new Cursor(StandardCursorType.Ibeam) : new Cursor(StandardCursorType.Arrow);
-
-        if (!isPointerOverText || !_selectionStarted) return;
-        _selectionPointerLastPosition ??= _selectionPointerCurrentPosition;
-        _selectionPointerCurrentPosition ??= pointerPosition;
-        
+        if (isPointerOverText)
+        {
+            Cursor = new Cursor(StandardCursorType.Ibeam);
+            if (_selectionStarted)
+            {
+                var hitTestResult = TextLayout.HitTestPoint(pointerPosition);
+                _selectionEnd = hitTestResult.TextPosition;
+            }
+        }
+        else
+        {
+            Cursor = new Cursor(StandardCursorType.Arrow);
+        }
         InvalidateTextLayouts();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
-    { 
-        if(IsPointerOverText(e.GetPosition(this))) _selectionStarted = true;
-        _selectionPointerStartPosition = e.GetPosition(this);
+    {
+        if (TextLayout == null) return;
+        if (_selectionStarted)
+        {
+            _selectionStarted = false;
+            _selectionEnd = _selectionStart;
+
+        }
+        else
+        {
+            if(IsPointerOverText(e.GetPosition(this))) _selectionStarted = true;
+            var hitTestResult = TextLayout.HitTestPoint(e.GetPosition(this));
+            _selectionStart = hitTestResult.TextPosition;
+        }
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         _selectionStarted = false;
-        _selectionPointerStartPosition = null;
     }
 
     /// <summary>
@@ -545,7 +600,7 @@ public class MessageBlock : Control
         var textFromY = _textLayoutPosition.Value.Y;
         var textToY = _textLayoutPosition.Value.Y + TextLayout.Height;
         
-        // ha benne van a szövegdobozban
+        // ha nincs benne a pointer a szövegdobozban akkor visszatér false-al
         if (!(pointerPosition.X >= textFromX) || !(pointerPosition.X <= textToX)
                                               || !(pointerPosition.Y >= textFromY) ||
                                               !(pointerPosition.Y <= textToY)) return false;
@@ -559,7 +614,7 @@ public class MessageBlock : Control
         // hanyadik szövegsorban van a kurzor
         // lefele kerekítés intre konverzióval, hogy az a sor legyen kiválasztva amihez a legközelebb van a kurzor
         var linePointerPosY = Math.Round(pointerPosYInBox/textLineHeight, 2);
-        var linePointerIndex = (int)linePointerPosY;
+        var linePointerIndex = Math.Clamp((int)linePointerPosY, 0, TextLayout.TextLines.Count - 1);
         
         // az adott szöveg sorának az indexét elmentjük, amin a kurzor van
         _pointedLineIndex = linePointerIndex;

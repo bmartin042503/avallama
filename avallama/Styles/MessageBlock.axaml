@@ -34,6 +34,7 @@
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimary}"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="SelectionColor" Value="{DynamicResource OnPrimary}"/>
     </Style>
     
     <Style Selector="controls|MessageBlock.generatedMessage">
@@ -43,6 +44,8 @@
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="SubTextFontSize" Value="10"/>
         <Setter Property="SubTextColor" Value="{DynamicResource Outline}"/>
+        <Setter Property="SelectionColor" Value="{DynamicResource Tertiary}"/>
+        <Setter Property="SelectionInverseColor" Value="{DynamicResource OnTertiary}"/>
         <Setter Property="Spacing" Value="5"/>
     </Style>
 </Styles>
