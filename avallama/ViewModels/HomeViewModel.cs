@@ -31,6 +31,10 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     private async Task SendMessage()
     {
+        /* tesztre */
+        // Messages.Add(new Message("tesztüzenet"));
+        // Messages.Add(new GeneratedMessage("Lorem ipsum dolor sit amet. Teszt szöveg, teszt szöveg. Tesztelem a kijelölést", 10.0));
+        
         if (NewMessageText.Length == 0) return;
         NewMessageText = NewMessageText.Trim();
         Messages.Add(new Message(NewMessageText));

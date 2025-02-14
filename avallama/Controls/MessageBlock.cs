@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,9 +15,7 @@ namespace avallama.Controls;
 
 /* TODO:
 - Egyszerre több MessageBlock-on belül is ki lehet jelölni.
-- HitTestResult által visszaadott TextPosition nem megfelelő (megnézni TextLayout implementációt és javítani rajta)
 - Controlon kívül is lehessen törölni kijelölést
-- Kattintásra folytatódik a kijelölés, és nem így kellene működnie
 - Optimalizálás, csak azokat az elemeket renderelje újra amiket kell + hatékonyabban kezelje a renderelést
 - CTRL+C, CTRL+V-s kimásolás, jobb klikk másolás fül (?), Másolás vágólapra kattintható ikon
 */
@@ -190,11 +189,11 @@ public class MessageBlock : Control
     public TextLayout? SubTextLayout => _subTextLayout ??= CreateSubTextLayout();
 
     private Point? _textLayoutPosition;
-
-    private bool _selectionStarted;
-    private int _pointedLineIndex = -1;
-    private int _selectionStart = 0;
-    private int _selectionEnd = 0;
+    
+    // private int _pointedLineIndex = -1;
+    private int _selectionStart;
+    private int _selectionEnd;
+    private string _selectedText = string.Empty;
     
     public override void Render(DrawingContext context)
     {
@@ -306,7 +305,8 @@ public class MessageBlock : Control
                         foregroundBrush: selectionInverseBrush))
             ];
         }
-            
+         
+        // TODO: optimalizálás
         return new TextLayout(
             Text,
             typeface,
@@ -542,7 +542,7 @@ public class MessageBlock : Control
     
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        if (TextLayout == null || _textLayoutPosition == null) return;
+        if (TextLayout == null || Text == null) return;
         
         var pointerPosition = e.GetPosition(this);
 
@@ -550,10 +550,10 @@ public class MessageBlock : Control
         if (isPointerOverText)
         {
             Cursor = new Cursor(StandardCursorType.Ibeam);
-            if (_selectionStarted)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                var hitTestResult = TextLayout.HitTestPoint(pointerPosition);
-                _selectionEnd = hitTestResult.TextPosition;
+                var textIndex = TextIndexFromPointer(e.GetPosition(this));
+                _selectionEnd = textIndex;
             }
         }
         else
@@ -565,24 +565,102 @@ public class MessageBlock : Control
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (TextLayout == null) return;
-        if (_selectionStarted)
-        {
-            _selectionStarted = false;
-            _selectionEnd = _selectionStart;
+        if (TextLayout == null || Text == null) return;
+        var textIndex = TextIndexFromPointer(e.GetPosition(this));
+        _selectionStart = textIndex;
 
-        }
-        else
+        switch (e.ClickCount)
         {
-            if(IsPointerOverText(e.GetPosition(this))) _selectionStarted = true;
-            var hitTestResult = TextLayout.HitTestPoint(e.GetPosition(this));
-            _selectionStart = hitTestResult.TextPosition;
+            case 1:
+                // TODO: e.Pointer.Capture-al valahogy megcsinálni hogy ha a controlon kívül kattintás van akkor kitörli szintén a kijelölést
+                if (_selectedText.Length > 0)
+                {
+                    ClearSelection();
+                }
+                break;
+            case 2:
+                SelectWordByIndex(textIndex);
+                break;
+            case 3:
+                SelectAllText();
+                break;
         }
+        e.Pointer.Capture(this);
+    }
+
+    // kattintott szó kiválasztása index alapján (pl. dupla klikkre)
+    private void SelectWordByIndex(int index)
+    {
+        // TODO: a legelső ilyen kiválasztásnál vmi bug miatt a legeslegelejétől veszi egy pillanatra
+        if (TextLayout == null || Text == null) return;
+        if (char.IsWhiteSpace(Text[index]) || !char.IsLetterOrDigit(Text[index])) return;
+        var wordStartIndex = 0;
+        var wordEndIndex = 0;
+        var i = index;
+        
+        // balra haladva megnézzük hogy hol kezdődik az adott szó
+        for (; i != -1 && !char.IsWhiteSpace(Text[i]) && char.IsLetterOrDigit(Text[i]); i--)
+        {
+            wordStartIndex = i;
+        }
+
+        i = index;
+        
+        // jobbra haladva megnézzük hogy hol végződik az adott szó
+        for (; i != Text.Length && !char.IsWhiteSpace(Text[i]) && char.IsLetterOrDigit(Text[i]); i++)
+        {
+            wordEndIndex = i;
+        }
+        _selectionStart = wordStartIndex;
+        _selectionEnd = wordEndIndex + 1;
+        InvalidateTextLayouts();
+        UpdateSelectedText();
+    }
+
+    private void SelectAllText()
+    {
+        if(TextLayout == null || Text == null) return;
+        _selectionStart = 0;
+        _selectionEnd = Text.Length - 1;
+        InvalidateTextLayouts();
+    }
+
+    private void ClearSelection()
+    {
+        _selectionEnd = _selectionStart;
+        _selectedText = string.Empty;
+        InvalidateTextLayouts();
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        _selectionStarted = false;
+        // a kijelölés végén mentjük el hogy ne kelljen folyamatosan frissíteni a stringet
+        UpdateSelectedText();
+    }
+
+    private void UpdateSelectedText()
+    {
+        if (TextLayout == null || Text == null) return;
+        var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
+        var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
+        _selectedText = Text.Substring(selectionFrom, selectionRange);
+    }
+
+    // kijelölés helyének meghatározása a SelectableTextBlockhoz hasonlóan
+    // a paddingokat bele kell venni ahhoz hogy visszaadja a megfelelő textPositiont
+    private int TextIndexFromPointer(Point pointerPosition)
+    {
+        if (TextLayout == null || Text == null) return -1;
+        var padding = Padding ?? new Thickness(0,0,0,0);
+        var point = pointerPosition - new Point(padding.Left, padding.Top);
+        
+        point = new Point(
+            Math.Clamp(point.X, 0, Math.Max(TextLayout.WidthIncludingTrailingWhitespace, 0)),
+            Math.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0))
+        );
+
+        var hit = TextLayout.HitTestPoint(point);
+        return hit.TextPosition;
     }
 
     /// <summary>
@@ -617,7 +695,7 @@ public class MessageBlock : Control
         var linePointerIndex = Math.Clamp((int)linePointerPosY, 0, TextLayout.TextLines.Count - 1);
         
         // az adott szöveg sorának az indexét elmentjük, amin a kurzor van
-        _pointedLineIndex = linePointerIndex;
+        // _pointedLineIndex = linePointerIndex;
             
         // kivonjuk az adott sor magasságából a pixelpontos magasságot
         // de leosztjuk kettővel mert a pixelpontos magasság középen lesz, és külön kezeljük a felső és az alsó részt
