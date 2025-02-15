@@ -18,6 +18,7 @@ namespace avallama.Services;
 public class OllamaService
 {
     private Process? _ollamaProcess;
+    private Process? _ollamaLlamaServerProcess;
     private string OllamaPath { get; set; }
     
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
@@ -57,8 +58,9 @@ public class OllamaService
             return;
         }
 
-        var processCount = OllamaProcessCount();
-        switch (processCount)
+        var ollamaProcessCount = OllamaProcessCount();
+        GetOllamaServerProcess();
+        switch (ollamaProcessCount)
         {
             case 0: break;
             case 1:
@@ -73,6 +75,11 @@ public class OllamaService
                     LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR")
                 );
                 return;
+        }
+
+        if (_ollamaLlamaServerProcess != null)
+        {
+            KillProcess(_ollamaLlamaServerProcess);
         }
 
         var startInfo = new ProcessStartInfo
@@ -124,7 +131,7 @@ public class OllamaService
         }
     }
     
-    private uint OllamaProcessCount()
+    private static uint OllamaProcessCount()
     {
         var ollamaProcesses = Process.GetProcessesByName("ollama");
         return (uint)ollamaProcesses.Length;
@@ -144,12 +151,29 @@ public class OllamaService
         }
     }
 
+    private void GetOllamaServerProcess()
+    {
+        var ollamaLlamaServerProcesses = Process.GetProcessesByName("ollama_llama_server");
+        if (ollamaLlamaServerProcesses.Length != 1)
+        {
+            //TODO hibakezeles :sob:
+            return;
+        }
+        _ollamaLlamaServerProcess = ollamaLlamaServerProcesses[0];
+    }
+
     public void Stop()
     {
-        if (_ollamaProcess == null || _ollamaProcess.HasExited) return;
-        _ollamaProcess.Kill();
-        _ollamaProcess.Dispose();
-        
+        GetOllamaServerProcess();
+        KillProcess(_ollamaLlamaServerProcess);
+        KillProcess(_ollamaProcess);
+    }
+
+    private static void KillProcess(Process? process)
+    {
+        if (process == null || process.HasExited) return;
+        process.Kill();
+        process.Dispose();
     }
 
     public async Task StartWithDelay(TimeSpan delay)
@@ -173,7 +197,7 @@ public class OllamaService
         var data = new
         {
             model = "llama3.2",
-            prompt = prompt,
+            prompt,
             stream = false
         };
 
@@ -183,7 +207,7 @@ public class OllamaService
 
         try
         {
-            HttpResponseMessage response = await client.PostAsync(url, content);
+            var response = await client.PostAsync(url, content);
 
             if (response.IsSuccessStatusCode)
             {
