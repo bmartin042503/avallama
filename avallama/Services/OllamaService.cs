@@ -59,7 +59,7 @@ public class OllamaService
         }
 
         var ollamaProcessCount = OllamaProcessCount();
-        GetOllamaServerProcess();
+        GetOllamaLlamaServerProcess();
         switch (ollamaProcessCount)
         {
             case 0: break;
@@ -151,7 +151,7 @@ public class OllamaService
         }
     }
 
-    private void GetOllamaServerProcess()
+    private void GetOllamaLlamaServerProcess()
     {
         var ollamaLlamaServerProcesses = Process.GetProcessesByName("ollama_llama_server");
         if (ollamaLlamaServerProcesses.Length != 1)
@@ -164,7 +164,7 @@ public class OllamaService
 
     public void Stop()
     {
-        GetOllamaServerProcess();
+        GetOllamaLlamaServerProcess();
         KillProcess(_ollamaLlamaServerProcess);
         KillProcess(_ollamaProcess);
     }
