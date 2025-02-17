@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,9 +12,8 @@ using Avalonia.Utilities;
 namespace avallama.Controls;
 
 /* TODO:
-- Egyszerre több MessageBlock-on belül is ki lehet jelölni.
 - Controlon kívül is lehessen törölni kijelölést
-- Optimalizálás, csak azokat az elemeket renderelje újra amiket kell + hatékonyabban kezelje a renderelést
+- Tripla kattintásnál egész bekezdés
 - CTRL+C, CTRL+V-s kimásolás, jobb klikk másolás fül (?), Másolás vágólapra kattintható ikon
 */
 
@@ -64,9 +61,6 @@ public class MessageBlock : Control
     
     public static readonly StyledProperty<double?> SpacingProperty =
         AvaloniaProperty.Register<MessageBlock, double?>("Spacing");
-    
-    public static readonly StyledProperty<string?> UnitProperty =
-        AvaloniaProperty.Register<MessageBlock, string?>("Unit");
     
     public static readonly StyledProperty<double?> LineHeightProperty =
         AvaloniaProperty.Register<MessageBlock, double?>("LineHeight");
@@ -155,12 +149,6 @@ public class MessageBlock : Control
         set => SetValue(SpacingProperty, value);
     }
 
-    public string? Unit
-    {
-        get => GetValue(UnitProperty);
-        set => SetValue(UnitProperty, value);
-    }
-
     public double? LineHeight
     {
         get => GetValue(LineHeightProperty);
@@ -185,12 +173,8 @@ public class MessageBlock : Control
     // a MaxWidth és MaxHeight megfelelő beállításához kell a Create(Sub)TextLayoutnak
     private Size _constraint = Size.Infinity;
 
-    public TextLayout? TextLayout => _textLayout ??= CreateTextLayout();
-    public TextLayout? SubTextLayout => _subTextLayout ??= CreateSubTextLayout();
-
     private Point? _textLayoutPosition;
     
-    // private int _pointedLineIndex = -1;
     private int _selectionStart;
     private int _selectionEnd;
     private string _selectedText = string.Empty;
@@ -228,13 +212,13 @@ public class MessageBlock : Control
         // megnézzük hogy van kijelölés, és ha igen annak megfelelően rendereljük először a hátterét
         // és ezt követően arra rárendereljük a módosított (kijelölt inverz színekkel rendelkező) szöveget
 
-        if (_selectionStart != _selectionEnd && TextLayout != null)
+        if (_selectionStart != _selectionEnd && _textLayout != null)
         {
             // mínusz értékek elkerülése miatt min, max
             var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
             var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
         
-            var rects = TextLayout.HitTestTextRange(selectionFrom, selectionRange);
+            var rects = _textLayout.HitTestTextRange(selectionFrom, selectionRange);
             var selectionBrush = SelectionColor ?? new SolidColorBrush(Colors.Teal);
             var paddingLeft = Padding?.Left ?? 0;
             var paddingTop = Padding?.Top ?? 0;
@@ -248,8 +232,8 @@ public class MessageBlock : Control
             }
         }
         
-        TextLayout?.Draw(context, CalculateTextPosition(TextAlignment));
-        SubTextLayout?.Draw(context, CalculateSubTextPosition(SubTextAlignment));
+        _textLayout?.Draw(context, CalculateTextPosition(TextAlignment));
+        _subTextLayout?.Draw(context, CalculateSubTextPosition(SubTextAlignment));
     }
 
     // Létrehozza az alap szöveget (amennyiben meg van adva)
@@ -305,8 +289,8 @@ public class MessageBlock : Control
                         foregroundBrush: selectionInverseBrush))
             ];
         }
-         
-        // TODO: optimalizálás
+        
+        // valószínűleg nem okoz problémát a későbbiekben, mert optimalizálva lett
         return new TextLayout(
             Text,
             typeface,
@@ -333,7 +317,7 @@ public class MessageBlock : Control
         if (!string.IsNullOrEmpty(SubText))
         {
             return new TextLayout(
-                $"{SubText} {Unit}",
+                SubText,
                 new Typeface(FontFamily ?? FontFamily.Default),
                 SubTextFontSize ?? 8,
                 SubTextColor ?? Brushes.Black,
@@ -348,13 +332,6 @@ public class MessageBlock : Control
         }
 
         return null;
-    }
-
-    // Invalidálja a vizuális elemeket és az elemek leméretezését, és egy újat kér helyette
-    private void InvalidateTextLayouts()
-    {
-        InvalidateVisual();
-        InvalidateMeasure();
     }
 
     protected override void OnMeasureInvalidated()
@@ -384,20 +361,19 @@ public class MessageBlock : Control
             _subTextLayout?.Dispose();
             _subTextLayout = null;
             _constraint = deflatedSize;
-            InvalidateArrange();
+            
+            _textLayout = CreateTextLayout();
+            _subTextLayout = CreateSubTextLayout();
+            // InvalidateArrange();
         }
         
-        // implicit létrehozza az új textlayoutokat
-        var textLayout = TextLayout;
-        var subTextLayout = SubTextLayout;
-        
         // a lehető legnagyobb szélesség a textlayoutokra nézve
-        var textLayoutWidth = textLayout == null ? 0 : textLayout.OverhangLeading + textLayout.WidthIncludingTrailingWhitespace + textLayout.OverhangTrailing;
-        var subTextLayoutWidth = subTextLayout == null ? 0 : subTextLayout.OverhangLeading + subTextLayout.WidthIncludingTrailingWhitespace + subTextLayout.OverhangTrailing;
+        var textLayoutWidth = _textLayout == null ? 0 : _textLayout.OverhangLeading + _textLayout.WidthIncludingTrailingWhitespace + _textLayout.OverhangTrailing;
+        var subTextLayoutWidth = _subTextLayout == null ? 0 : _subTextLayout.OverhangLeading + _subTextLayout.WidthIncludingTrailingWhitespace + _subTextLayout.OverhangTrailing;
 
         // a lehető legnagyobb hosszúság a textlayoutokra nézve
-        var textLayoutHeight = textLayout?.Height ?? 0;
-        var subTextLayoutHeight = subTextLayout?.Height ?? 0;
+        var textLayoutHeight = _textLayout?.Height ?? 0;
+        var subTextLayoutHeight = _subTextLayout?.Height ?? 0;
 
         double spacing;
         // ha valamelyik textlayout hiányzik a spacingot 0-ra állítjuk
@@ -426,15 +402,18 @@ public class MessageBlock : Control
         var scale = LayoutHelper.GetLayoutScale(this);
         var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
         var availableSize = finalSize.Deflate(padding);
+
+        if (_constraint != availableSize)
+        {
+            _textLayout?.Dispose();
+            _textLayout = null;
+            _subTextLayout?.Dispose();
+            _subTextLayout = null;
+            _constraint = availableSize;
         
-        _textLayout?.Dispose();
-        _textLayout = null;
-        _subTextLayout?.Dispose();
-        _subTextLayout = null;
-        _constraint = availableSize;
-        
-        _textLayout = CreateTextLayout();
-        _subTextLayout = CreateSubTextLayout();
+            _textLayout = CreateTextLayout();
+            _subTextLayout = CreateSubTextLayout();
+        }
 
         return finalSize;
     }
@@ -449,7 +428,7 @@ public class MessageBlock : Control
         var x = padding.Left;
         var y = padding.Top;
         
-        var subTextLayoutWidth = SubTextLayout?.Width ?? 0;
+        var subTextLayoutWidth = _subTextLayout?.Width ?? 0;
 
         switch (alignment)
         {
@@ -458,14 +437,14 @@ public class MessageBlock : Control
             // pl. ha 200 a control szélesség és 100 a leghosszabb textlayout akkor 50 lesz a kezdőpozíció
             // és mivel a textLayout legnagyobb szélessége még 100-at megy így ugyanúgy 50 fog kimaradni a jobb oldalt is
             case Avalonia.Media.TextAlignment.Center:
-                x = (Bounds.Width - Math.Max(subTextLayoutWidth, TextLayout!.Width)) / 2;
+                x = (Bounds.Width - Math.Max(subTextLayoutWidth, _textLayout!.Width)) / 2;
                 break;
             // vesszük a Control szélességet amiből szintén kivonjuk a leghosszabb textlayout szélességet és a jobb paddinget is
             // ugyanúgy ha 200 a bounds és 100 a textlayout maxwidth akkor abból a 100-ból még kivonjuk a paddinget ami
             // mondjuk 20, így a kezdőpozíció ebben az esetben 80 lenne
             // tehát a textlayout kezdene 80-ről bal oldalt, megy 100-at és marad 20 a paddingnek, így jobbra lesz igazítva
             case Avalonia.Media.TextAlignment.Right or Avalonia.Media.TextAlignment.End:
-                x = Bounds.Width - Math.Max(subTextLayoutWidth, TextLayout!.Width) - padding.Right;
+                x = Bounds.Width - Math.Max(subTextLayoutWidth, _textLayout!.Width) - padding.Right;
                 break;
         }
 
@@ -481,7 +460,7 @@ public class MessageBlock : Control
         var scale = LayoutHelper.GetLayoutScale(this);
         var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
         double spacing;
-        if (TextLayout == null || Spacing == null)
+        if (_textLayout == null || Spacing == null)
         {
             spacing = 0.0;
         }
@@ -490,8 +469,8 @@ public class MessageBlock : Control
             spacing = Spacing.Value;
         }
 
-        var textLayoutWidth = TextLayout?.Width ?? 0;
-        var textLayoutHeight = TextLayout?.Height ?? 0;
+        var textLayoutWidth = _textLayout?.Width ?? 0;
+        var textLayoutHeight = _textLayout?.Height ?? 0;
 
         // alapértelmezett balra igazítás
         var x = padding.Left;
@@ -500,10 +479,10 @@ public class MessageBlock : Control
         switch (alignment)
         {
             case Avalonia.Media.TextAlignment.Center:
-                x = (Bounds.Width - Math.Max(textLayoutWidth, SubTextLayout!.Width)) / 2;
+                x = (Bounds.Width - Math.Max(textLayoutWidth, _subTextLayout!.Width)) / 2;
                 break;
             case Avalonia.Media.TextAlignment.Right or Avalonia.Media.TextAlignment.End:
-                x = Bounds.Width - Math.Max(textLayoutWidth, SubTextLayout!.Width) - padding.Right;
+                x = Bounds.Width - Math.Max(textLayoutWidth, _subTextLayout!.Width) - padding.Right;
                 break;
         }
 
@@ -517,24 +496,36 @@ public class MessageBlock : Control
 
         switch (change.Property.Name)
         {
+            // Méretet érintő változások:
             case nameof(Text):
             case nameof(SubText):
-            case nameof(TextColor):
-            case nameof(SubTextColor):
-            case nameof(Background):
             case nameof(TextFontSize):
             case nameof(SubTextFontSize):
             case nameof(FontFamily):
             case nameof(Spacing):
-            case nameof(TextAlignment):
-            case nameof(SubTextAlignment):
             case nameof(Padding):
-            case nameof(CornerRadius):
             case nameof(LineHeight):
+            {
+                InvalidateMeasure();
+                break;
+            }
+                
+            // Vizuális változások:
+            case nameof(TextColor):
+            case nameof(SubTextColor):
+            case nameof(Background):
             case nameof(SelectionColor):
             case nameof(SelectionInverseColor):
+            case nameof(CornerRadius):
             {
-                InvalidateTextLayouts();
+                InvalidateVisual();
+                break;
+            }
+            
+            case nameof(TextAlignment):
+            case nameof(SubTextAlignment):
+            {
+                InvalidateArrange();
                 break;
             }
         }
@@ -542,7 +533,7 @@ public class MessageBlock : Control
     
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        if (TextLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null) return;
         
         var pointerPosition = e.GetPosition(this);
 
@@ -560,12 +551,14 @@ public class MessageBlock : Control
         {
             Cursor = new Cursor(StandardCursorType.Arrow);
         }
-        InvalidateTextLayouts();
+
+        InvalidateVisual();
+        InvalidateMeasure();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (TextLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null) return;
         var textIndex = TextIndexFromPointer(e.GetPosition(this));
         _selectionStart = textIndex;
 
@@ -592,7 +585,7 @@ public class MessageBlock : Control
     private void SelectWordByIndex(int index)
     {
         // TODO: a legelső ilyen kiválasztásnál vmi bug miatt a legeslegelejétől veszi egy pillanatra
-        if (TextLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null) return;
         if (char.IsWhiteSpace(Text[index]) || !char.IsLetterOrDigit(Text[index])) return;
         var wordStartIndex = 0;
         var wordEndIndex = 0;
@@ -613,23 +606,26 @@ public class MessageBlock : Control
         }
         _selectionStart = wordStartIndex;
         _selectionEnd = wordEndIndex + 1;
-        InvalidateTextLayouts();
+        InvalidateVisual();
+        InvalidateMeasure();
         UpdateSelectedText();
     }
 
     private void SelectAllText()
     {
-        if(TextLayout == null || Text == null) return;
+        if(_textLayout == null || Text == null) return;
         _selectionStart = 0;
-        _selectionEnd = Text.Length - 1;
-        InvalidateTextLayouts();
+        _selectionEnd = Text.Length;
+        InvalidateVisual();
+        InvalidateMeasure();
     }
 
     private void ClearSelection()
     {
         _selectionEnd = _selectionStart;
         _selectedText = string.Empty;
-        InvalidateTextLayouts();
+        InvalidateVisual();
+        InvalidateMeasure();
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -640,7 +636,7 @@ public class MessageBlock : Control
 
     private void UpdateSelectedText()
     {
-        if (TextLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null) return;
         var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
         var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
         _selectedText = Text.Substring(selectionFrom, selectionRange);
@@ -650,16 +646,16 @@ public class MessageBlock : Control
     // a paddingokat bele kell venni ahhoz hogy visszaadja a megfelelő textPositiont
     private int TextIndexFromPointer(Point pointerPosition)
     {
-        if (TextLayout == null || Text == null) return -1;
+        if (_textLayout == null || Text == null) return -1;
         var padding = Padding ?? new Thickness(0,0,0,0);
         var point = pointerPosition - new Point(padding.Left, padding.Top);
         
         point = new Point(
-            Math.Clamp(point.X, 0, Math.Max(TextLayout.WidthIncludingTrailingWhitespace, 0)),
-            Math.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0))
+            Math.Clamp(point.X, 0, Math.Max(_textLayout.WidthIncludingTrailingWhitespace, 0)),
+            Math.Clamp(point.Y, 0, Math.Max(_textLayout.Height, 0))
         );
 
-        var hit = TextLayout.HitTestPoint(point);
+        var hit = _textLayout.HitTestPoint(point);
         return hit.TextPosition;
     }
 
@@ -671,12 +667,12 @@ public class MessageBlock : Control
     /// </returns>
     private bool IsPointerOverText(Point pointerPosition)
     {
-        if (TextLayout == null || _textLayoutPosition == null) return false;
+        if (_textLayout == null || _textLayoutPosition == null) return false;
         var textFromX = _textLayoutPosition.Value.X;
-        var textToX = (_textLayoutPosition.Value.X + TextLayout.Width);
+        var textToX = (_textLayoutPosition.Value.X + _textLayout.Width);
         
         var textFromY = _textLayoutPosition.Value.Y;
-        var textToY = _textLayoutPosition.Value.Y + TextLayout.Height;
+        var textToY = _textLayoutPosition.Value.Y + _textLayout.Height;
         
         // ha nincs benne a pointer a szövegdobozban akkor visszatér false-al
         if (!(pointerPosition.X >= textFromX) || !(pointerPosition.X <= textToX)
@@ -687,19 +683,19 @@ public class MessageBlock : Control
         var pointerPosYInBox = Math.Round(pointerPosition.Y, 2) - Math.Round(textFromY, 2);
         var pointerPosXInBox = Math.Round(pointerPosition.X, 2) - Math.Round(textFromX, 2);
         
-        var textLineHeight = Math.Round(TextLayout.Height / TextLayout.TextLines.Count, 2);
+        var textLineHeight = Math.Round(_textLayout.Height / _textLayout.TextLines.Count, 2);
 
         // hanyadik szövegsorban van a kurzor
         // lefele kerekítés intre konverzióval, hogy az a sor legyen kiválasztva amihez a legközelebb van a kurzor
         var linePointerPosY = Math.Round(pointerPosYInBox/textLineHeight, 2);
-        var linePointerIndex = Math.Clamp((int)linePointerPosY, 0, TextLayout.TextLines.Count - 1);
+        var linePointerIndex = Math.Clamp((int)linePointerPosY, 0, _textLayout.TextLines.Count - 1);
         
         // az adott szöveg sorának az indexét elmentjük, amin a kurzor van
         // _pointedLineIndex = linePointerIndex;
             
         // kivonjuk az adott sor magasságából a pixelpontos magasságot
         // de leosztjuk kettővel mert a pixelpontos magasság középen lesz, és külön kezeljük a felső és az alsó részt
-        var heightDifference = (textLineHeight - TextLayout.TextLines[linePointerIndex].Extent) / 2;
+        var heightDifference = (textLineHeight - _textLayout.TextLines[linePointerIndex].Extent) / 2;
             
         // a kiválasztott sor kezdési és végződési pozíciója függőlegesen
         var lineStartingPosY = textLineHeight * linePointerIndex;
@@ -713,7 +709,7 @@ public class MessageBlock : Control
         // vízszintesen ellenőrzi úgy hogy veszi az adott sor legnagyobb szélességét és ha az alatti akkor nincs ott
         // az alignmentet nem kell figyelni mert a szövegdoboz kerete az alignmenthez már igazodott
         // függőlegesen pedig veszi a pixelpontos magasságot és a sormagasságot, és ha az extenten kívül van akkor nincs a szövegen
-        return !(TextLayout.TextLines[linePointerIndex].Width < pointerPosXInBox)
+        return !(_textLayout.TextLines[linePointerIndex].Width < pointerPosXInBox)
                && (!(pointerPosYInBox < extentStartingPosY) && !(pointerPosYInBox > extentEndingPosY));
 
     }

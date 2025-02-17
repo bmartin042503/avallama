@@ -8,7 +8,7 @@ public class GeneratedMessage : Message
     public double GenerationSpeed
     {
         get => _generationSpeed;
-        set => _generationSpeed = Math.Round(value, 2);
+        set => SetProperty(ref _generationSpeed, Math.Round(value, 2));
     }
 
     public GeneratedMessage(string content, double generationSpeed) : base(content)

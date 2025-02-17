@@ -52,12 +52,10 @@ public partial class HomeViewModel : PageViewModel
         {
             generatedMessage.Content += chunk.Response;
             
-            // TODO nem mükszik xdd, eltárolódik de nem frissül a UI
             if(chunk.EvalCount.HasValue && chunk.EvalDuration.HasValue)
             {
                 double tokensPerSecond = chunk.EvalCount.GetValueOrDefault() / (double)chunk.EvalDuration * Math.Pow(10,9);
                 generatedMessage.GenerationSpeed = tokensPerSecond;
-                Console.WriteLine(generatedMessage.GenerationSpeed);
             }
         }
     }

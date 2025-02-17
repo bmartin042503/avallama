@@ -6,6 +6,7 @@
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:localization="clr-namespace:avallama.Services"
              xmlns:controls="clr-namespace:avallama.Controls"
+             xmlns:converters="clr-namespace:avallama.Converters"
              Background="{DynamicResource Surface}"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
@@ -13,6 +14,10 @@
     <Design.DataContext>
         <viewModels:HomeViewModel />
     </Design.DataContext>
+    
+    <UserControl.Resources>
+        <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter"/>
+    </UserControl.Resources>
     
     <Grid ColumnDefinitions="*,3*" RowDefinitions="Auto,Auto,*,Auto">
         <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4"
@@ -74,9 +79,8 @@
                                 Classes="generatedMessage"
                                 Text="{Binding Content}"
                                 TextColor="{DynamicResource SurfaceContainerHighest}"
-                                SubText="{Binding GenerationSpeed}"
-                                Background="{DynamicResource OutlineVariant}"
-                                Unit="{localization:LocalizationService Key='TOKEN_SEC'}"/>
+                                SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
+                                Background="{DynamicResource OutlineVariant}"/>
                         </DataTemplate>
                         <DataTemplate DataType="models:Message">
                             <controls:MessageBlock 

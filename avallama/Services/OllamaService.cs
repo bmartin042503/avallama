@@ -212,6 +212,7 @@ public class OllamaService
         };
 
         using var client = new HttpClient();
+        // TODO: itt jön egy exception egy már meglévő ollama processre hogy elutasította a kapcsolatot
         using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);

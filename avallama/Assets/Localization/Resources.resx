@@ -81,4 +81,7 @@
     <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
         <value>Ollama is not installed</value>
     </data>
+    <data name="GENERATING_MESSAGE" xml:space="preserve">
+        <value>Generating message..</value>
+    </data>
 </root>
