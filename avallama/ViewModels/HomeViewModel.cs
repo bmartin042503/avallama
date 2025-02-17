@@ -14,7 +14,7 @@ public partial class HomeViewModel : PageViewModel
     public string LanguageLimitationWarning { get; } = String.Format(LocalizationService.GetString("ONLY_SUPPORTED_MODEL"), "llama3.2");
     public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"), 69, 420);
     
-    private OllamaService _ollamaService;
+    private readonly OllamaService _ollamaService;
     
     private ObservableCollection<Message> _messages;
 
@@ -45,10 +45,20 @@ public partial class HomeViewModel : PageViewModel
 
     private async Task AddGeneratedMessage(string prompt)
     {
-        var generatedMessage = await _ollamaService.GenerateMessage(prompt);
-        if (generatedMessage != null)
+        var generatedMessage = new GeneratedMessage("", 0.0);
+        Messages.Add(generatedMessage);
+
+        await foreach (var chunk in _ollamaService.GenerateMessage(prompt))
         {
-            Messages.Add(generatedMessage);
+            generatedMessage.Content += chunk.Response;
+            
+            // TODO nem mükszik xdd, eltárolódik de nem frissül a UI
+            if(chunk.EvalCount.HasValue && chunk.EvalDuration.HasValue)
+            {
+                double tokensPerSecond = chunk.EvalCount.GetValueOrDefault() / (double)chunk.EvalDuration * Math.Pow(10,9);
+                generatedMessage.GenerationSpeed = tokensPerSecond;
+                Console.WriteLine(generatedMessage.GenerationSpeed);
+            }
         }
     }
     

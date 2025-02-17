@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -19,12 +20,13 @@ public class OllamaService
 {
     private Process? _ollamaProcess;
     private Process? _ollamaLlamaServerProcess;
+    private static readonly HttpClient HttpClient = new HttpClient();
     private string OllamaPath { get; set; }
-    
+
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
     // ebben az esetben void visszatérésű ami ServiceStatus-t és string? típust vár
     public delegate void ServiceStatusChangedHandler(ServiceStatus status, string? message);
-    
+
     // az event létrehozása, ami ugye az előzőleg létrehozott delegate típusú, tehát a megfelelő szignatúrájú metódusok
     // tudnak feliratkozni rá
     // a MainViewModelben az OllamaServiceStatusChanged iratkozik fel ide erre az eventre
@@ -37,7 +39,7 @@ public class OllamaService
 
     private async Task Start()
     {
-        if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             OllamaPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -52,7 +54,7 @@ public class OllamaService
         {
             // thank you tim apple
             OnServiceStatusChanged(
-                ServiceStatus.Failed, 
+                ServiceStatus.Failed,
                 LocalizationService.GetString("MACOS_NOT_SUPPORTED")
             );
             return;
@@ -65,13 +67,13 @@ public class OllamaService
             case 0: break;
             case 1:
                 OnServiceStatusChanged(
-                    ServiceStatus.Running, 
+                    ServiceStatus.Running,
                     LocalizationService.GetString("OLLAMA_ALREADY_RUNNING")
                 );
                 return;
-            case >=2:
+            case >= 2:
                 OnServiceStatusChanged(
-                    ServiceStatus.Failed, 
+                    ServiceStatus.Failed,
                     LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR")
                 );
                 return;
@@ -97,7 +99,7 @@ public class OllamaService
         catch (Exception ex)
         {
             OnServiceStatusChanged(
-                ServiceStatus.Failed, 
+                ServiceStatus.Failed,
                 string.Format(LocalizationService.GetString("OLLAMA_FAILED"), ex.Message)
             );
             return;
@@ -108,12 +110,12 @@ public class OllamaService
         if (_ollamaProcess == null)
         {
             OnServiceStatusChanged(
-                ServiceStatus.Failed, 
+                ServiceStatus.Failed,
                 LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
             );
             return;
         }
-        
+
         var isServerRunning = await IsOllamaServerRunning();
         if (isServerRunning)
         {
@@ -125,12 +127,12 @@ public class OllamaService
         else
         {
             OnServiceStatusChanged(
-                ServiceStatus.Failed, 
+                ServiceStatus.Failed,
                 LocalizationService.GetString("SERVER_CONN_FAILED")
             );
         }
     }
-    
+
     private static uint OllamaProcessCount()
     {
         var ollamaProcesses = Process.GetProcessesByName("ollama");
@@ -159,6 +161,7 @@ public class OllamaService
             //TODO hibakezeles :sob:
             return;
         }
+
         _ollamaLlamaServerProcess = ollamaLlamaServerProcesses[0];
     }
 
@@ -188,49 +191,50 @@ public class OllamaService
     {
         ServiceStatusChanged?.Invoke(status, message);
     }
-    
-    public async Task<GeneratedMessage?> GenerateMessage(string prompt)
+
+    public async IAsyncEnumerable<OllamaResponse> GenerateMessage(string prompt)
     {
         const string url = "http://localhost:11434/api/generate";
-        GeneratedMessage? generatedMessage = null;
-        
+
         var data = new
         {
             model = "llama3.2",
             prompt,
-            stream = false
+            stream = true
+        };
+
+        var jsonData = JsonSerializer.Serialize(data);
+        var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+        
+        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = content
         };
 
         using var client = new HttpClient();
-        var jsonData = JsonSerializer.Serialize(data);
-        var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+        using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        using var reader = new StreamReader(stream);
 
-        try
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null)
         {
-            var response = await client.PostAsync(url, content);
-
-            if (response.IsSuccessStatusCode)
+            if (!string.IsNullOrWhiteSpace(line))
             {
-                var responseString = await response.Content.ReadAsStringAsync();
-                var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseString);
-
-                if (jsonResponse.TryGetProperty("response", out var answer) && 
-                    jsonResponse.TryGetProperty("eval_count", out var evalCount) &&
-                    jsonResponse.TryGetProperty("eval_duration", out var evalDuration))
+                OllamaResponse? json = null;
+                try
                 {
-                    generatedMessage = new GeneratedMessage(answer.GetString() ?? string.Empty, (double)evalCount.GetInt32()/evalDuration.GetInt64() * 1e9);
+                    json = JsonSerializer.Deserialize<OllamaResponse>(line);
+                }
+                catch (JsonException)
+                {
+                    // insert error handling here
+                }
+                if (json != null)
+                {
+                    yield return json;
                 }
             }
-            else
-            {
-                generatedMessage = new GeneratedMessage("An error occured, please restart the application. Error message: " + response.StatusCode, 0);
-            }
         }
-        catch (Exception ex)
-        {
-            generatedMessage = new GeneratedMessage("Exception occured, please restart the application: " + ex.Message, 0);
-        }
-
-        return generatedMessage;
     }
 }
