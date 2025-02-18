@@ -39,7 +39,7 @@
         <value>Küldj üzenetet..</value>
     </data>
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
-        <value>A model optimális futtatásához {1} GB VRAM szükséges. Jelenleg elérhető: {0} GB VRAM</value>
+        <value>Ez a model nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
     </data>
     <data name="VERSION" xml:space="preserve">
         <value>v0.1.0-alpha</value>

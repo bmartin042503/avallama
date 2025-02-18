@@ -46,7 +46,7 @@
         <value>Send a message..</value>
     </data>
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
-        <value>This model may not run optimally because you have {0} GB of VRAM, and this model requires {1} GB at least</value>
+        <value>This model is not running optimally on your system due to low avaliable VRAM</value>
     </data>
     <data name="VERSION" xml:space="preserve">
         <value>v0.1.0-alpha</value>

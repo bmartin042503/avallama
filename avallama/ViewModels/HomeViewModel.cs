@@ -12,7 +12,7 @@ namespace avallama.ViewModels;
 public partial class HomeViewModel : PageViewModel
 {
     public string LanguageLimitationWarning { get; } = String.Format(LocalizationService.GetString("ONLY_SUPPORTED_MODEL"), "llama3.2");
-    public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"), 69, 420);
+    public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"));
     
     private readonly OllamaService _ollamaService;
     private readonly PerformanceService _performanceService = new PerformanceService();
@@ -27,6 +27,11 @@ public partial class HomeViewModel : PageViewModel
 
     [ObservableProperty] 
     private string _newMessageText = string.Empty;
+
+    [ObservableProperty] private string _cpuUsage;
+    [ObservableProperty] private string _ramUsage;
+    [ObservableProperty] private string _gpuUsage;
+    [ObservableProperty] private bool _isWarningVisible;
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
@@ -57,17 +62,22 @@ public partial class HomeViewModel : PageViewModel
             {
                 double tokensPerSecond = chunk.EvalCount.GetValueOrDefault() / (double)chunk.EvalDuration * Math.Pow(10,9);
                 generatedMessage.GenerationSpeed = tokensPerSecond;
+                IsWarningVisible = tokensPerSecond < 20;
             }
         }
     }
 
-    public async void PollPerformance()
+    private async Task PollPerformance()
     {
         while (true)
         {
             await Task.Delay(50);
-            Console.WriteLine(await _performanceService.CalculateCpuUsage() + "% CPU Usage");
-            Console.WriteLine(_performanceService.CalculateMemoryUsage() + "% Memory Usage");
+            var cpu = await _performanceService.CalculateCpuUsage();
+            CpuUsage = cpu + "% CPU";
+            var ram = _performanceService.CalculateMemoryUsage();
+            RamUsage = ram + "% RAM";
+            var gpu = _performanceService.GetTotalGpuUsageWindows();
+            GpuUsage = gpu + "% GPU";
         }
     }
     

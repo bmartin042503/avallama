@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -43,17 +44,15 @@ public class PerformanceService
         return 0;
     }
 
-    private async Task<double> CalculateCpuUsageWindows()
+    private static async Task<double> CalculateCpuUsageWindows()
     {
         // enélkül sír az interpreter
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return 0;
 
-        using (var cpuCounter = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total"))
-        {
-            cpuCounter.NextValue();
-            await Task.Delay(1000);
-            return Math.Round(cpuCounter.NextValue());
-        }
+        using var cpuCounter = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
+        cpuCounter.NextValue();
+        await Task.Delay(1000);
+        return Math.Round(cpuCounter.NextValue());
     }
 
     private async Task<double> CalculateCpuUsageLinux()
@@ -71,9 +70,9 @@ public class PerformanceService
         return cpuUsage;
     }
 
-    private (double Total, double Idle) ReadCpuUsage()
+    private static (double Total, double Idle) ReadCpuUsage()
     {
-        // ngl nemtom ez mi a fasz
+        // ngl ez nemtom mi
         var cpuLine = File.ReadLines("/proc/stat").FirstOrDefault(line => line.StartsWith("cpu "));
         if (cpuLine == null) return (0, 0);
 
@@ -108,10 +107,9 @@ public class PerformanceService
         // "This call site is reachable on all platforms, PerformanceCounter is only available on Windows" waaaaaaaa
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return 0;
         
-        using (var performanceCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use"))
-        {
-            return Math.Round(performanceCounter.NextValue());
-        }
+        using var performanceCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
+        return Math.Round(performanceCounter.NextValue());
+        
     }
 
     private double CalculateMemoryUsageLinux()
@@ -134,6 +132,52 @@ public class PerformanceService
 
         float usedMemory = totalMemory - (freeMemory + buffers + cached);
         return (usedMemory / totalMemory) * 100;
+    }
+
+    public double GetTotalGpuUsageWindows()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return 0;
+        // Windows specifikus és eszméletlenül rossz megoldás
+        var gpuCounters = new List<PerformanceCounter>();
+        var category = new PerformanceCounterCategory("GPU Engine");
+        string[] instances = category.GetInstanceNames();
+
+        try
+        {
+            var relevantInstances = instances
+                .Where(name => name.Contains("engtype_3D"))
+                .ToList();
+
+            foreach (var instance in relevantInstances)
+            {
+                gpuCounters.Add(new PerformanceCounter("GPU Engine", "Utilization Percentage", instance));
+            }
+
+            foreach (var counter in gpuCounters)
+                _ = counter.NextValue();
+
+            var totalGpuUsage = gpuCounters.Sum(counter => counter.NextValue()); //???
+            if (totalGpuUsage > 100)
+            {
+                totalGpuUsage = 100;
+            }
+
+            foreach (var counter in gpuCounters)
+                counter.Dispose();
+
+            return Math.Round(totalGpuUsage);
+        }
+        catch
+        {
+            // u.n. robosztus hibakezelés
+            return 0;
+        }
+    }
+
+    public double GetTotalGpuUsageLinux()
+    {
+        // ne is álmodj róla
+        return 0;
     }
 
 
