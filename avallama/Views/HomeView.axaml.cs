@@ -10,6 +10,10 @@ public partial class HomeView : UserControl
     public HomeView()
     {
         InitializeComponent();
+        
+        // focusable, hogy ha a messageblockban van kijelölés akkor átadhassa a homeviewnak a fókuszt ha kikattintanak a messageblockból
+        // és így a kijelölés törölhető
+        Focusable = true;
     }
 
     private void ScrollViewer_OnScrollChanged(object? sender, ScrollChangedEventArgs e)

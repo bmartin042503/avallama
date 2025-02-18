@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -12,9 +14,7 @@ using Avalonia.Utilities;
 namespace avallama.Controls;
 
 /* TODO:
-- Controlon kívül is lehessen törölni kijelölést
-- Tripla kattintásnál egész bekezdés
-- CTRL+C, CTRL+V-s kimásolás, jobb klikk másolás fül (?), Másolás vágólapra kattintható ikon
+- md-s formázások
 */
 
 /// <summary>
@@ -25,49 +25,49 @@ public class MessageBlock : Control
     // AXAML Styled Propertyk
     public static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<MessageBlock, string?>("Text");
-    
+
     public static readonly StyledProperty<IBrush?> TextColorProperty =
         AvaloniaProperty.Register<MessageBlock, IBrush?>("TextColor");
-    
+
     public static readonly StyledProperty<string?> SubTextProperty =
         AvaloniaProperty.Register<MessageBlock, string?>("SubText");
-    
+
     public static readonly StyledProperty<IBrush?> SubTextColorProperty =
         AvaloniaProperty.Register<MessageBlock, IBrush?>("SubTextColor");
-    
+
     public static readonly StyledProperty<Thickness?> PaddingProperty =
         AvaloniaProperty.Register<MessageBlock, Thickness?>("Padding");
-    
+
     public static readonly StyledProperty<CornerRadius?> CornerRadiusProperty =
         AvaloniaProperty.Register<MessageBlock, CornerRadius?>("CornerRadius");
-    
+
     public static readonly StyledProperty<double?> TextFontSizeProperty =
         AvaloniaProperty.Register<MessageBlock, double?>("TextFontSize");
-    
+
     public static readonly StyledProperty<double?> SubTextFontSizeProperty =
         AvaloniaProperty.Register<MessageBlock, double?>("SubTextFontSize");
-    
+
     public static readonly StyledProperty<TextAlignment?> TextAlignmentProperty =
         AvaloniaProperty.Register<MessageBlock, TextAlignment?>("TextAlignment");
-    
+
     public static readonly StyledProperty<TextAlignment?> SubTextAlignmentProperty =
         AvaloniaProperty.Register<MessageBlock, TextAlignment?>("SubTextAlignment");
-    
+
     public static readonly StyledProperty<FontFamily?> FontFamilyProperty =
         AvaloniaProperty.Register<MessageBlock, FontFamily?>("FontFamily");
-    
+
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
         AvaloniaProperty.Register<MessageBlock, IBrush?>("Background");
-    
+
     public static readonly StyledProperty<double?> SpacingProperty =
         AvaloniaProperty.Register<MessageBlock, double?>("Spacing");
-    
+
     public static readonly StyledProperty<double?> LineHeightProperty =
         AvaloniaProperty.Register<MessageBlock, double?>("LineHeight");
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
         AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
-    
+
     public static readonly StyledProperty<IBrush?> SelectionInverseColorProperty =
         AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionInverseColor");
 
@@ -166,7 +166,7 @@ public class MessageBlock : Control
         get => GetValue(SelectionInverseColorProperty);
         set => SetValue(SelectionInverseColorProperty, value);
     }
-    
+
     private TextLayout? _textLayout;
     private TextLayout? _subTextLayout;
 
@@ -174,19 +174,27 @@ public class MessageBlock : Control
     private Size _constraint = Size.Infinity;
 
     private Point? _textLayoutPosition;
-    
+
     private int _selectionStart;
     private int _selectionEnd;
     private string _selectedText = string.Empty;
-    
+
+    public MessageBlock()
+    {
+        // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
+        Focusable = true;
+        
+        // a tunnel routingstrategies miatt tudja megkapni a keydowneventeket előbb a messageblock
+        AddHandler(KeyDownEvent, OnKeyDownHandler, RoutingStrategies.Tunnel);
+    }
+
     public override void Render(DrawingContext context)
     {
         // Háttér renderelése
         RenderBackground(context);
-        
+
         // Szövegek renderelése
         RenderText(context);
-        
     }
 
     private void RenderBackground(DrawingContext context)
@@ -194,7 +202,7 @@ public class MessageBlock : Control
         // Ha van háttér megadva akkor lerendereljük a CornerRadius alapján (ami lehet 0 is)
         var bg = Background;
         if (bg == null) return;
-        var cornerRadius = CornerRadius ?? new CornerRadius(0,0,0,0);
+        var cornerRadius = CornerRadius ?? new CornerRadius(0, 0, 0, 0);
         context.DrawRectangle(bg, null,
             new RoundedRect(
                 new Rect(Bounds.Size),
@@ -217,7 +225,7 @@ public class MessageBlock : Control
             // mínusz értékek elkerülése miatt min, max
             var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
             var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
-        
+
             var rects = _textLayout.HitTestTextRange(selectionFrom, selectionRange);
             var selectionBrush = SelectionColor ?? new SolidColorBrush(Colors.Teal);
             var paddingLeft = Padding?.Left ?? 0;
@@ -231,7 +239,7 @@ public class MessageBlock : Control
                 }
             }
         }
-        
+
         _textLayout?.Draw(context, CalculateTextPosition(TextAlignment));
         _subTextLayout?.Draw(context, CalculateSubTextPosition(SubTextAlignment));
     }
@@ -240,17 +248,17 @@ public class MessageBlock : Control
     private TextLayout? CreateTextLayout()
     {
         if (string.IsNullOrEmpty(Text)) return null;
-        
+
         // typeface beállítása
         var typeface = new Typeface(FontFamily ?? FontFamily.Default);
-        
+
         // egy readonly listában tároljuk hogy mettől meddig milyen stílusban legyen módosítva a szöveg
         IReadOnlyList<ValueSpan<TextRunProperties>>? selectionStyleOverrides = null;
-        
+
         // mínusz értékek elkerülése miatt min, max
         var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
         var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
-            
+
         ImmutableSolidColorBrush selectionBrush;
         if (SelectionColor != null)
         {
@@ -260,7 +268,7 @@ public class MessageBlock : Control
         {
             selectionBrush = new ImmutableSolidColorBrush(Colors.Teal);
         }
-        
+
         // a selectionBrush invertálása, hogy mindig látható legyen a szöveg a kijelölésnél
         ImmutableSolidColorBrush selectionInverseBrush;
         if (SelectionInverseColor != null)
@@ -289,8 +297,12 @@ public class MessageBlock : Control
                         foregroundBrush: selectionInverseBrush))
             ];
         }
-        
-        // valószínűleg nem okoz problémát a későbbiekben, mert optimalizálva lett
+
+        /* memória allokációs hibát jelzett korábban az IDE
+         * azóta optimalizálva lett, így nem valószínű, hogy gondot fog okozni
+         * de ha mégsem lenne jobb, akkor mélyebben bele kell menni a renderelésbe,
+         * és a megfelelő metódusok meghívásába: Arrange, Measure, Invalidate stb.
+         */
         return new TextLayout(
             Text,
             typeface,
@@ -348,11 +360,11 @@ public class MessageBlock : Control
     protected override Size MeasureOverride(Size availableSize)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
-        
+
         // LayoutHelperrel roundolja a Thicknesst (megadott Paddingot) magas dpi képernyőkre, a megfelelő koordinátákhoz
-        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
+        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0, 0, 0, 0), scale, scale);
         var deflatedSize = availableSize.Deflate(padding); // kiveszi az elérhető helyből a paddingot
-        
+
         // ha a constraint nem egyezik akkor reseteli a textLayoutokat és újraigazítja őket
         if (_constraint != deflatedSize)
         {
@@ -361,15 +373,20 @@ public class MessageBlock : Control
             _subTextLayout?.Dispose();
             _subTextLayout = null;
             _constraint = deflatedSize;
-            
+
             _textLayout = CreateTextLayout();
             _subTextLayout = CreateSubTextLayout();
             // InvalidateArrange();
         }
-        
+
         // a lehető legnagyobb szélesség a textlayoutokra nézve
-        var textLayoutWidth = _textLayout == null ? 0 : _textLayout.OverhangLeading + _textLayout.WidthIncludingTrailingWhitespace + _textLayout.OverhangTrailing;
-        var subTextLayoutWidth = _subTextLayout == null ? 0 : _subTextLayout.OverhangLeading + _subTextLayout.WidthIncludingTrailingWhitespace + _subTextLayout.OverhangTrailing;
+        var textLayoutWidth = _textLayout == null
+            ? 0
+            : _textLayout.OverhangLeading + _textLayout.WidthIncludingTrailingWhitespace + _textLayout.OverhangTrailing;
+        var subTextLayoutWidth = _subTextLayout == null
+            ? 0
+            : _subTextLayout.OverhangLeading + _subTextLayout.WidthIncludingTrailingWhitespace +
+              _subTextLayout.OverhangTrailing;
 
         // a lehető legnagyobb hosszúság a textlayoutokra nézve
         var textLayoutHeight = _textLayout?.Height ?? 0;
@@ -385,12 +402,13 @@ public class MessageBlock : Control
         {
             spacing = Spacing.Value;
         }
-        
+
         // max szélesség a kettő között
         var width = Math.Max(textLayoutWidth, subTextLayoutWidth);
-        
+
         // végső méret a szélességgel és a max magassággal inflatelve a paddinggel
-        var size = LayoutHelper.RoundLayoutSizeUp(new Size(width, textLayoutHeight + subTextLayoutHeight + spacing).Inflate(padding), 1, 1);
+        var size = LayoutHelper.RoundLayoutSizeUp(
+            new Size(width, textLayoutHeight + subTextLayoutHeight + spacing).Inflate(padding), 1, 1);
 
         return size;
     }
@@ -400,7 +418,7 @@ public class MessageBlock : Control
     protected override Size ArrangeOverride(Size finalSize)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
-        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
+        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0, 0, 0, 0), scale, scale);
         var availableSize = finalSize.Deflate(padding);
 
         if (_constraint != availableSize)
@@ -410,24 +428,24 @@ public class MessageBlock : Control
             _subTextLayout?.Dispose();
             _subTextLayout = null;
             _constraint = availableSize;
-        
+
             _textLayout = CreateTextLayout();
             _subTextLayout = CreateSubTextLayout();
         }
 
         return finalSize;
     }
-    
+
     // Kiszámítja az alap szöveg TextLayoutjának a pozícióját egy megadott igazítás szerint
     private Point CalculateTextPosition(TextAlignment? alignment)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
-        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
+        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0, 0, 0, 0), scale, scale);
 
         // alapértelmezett balra igazítás, a kezdő pozíciót a paddingtől adjuk meg, hogy a padding benne legyen
         var x = padding.Left;
         var y = padding.Top;
-        
+
         var subTextLayoutWidth = _subTextLayout?.Width ?? 0;
 
         switch (alignment)
@@ -453,12 +471,12 @@ public class MessageBlock : Control
 
         return calculatedPosition;
     }
-    
+
     // hasonlóan az alap szöveghez itt is kiszámolja a pozíciót, de a spacinget is figyelembe veszi
     private Point CalculateSubTextPosition(TextAlignment? alignment)
     {
         var scale = LayoutHelper.GetLayoutScale(this);
-        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0,0,0,0), scale, scale);
+        var padding = LayoutHelper.RoundLayoutThickness(Padding ?? new Thickness(0, 0, 0, 0), scale, scale);
         double spacing;
         if (_textLayout == null || Spacing == null)
         {
@@ -488,7 +506,7 @@ public class MessageBlock : Control
 
         return new Point(x, y);
     }
-    
+
     // ha bármelyik property megváltozik akkor invalidáljuk a jelenlegi textlayoutokat és újat hozunk létre
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -509,7 +527,7 @@ public class MessageBlock : Control
                 InvalidateMeasure();
                 break;
             }
-                
+
             // Vizuális változások:
             case nameof(TextColor):
             case nameof(SubTextColor):
@@ -521,7 +539,7 @@ public class MessageBlock : Control
                 InvalidateVisual();
                 break;
             }
-            
+
             case nameof(TextAlignment):
             case nameof(SubTextAlignment):
             {
@@ -530,11 +548,11 @@ public class MessageBlock : Control
             }
         }
     }
-    
+
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         if (_textLayout == null || Text == null) return;
-        
+
         var pointerPosition = e.GetPosition(this);
 
         var isPointerOverText = IsPointerOverText(pointerPosition);
@@ -565,32 +583,30 @@ public class MessageBlock : Control
         switch (e.ClickCount)
         {
             case 1:
-                // TODO: e.Pointer.Capture-al valahogy megcsinálni hogy ha a controlon kívül kattintás van akkor kitörli szintén a kijelölést
                 if (_selectedText.Length > 0)
                 {
                     ClearSelection();
                 }
+
                 break;
             case 2:
                 SelectWordByIndex(textIndex);
                 break;
-            case 3:
-                SelectAllText();
+            case >= 3:
+                SelectParagraphByIndex(textIndex);
                 break;
         }
-        e.Pointer.Capture(this);
     }
 
     // kattintott szó kiválasztása index alapján (pl. dupla klikkre)
     private void SelectWordByIndex(int index)
     {
-        // TODO: a legelső ilyen kiválasztásnál vmi bug miatt a legeslegelejétől veszi egy pillanatra
         if (_textLayout == null || Text == null) return;
         if (char.IsWhiteSpace(Text[index]) || !char.IsLetterOrDigit(Text[index])) return;
         var wordStartIndex = 0;
         var wordEndIndex = 0;
         var i = index;
-        
+
         // balra haladva megnézzük hogy hol kezdődik az adott szó
         for (; i != -1 && !char.IsWhiteSpace(Text[i]) && char.IsLetterOrDigit(Text[i]); i--)
         {
@@ -598,12 +614,13 @@ public class MessageBlock : Control
         }
 
         i = index;
-        
+
         // jobbra haladva megnézzük hogy hol végződik az adott szó
         for (; i != Text.Length && !char.IsWhiteSpace(Text[i]) && char.IsLetterOrDigit(Text[i]); i++)
         {
             wordEndIndex = i;
         }
+
         _selectionStart = wordStartIndex;
         _selectionEnd = wordEndIndex + 1;
         InvalidateVisual();
@@ -611,9 +628,41 @@ public class MessageBlock : Control
         UpdateSelectedText();
     }
 
+    private void SelectParagraphByIndex(int index)
+    {
+        if (_textLayout == null || Text == null) return;
+        const string separator = "\n";
+        int paragraphStartIndex, paragraphEndIndex;
+        var firstSeparatorPosition = Text.LastIndexOf(separator, index, StringComparison.Ordinal);
+        if (firstSeparatorPosition == -1)
+        {
+            paragraphStartIndex = 0;
+        }
+        else
+        {
+            paragraphStartIndex = firstSeparatorPosition + separator.Length;
+        }
+
+        var lastSeparatorPosition = Text.IndexOf(separator, index, StringComparison.Ordinal);
+        if (lastSeparatorPosition == -1)
+        {
+            paragraphEndIndex = Text.Length - 1;
+        }
+        else
+        {
+            paragraphEndIndex = lastSeparatorPosition;
+        }
+
+        _selectionStart = paragraphStartIndex;
+        _selectionEnd = paragraphEndIndex + 1;
+        InvalidateVisual();
+        InvalidateMeasure();
+        UpdateSelectedText();
+    }
+
     private void SelectAllText()
     {
-        if(_textLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null) return;
         _selectionStart = 0;
         _selectionEnd = Text.Length;
         InvalidateVisual();
@@ -647,16 +696,17 @@ public class MessageBlock : Control
     private int TextIndexFromPointer(Point pointerPosition)
     {
         if (_textLayout == null || Text == null) return -1;
-        var padding = Padding ?? new Thickness(0,0,0,0);
+        var padding = Padding ?? new Thickness(0, 0, 0, 0);
         var point = pointerPosition - new Point(padding.Left, padding.Top);
-        
+
         point = new Point(
             Math.Clamp(point.X, 0, Math.Max(_textLayout.WidthIncludingTrailingWhitespace, 0)),
             Math.Clamp(point.Y, 0, Math.Max(_textLayout.Height, 0))
         );
 
         var hit = _textLayout.HitTestPoint(point);
-        return hit.TextPosition;
+        // azért Text.Length és nem Text.Length - 1, mert akkor nem lehet az utolsó elemből kiindulva kijelölni
+        return Math.Clamp(hit.TextPosition, 0, Text.Length);
     }
 
     /// <summary>
@@ -670,48 +720,98 @@ public class MessageBlock : Control
         if (_textLayout == null || _textLayoutPosition == null) return false;
         var textFromX = _textLayoutPosition.Value.X;
         var textToX = (_textLayoutPosition.Value.X + _textLayout.Width);
-        
+
         var textFromY = _textLayoutPosition.Value.Y;
         var textToY = _textLayoutPosition.Value.Y + _textLayout.Height;
-        
+
         // ha nincs benne a pointer a szövegdobozban akkor visszatér false-al
         if (!(pointerPosition.X >= textFromX) || !(pointerPosition.X <= textToX)
                                               || !(pointerPosition.Y >= textFromY) ||
                                               !(pointerPosition.Y <= textToY)) return false;
-        
+
         // pointer pozíciója a szövegdobozon belül, lekerekítve hogy ne legyenek kisebb eltérések double miatt
         var pointerPosYInBox = Math.Round(pointerPosition.Y, 2) - Math.Round(textFromY, 2);
         var pointerPosXInBox = Math.Round(pointerPosition.X, 2) - Math.Round(textFromX, 2);
-        
+
         var textLineHeight = Math.Round(_textLayout.Height / _textLayout.TextLines.Count, 2);
 
         // hanyadik szövegsorban van a kurzor
         // lefele kerekítés intre konverzióval, hogy az a sor legyen kiválasztva amihez a legközelebb van a kurzor
-        var linePointerPosY = Math.Round(pointerPosYInBox/textLineHeight, 2);
+        var linePointerPosY = Math.Round(pointerPosYInBox / textLineHeight, 2);
         var linePointerIndex = Math.Clamp((int)linePointerPosY, 0, _textLayout.TextLines.Count - 1);
-        
+
         // az adott szöveg sorának az indexét elmentjük, amin a kurzor van
         // _pointedLineIndex = linePointerIndex;
-            
+
         // kivonjuk az adott sor magasságából a pixelpontos magasságot
         // de leosztjuk kettővel mert a pixelpontos magasság középen lesz, és külön kezeljük a felső és az alsó részt
         var heightDifference = (textLineHeight - _textLayout.TextLines[linePointerIndex].Extent) / 2;
-            
+
         // a kiválasztott sor kezdési és végződési pozíciója függőlegesen
         var lineStartingPosY = textLineHeight * linePointerIndex;
         var lineEndingPosY = textLineHeight * (linePointerIndex + 1);
-            
+
         // a sorban lévő extent kezdési és végződési pozíciója függőlegesen
         // itt figyeljük majd, hogy ebben benne van-e a cursor pointer, és ha igen akkor az szöveg
         var extentStartingPosY = lineStartingPosY + heightDifference;
         var extentEndingPosY = lineEndingPosY - heightDifference;
-            
+
         // vízszintesen ellenőrzi úgy hogy veszi az adott sor legnagyobb szélességét és ha az alatti akkor nincs ott
         // az alignmentet nem kell figyelni mert a szövegdoboz kerete az alignmenthez már igazodott
         // függőlegesen pedig veszi a pixelpontos magasságot és a sormagasságot, és ha az extenten kívül van akkor nincs a szövegen
         return !(_textLayout.TextLines[linePointerIndex].Width < pointerPosXInBox)
                && (!(pointerPosYInBox < extentStartingPosY) && !(pointerPosYInBox > extentEndingPosY));
+    }
 
+    protected override void OnGotFocus(GotFocusEventArgs e)
+    {
+        base.OnGotFocus(e);
+        UpdateSelectedText();
+    }
+
+    protected override void OnLostFocus(RoutedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        if (ContextFlyout is not { IsOpen: true } &&
+            ContextMenu is not { IsOpen: true })
+        {
+            ClearSelection();
+        }
+        UpdateSelectedText();
     }
     
+    // nesze neked async
+    private void OnKeyDownHandler(object? sender, KeyEventArgs e)
+    {
+        _ = OnKeyDown(sender, e);
+    }
+    
+    private async Task OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        // CTRL+A - összes szöveg kijelölése
+        if (e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            SelectAllText();
+            e.Handled = true;
+        }
+
+        // CTRL+C - szöveg kimásolása vágólapra
+        if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            UpdateSelectedText();
+            await CopyToClipboardAsync(_selectedText);
+        }
+    }
+    
+    private async Task CopyToClipboardAsync(string textToCopy)
+    {
+        if (VisualRoot is TopLevel topLevel)
+        {
+            var clipboard = topLevel.Clipboard;
+            if (clipboard == null) return;
+            await clipboard.SetTextAsync(textToCopy);
+
+        }
+    }
+
 }
