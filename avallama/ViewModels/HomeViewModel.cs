@@ -15,6 +15,7 @@ public partial class HomeViewModel : PageViewModel
     public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"), 69, 420);
     
     private readonly OllamaService _ollamaService;
+    private readonly PerformanceService _performanceService = new PerformanceService();
     
     private ObservableCollection<Message> _messages;
 
@@ -59,6 +60,16 @@ public partial class HomeViewModel : PageViewModel
             }
         }
     }
+
+    public async void PollPerformance()
+    {
+        while (true)
+        {
+            await Task.Delay(50);
+            Console.WriteLine(await _performanceService.CalculateCpuUsage() + "% CPU Usage");
+            Console.WriteLine(_performanceService.CalculateMemoryUsage() + "% Memory Usage");
+        }
+    }
     
     public HomeViewModel(OllamaService ollamaService)
     {
@@ -66,5 +77,6 @@ public partial class HomeViewModel : PageViewModel
         Page = ApplicationPage.Home;
         _messages = new ObservableCollection<Message>();
         _ollamaService = ollamaService;
+        Task.Run(PollPerformance);
     }
 }

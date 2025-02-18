@@ -75,6 +75,6 @@
         <value>Az Ollama nincs telepítve</value>
     </data>
     <data name="GENERATING_MESSAGE" xml:space="preserve">
-        <value>Generálás folyamatban..</value>
+        <value>Generálás folyamatban...</value>
     </data>
 </root>

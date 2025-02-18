@@ -55,7 +55,7 @@
                            TextWrapping="Wrap"/>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel IsVisible="False" Orientation="Horizontal" HorizontalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
                      FillColor="#FFD700"
                      Width="18"
