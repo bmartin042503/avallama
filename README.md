@@ -8,6 +8,15 @@ Avallama is a multi-platform desktop app designed to enable a user-friendly GUI 
 
 This project is currently being developed by Márk Csörgő and Martin Bartos.
 
+## Features
+
+-  **Automatic Ollama Process Management** – Ensures Ollama runs efficiently in the background without manual intervention
+-  **No Internet Required** - Avallama makes no connection with the internet, using only Ollama's local server API to pull new models
+-  **Chat with Llama3.2** – Seamlessly interact with Llama 3.2 in a user-friendly chat interface
+-  **Multi-Platform Support** – Runs on Windows and Linux with Avalonia
+-  **Lightweight and Efficient** – Designed to be minimal while providing a smooth experience
+-  **Extensible Backend** – Future updates will include support for additional LLMs, and much more customization and QOL features
+
 ## Contributions
 
 We are currently not accepting outside contributions, please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
@@ -18,9 +27,9 @@ We are currently not accepting outside contributions, please see our [Contributi
 
 ## Installation
 
-¯\_(ツ)_/¯
+¯\\\_(ツ)_/¯
 
-alternatively, compile from source
+alternatively, build from source
 
 ## License
 
