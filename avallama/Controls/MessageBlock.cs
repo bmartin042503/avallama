@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using avallama.Parsers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -178,7 +181,6 @@ public class MessageBlock : Control
     private int _selectionStart;
     private int _selectionEnd;
     private string _selectedText = string.Empty;
-
     public MessageBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
@@ -250,10 +252,12 @@ public class MessageBlock : Control
         if (string.IsNullOrEmpty(Text)) return null;
 
         // typeface beállítása
-        var typeface = new Typeface(FontFamily ?? FontFamily.Default);
+        var typeface = new Typeface(
+            FontFamily ?? FontFamily.Default
+        );
 
         // egy readonly listában tároljuk hogy mettől meddig milyen stílusban legyen módosítva a szöveg
-        IReadOnlyList<ValueSpan<TextRunProperties>>? selectionStyleOverrides = null;
+        List<ValueSpan<TextRunProperties>> styleOverrides = [];
 
         // mínusz értékek elkerülése miatt min, max
         var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
@@ -287,22 +291,49 @@ public class MessageBlock : Control
             );
         }
 
+        // ha van kijelölés akkor hozzáadjuk a kijelölő színt a kijelölt szövegekhez
         if (selectionRange > 0)
         {
-            selectionStyleOverrides =
-            [
-                // új kijelölt elem stílusok hozzáadása
+            styleOverrides.Add(
                 new ValueSpan<TextRunProperties>(selectionFrom, selectionRange,
                     new GenericTextRunProperties(typeface, null, TextFontSize ?? 12,
                         foregroundBrush: selectionInverseBrush))
-            ];
+            );
         }
 
-        /* memória allokációs hibát jelzett korábban az IDE
-         * azóta optimalizálva lett, így nem valószínű, hogy gondot fog okozni
-         * de ha mégsem lenne jobb, akkor mélyebben bele kell menni a renderelésbe,
-         * és a megfelelő metódusok meghívásába: Arrange, Measure, Invalidate stb.
-         */
+        var markdownStylePropertiesList = MarkdownParser.TextToMarkdownStyleProperties(
+            Text,
+            FontFamily ?? FontFamily.Default
+        );
+        foreach (var properties in markdownStylePropertiesList)
+        {
+            FontFamily selectedFontFamily;
+            double fontSize = 0.0;
+            if (properties.FontFamily.Equals("Default"))
+            {
+                selectedFontFamily = FontFamily ?? FontFamily.Default;
+            }
+            else
+            {
+                selectedFontFamily = properties.FontFamily;
+            }
+
+            if (properties.FontSize == 0.0) fontSize = TextFontSize ?? 12.0;
+            else fontSize = properties.FontSize;
+            var mdTypeFace = new Typeface(
+                selectedFontFamily,
+                properties.FontStyle,
+                properties.FontWeight
+            );
+            styleOverrides.Add(
+                new ValueSpan<TextRunProperties>(properties.Start, properties.Length,
+                    new GenericTextRunProperties(mdTypeFace, null, fontSize,
+                        foregroundBrush: TextColor))
+            );
+        }
+        
+        // TODO: formázások elmentése és a formázott szövegek betöltése, formázás törlése textből, csak új szövegre adjon új formázást
+        
         return new TextLayout(
             Text,
             typeface,
@@ -319,7 +350,7 @@ public class MessageBlock : Control
             LineHeight ?? double.NaN,
             0,
             0,
-            selectionStyleOverrides
+            styleOverrides
         );
     }
 
@@ -563,15 +594,14 @@ public class MessageBlock : Control
             {
                 var textIndex = TextIndexFromPointer(e.GetPosition(this));
                 _selectionEnd = textIndex;
+                InvalidateVisual();
+                InvalidateMeasure();
             }
         }
         else
         {
             Cursor = new Cursor(StandardCursorType.Arrow);
         }
-
-        InvalidateVisual();
-        InvalidateMeasure();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

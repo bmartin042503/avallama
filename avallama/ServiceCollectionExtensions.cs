@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
 
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<OllamaService>();
+        collection.AddSingleton<PerformanceService>();
 
         // PageFactoryba injektálandó delegate dependency
         // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint

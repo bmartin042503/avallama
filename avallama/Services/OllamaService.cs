@@ -20,7 +20,7 @@ public class OllamaService
 {
     private Process? _ollamaProcess;
     private Process? _ollamaLlamaServerProcess;
-    private static readonly HttpClient HttpClient = new HttpClient();
+    private static readonly HttpClient HttpClient = new();
     private string OllamaPath { get; set; }
 
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
