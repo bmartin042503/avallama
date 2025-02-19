@@ -106,28 +106,5 @@
                 </TextBox.KeyBindings>
             </TextBox>
         </Grid>
-        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,10,0,0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-            <TextBlock 
-                FontSize="11"
-                Margin="10,0,0,0"
-                Text="{Binding CpuUsage}"
-                Foreground="{DynamicResource OnSurface}"
-                HorizontalAlignment="Right"
-            ></TextBlock>
-            <TextBlock
-                FontSize="11"
-                Margin="10,0,0,0"
-                Text="{Binding RamUsage}"
-                Foreground="{DynamicResource OnSurface}"
-                HorizontalAlignment="Right"
-            ></TextBlock>
-            <TextBlock
-                FontSize="11"
-                Margin="10,0,0,0"
-                Text="{Binding GpuUsage}"
-                Foreground="{DynamicResource OnSurface}"
-                HorizontalAlignment="Right"
-            ></TextBlock>
-        </StackPanel>
     </Grid>
 </UserControl>

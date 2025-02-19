@@ -15,7 +15,6 @@ public partial class HomeViewModel : PageViewModel
     public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"));
     
     private readonly OllamaService _ollamaService;
-    private readonly PerformanceService _performanceService;
     
     private ObservableCollection<Message> _messages;
 
@@ -27,10 +26,6 @@ public partial class HomeViewModel : PageViewModel
 
     [ObservableProperty] 
     private string _newMessageText = string.Empty;
-
-    [ObservableProperty] private string _cpuUsage;
-    [ObservableProperty] private string _ramUsage;
-    [ObservableProperty] private string _gpuUsage;
     [ObservableProperty] private bool _isWarningVisible;
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
@@ -62,28 +57,12 @@ public partial class HomeViewModel : PageViewModel
             }
         }
     }
-
-    private async Task PollPerformance()
-    {
-        while (true)
-        {
-            await Task.Delay(50);
-            var cpu = await _performanceService.CalculateCpuUsage();
-            CpuUsage = cpu + "% CPU";
-            var ram = _performanceService.CalculateMemoryUsage();
-            RamUsage = ram + "% RAM";
-            var gpu = _performanceService.GetTotalGpuUsageWindows();
-            GpuUsage = gpu + "% GPU";
-        }
-    }
     
-    public HomeViewModel(OllamaService ollamaService, PerformanceService performanceService)
+    public HomeViewModel(OllamaService ollamaService)
     {
         // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
         _messages = new ObservableCollection<Message>();
         _ollamaService = ollamaService;
-        _performanceService = performanceService;
-        Task.Run(PollPerformance);
     }
 }
