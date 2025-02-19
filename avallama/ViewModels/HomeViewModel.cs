@@ -43,7 +43,6 @@ public partial class HomeViewModel : PageViewModel
         var tmp = NewMessageText;
         NewMessageText = string.Empty;
         await AddGeneratedMessage(tmp);
-        // Messages.Add(new GeneratedMessage("tesztüzenet", 5.0));
     }
 
     private async Task AddGeneratedMessage(string prompt)

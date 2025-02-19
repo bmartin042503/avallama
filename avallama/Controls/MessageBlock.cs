@@ -181,11 +181,13 @@ public class MessageBlock : Control
     private int _selectionStart;
     private int _selectionEnd;
     private string _selectedText = string.Empty;
+    private List<ValueSpan<TextRunProperties>> _markdownStyleSpans = new();
+
     public MessageBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
         Focusable = true;
-        
+
         // a tunnel routingstrategies miatt tudja megkapni a keydowneventeket előbb a messageblock
         AddHandler(KeyDownEvent, OnKeyDownHandler, RoutingStrategies.Tunnel);
     }
@@ -318,6 +320,10 @@ public class MessageBlock : Control
                 selectedFontFamily = properties.FontFamily;
             }
 
+            // kitörlés megadása, markdown formázások elmentése úgy hogy kivonja belőle a szintaxist
+            // kezdeti pozíció, végpozíció stb.
+
+
             if (properties.FontSize == 0.0) fontSize = TextFontSize ?? 12.0;
             else fontSize = properties.FontSize;
             var mdTypeFace = new Typeface(
@@ -325,15 +331,39 @@ public class MessageBlock : Control
                 properties.FontStyle,
                 properties.FontWeight
             );
-            styleOverrides.Add(
-                new ValueSpan<TextRunProperties>(properties.Start, properties.Length,
-                    new GenericTextRunProperties(mdTypeFace, null, fontSize,
-                        foregroundBrush: TextColor))
-            );
+
+            var syntaxCount = 0;
+            bool startChecked = false;
+            var startingSyntaxCount = 0;
+            // TODO: helyes kezdő/végső index minden markdown spanra 
+            for (int i = 0; i < properties.Content.Length; i++)
+            {
+                if (!Char.IsLetterOrDigit(properties.Content[i]))
+                {
+                    if (!startChecked) startingSyntaxCount++;
+                    syntaxCount++;
+                }
+                else
+                {
+                    startChecked = true;
+                }
+            }
+            
+            var styleSpan = new ValueSpan<TextRunProperties>(properties.Start - startingSyntaxCount, properties.Length - syntaxCount,
+                new GenericTextRunProperties(mdTypeFace, null, fontSize,
+                    foregroundBrush: TextColor));
+
+            styleOverrides.Add(styleSpan);
+            _markdownStyleSpans.Add(styleSpan);
         }
-        
+
+        // markdown szintaxis kitörlése a szövegből
+        Text = MarkdownParser.RemoveMarkdownFormatSyntax(Text);
+
+        if (_markdownStyleSpans.Count > 0) styleOverrides.AddRange(_markdownStyleSpans);
+
         // TODO: formázások elmentése és a formázott szövegek betöltése, formázás törlése textből, csak új szövegre adjon új formázást
-        
+
         return new TextLayout(
             Text,
             typeface,
@@ -807,15 +837,16 @@ public class MessageBlock : Control
         {
             ClearSelection();
         }
+
         UpdateSelectedText();
     }
-    
+
     // nesze neked async
     private void OnKeyDownHandler(object? sender, KeyEventArgs e)
     {
         _ = OnKeyDown(sender, e);
     }
-    
+
     private async Task OnKeyDown(object? sender, KeyEventArgs e)
     {
         // CTRL+A - összes szöveg kijelölése
@@ -832,7 +863,7 @@ public class MessageBlock : Control
             await CopyToClipboardAsync(_selectedText);
         }
     }
-    
+
     private async Task CopyToClipboardAsync(string textToCopy)
     {
         if (VisualRoot is TopLevel topLevel)
@@ -840,8 +871,6 @@ public class MessageBlock : Control
             var clipboard = topLevel.Clipboard;
             if (clipboard == null) return;
             await clipboard.SetTextAsync(textToCopy);
-
         }
     }
-
 }

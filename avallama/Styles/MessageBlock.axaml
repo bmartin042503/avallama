@@ -24,8 +24,7 @@
         <Setter Property="TextFontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="20"/>
         <Setter Property="Padding" Value="15,8"/>
-        <Setter Property="Margin" Value="0,0,0,10"/>
-        <Setter Property="MaxWidth" Value="400"/>
+        <Setter Property="Margin" Value="0,0,0,20"/>
         <Setter Property="LineHeight" Value="22"/>
     </Style>
     

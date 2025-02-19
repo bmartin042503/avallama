@@ -18,6 +18,7 @@ public partial class MainWindow : Window
             ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.NoChrome;
             ExtendClientAreaTitleBarHeightHint = 0;
         }
+        
         InitializeComponent();
     }
     
@@ -27,8 +28,8 @@ public partial class MainWindow : Window
         if (args == null) return;
         var positionY = args.GetPosition(this).Y;
         
-        // ablakot csak Y:25 alatt lehet mozgatni, vagyis az ablak felső részén
-        if(positionY < 25) BeginMoveDrag((PointerPressedEventArgs)e);
+        // ablakot csak Y:30 alatt lehet mozgatni, vagyis az ablak felső részén
+        if(positionY < 30) BeginMoveDrag((PointerPressedEventArgs)e);
     }
 
     private void CloseButton_OnClick(object? sender, RoutedEventArgs e)

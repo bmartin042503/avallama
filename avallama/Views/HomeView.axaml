@@ -17,6 +17,7 @@
     
     <UserControl.Resources>
         <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter"/>
+        <converters:ResponsiveMessageBlockSizeConverter x:Key="ResponsiveMessageBlockSizeConverter"/>
     </UserControl.Resources>
     
     <Grid ColumnDefinitions="*,3*" RowDefinitions="Auto,Auto,*,Auto">
@@ -80,7 +81,8 @@
                                 Text="{Binding Content}"
                                 TextColor="{DynamicResource SurfaceContainerHighest}"
                                 SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
-                                Background="{DynamicResource OutlineVariant}"/>
+                                Background="{DynamicResource OutlineVariant}"
+                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
                         </DataTemplate>
                         <DataTemplate DataType="models:Message">
                             <controls:MessageBlock 
@@ -88,7 +90,8 @@
                                 Classes="userMessage"
                                 Text="{Binding Content}"
                                 TextColor="{DynamicResource OnPrimary}"
-                                Background="{DynamicResource Primary}"/>
+                                Background="{DynamicResource Primary}"
+                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>

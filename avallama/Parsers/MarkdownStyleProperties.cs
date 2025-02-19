@@ -13,6 +13,13 @@ public class MarkdownStyleProperties
     private MarkdownType _markdownType;
     private int _start;
     private int _length;
+    private string _content;
+
+    public string Content
+    {
+        get => _content;
+        set => _content = value;
+    }
 
     public string FontFamily
     {
