@@ -192,19 +192,14 @@ public class OllamaService
         ServiceStatusChanged?.Invoke(status, message);
     }
 
-    public async IAsyncEnumerable<OllamaResponse> GenerateMessage(string prompt)
+    public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
     {
-        const string url = "http://localhost:11434/api/generate";
+        const string url = "http://localhost:11434/api/chat";
 
-        var data = new
-        {
-            model = "llama3.2",
-            prompt,
-            stream = true
-        };
+        ChatRequest chatRequest = new ChatRequest(messageHistory);
+        string jsonPayload = chatRequest.ToJson();
 
-        var jsonData = JsonSerializer.Serialize(data);
-        var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
         
         var request = new HttpRequestMessage(HttpMethod.Post, url)
         {

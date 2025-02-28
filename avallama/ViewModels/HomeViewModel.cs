@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
@@ -35,19 +37,20 @@ public partial class HomeViewModel : PageViewModel
         if (NewMessageText.Length == 0) return;
         NewMessageText = NewMessageText.Trim();
         Messages.Add(new Message(NewMessageText));
-        var tmp = NewMessageText;
         NewMessageText = string.Empty;
-        await AddGeneratedMessage(tmp);
+        await AddGeneratedMessage();
     }
 
-    private async Task AddGeneratedMessage(string prompt)
+    private async Task AddGeneratedMessage()
     {
         var generatedMessage = new GeneratedMessage("", 0.0);
         Messages.Add(generatedMessage);
+        List<Message> messageHistory = new List<Message>(Messages.ToList());
+        messageHistory.RemoveAt(messageHistory.Count - 1);
 
-        await foreach (var chunk in _ollamaService.GenerateMessage(prompt))
+        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
         {
-            generatedMessage.Content += chunk.Response;
+            if(chunk.Message != null) generatedMessage.Content += chunk.Message.Content;
             
             if(chunk.EvalCount.HasValue && chunk.EvalDuration.HasValue)
             {

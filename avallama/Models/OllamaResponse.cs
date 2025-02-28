@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-// Segédosztály a válaszok JSON parse-olásához
 namespace avallama.Models
 {
     public class OllamaResponse
@@ -13,8 +12,8 @@ namespace avallama.Models
         [JsonPropertyName("created_at")]
         public string? CreatedAt { get; set; }
 
-        [JsonPropertyName("response")]
-        public string? Response { get; set; }
+        [JsonPropertyName("message")]
+        public MessageContent? Message { get; set; }
 
         [JsonPropertyName("done")]
         public bool Done { get; set; }
@@ -39,5 +38,17 @@ namespace avallama.Models
 
         [JsonPropertyName("eval_duration")]
         public long? EvalDuration { get; set; }
+    }
+
+    public class MessageContent
+    {
+        [JsonPropertyName("role")]
+        public string? Role { get; set; }
+
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
+
+        [JsonPropertyName("images")]
+        public object? Images { get; set; } // majd a jövőben ha kép tamogatást kap az app akkor ez kellhet
     }
 }
