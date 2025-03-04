@@ -66,7 +66,7 @@ public partial class HomeViewModel : PageViewModel
     private async Task CheckModelDownload()
     {
         var downloaded = await _ollamaService.IsModelDownloaded();
-        if (downloaded)
+        if (!downloaded)
         {
             IsNotDownloadedVisible = true;
         }
