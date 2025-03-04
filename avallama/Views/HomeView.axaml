@@ -35,11 +35,11 @@
         <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto,*">
             <ComboBox Grid.Column="1"
                       HorizontalAlignment="Center"
-                      Width="150"
+                      Width="175"
                       Margin="0,20,0,10"
-                      SelectedIndex="0"
+                      ItemsSource="{Binding AvailableModels}"
+                      SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
                       IsEnabled="False">
-                <ComboBoxItem Content="llama3.2" />
             </ComboBox>
         </Grid>
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Margin="25,0">

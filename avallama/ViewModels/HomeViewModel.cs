@@ -26,11 +26,19 @@ public partial class HomeViewModel : PageViewModel
         get => _messages;
         set => SetProperty(ref _messages, value);
     }
+    
+    private ObservableCollection<string> _availableModels;
+    public ObservableCollection<string> AvailableModels
+    {
+        get => _availableModels;
+        set => SetProperty(ref _availableModels, value);
+    }
 
     [ObservableProperty] 
     private string _newMessageText = string.Empty;
     [ObservableProperty] private bool _isWarningVisible;
     [ObservableProperty] private bool _isNotDownloadedVisible;
+    [ObservableProperty] private string _currentlySelectedModel;
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
@@ -63,6 +71,13 @@ public partial class HomeViewModel : PageViewModel
         }
     }
 
+    private async Task GetModelInfo(string modelName)
+    {
+        //ezt majd jobban kéne
+        AvailableModels[AvailableModels.IndexOf(modelName)] = modelName + ":" + await _ollamaService.GetModelParamNum(modelName);
+        CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName;
+    }
+
     private async Task CheckModelDownload()
     {
         var downloaded = await _ollamaService.IsModelDownloaded();
@@ -76,8 +91,15 @@ public partial class HomeViewModel : PageViewModel
     {
         // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
+        
         _messages = new ObservableCollection<Message>();
+        _availableModels = new ObservableCollection<string> { "llama3.2", LocalizationService.GetString("LOADING_MODELS")};
         _ollamaService = ollamaService;
+        
+        CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
+
+        GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
+        
         //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
     }

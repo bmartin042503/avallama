@@ -80,4 +80,7 @@
     <data name="NOT_DOWNLOADED_WARNING" xml:space="preserve">
         <value>A model nincs letöltve</value>
     </data>
+    <data name="LOADING_MODELS" xml:space="preserve">
+        <value>Modelek betöltése...</value>
+    </data>
 </root>

@@ -15,13 +15,11 @@ using avallama.Models;
 
 namespace avallama.Services;
 
-// TODO: ollama-llama-server process megfelelő kezelése (különben csemegézni fog a memóriából)
-// TODO: 'Ollama' és 'ollama' process közti különbség (?) esetlegesen 'Ollama' ellenőrzése/bezárása
+// TODO: Letesztelni memóriakezelést (meg linuxra és macos-re megvalósítani xd)
 
 public class OllamaService
 {
     private Process? _ollamaProcess;
-    private Process? _ollamaLlamaServerProcess;
     private static readonly HttpClient HttpClient = new();
     private string OllamaPath { get; set; }
 
@@ -54,7 +52,7 @@ public class OllamaService
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            // thank you tim apple
+            // thank you tim apple, bmartin pls fix
             OnServiceStatusChanged(
                 ServiceStatus.Failed,
                 LocalizationService.GetString("MACOS_NOT_SUPPORTED")
@@ -63,7 +61,6 @@ public class OllamaService
         }
 
         var ollamaProcessCount = OllamaProcessCount();
-        GetOllamaLlamaServerProcess();
         switch (ollamaProcessCount)
         {
             case 0: break;
@@ -80,12 +77,7 @@ public class OllamaService
                 );
                 return;
         }
-
-        if (_ollamaLlamaServerProcess != null)
-        {
-            KillProcess(_ollamaLlamaServerProcess);
-        }
-
+        
         var startInfo = new ProcessStartInfo
         {
             FileName = OllamaPath,
@@ -155,23 +147,13 @@ public class OllamaService
         }
     }
 
-    private void GetOllamaLlamaServerProcess()
-    {
-        var ollamaLlamaServerProcesses = Process.GetProcessesByName("ollama_llama_server");
-        if (ollamaLlamaServerProcesses.Length != 1)
-        {
-            //TODO hibakezeles :sob:
-            return;
-        }
-
-        _ollamaLlamaServerProcess = ollamaLlamaServerProcesses[0];
-    }
-
     public void Stop()
     {
-        GetOllamaLlamaServerProcess();
-        KillProcess(_ollamaLlamaServerProcess);
-        KillProcess(_ollamaProcess);
+        var ollamaProcessList = Process.GetProcessesByName("ollama");
+        foreach (var process in ollamaProcessList)
+        {
+            KillProcess(process);
+        }
     }
 
     private static void KillProcess(Process? process)
@@ -204,12 +186,31 @@ public class OllamaService
         return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest") ?? false;
     }
 
+    public async Task<string> GetModelParamNum(string modelName)
+    {
+        const string url = "http://localhost:11434/api/show";
+
+        var payload = new
+        {
+            model = modelName
+        };
+        
+        var jsonPayload = JsonSerializer.Serialize(payload);
+        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        
+        using var client = new HttpClient();
+        var response = await client.PostAsync(url, content);
+        var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
+        return json?["details"]?["parameter_size"]?.ToString().ToLower() ?? string.Empty;
+        
+    }
+
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
     {
         const string url = "http://localhost:11434/api/chat";
 
-        ChatRequest chatRequest = new ChatRequest(messageHistory);
-        string jsonPayload = chatRequest.ToJson();
+        var chatRequest = new ChatRequest(messageHistory);
+        var jsonPayload = chatRequest.ToJson();
 
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
         
@@ -220,6 +221,7 @@ public class OllamaService
 
         using var client = new HttpClient();
         // TODO: itt jön egy exception egy már meglévő ollama processre hogy elutasította a kapcsolatot
+        // és?
         using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
