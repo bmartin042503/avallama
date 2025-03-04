@@ -84,4 +84,7 @@
     <data name="GENERATING_MESSAGE" xml:space="preserve">
         <value>Generating response...</value>
     </data>
+    <data name="NOT_DOWNLOADED_WARNING" xml:space="preserve">
+        <value>Model is not downloaded</value>
+    </data>
 </root>

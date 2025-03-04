@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using avallama.Models;
 
 namespace avallama.Services;
@@ -190,6 +192,16 @@ public class OllamaService
     private void OnServiceStatusChanged(ServiceStatus status, string? message = null)
     {
         ServiceStatusChanged?.Invoke(status, message);
+    }
+
+    public async Task<bool> IsModelDownloaded()
+    {
+        const string url = "http://localhost:11434/api/tags";
+        
+        using var client = new HttpClient();
+        var response = await client.GetAsync(url);
+        var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
+        return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest") ?? false;
     }
 
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)

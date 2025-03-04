@@ -6,6 +6,7 @@ namespace avallama.Models;
 
 public class ChatRequest
 {
+    //igazabol itt lehetne dinamikusan beallitani a modellt majd
     [JsonPropertyName("model")]
     public string Model { get; set; } = "llama3.2";
 

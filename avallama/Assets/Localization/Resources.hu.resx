@@ -77,4 +77,7 @@
     <data name="GENERATING_MESSAGE" xml:space="preserve">
         <value>Generálás folyamatban...</value>
     </data>
+    <data name="NOT_DOWNLOADED_WARNING" xml:space="preserve">
+        <value>A model nincs letöltve</value>
+    </data>
 </root>

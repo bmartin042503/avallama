@@ -15,6 +15,7 @@ public partial class HomeViewModel : PageViewModel
 {
     public string LanguageLimitationWarning { get; } = String.Format(LocalizationService.GetString("ONLY_SUPPORTED_MODEL"), "llama3.2");
     public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"));
+    public string NotDownloadedWarning { get; } = String.Format(LocalizationService.GetString("NOT_DOWNLOADED_WARNING"));
     
     private readonly OllamaService _ollamaService;
     
@@ -29,6 +30,7 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] 
     private string _newMessageText = string.Empty;
     [ObservableProperty] private bool _isWarningVisible;
+    [ObservableProperty] private bool _isNotDownloadedVisible;
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
@@ -60,6 +62,15 @@ public partial class HomeViewModel : PageViewModel
             }
         }
     }
+
+    private async Task CheckModelDownload()
+    {
+        var downloaded = await _ollamaService.IsModelDownloaded();
+        if (downloaded)
+        {
+            IsNotDownloadedVisible = true;
+        }
+    }
     
     public HomeViewModel(OllamaService ollamaService)
     {
@@ -67,5 +78,7 @@ public partial class HomeViewModel : PageViewModel
         Page = ApplicationPage.Home;
         _messages = new ObservableCollection<Message>();
         _ollamaService = ollamaService;
+        //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
+        CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
     }
 }
