@@ -63,9 +63,6 @@
     <data name="OLLAMA_STARTING" xml:space="preserve">
         <value>Starting Ollama.. </value>
     </data>
-    <data name="MACOS_NOT_SUPPORTED" xml:space="preserve">
-        <value>Avallama is not supported on macOS</value>
-    </data>
     <data name="OLLAMA_ALREADY_RUNNING" xml:space="preserve">
         <value>Ollama is already running</value>
     </data>

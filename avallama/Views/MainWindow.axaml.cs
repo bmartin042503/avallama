@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,15 +12,34 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        // Title bar eltüntetése (csak Windowson)
+        InitializeComponent();
+        
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
+            // Windows specifikus beállítások
+            
+            // Title bar eltüntetése
             ExtendClientAreaToDecorationsHint = true;
             ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.NoChrome;
             ExtendClientAreaTitleBarHeightHint = 0;
         }
-        
-        InitializeComponent();
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            // Linux és macOS specifikus beállítások
+            
+            // Canvas elem Grid-re cserélése render hibák elkerülése miatt
+            ReplaceCanvasWithGrid();
+        }
+    }
+
+    private void ReplaceCanvasWithGrid()
+    {
+        // új grid, ami a Window contentje lesz, egyetlen gyermeke pedig a MainWindow.axamlben lévő ContentControl
+        var grid = new Grid();
+        var contentControl = MainCanvas.Children[1];
+        MainCanvas.Children.Clear();
+        grid.Children.Add(contentControl);
+        Content = grid;
     }
     
     private void Window_PointerPressed(object? sender, RoutedEventArgs e)

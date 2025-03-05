@@ -46,24 +46,15 @@ public class OllamaService
                 @"Programs\Ollama\ollama"
             );
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
+            // mac-en is ugyanaz a path
             OllamaPath = @"/usr/local/bin/ollama";
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            // thank you tim apple, bmartin pls fix
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("MACOS_NOT_SUPPORTED")
-            );
-            return;
         }
 
         var ollamaProcessCount = OllamaProcessCount();
         switch (ollamaProcessCount)
         {
-            case 0: break;
             case 1:
                 OnServiceStatusChanged(
                     ServiceStatus.Running,
@@ -120,10 +111,37 @@ public class OllamaService
         }
         else
         {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("SERVER_CONN_FAILED")
-            );
+            // 10 alkalommal késleltetéssel ellenőrzi a szerver elérhetőségét
+            // ez azért kell mert macen pl. hamarabb ellenőrzi az ollama szervert mint hogy az elindulna
+            // és emiatt instant errort ad vissza annak ellenére hogy később elindul a 11434-es porton a szerver
+
+            const uint maxServerCheck = 10;
+            uint serverCheck = 0;
+            var serverAvailable = false;
+            while (!serverAvailable && serverCheck != maxServerCheck)
+            {
+                serverAvailable = await IsOllamaServerRunning();
+                serverCheck++;
+                if (!serverAvailable)
+                {
+                    await Task.Delay(1250);
+                    continue;
+                }
+                
+                OnServiceStatusChanged(
+                    ServiceStatus.Running,
+                    LocalizationService.GetString("OLLAMA_STARTED")
+                );
+                return;
+            }
+
+            if (!serverAvailable)
+            {
+                OnServiceStatusChanged(
+                    ServiceStatus.Failed,
+                    LocalizationService.GetString("SERVER_CONN_FAILED")
+                );
+            }
         }
     }
 
@@ -222,6 +240,10 @@ public class OllamaService
         using var client = new HttpClient();
         // TODO: itt jön egy exception egy már meglévő ollama processre hogy elutasította a kapcsolatot
         // és?
+        /* ami azt jelenti hogy amikor egyszer elindítottam és generáltam üzenetet majd mégegyszer elindítottam
+         * mindig jött az error a generálásnál hogy már van kapcsolat létesítve a 11434-esen, ez windowson volt
+         * de valszeg ez a hiba akkor már eltűnt, szóval kitörölheted ezt idk xd
+         */
         using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);

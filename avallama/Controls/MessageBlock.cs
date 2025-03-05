@@ -70,9 +70,7 @@ public class MessageBlock : Control
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
         AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
-
-    public static readonly StyledProperty<IBrush?> SelectionInverseColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionInverseColor");
+    
 
     public string? Text
     {
@@ -164,12 +162,6 @@ public class MessageBlock : Control
         set => SetValue(SelectionColorProperty, value);
     }
 
-    public IBrush? SelectionInverseColor
-    {
-        get => GetValue(SelectionInverseColorProperty);
-        set => SetValue(SelectionInverseColorProperty, value);
-    }
-
     private TextLayout? _textLayout;
     private TextLayout? _subTextLayout;
 
@@ -181,7 +173,6 @@ public class MessageBlock : Control
     private int _selectionStart;
     private int _selectionEnd;
     private string _selectedText = string.Empty;
-    private List<ValueSpan<TextRunProperties>> _markdownStyleSpans = new();
 
     public MessageBlock()
     {
@@ -231,7 +222,11 @@ public class MessageBlock : Control
             var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
 
             var rects = _textLayout.HitTestTextRange(selectionFrom, selectionRange);
-            var selectionBrush = SelectionColor ?? new SolidColorBrush(Colors.Teal);
+            var selectedColor = (SelectionColor as ImmutableSolidColorBrush)?.Color ?? Colors.Teal;
+            var selectionBrush = new ImmutableSolidColorBrush(
+                selectedColor,
+                0.5
+            );
             var paddingLeft = Padding?.Left ?? 0;
             var paddingTop = Padding?.Top ?? 0;
             var origin = new Point(paddingLeft, paddingTop);
@@ -257,113 +252,7 @@ public class MessageBlock : Control
         var typeface = new Typeface(
             FontFamily ?? FontFamily.Default
         );
-
-        // egy readonly listában tároljuk hogy mettől meddig milyen stílusban legyen módosítva a szöveg
-        List<ValueSpan<TextRunProperties>> styleOverrides = [];
-
-        // mínusz értékek elkerülése miatt min, max
-        var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
-        var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
-
-        ImmutableSolidColorBrush selectionBrush;
-        if (SelectionColor != null)
-        {
-            selectionBrush = (ImmutableSolidColorBrush)SelectionColor;
-        }
-        else
-        {
-            selectionBrush = new ImmutableSolidColorBrush(Colors.Teal);
-        }
-
-        // a selectionBrush invertálása, hogy mindig látható legyen a szöveg a kijelölésnél
-        ImmutableSolidColorBrush selectionInverseBrush;
-        if (SelectionInverseColor != null)
-        {
-            selectionInverseBrush = (ImmutableSolidColorBrush)SelectionInverseColor;
-        }
-        else
-        {
-            selectionInverseBrush = new ImmutableSolidColorBrush(
-                new Color(
-                    selectionBrush.Color.A,
-                    (byte)(255 - selectionBrush.Color.R),
-                    (byte)(255 - selectionBrush.Color.G),
-                    (byte)(255 - selectionBrush.Color.B)
-                )
-            );
-        }
-
-        // ha van kijelölés akkor hozzáadjuk a kijelölő színt a kijelölt szövegekhez
-        if (selectionRange > 0)
-        {
-            styleOverrides.Add(
-                new ValueSpan<TextRunProperties>(selectionFrom, selectionRange,
-                    new GenericTextRunProperties(typeface, null, TextFontSize ?? 12,
-                        foregroundBrush: selectionInverseBrush))
-            );
-        }
-
-        var markdownStylePropertiesList = MarkdownParser.TextToMarkdownStyleProperties(
-            Text,
-            FontFamily ?? FontFamily.Default
-        );
-        foreach (var properties in markdownStylePropertiesList)
-        {
-            FontFamily selectedFontFamily;
-            double fontSize = 0.0;
-            if (properties.FontFamily.Equals("Default"))
-            {
-                selectedFontFamily = FontFamily ?? FontFamily.Default;
-            }
-            else
-            {
-                selectedFontFamily = properties.FontFamily;
-            }
-
-            // kitörlés megadása, markdown formázások elmentése úgy hogy kivonja belőle a szintaxist
-            // kezdeti pozíció, végpozíció stb.
-
-
-            if (properties.FontSize == 0.0) fontSize = TextFontSize ?? 12.0;
-            else fontSize = properties.FontSize;
-            var mdTypeFace = new Typeface(
-                selectedFontFamily,
-                properties.FontStyle,
-                properties.FontWeight
-            );
-
-            var syntaxCount = 0;
-            bool startChecked = false;
-            var startingSyntaxCount = 0;
-            // TODO: helyes kezdő/végső index minden markdown spanra 
-            for (int i = 0; i < properties.Content.Length; i++)
-            {
-                if (!Char.IsLetterOrDigit(properties.Content[i]))
-                {
-                    if (!startChecked) startingSyntaxCount++;
-                    syntaxCount++;
-                }
-                else
-                {
-                    startChecked = true;
-                }
-            }
-            
-            var styleSpan = new ValueSpan<TextRunProperties>(properties.Start - startingSyntaxCount, properties.Length - syntaxCount,
-                new GenericTextRunProperties(mdTypeFace, null, fontSize,
-                    foregroundBrush: TextColor));
-
-            styleOverrides.Add(styleSpan);
-            _markdownStyleSpans.Add(styleSpan);
-        }
-
-        // markdown szintaxis kitörlése a szövegből
-        Text = MarkdownParser.RemoveMarkdownFormatSyntax(Text);
-
-        if (_markdownStyleSpans.Count > 0) styleOverrides.AddRange(_markdownStyleSpans);
-
-        // TODO: formázások elmentése és a formázott szövegek betöltése, formázás törlése textből, csak új szövegre adjon új formázást
-
+        
         return new TextLayout(
             Text,
             typeface,
@@ -377,10 +266,7 @@ public class MessageBlock : Control
             FlowDirection.LeftToRight,
             _constraint.Width,
             _constraint.Height,
-            LineHeight ?? double.NaN,
-            0,
-            0,
-            styleOverrides
+            LineHeight ?? double.NaN
         );
     }
 
@@ -594,7 +480,6 @@ public class MessageBlock : Control
             case nameof(SubTextColor):
             case nameof(Background):
             case nameof(SelectionColor):
-            case nameof(SelectionInverseColor):
             case nameof(CornerRadius):
             {
                 InvalidateVisual();

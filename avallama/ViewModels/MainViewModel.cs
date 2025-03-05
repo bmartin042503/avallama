@@ -63,11 +63,11 @@ public partial class MainViewModel : ViewModelBase
     private void OllamaServiceStatusChanged(ServiceStatus status, string? message)
     {
         if(message != null) OllamaServiceStatusText = message;
+        OllamaServiceLoading = false;
         switch(status)
         {
             case ServiceStatus.Running:
                 OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Green);
-                OllamaServiceLoading = false;
                 OllamaServiceRunning = true;
                 break;
             case ServiceStatus.Failed:

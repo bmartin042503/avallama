@@ -11,15 +11,16 @@
         WindowStartupLocation="CenterScreen"
         PointerPressed="Window_PointerPressed"
         Title="avallama">
-    <Canvas>
+    <!-- Linuxon és macOS-en a Canvas lecserélődik Grid elemre melynek egyetlen gyermeke a ContentControl -->
+    <Canvas x:Name="MainCanvas">
         <StackPanel ZIndex="100" Canvas.Right="0" Canvas.Top="0" Margin="10" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
-            <Button Classes="windowManager" Click="HideButton_OnClick" IsVisible="{Binding IsWindows}">
+            <Button Classes="windowManager" Click="HideButton_OnClick">
                 <controls:DynamicSvg Path="/Assets/Svg/hide.svg" Width="12"/>
             </Button>
-            <Button Classes="windowManager" Click="MinMaxButton_OnClick" IsVisible="{Binding IsWindows}">
+            <Button Classes="windowManager" Click="MinMaxButton_OnClick">
                 <controls:DynamicSvg x:Name="MinMaxSvg" Path="/Assets/Svg/maximize.svg" Width="12"/>
             </Button>
-            <Button Classes="windowManager closeWindow" Click="CloseButton_OnClick" IsVisible="{Binding IsWindows}">
+            <Button Classes="windowManager closeWindow" Click="CloseButton_OnClick">
                 <controls:DynamicSvg Path="/Assets/Svg/close.svg" Width="12"/>
             </Button>
         </StackPanel>

@@ -56,9 +56,6 @@
     <data name="OLLAMA_STARTING" xml:space="preserve">
         <value>Ollama indítása folyamatban..</value>
     </data>
-    <data name="MACOS_NOT_SUPPORTED" xml:space="preserve">
-        <value>Az Avallama nem támogatott macOS rendszeren</value>
-    </data>
     <data name="OLLAMA_ALREADY_RUNNING" xml:space="preserve">
         <value>Az Ollama már fut</value>
     </data>

@@ -43,7 +43,6 @@
         <Setter Property="SubTextFontSize" Value="10"/>
         <Setter Property="SubTextColor" Value="{DynamicResource Outline}"/>
         <Setter Property="SelectionColor" Value="{DynamicResource Primary}"/>
-        <Setter Property="SelectionInverseColor" Value="{DynamicResource OnTertiary}"/>
         <Setter Property="Spacing" Value="5"/>
     </Style>
 </Styles>
