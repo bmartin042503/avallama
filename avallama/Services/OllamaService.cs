@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -80,6 +81,15 @@ public class OllamaService
         try
         {
             _ollamaProcess = Process.Start(startInfo);
+        }
+        // ez az az exception amikor nem tud a megadott pathre ollama processt indítani
+        // ha nincs ollama telepítve akkor először ezt az exceptiont kapja el
+        catch (Win32Exception)
+        {
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
+            );
         }
         catch (Exception ex)
         {
