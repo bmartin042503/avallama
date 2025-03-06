@@ -35,4 +35,4 @@ alternatively, build from source
 
 This project is licensed under the [MIT License](./LICENSE)
 
-copyright 2025
+copyright 2025 j
