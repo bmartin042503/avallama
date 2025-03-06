@@ -46,6 +46,7 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private double _downloadProgress;
     [ObservableProperty] private bool _isMaxPercent;
     [ObservableProperty] private string _downloadSpeed;
+    [ObservableProperty] private string _downloadAmount;
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
@@ -111,6 +112,8 @@ public partial class HomeViewModel : PageViewModel
                     var seconds = (int)(bytesRemaining / (speed * 1_000_000 / 8) % 60);
                     DownloadSpeed = Math.Round(speed, 2) + " Mbps - " + $"{minutes:D2}:{seconds:D2}";
                 }
+                DownloadAmount = $"{Math.Round((chunk.Completed.Value < 1_000_000_000 ? chunk.Completed.Value / 1_000_000m : chunk.Completed.Value / 1_000_000_000m), 2)} " +
+                                 $"{(chunk.Completed.Value < 1_000_000_000 ? "MB" : "GB")} / {Math.Round(chunk.Total.Value / 1_000_000_000m, 2)} GB";
             }
             if(chunk.Status != null) DownloadStatus = chunk.Status + " - " + Math.Round(DownloadProgress) + "%";
             if((int)Math.Round(DownloadProgress) == 100) IsMaxPercent = true;
