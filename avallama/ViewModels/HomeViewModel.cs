@@ -45,6 +45,7 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private string _downloadStatus = "";
     [ObservableProperty] private double _downloadProgress;
     [ObservableProperty] private bool _isMaxPercent;
+    [ObservableProperty] private string _downloadSpeed;
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
@@ -94,12 +95,16 @@ public partial class HomeViewModel : PageViewModel
     {
         IsDownloading = true;
         DownloadStatus = LocalizationService.GetString("STARTING_DOWNLOAD");
-        Console.WriteLine(CurrentlySelectedModel);
+        
+        var speedCalculator = new NetworkSpeedCalculator();
+        
         await foreach (var chunk in _ollamaService.PullModel("llama3.2"))
         {
             if (chunk.Total.HasValue && chunk.Completed.HasValue)
             {
                 DownloadProgress = (double)chunk.Completed.Value / chunk.Total.Value * 100;
+                var speed = speedCalculator.CalculateSpeed(chunk.Completed.Value);
+                if(speed != 0) DownloadSpeed = Math.Round(speed, 2) + " Mbps";
             }
             if(chunk.Status != null) DownloadStatus = chunk.Status + " - " + Math.Round(DownloadProgress) + "%";
             if((int)Math.Round(DownloadProgress) == 100) IsMaxPercent = true;
