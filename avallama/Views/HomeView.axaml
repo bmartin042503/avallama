@@ -33,14 +33,28 @@
                        TextAlignment="Center"/>
         </StackPanel>
         <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto,*">
-            <ComboBox Grid.Column="1"
-                      HorizontalAlignment="Center"
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <ComboBox
                       Width="175"
+                      VerticalAlignment="Center"
                       Margin="0,20,0,10"
                       ItemsSource="{Binding AvailableModels}"
                       SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
                       IsEnabled="False">
             </ComboBox>
+                <Button
+                    VerticalAlignment="Center"
+                    Padding="8"
+                    IsVisible="{Binding IsNotDownloadedVisible}"
+                    IsEnabled="{Binding !IsDownloading}"
+                    Background="{DynamicResource SecondaryContainer}"
+                    Command="{Binding DownloadModel}"
+                    Margin="10,10,0,0">
+                    <controls:DynamicSvg Path="/Assets/Svg/download.svg"
+                                         FillColor="{DynamicResource OnSecondaryContainer}"
+                                         Width="20"/>
+                </Button>
+            </StackPanel>
         </Grid>
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -58,9 +72,9 @@
 
             <StackPanel IsVisible="{Binding IsWarningVisible}" Orientation="Horizontal" HorizontalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
-                     FillColor="#FFD700"
-                     Width="18"
-                     Margin="0,0,5,5"  />
+                                     FillColor="#FFD700"
+                                     Width="18"
+                                     Margin="0,0,5,5"  />
                 <TextBlock Text="{Binding ResourceLimitWarning}"
                            Foreground="#FFD700"
                            TextAlignment="Center"
@@ -78,6 +92,28 @@
             </StackPanel>
         </StackPanel>
         <Grid Grid.Column="1" Grid.Row="2" RowDefinitions="*,Auto" Margin="25,0,25,0">
+            <StackPanel Grid.Row="0"
+                IsVisible="{Binding IsDownloading}" 
+                Orientation="Vertical" 
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center">
+                <TextBlock
+                    Margin="0,5,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="14"
+                    Text="{Binding DownloadStatus}"
+                    Foreground="{DynamicResource OnPrimaryContainer}"
+                />
+                <ProgressBar
+                    HorizontalAlignment="Center"
+                    Margin="0,5,0,0"
+                    Minimum="0"
+                    Maximum="100"
+                    Height="10"
+                    Width="250"
+                    Value="{Binding DownloadProgress}"
+                    IsIndeterminate="{Binding IsMaxPercent}"/>
+            </StackPanel>
             <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch"
                           Margin="0, 15, 0, 0"
                           Padding="10,0,10,0"
@@ -109,6 +145,7 @@
             <TextBox Grid.Row="1"
                 Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
                 Margin="0,30,0,20"
+                IsEnabled="{Binding IsDownloaded}"
                 Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" 

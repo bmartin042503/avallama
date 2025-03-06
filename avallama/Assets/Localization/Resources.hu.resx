@@ -80,4 +80,10 @@
     <data name="LOADING_MODELS" xml:space="preserve">
         <value>Modelek betöltése...</value>
     </data>
+    <data name="STARTING_DOWNLOAD" xml:space="preserve">
+        <value>Letöltés indítása...</value>
+    </data>
+    <data name="VERIFYING_DOWNLOAD" xml:space="preserve">
+        <value>Letöltés ellenörzése...</value>
+    </data>
 </root>

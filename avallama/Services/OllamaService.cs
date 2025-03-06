@@ -211,7 +211,9 @@ public class OllamaService
         using var client = new HttpClient();
         var response = await client.GetAsync(url);
         var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-        return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest") ?? false;
+        return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" || 
+                                                            m?["name"]?.ToString() == "llama3.2") 
+                                                            ?? false;
     }
 
     public async Task<string> GetModelParamNum(string modelName)
@@ -229,7 +231,7 @@ public class OllamaService
         using var client = new HttpClient();
         var response = await client.PostAsync(url, content);
         var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-        return json?["details"]?["parameter_size"]?.ToString().ToLower() ?? string.Empty;
+        return ":" + json?["details"]?["parameter_size"]?.ToString().ToLower();
         
     }
 
@@ -272,6 +274,53 @@ public class OllamaService
                 {
                     // insert error handling here
                 }
+                if (json != null)
+                {
+                    yield return json;
+                }
+            }
+        }
+    }
+
+    public async IAsyncEnumerable<DownloadResponse> PullModel(string modelName)
+    {
+        const string url = "http://localhost:11434/api/pull";
+
+        var payload = new
+        {
+            model = modelName,
+            stream = true
+        };
+        
+        var jsonPayload = JsonSerializer.Serialize(payload);
+        
+        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        
+        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = content
+        };
+        
+        using var client = new HttpClient();
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        using var reader = new StreamReader(stream);
+        
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                DownloadResponse? json = null;
+                try
+                {
+                    json = JsonSerializer.Deserialize<DownloadResponse>(line);
+                }
+                catch (JsonException)
+                {
+                    // Console.WriteLine("error json no good serialize");
+                }
+
                 if (json != null)
                 {
                     yield return json;

@@ -87,4 +87,10 @@
     <data name="LOADING_MODELS" xml:space="preserve">
         <value>Loading models...</value>
     </data>
+    <data name="STARTING_DOWNLOAD" xml:space="preserve">
+        <value>Starting download...</value>
+    </data>
+    <data name="VERIFYING_DOWNLOAD" xml:space="preserve">
+        <value>Verifying download...</value>
+    </data>
 </root>

@@ -28,6 +28,7 @@ public partial class HomeViewModel : PageViewModel
     }
     
     private ObservableCollection<string> _availableModels;
+
     public ObservableCollection<string> AvailableModels
     {
         get => _availableModels;
@@ -38,7 +39,12 @@ public partial class HomeViewModel : PageViewModel
     private string _newMessageText = string.Empty;
     [ObservableProperty] private bool _isWarningVisible;
     [ObservableProperty] private bool _isNotDownloadedVisible;
+    [ObservableProperty] private bool _isDownloaded;
     [ObservableProperty] private string _currentlySelectedModel;
+    [ObservableProperty] private bool _isDownloading;
+    [ObservableProperty] private string _downloadStatus = "";
+    [ObservableProperty] private double _downloadProgress;
+    [ObservableProperty] private bool _isMaxPercent;
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
@@ -74,17 +80,34 @@ public partial class HomeViewModel : PageViewModel
     private async Task GetModelInfo(string modelName)
     {
         //ezt majd jobban kéne
-        AvailableModels[AvailableModels.IndexOf(modelName)] = modelName + ":" + await _ollamaService.GetModelParamNum(modelName);
+        AvailableModels[AvailableModels.IndexOf(modelName)] = modelName + await _ollamaService.GetModelParamNum(modelName);
         CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName;
     }
 
     private async Task CheckModelDownload()
     {
-        var downloaded = await _ollamaService.IsModelDownloaded();
-        if (!downloaded)
+        IsDownloaded = await _ollamaService.IsModelDownloaded();
+        IsNotDownloadedVisible = !IsDownloaded;
+    }
+
+    public async Task DownloadModel()
+    {
+        IsDownloading = true;
+        DownloadStatus = LocalizationService.GetString("STARTING_DOWNLOAD");
+        Console.WriteLine(CurrentlySelectedModel);
+        await foreach (var chunk in _ollamaService.PullModel("llama3.2"))
         {
-            IsNotDownloadedVisible = true;
+            if (chunk.Total.HasValue && chunk.Completed.HasValue)
+            {
+                DownloadProgress = (double)chunk.Completed.Value / chunk.Total.Value * 100;
+            }
+            if(chunk.Status != null) DownloadStatus = chunk.Status + " - " + Math.Round(DownloadProgress) + "%";
+            if((int)Math.Round(DownloadProgress) == 100) IsMaxPercent = true;
+            if(chunk.Status != null && chunk.Status == "success") DownloadStatus = LocalizationService.GetString("VERIFYING_DOWNLOAD");
         }
+
+        await CheckModelDownload();
+        IsDownloading = false;
     }
     
     public HomeViewModel(OllamaService ollamaService)
