@@ -104,7 +104,13 @@ public partial class HomeViewModel : PageViewModel
             {
                 DownloadProgress = (double)chunk.Completed.Value / chunk.Total.Value * 100;
                 var speed = speedCalculator.CalculateSpeed(chunk.Completed.Value);
-                if(speed != 0) DownloadSpeed = Math.Round(speed, 2) + " Mbps";
+                if (speed > 0)
+                {
+                    double bytesRemaining = chunk.Total.Value - chunk.Completed.Value;
+                    var minutes = (int)(bytesRemaining / (speed * 1_000_000 / 8) / 60);
+                    var seconds = (int)(bytesRemaining / (speed * 1_000_000 / 8) % 60);
+                    DownloadSpeed = Math.Round(speed, 2) + " Mbps - " + $"{minutes:D2}:{seconds:D2}";
+                }
             }
             if(chunk.Status != null) DownloadStatus = chunk.Status + " - " + Math.Round(DownloadProgress) + "%";
             if((int)Math.Round(DownloadProgress) == 100) IsMaxPercent = true;
