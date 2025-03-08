@@ -48,16 +48,19 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private string _downloadAmount = string.Empty;
     [ObservableProperty] private Conversation _selectedConversation;
     
-
-    // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
     private async Task SendMessage()
     {
         if (NewMessageText.Length == 0) return;
         NewMessageText = NewMessageText.Trim();
         SelectedConversation.AddMessage(new Message(NewMessageText));
+        SelectedConversation.MessageCountToRegenerateTitle++;
         NewMessageText = string.Empty;
         await AddGeneratedMessage();
+        if (SelectedConversation.MessageCountToRegenerateTitle == 3)
+        {
+            await RegenerateConversationTitle();
+        }
     }
 
     private async Task AddGeneratedMessage()
@@ -78,6 +81,20 @@ public partial class HomeViewModel : PageViewModel
                 IsWarningVisible = tokensPerSecond < 20;
             }
         }
+    }
+
+    private async Task RegenerateConversationTitle()
+    {
+        SelectedConversation.Title = string.Empty;
+        const string request = "Generate just a single short title for this conversation with no use of \"";
+        var tmpMessage = new Message(request);
+        var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
+        messageHistory.Add(tmpMessage);
+        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
+        {
+            if(chunk.Message != null) SelectedConversation.Title += chunk.Message.Content;
+        }
+        SelectedConversation.MessageCountToRegenerateTitle = 0;
     }
 
     private async Task GetModelInfo(string modelName)

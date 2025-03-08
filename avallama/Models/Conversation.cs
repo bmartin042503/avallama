@@ -8,6 +8,7 @@ public class Conversation : ObservableObject
 {
     private string _title = string.Empty;
     private string _model = string.Empty;
+    private int _messageCountToRegenerateTitle;
     private ObservableCollection<Message> _messages = [];
 
     public string Title
@@ -27,11 +28,18 @@ public class Conversation : ObservableObject
         get => _messages;
         set => SetProperty(ref _messages, value);
     }
+
+    public int MessageCountToRegenerateTitle
+    {
+        get => _messageCountToRegenerateTitle;
+        set => SetProperty(ref _messageCountToRegenerateTitle, value);
+    }
     
     public Conversation(string title, string model)
     {
         Title = title;
         Model = model;
+        MessageCountToRegenerateTitle = 0;
     }
 
     public Conversation(string title, string model, IList<Message> messages)
@@ -39,6 +47,7 @@ public class Conversation : ObservableObject
         Title = title;
         Model = model;
         Messages = new ObservableCollection<Message>(messages);
+        MessageCountToRegenerateTitle = 0;
     }
     
     public void AddMessage(Message message) => Messages.Add(message);

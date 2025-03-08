@@ -19,13 +19,12 @@
     </UserControl.Resources>
 
     <Grid ColumnDefinitions="3*,0.5*,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
-        
+
         <!-- SideBar -->
         <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar"
                     Orientation="Vertical" Background="{DynamicResource SurfaceContainer}"
                     HorizontalAlignment="Stretch">
             <Grid ColumnDefinitions="2.5*, 6*" Margin="10">
-                <!-- TODO: kijavítani ezt a fostos buttont hogy amikor először betölti akkor is működjön a converter-->
                 <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
                         Content="{Binding Width, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource IconButtonTextConverter}}"
                         Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Stretch" />
@@ -36,7 +35,7 @@
                     </TextBox.InnerRightContent>
                 </TextBox>
             </Grid>
-            
+
             <ScrollViewer HorizontalAlignment="Stretch" Margin="10,5, 10, 15">
                 <ItemsControl ItemsSource="{Binding Conversations}">
                     <ItemsControl.DataTemplates>
@@ -44,20 +43,20 @@
                             <controls:AvallamaTextBlock
                                 Classes="conversationElement"
                                 Text="{Binding Title}"
-                                SubText="{Binding Model}"/>
+                                SubText="{Binding Model}" />
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
             </ScrollViewer>
-            
+
         </StackPanel>
-        
+
         <!-- SideBar expand/hide gomb -->
         <Button Grid.Row="0" Grid.Column="1" Classes="svgButton" Margin="10,-10,0,0" Click="SideBarBtn_OnClick">
             <controls:DynamicSvg
-                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
+                Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
         </Button>
-        
+
         <Grid Grid.Row="0" Grid.Column="2" ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <ComboBox
@@ -81,7 +80,7 @@
                 </Button>
             </StackPanel>
         </Grid>
-        
+
         <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"

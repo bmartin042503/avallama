@@ -44,12 +44,15 @@ public partial class MainWindow : Window
     
     private void Window_PointerPressed(object? sender, RoutedEventArgs e)
     {
-        var args = e as PointerPressedEventArgs;
-        if (args == null) return;
-        var positionY = args.GetPosition(this).Y;
-        
-        // ablakot csak Y:30 alatt lehet mozgatni, vagyis az ablak felső részén
-        if(positionY < 30) BeginMoveDrag((PointerPressedEventArgs)e);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var args = e as PointerPressedEventArgs;
+            if (args == null) return;
+            var positionY = args.GetPosition(this).Y;
+
+            // ablakot csak Y:30 alatt lehet mozgatni, vagyis az ablak felső részén
+            if (positionY < 30) BeginMoveDrag((PointerPressedEventArgs)e);
+        }
     }
 
     private void CloseButton_OnClick(object? sender, RoutedEventArgs e)

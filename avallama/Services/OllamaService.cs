@@ -250,16 +250,9 @@ public class OllamaService
         };
 
         using var client = new HttpClient();
-        // TODO: itt jön egy exception egy már meglévő ollama processre hogy elutasította a kapcsolatot
-        // és?
-        /* ami azt jelenti hogy amikor egyszer elindítottam és generáltam üzenetet majd mégegyszer elindítottam
-         * mindig jött az error a generálásnál hogy már van kapcsolat létesítve a 11434-esen, ez windowson volt
-         * de valszeg ez a hiba akkor már eltűnt, szóval kitörölheted ezt idk xd
-         */
         using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
-
         string? line;
         while ((line = await reader.ReadLineAsync()) != null)
         {
