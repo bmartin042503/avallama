@@ -8,43 +8,46 @@
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:converters="clr-namespace:avallama.Converters"
              Background="{DynamicResource Surface}"
-             mc:Ignorable="d" d:DesignWidth="1800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
              x:DataType="viewModels:HomeViewModel">
-    
+
     <UserControl.Resources>
-        <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter"/>
-        <converters:ResponsiveMessageBlockSizeConverter x:Key="ResponsiveMessageBlockSizeConverter"/>
-        <converters:IconButtonTextConverter x:Key="IconButtonTextConverter"/>
+        <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter" />
+        <converters:ResponsiveMessageBlockSizeConverter x:Key="ResponsiveMessageBlockSizeConverter" />
+        <converters:IconButtonTextConverter x:Key="IconButtonTextConverter" />
     </UserControl.Resources>
-    
-    <Grid ColumnDefinitions="*,3*" RowDefinitions="Auto,Auto,*,Auto">
-        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4"
-                    Orientation="Vertical" Background="{DynamicResource SurfaceContainer}" HorizontalAlignment="Stretch">
-            <Grid ColumnDefinitions="2.5*, 6*, 0.75*" Margin="10">
+
+    <Grid ColumnDefinitions="3*,0.5*,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
+        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar"
+                    Orientation="Vertical" Background="{DynamicResource SurfaceContainer}"
+                    HorizontalAlignment="Stretch">
+            <Grid ColumnDefinitions="2.5*, 6*" Margin="10">
                 <!-- TODO: kijavítani ezt a fostos buttont hogy amikor először betölti akkor is működjön a converter-->
-                <Button x:Name="NewConversationBtn" Classes="avallamaWhite" Content="{Binding Width, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource IconButtonTextConverter}}" 
-                        Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Stretch"/>
-                <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1"
-                         Margin="0,0,10,0">
+                <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
+                        Content="{Binding Width, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource IconButtonTextConverter}}"
+                        Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Stretch" />
+                <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1">
                     <TextBox.InnerRightContent>
                         <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
-                                             Margin="0,0,10,0" FillColor="{DynamicResource Primary}"/>
+                                             Margin="0,0,10,0" FillColor="{DynamicResource Primary}" />
                     </TextBox.InnerRightContent>
                 </TextBox>
-                <controls:DynamicSvg Grid.Column="2" Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
             </Grid>
         </StackPanel>
-        <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto,*">
+        <Button Grid.Row="0" Grid.Column="1" Classes="svgButton" Margin="10,-10,0,0" Click="SideBarBtn_OnClick">
+            <controls:DynamicSvg
+                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
+        </Button>
+        <Grid Grid.Row="0" Grid.Column="2" ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-            <ComboBox
-                      Width="175"
-                      VerticalAlignment="Center"
-                      Margin="0,20,0,10"
-                      ItemsSource="{Binding AvailableModels}"
-                      SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
-                      IsEnabled="False">
-            </ComboBox>
+                <ComboBox
+                    Width="175"
+                    VerticalAlignment="Center"
+                    Margin="0,20,0,10"
+                    ItemsSource="{Binding AvailableModels}"
+                    SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
+                    IsEnabled="False" />
                 <Button
                     VerticalAlignment="Center"
                     Padding="8"
@@ -55,58 +58,58 @@
                     Margin="10,10,0,0">
                     <controls:DynamicSvg Path="/Assets/Svg/download.svg"
                                          FillColor="{DynamicResource OnSecondaryContainer}"
-                                         Width="20"/>
+                                         Width="20" />
                 </Button>
             </StackPanel>
         </Grid>
-        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Margin="25,0">
+        <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
-                     FillColor="#808080"
-                     Width="18"
-                     Margin="0,0,5,5"  />
+                                     FillColor="#808080"
+                                     Width="18"
+                                     Margin="0,0,5,5" />
 
 
                 <TextBlock Text="{Binding LanguageLimitationWarning}"
                            Foreground="#808080"
                            TextAlignment="Center"
-                           TextWrapping="Wrap"/>
+                           TextWrapping="Wrap" />
             </StackPanel>
 
             <StackPanel IsVisible="{Binding IsWarningVisible}" Orientation="Horizontal" HorizontalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
                                      FillColor="#FFD700"
                                      Width="18"
-                                     Margin="0,0,5,5"  />
+                                     Margin="0,0,5,5" />
                 <TextBlock Text="{Binding ResourceLimitWarning}"
                            Foreground="#FFD700"
                            TextAlignment="Center"
-                           TextWrapping="Wrap"/>
+                           TextWrapping="Wrap" />
             </StackPanel>
-            <StackPanel IsVisible="{Binding IsNotDownloadedVisible}" Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel IsVisible="{Binding IsNotDownloadedVisible}" Orientation="Horizontal"
+                        HorizontalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
                                      FillColor="{DynamicResource Error}"
                                      Width="18"
-                                     Margin="0,0,5,5"  />
+                                     Margin="0,0,5,5" />
                 <TextBlock Text="{Binding NotDownloadedWarning}"
                            Foreground="{DynamicResource Error}"
                            TextAlignment="Center"
-                           TextWrapping="Wrap"/>
+                           TextWrapping="Wrap" />
             </StackPanel>
         </StackPanel>
-        <Grid Grid.Column="1" Grid.Row="2" RowDefinitions="*,Auto" Margin="25,0,25,0">
+        <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="2" RowDefinitions="*,Auto" Margin="25,0,25,0">
             <StackPanel Grid.Row="0"
-                IsVisible="{Binding IsDownloading}" 
-                Orientation="Vertical" 
-                VerticalAlignment="Center" 
-                HorizontalAlignment="Center">
+                        IsVisible="{Binding IsDownloading}"
+                        Orientation="Vertical"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center">
                 <TextBlock
                     Margin="0,5,0,0"
                     HorizontalAlignment="Center"
                     FontSize="14"
                     Text="{Binding DownloadStatus}"
-                    Foreground="{DynamicResource OnPrimaryContainer}"
-                />
+                    Foreground="{DynamicResource OnPrimaryContainer}" />
                 <ProgressBar
                     HorizontalAlignment="Center"
                     Margin="0,5,0,0"
@@ -115,23 +118,21 @@
                     Height="10"
                     Width="250"
                     Value="{Binding DownloadProgress}"
-                    IsIndeterminate="{Binding IsMaxPercent}"/>
+                    IsIndeterminate="{Binding IsMaxPercent}" />
                 <TextBlock
                     Margin="0,5,0,0"
                     HorizontalAlignment="Center"
                     FontSize="14"
                     IsVisible="{Binding !IsMaxPercent}"
                     Text="{Binding DownloadSpeed}"
-                    Foreground="{DynamicResource OnPrimaryContainer}"
-                />
+                    Foreground="{DynamicResource OnPrimaryContainer}" />
                 <TextBlock
                     Margin="0,5,0,0"
                     HorizontalAlignment="Center"
                     FontSize="14"
                     IsVisible="{Binding !IsMaxPercent}"
                     Text="{Binding DownloadAmount}"
-                    Foreground="{DynamicResource OnPrimaryContainer}"
-                />
+                    Foreground="{DynamicResource OnPrimaryContainer}" />
             </StackPanel>
             <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch"
                           Margin="0, 15, 0, 0"
@@ -141,34 +142,34 @@
                     <ItemsControl.DataTemplates>
                         <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
                         <DataTemplate DataType="models:GeneratedMessage">
-                            <controls:MessageBlock 
+                            <controls:MessageBlock
                                 Classes="generatedMessage"
                                 Text="{Binding Content}"
                                 TextColor="{DynamicResource SurfaceContainerHighest}"
                                 SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
                                 Background="{DynamicResource OutlineVariant}"
-                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
                         </DataTemplate>
                         <DataTemplate DataType="models:Message">
-                            <controls:MessageBlock 
+                            <controls:MessageBlock
                                 HorizontalAlignment="Right"
                                 Classes="userMessage"
                                 Text="{Binding Content}"
                                 TextColor="{DynamicResource OnPrimary}"
                                 Background="{DynamicResource Primary}"
-                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
             </ScrollViewer>
             <TextBox Grid.Row="1"
-                Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
-                Margin="0,30,0,20"
-                IsEnabled="{Binding IsDownloaded}"
-                Text="{Binding NewMessageText, Mode=TwoWay}">
+                     Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
+                     Margin="0,30,0,20"
+                     IsEnabled="{Binding IsDownloaded}"
+                     Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>
-                    <KeyBinding Gesture="Enter" 
-                                Command="{Binding SendMessageCommand}"/>
+                    <KeyBinding Gesture="Enter"
+                                Command="{Binding SendMessageCommand}" />
                 </TextBox.KeyBindings>
             </TextBox>
         </Grid>

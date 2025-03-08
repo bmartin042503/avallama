@@ -15,6 +15,9 @@
                              Width="12"/>
                     </Button>
                     <Button Classes="avallamaWhite" Content="Icon Button" />
+                    <Button Classes="svgButton">
+                        <controls:DynamicSvg Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
+                    </Button>
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
@@ -98,5 +101,15 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style Selector="Button.svgButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+    
+    <Style Selector="Button.svgButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="Transparent"/>
     </Style>
 </Styles>
