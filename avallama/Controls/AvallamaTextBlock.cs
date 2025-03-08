@@ -752,16 +752,16 @@ public class AvallamaTextBlock : Control
         // RWin - lenyomott jobb oldali Command
         
         // CTRL+A - összes szöveg kijelölése
-        if (e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control) 
-            || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
+        if (e.Key == Key.A && (e.KeyModifiers.HasFlag(KeyModifiers.Control) 
+            || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         {
             SelectAllText();
             e.Handled = true;
         }
 
         // CTRL+C - szöveg kimásolása vágólapra
-        if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control)
-            || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
+        if (e.Key == Key.C && (e.KeyModifiers.HasFlag(KeyModifiers.Control)
+            || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         {
             UpdateSelectedText();
             await CopyToClipboardAsync(_selectedText);

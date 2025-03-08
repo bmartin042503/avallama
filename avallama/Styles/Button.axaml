@@ -85,28 +85,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <Style Selector="Button.closeWindow:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Error}"/>
     </Style>
-    
-    <Style Selector="Button.avallamaWhite">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}"
-                            CornerRadius="8"
-                            Padding="14,8" HorizontalAlignment="Stretch">
-                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                            <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
-                                                 Width="8" FillColor="{DynamicResource OnPrimary}"
-                                                 HorizontalAlignment="Center"/>
-                            <ContentPresenter
-                                Content="{TemplateBinding Content}"
-                                VerticalAlignment="Center"
-                                FontSize="10"/>
-                        </StackPanel>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
 
     <Style Selector="Button.svgButton">
         <Setter Property="Background" Value="Transparent"/>
