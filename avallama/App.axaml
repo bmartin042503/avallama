@@ -20,7 +20,7 @@
          <StyleInclude Source="Styles/Button.axaml"/>
          <StyleInclude Source="Styles/TextBox.axaml"/>
          <StyleInclude Source="Styles/TextBlock.axaml"/>
-         <StyleInclude Source="Styles/MessageBlock.axaml"/>
+         <StyleInclude Source="Styles/AvallamaTextBlock.axaml"/>
          <StyleInclude Source="Styles/ComboBox.axaml"/>
          
          <FluentTheme />

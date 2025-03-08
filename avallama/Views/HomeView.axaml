@@ -19,6 +19,8 @@
     </UserControl.Resources>
 
     <Grid ColumnDefinitions="3*,0.5*,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
+        
+        <!-- SideBar -->
         <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar"
                     Orientation="Vertical" Background="{DynamicResource SurfaceContainer}"
                     HorizontalAlignment="Stretch">
@@ -34,11 +36,28 @@
                     </TextBox.InnerRightContent>
                 </TextBox>
             </Grid>
+            
+            <ScrollViewer HorizontalAlignment="Stretch" Margin="10,5, 10, 15">
+                <ItemsControl ItemsSource="{Binding Conversations}">
+                    <ItemsControl.DataTemplates>
+                        <DataTemplate DataType="models:Conversation">
+                            <controls:AvallamaTextBlock
+                                Classes="conversationElement"
+                                Text="{Binding Title}"
+                                SubText="{Binding Model}"/>
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </ScrollViewer>
+            
         </StackPanel>
+        
+        <!-- SideBar expand/hide gomb -->
         <Button Grid.Row="0" Grid.Column="1" Classes="svgButton" Margin="10,-10,0,0" Click="SideBarBtn_OnClick">
             <controls:DynamicSvg
                  Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
         </Button>
+        
         <Grid Grid.Row="0" Grid.Column="2" ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <ComboBox
@@ -62,6 +81,7 @@
                 </Button>
             </StackPanel>
         </Grid>
+        
         <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
@@ -142,7 +162,7 @@
                     <ItemsControl.DataTemplates>
                         <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
                         <DataTemplate DataType="models:GeneratedMessage">
-                            <controls:MessageBlock
+                            <controls:AvallamaTextBlock
                                 Classes="generatedMessage"
                                 Text="{Binding Content}"
                                 TextColor="{DynamicResource SurfaceContainerHighest}"
@@ -151,7 +171,7 @@
                                 MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
                         </DataTemplate>
                         <DataTemplate DataType="models:Message">
-                            <controls:MessageBlock
+                            <controls:AvallamaTextBlock
                                 HorizontalAlignment="Right"
                                 Classes="userMessage"
                                 Text="{Binding Content}"

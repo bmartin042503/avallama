@@ -23,53 +23,53 @@ namespace avallama.Controls;
 /// <summary>
 /// Szövegdoboz állítható háttérrel, két szöveggel, személyre szabott propertykkel
 /// </summary>
-public class MessageBlock : Control
+public class AvallamaTextBlock : Control
 {
     // AXAML Styled Propertyk
     public static readonly StyledProperty<string?> TextProperty =
-        AvaloniaProperty.Register<MessageBlock, string?>("Text");
+        AvaloniaProperty.Register<AvallamaTextBlock, string?>("Text");
 
     public static readonly StyledProperty<IBrush?> TextColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("TextColor");
+        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("TextColor");
 
     public static readonly StyledProperty<string?> SubTextProperty =
-        AvaloniaProperty.Register<MessageBlock, string?>("SubText");
+        AvaloniaProperty.Register<AvallamaTextBlock, string?>("SubText");
 
     public static readonly StyledProperty<IBrush?> SubTextColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("SubTextColor");
+        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("SubTextColor");
 
     public static readonly StyledProperty<Thickness?> PaddingProperty =
-        AvaloniaProperty.Register<MessageBlock, Thickness?>("Padding");
+        AvaloniaProperty.Register<AvallamaTextBlock, Thickness?>("Padding");
 
     public static readonly StyledProperty<CornerRadius?> CornerRadiusProperty =
-        AvaloniaProperty.Register<MessageBlock, CornerRadius?>("CornerRadius");
+        AvaloniaProperty.Register<AvallamaTextBlock, CornerRadius?>("CornerRadius");
 
     public static readonly StyledProperty<double?> TextFontSizeProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("TextFontSize");
+        AvaloniaProperty.Register<AvallamaTextBlock, double?>("TextFontSize");
 
     public static readonly StyledProperty<double?> SubTextFontSizeProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("SubTextFontSize");
+        AvaloniaProperty.Register<AvallamaTextBlock, double?>("SubTextFontSize");
 
     public static readonly StyledProperty<TextAlignment?> TextAlignmentProperty =
-        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("TextAlignment");
+        AvaloniaProperty.Register<AvallamaTextBlock, TextAlignment?>("TextAlignment");
 
     public static readonly StyledProperty<TextAlignment?> SubTextAlignmentProperty =
-        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("SubTextAlignment");
+        AvaloniaProperty.Register<AvallamaTextBlock, TextAlignment?>("SubTextAlignment");
 
     public static readonly StyledProperty<FontFamily?> FontFamilyProperty =
-        AvaloniaProperty.Register<MessageBlock, FontFamily?>("FontFamily");
+        AvaloniaProperty.Register<AvallamaTextBlock, FontFamily?>("FontFamily");
 
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("Background");
+        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("Background");
 
     public static readonly StyledProperty<double?> SpacingProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("Spacing");
+        AvaloniaProperty.Register<AvallamaTextBlock, double?>("Spacing");
 
     public static readonly StyledProperty<double?> LineHeightProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("LineHeight");
+        AvaloniaProperty.Register<AvallamaTextBlock, double?>("LineHeight");
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
+        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("SelectionColor");
     
 
     public string? Text
@@ -174,7 +174,7 @@ public class MessageBlock : Control
     private int _selectionEnd;
     private string _selectedText = string.Empty;
 
-    public MessageBlock()
+    public AvallamaTextBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
         Focusable = true;

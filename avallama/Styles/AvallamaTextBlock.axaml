@@ -6,20 +6,32 @@
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="10">
-                    <controls:MessageBlock
+                    <controls:AvallamaTextBlock
                         Classes="userMessage"
                         Text="User Message"/>
                 
-                    <controls:MessageBlock 
+                    <controls:AvallamaTextBlock 
                         Classes="generatedMessage"
                         Text="Generated Message"
                         SubText="SubText"/>
+                    
+                    <controls:AvallamaTextBlock
+                        Classes="conversationElement"
+                        Text="Conversation Title"
+                        Width="300"
+                        SubText="llama3.2"/>
+                    
+                    <controls:AvallamaTextBlock
+                        Classes="conversationElement currentConversation"
+                        Text="Current Conversation Title"
+                        Width="300"
+                        SubText="llama3.2"/>
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
     
-    <Style Selector="controls|MessageBlock">
+    <Style Selector="controls|AvallamaTextBlock">
         <Setter Property="TextAlignment" Value="Left"/>
         <Setter Property="TextFontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="20"/>
@@ -28,14 +40,14 @@
         <Setter Property="LineHeight" Value="22"/>
     </Style>
     
-    <Style Selector="controls|MessageBlock.userMessage">
+    <Style Selector="controls|AvallamaTextBlock.userMessage">
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimary}"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="SelectionColor" Value="{DynamicResource OnPrimary}"/>
     </Style>
     
-    <Style Selector="controls|MessageBlock.generatedMessage">
+    <Style Selector="controls|AvallamaTextBlock.generatedMessage">
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurfaceVariant}"/>
         <Setter Property="SubTextAlignment" Value="End"/>
@@ -44,5 +56,20 @@
         <Setter Property="SubTextColor" Value="{DynamicResource Outline}"/>
         <Setter Property="SelectionColor" Value="{DynamicResource Primary}"/>
         <Setter Property="Spacing" Value="5"/>
+    </Style>
+    
+    <Style Selector="controls|AvallamaTextBlock.conversationElement">
+        <Setter Property="Background" Value="{DynamicResource SurfaceContainerLowest}"/>
+        <Setter Property="TextFontSize" Value="16"/>
+        <Setter Property="SubTextColor" Value="{DynamicResource Outline}"/>
+        <Setter Property="SubTextFontSize" Value="12"/>
+        <Setter Property="Padding" Value="15,10"/>
+        <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+    
+    <Style Selector="controls|AvallamaTextBlock.currentConversation">
+        <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+        <Setter Property="TextColor" Value="{DynamicResource OnPrimaryContainer}"/>
+        <Setter Property="SubTextColor" Value="{DynamicResource OnPrimaryContainer}"/>
     </Style>
 </Styles>
