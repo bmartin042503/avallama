@@ -57,7 +57,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>v0.1.0-alpha</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
-        <value>Conversations are not yet avaliable</value>
+        <value>Currently only one conversation is supported at a time</value>
     </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Ollama has been successfully started</value>

@@ -50,7 +50,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>v0.1.0-alpha</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
-        <value>A beszélgetések funkció még nem elérhető</value>
+        <value>Jelenleg egyszerre csak egy beszélgetés támogatott</value>
     </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Az Ollama sikeresen elindult</value>
