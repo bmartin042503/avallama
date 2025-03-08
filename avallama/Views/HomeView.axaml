@@ -1,4 +1,9 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+﻿<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -18,16 +23,16 @@
         <converters:IconButtonTextConverter x:Key="IconButtonTextConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="3*,0.5*,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
+    <Grid ColumnDefinitions="2*,0.75*,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
 
         <!-- SideBar -->
-        <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar"
-                    Orientation="Vertical" Background="{DynamicResource SurfaceContainer}"
-                    HorizontalAlignment="Stretch">
-            <Grid ColumnDefinitions="2.5*, 6*" Margin="10">
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar"
+              RowDefinitions="Auto,*,Auto"
+              Background="{DynamicResource SurfaceContainer}">
+            <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" Margin="10">
                 <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
                         Content="{Binding Width, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource IconButtonTextConverter}}"
-                        Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Stretch" />
+                        Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Stretch" Cursor="Hand" />
                 <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1">
                     <TextBox.InnerRightContent>
                         <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
@@ -36,8 +41,8 @@
                 </TextBox>
             </Grid>
 
-            <ScrollViewer HorizontalAlignment="Stretch" Margin="10,5, 10, 15">
-                <ItemsControl ItemsSource="{Binding Conversations}">
+            <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,5, 10, 15">
+                <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
                     <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
                             <controls:AvallamaTextBlock
@@ -48,15 +53,21 @@
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
             </ScrollViewer>
+            
+            <Button Grid.Row="2" Classes="svgButton" Margin="10" Cursor="Hand">
+                <controls:DynamicSvg
+                    Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
+            </Button>
 
-        </StackPanel>
+        </Grid>
 
         <!-- SideBar expand/hide gomb -->
-        <Button Grid.Row="0" Grid.Column="1" Classes="svgButton" Margin="10,-10,0,0" Click="SideBarBtn_OnClick">
+        <Button Grid.Row="0" Grid.Column="1" Classes="svgButton" Margin="10,-10,0,0" 
+                Click="SideBarBtn_OnClick" Cursor="Hand">
             <controls:DynamicSvg
                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
         </Button>
-
+        
         <Grid Grid.Row="0" Grid.Column="2" ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <ComboBox

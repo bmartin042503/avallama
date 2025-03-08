@@ -1,10 +1,9 @@
-using System;
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using avallama.Constants;
-using Avalonia.Data;
-using CommunityToolkit.Mvvm.Input;
 
 namespace avallama.ViewModels;
-using avallama.Services;
 
 public partial class GreetingViewModel : PageViewModel
 {

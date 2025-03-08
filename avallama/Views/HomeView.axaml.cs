@@ -1,10 +1,8 @@
-﻿using System;
-using avallama.Services;
-using Avalonia;
+﻿// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 
 namespace avallama.Views;
 
@@ -20,7 +18,7 @@ public partial class HomeView : UserControl
     }
 
     private bool _sideBarExpanded = true;
-    private Control? _sideBarControl = null;
+    private Control? _sideBarControl;
 
     private void ScrollViewer_OnScrollChanged(object? sender, ScrollChangedEventArgs e)
     {

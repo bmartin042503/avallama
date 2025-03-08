@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
+using System;
 using System.Threading.Tasks;
-using avallama.Parsers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -12,7 +11,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Utilities;
 
 namespace avallama.Controls;
 
@@ -71,6 +69,8 @@ public class AvallamaTextBlock : Control
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
         AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("SelectionColor");
     
+    public static readonly StyledProperty<bool> SelectableProperty =
+        AvaloniaProperty.Register<AvallamaTextBlock, bool>("Selectable");
 
     public string? Text
     {
@@ -162,6 +162,12 @@ public class AvallamaTextBlock : Control
         set => SetValue(SelectionColorProperty, value);
     }
 
+    public bool Selectable
+    {
+        get => GetValue(SelectableProperty);
+        set => SetValue(SelectableProperty, value);
+    }
+
     private TextLayout? _textLayout;
     private TextLayout? _subTextLayout;
 
@@ -215,7 +221,7 @@ public class AvallamaTextBlock : Control
         // megnézzük hogy van kijelölés, és ha igen annak megfelelően rendereljük először a hátterét
         // és ezt követően arra rárendereljük a módosított (kijelölt inverz színekkel rendelkező) szöveget
 
-        if (_selectionStart != _selectionEnd && _textLayout != null)
+        if (_selectionStart != _selectionEnd && _textLayout != null && Selectable)
         {
             // mínusz értékek elkerülése miatt min, max
             var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
@@ -497,7 +503,7 @@ public class AvallamaTextBlock : Control
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        if (_textLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null || !Selectable) return;
 
         var pointerPosition = e.GetPosition(this);
 
@@ -521,7 +527,7 @@ public class AvallamaTextBlock : Control
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (_textLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null || !Selectable) return;
         var textIndex = TextIndexFromPointer(e.GetPosition(this));
         _selectionStart = textIndex;
 
@@ -546,7 +552,7 @@ public class AvallamaTextBlock : Control
     // kattintott szó kiválasztása index alapján (pl. dupla klikkre)
     private void SelectWordByIndex(int index)
     {
-        if (_textLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null || index < 0 || index >= Text.Length || !Selectable) return;
         if (char.IsWhiteSpace(Text[index]) || !char.IsLetterOrDigit(Text[index])) return;
         var wordStartIndex = 0;
         var wordEndIndex = 0;
@@ -575,7 +581,7 @@ public class AvallamaTextBlock : Control
 
     private void SelectParagraphByIndex(int index)
     {
-        if (_textLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null || !Selectable) return;
         const string separator = "\n";
         int paragraphStartIndex, paragraphEndIndex;
         var firstSeparatorPosition = Text.LastIndexOf(separator, index, StringComparison.Ordinal);
@@ -607,7 +613,7 @@ public class AvallamaTextBlock : Control
 
     private void SelectAllText()
     {
-        if (_textLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null || !Selectable) return;
         _selectionStart = 0;
         _selectionEnd = Text.Length;
         InvalidateVisual();
@@ -616,6 +622,7 @@ public class AvallamaTextBlock : Control
 
     private void ClearSelection()
     {
+        if (!Selectable) return;
         _selectionEnd = _selectionStart;
         _selectedText = string.Empty;
         InvalidateVisual();
@@ -624,13 +631,14 @@ public class AvallamaTextBlock : Control
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
+        if (!Selectable) return;
         // a kijelölés végén mentjük el hogy ne kelljen folyamatosan frissíteni a stringet
         UpdateSelectedText();
     }
 
     private void UpdateSelectedText()
     {
-        if (_textLayout == null || Text == null) return;
+        if (_textLayout == null || Text == null || !Selectable) return;
         var selectionFrom = Math.Min(_selectionStart, _selectionEnd);
         var selectionRange = Math.Max(_selectionStart, _selectionEnd) - selectionFrom;
         _selectedText = Text.Substring(selectionFrom, selectionRange);
@@ -640,7 +648,7 @@ public class AvallamaTextBlock : Control
     // a paddingokat bele kell venni ahhoz hogy visszaadja a megfelelő textPositiont
     private int TextIndexFromPointer(Point pointerPosition)
     {
-        if (_textLayout == null || Text == null) return -1;
+        if (_textLayout == null || Text == null || !Selectable) return -1;
         var padding = Padding ?? new Thickness(0, 0, 0, 0);
         var point = pointerPosition - new Point(padding.Left, padding.Top);
 
@@ -662,7 +670,7 @@ public class AvallamaTextBlock : Control
     /// </returns>
     private bool IsPointerOverText(Point pointerPosition)
     {
-        if (_textLayout == null || _textLayoutPosition == null) return false;
+        if (_textLayout == null || _textLayoutPosition == null || !Selectable) return false;
         var textFromX = _textLayoutPosition.Value.X;
         var textToX = (_textLayoutPosition.Value.X + _textLayout.Width);
 
@@ -711,12 +719,14 @@ public class AvallamaTextBlock : Control
     protected override void OnGotFocus(GotFocusEventArgs e)
     {
         base.OnGotFocus(e);
+        if(!Selectable) return;
         UpdateSelectedText();
     }
 
     protected override void OnLostFocus(RoutedEventArgs e)
     {
         base.OnLostFocus(e);
+        if(!Selectable) return;
         if (ContextFlyout is not { IsOpen: true } &&
             ContextMenu is not { IsOpen: true })
         {
@@ -734,6 +744,8 @@ public class AvallamaTextBlock : Control
 
     private async Task OnKeyDown(object? sender, KeyEventArgs e)
     {
+        if(!Selectable) return;
+        
         // macOS billentyűk
         // Meta - nyomva tartott Command
         // LWin - lenyomott bal oldali Command

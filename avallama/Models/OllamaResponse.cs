@@ -1,4 +1,6 @@
-using System;
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 

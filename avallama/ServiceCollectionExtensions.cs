@@ -1,9 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
+using System;
 using avallama.Constants;
 using avallama.ViewModels;
 using avallama.Factories;
 using avallama.Services;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;

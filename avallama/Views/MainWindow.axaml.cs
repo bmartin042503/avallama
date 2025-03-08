@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System.Runtime.InteropServices;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;

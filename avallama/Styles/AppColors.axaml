@@ -1,4 +1,9 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+﻿<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <!-- Seed: #623079 -->

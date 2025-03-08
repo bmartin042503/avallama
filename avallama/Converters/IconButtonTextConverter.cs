@@ -1,3 +1,6 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System;
 using System.Globalization;
 using avallama.Services;
@@ -14,7 +17,7 @@ public class IconButtonTextConverter : IValueConverter
         {
             0.0 or < 1650 => LocalizationService.GetString("NEW"),
             >= 1650 => LocalizationService.GetString("NEW_CONVERSATION"),
-            _ => null
+            _ => LocalizationService.GetString("NEW")
         };
     }
 

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -88,8 +91,7 @@ public partial class HomeViewModel : PageViewModel
         SelectedConversation.Title = string.Empty;
         const string request = "Generate just a single short title for this conversation with no use of \"";
         var tmpMessage = new Message(request);
-        var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
-        messageHistory.Add(tmpMessage);
+        var messageHistory = new List<Message>(SelectedConversation.Messages.ToList()) { tmpMessage };
         await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
         {
             if(chunk.Message != null) SelectedConversation.Title += chunk.Message.Content;
@@ -148,7 +150,7 @@ public partial class HomeViewModel : PageViewModel
         Page = ApplicationPage.Home;
 
         var conversation = new Conversation(
-            "Conversation title",
+            LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
         );
         

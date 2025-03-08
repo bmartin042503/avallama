@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System.Runtime.InteropServices;
 using avallama.Constants;
 using avallama.Factories;
@@ -6,7 +8,6 @@ using avallama.Services;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
 
