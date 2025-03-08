@@ -1,33 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace avallama.Parsers;
 
-public enum MarkdownType
+public enum MarkdownSyntax
 {
-    Paragraph,
-    Heading,
-    Link,
-    CodeBlock,
-    Italic,
-    ItalicBold,
-    Bold,
-    StrikeThrough,
-    Blockquote,
-    InlineCode,
-    HorizontalRule,
-    
+    Default, // paragraph
+    Heading, // # ## ### #### #####
+    Asterisk, // * ** ***
+    Strikethrough, // ~~
+    CodeSpecifier, // ` ```
+    OrderedSpecifier, // 1. 
+    UnorderedSpecifier, // - 
+    Blockquote, // > >> >>> ...
+    HorizontalRule, // ---
+    Link // []()
 }
 
 public class MarkdownElement
 {
-    public required string Content { get; set; }
-    public MarkdownType Type { get; set; }
+    public string? Content { get; set; }
+    public MarkdownSyntax Syntax { get; set; }
     public MarkdownElement? Parent { get; set; }
     public IEnumerable<MarkdownElement>? Children { get; set; }
+    public int Weight { get; set; }
+    public int Start { get; set; }
+    public int Length { get; set; }
 }
 
 public static class MarkdownParser
 {
-    // ígérem az idén még kész lesz XD
+    public static IEnumerable<MarkdownElement> Parse(string text)
+    {
+        List<MarkdownElement> elements = [];
+        // TODO: markdown lexer
+        return elements;
+    }
+    
+    
+    
 }

@@ -8,29 +8,32 @@
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:converters="clr-namespace:avallama.Converters"
              Background="{DynamicResource Surface}"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
              x:DataType="viewModels:HomeViewModel">
-    <Design.DataContext>
-        <viewModels:HomeViewModel />
-    </Design.DataContext>
     
     <UserControl.Resources>
         <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter"/>
         <converters:ResponsiveMessageBlockSizeConverter x:Key="ResponsiveMessageBlockSizeConverter"/>
+        <converters:IconButtonTextConverter x:Key="IconButtonTextConverter"/>
     </UserControl.Resources>
     
     <Grid ColumnDefinitions="*,3*" RowDefinitions="Auto,Auto,*,Auto">
         <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="4"
-                    Orientation="Vertical" VerticalAlignment="Stretch" Background="{DynamicResource SurfaceContainer}">
-            <TextBlock HorizontalAlignment="Center"
-                       Text="{localization:LocalizationService Key='CONVERSATIONS_NOT_AVAILABLE'}"
-                       TextWrapping="Wrap"
-                       FontSize="14"
-                       Foreground="{DynamicResource OnSurface}"
-                       Padding="15,0"
-                       Margin="0,60,0,0"
-                       TextAlignment="Center"/>
+                    Orientation="Vertical" Background="{DynamicResource SurfaceContainer}" HorizontalAlignment="Stretch">
+            <Grid ColumnDefinitions="2.5*, 6*, 0.75*" Margin="10">
+                <!-- TODO: kijavítani ezt a fostos buttont hogy amikor először betölti akkor is működjön a converter-->
+                <Button x:Name="NewConversationBtn" Classes="avallamaWhite" Content="{Binding Width, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource IconButtonTextConverter}}" 
+                        Grid.Column="0" Margin="0,0,10,0" HorizontalAlignment="Stretch"/>
+                <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1"
+                         Margin="0,0,10,0">
+                    <TextBox.InnerRightContent>
+                        <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
+                                             Margin="0,0,10,0" FillColor="{DynamicResource Primary}"/>
+                    </TextBox.InnerRightContent>
+                </TextBox>
+                <controls:DynamicSvg Grid.Column="2" Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
+            </Grid>
         </StackPanel>
         <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -134,7 +137,7 @@
                           Margin="0, 15, 0, 0"
                           Padding="10,0,10,0"
                           ScrollChanged="ScrollViewer_OnScrollChanged">
-                <ItemsControl ItemsSource="{Binding Messages}">
+                <ItemsControl ItemsSource="{Binding SelectedConversation.Messages}">
                     <ItemsControl.DataTemplates>
                         <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
                         <DataTemplate DataType="models:GeneratedMessage">

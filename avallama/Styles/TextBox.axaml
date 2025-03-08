@@ -10,8 +10,6 @@
             </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
-    
-    <!-- TODO: fix - textbox fel-le ugrál ha beleírsz/kitörlöd az üzenetet -->
 
     <Style Selector="TextBox">
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>

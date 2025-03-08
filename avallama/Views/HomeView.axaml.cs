@@ -1,6 +1,8 @@
 ﻿using System;
+using avallama.Services;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
 
 namespace avallama.Views;

@@ -18,25 +18,24 @@ public partial class HomeViewModel : PageViewModel
     public string NotDownloadedWarning { get; } = String.Format(LocalizationService.GetString("NOT_DOWNLOADED_WARNING"));
     
     private readonly OllamaService _ollamaService;
-    
-    private ObservableCollection<Message> _messages;
 
-    public ObservableCollection<Message> Messages
+    private ObservableCollection<Conversation> _conversations;
+    
+    public ObservableCollection<Conversation> Conversations
     {
-        get => _messages;
-        set => SetProperty(ref _messages, value);
+        get => _conversations;
+        set => SetProperty(ref _conversations, value);
     }
     
     private ObservableCollection<string> _availableModels;
-
+    
     public ObservableCollection<string> AvailableModels
     {
         get => _availableModels;
         set => SetProperty(ref _availableModels, value);
     }
 
-    [ObservableProperty] 
-    private string _newMessageText = string.Empty;
+    [ObservableProperty] private string _newMessageText = string.Empty;
     [ObservableProperty] private bool _isWarningVisible;
     [ObservableProperty] private bool _isNotDownloadedVisible;
     [ObservableProperty] private bool _isDownloaded;
@@ -45,8 +44,10 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private string _downloadStatus = "";
     [ObservableProperty] private double _downloadProgress;
     [ObservableProperty] private bool _isMaxPercent;
-    [ObservableProperty] private string _downloadSpeed;
-    [ObservableProperty] private string _downloadAmount;
+    [ObservableProperty] private string _downloadSpeed = string.Empty;
+    [ObservableProperty] private string _downloadAmount = string.Empty;
+    [ObservableProperty] private Conversation _selectedConversation;
+    
 
     // ez async, mert nem akarjuk hogy blokkolja a főszálat
     [RelayCommand]
@@ -54,7 +55,7 @@ public partial class HomeViewModel : PageViewModel
     {
         if (NewMessageText.Length == 0) return;
         NewMessageText = NewMessageText.Trim();
-        Messages.Add(new Message(NewMessageText));
+        SelectedConversation.AddMessage(new Message(NewMessageText));
         NewMessageText = string.Empty;
         await AddGeneratedMessage();
     }
@@ -62,8 +63,8 @@ public partial class HomeViewModel : PageViewModel
     private async Task AddGeneratedMessage()
     {
         var generatedMessage = new GeneratedMessage("", 0.0);
-        Messages.Add(generatedMessage);
-        List<Message> messageHistory = new List<Message>(Messages.ToList());
+        SelectedConversation.AddMessage(generatedMessage);
+        var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
         messageHistory.RemoveAt(messageHistory.Count - 1);
 
         await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
@@ -128,9 +129,15 @@ public partial class HomeViewModel : PageViewModel
     {
         // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
+
+        var conversation = new Conversation(
+            "Conversation title",
+            "llama3.2"
+        );
         
-        _messages = new ObservableCollection<Message>();
-        _availableModels = new ObservableCollection<string> { "llama3.2", LocalizationService.GetString("LOADING_MODELS")};
+        _conversations = [conversation];
+        SelectedConversation = conversation;
+        _availableModels = ["llama3.2", LocalizationService.GetString("LOADING_MODELS")];
         _ollamaService = ollamaService;
         
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;

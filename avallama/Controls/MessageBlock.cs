@@ -734,15 +734,22 @@ public class MessageBlock : Control
 
     private async Task OnKeyDown(object? sender, KeyEventArgs e)
     {
+        // macOS billentyűk
+        // Meta - nyomva tartott Command
+        // LWin - lenyomott bal oldali Command
+        // RWin - lenyomott jobb oldali Command
+        
         // CTRL+A - összes szöveg kijelölése
-        if (e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        if (e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control) 
+            || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
         {
             SelectAllText();
             e.Handled = true;
         }
 
         // CTRL+C - szöveg kimásolása vágólapra
-        if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control)
+            || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
         {
             UpdateSelectedText();
             await CopyToClipboardAsync(_selectedText);

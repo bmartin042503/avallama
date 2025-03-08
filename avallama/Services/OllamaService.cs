@@ -134,7 +134,7 @@ public class OllamaService
                 serverCheck++;
                 if (!serverAvailable)
                 {
-                    await Task.Delay(1250);
+                    await Task.Delay(500);
                     continue;
                 }
                 

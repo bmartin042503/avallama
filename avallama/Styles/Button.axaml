@@ -14,11 +14,12 @@
                         <controls:DynamicSvg Path="/Assets/Svg/hide.svg"
                              Width="12"/>
                     </Button>
+                    <Button Classes="avallamaWhite" Content="Icon Button" />
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
-    
+
     <!-- Alapértelmezett gombok -->
     <Style Selector="Button">
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
@@ -77,4 +78,25 @@
         <Setter Property="Background" Value="{DynamicResource Error}"/>
     </Style>
     
+    <Style Selector="Button.avallamaWhite">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Padding="14,8" HorizontalAlignment="Stretch">
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                            <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
+                                                 Width="8" FillColor="{DynamicResource OnPrimary}"
+                                                 HorizontalAlignment="Center"/>
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                VerticalAlignment="Center"
+                                FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </Styles>
