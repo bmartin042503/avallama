@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System.Diagnostics;
 using avallama.Services;
 using CommunityToolkit.Mvvm.Input;
 
@@ -9,10 +10,21 @@ namespace avallama.ViewModels;
 public partial class SettingsViewModel : DialogViewModel
 {
     private readonly DialogService _dialogService;
+    private readonly string url = @"https://github.com/4foureyes/avallama/";
 
     public SettingsViewModel(DialogService dialogService)
     {
         _dialogService = dialogService;
+    }
+
+    [RelayCommand]
+    public void OnHyperlinkClicked()
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = url,
+            UseShellExecute = true
+        });
     }
 
     [RelayCommand]

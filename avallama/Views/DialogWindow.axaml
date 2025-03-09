@@ -11,6 +11,7 @@ Licensed under the MIT License. See LICENSE file for details.
         x:Class="avallama.Views.DialogWindow"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
+        Icon="/Assets/avallama-circular.ico"
         ExtendClientAreaTitleBarHeightHint="0"
         PointerPressed="Window_PointerPressed"
         WindowStartupLocation="CenterScreen"/>

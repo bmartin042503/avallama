@@ -10,6 +10,10 @@
 bin/
 obj/
 
+# Installer files
+**/publish/
+**/installer/
+
 # User-specific files
 *.user
 *.suo
