@@ -37,13 +37,24 @@ For more details on all releases, please refer to the full [CHANGELOG](./CHANGEL
 
 ## Installation
 
-### Windows
-¯\\\_(ツ)_/¯
-
-alternatively, build from source
+**Important notice**: a working installation of Ollama is required for Avallama to work properly. Before installing Avallama on any platform, please download and install Ollama from [this link](https://ollama.com/download).
 
 ### Linux
 I use arch btw
+
+### Windows
+
+1. **Download AvallamaInstaller.exe from the [releases](https://github.com/4foureyes/avallama/releases) page**
+2. **Run the installer**
+    - Once you have downloaded the installer, locate the file and open it to start the installation process
+3. **Choose the installation directory**
+    - When prompted, select the directory where you would like to install Avallama.
+    - The default location is `C:\Program Files (x86)\Avallama`. If you prefer a different location, click **Browse...** to select a folder of your choice.
+4. **Complete the installation**
+    - Proceed through the installer, when prompted, click **Install**
+    - Wait for the installer to copy all necessary files, this may take a moment
+5. **Launch Avallama**
+    - After files are copied, untick **Launch application** to exit the installer, if ticked, Avallama will start after you click **Finish**.
 
 ### macOS
 
