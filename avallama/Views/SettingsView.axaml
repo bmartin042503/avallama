@@ -11,13 +11,17 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:localization="clr-namespace:avallama.Services"
              mc:Ignorable="d"
              x:Class="avallama.Views.SettingsView"
-             x:DataType="vm:SettingsViewModel">
+             x:DataType="vm:SettingsViewModel"
+             Background="{DynamicResource Surface}">
     <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="Auto,*" Margin="26">
-        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Margin="0,0,120,0">
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Margin="0,0,120,0" Width="450">
             <TextBlock Text="{localization:LocalizationService Key='LANGUAGE_SETTING'}"
                        FontSize="20" Foreground="{DynamicResource OnSurface}"/>
             <TextBlock Text="{localization:LocalizationService Key='LANGUAGE_SETTING_DESC'}"
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}"/>
+            <TextBlock Text="{localization:LocalizationService Key='RESTART_NEEDED'}" Margin="0,10,0,0"
+                       Foreground="{DynamicResource Error}" TextWrapping="Wrap"
+                       IsVisible="{Binding RestartNeeded}"/>
         </StackPanel>
         <StackPanel Margin="0,24,0,0" Grid.Row="1" Grid.Column="0" Orientation="Vertical">
             <TextBlock Text="{localization:LocalizationService Key='COLOR_SCHEME_SETTING'}"
@@ -25,11 +29,14 @@ Licensed under the MIT License. See LICENSE file for details.
             <TextBlock Text="{localization:LocalizationService Key='COLOR_SCHEME_SETTING_DESC'}"
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}"/>
         </StackPanel>
-        <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="0" HorizontalAlignment="Right" Width="120">
+        <ComboBox Grid.Row="0" Grid.Column="1" 
+                  SelectedIndex="{Binding Mode=TwoWay, Path=SelectedLanguageIndex}" 
+                  HorizontalAlignment="Right" Width="120">
             <ComboBoxItem>Magyar</ComboBoxItem>
             <ComboBoxItem>English</ComboBoxItem>
         </ComboBox>
-        <ComboBox Grid.Row="1" Grid.Column="1" SelectedIndex="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="120">
+        <ComboBox Grid.Row="1" Grid.Column="1" SelectedIndex="{Binding Mode=TwoWay, Path=SelectedThemeIndex}" 
+                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="120">
             <ComboBoxItem Content="{localization:LocalizationService Key='LIGHT_THEME'}"/>
             <ComboBoxItem Content="{localization:LocalizationService Key='DARK_THEME'}"/>
         </ComboBox>
@@ -79,7 +86,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     Foreground="{DynamicResource OnSecondary}"
                     CornerRadius="6"
                     Content="{localization:LocalizationService Key='CLOSE'}"/>
-            <Button 
+            <Button Command="{Binding Save}"
                     Cursor="Hand" HorizontalAlignment="Center"
                     CornerRadius="6"
                     Content="{localization:LocalizationService Key='SAVE'}"/>

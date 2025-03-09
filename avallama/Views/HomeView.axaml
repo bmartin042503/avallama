@@ -22,7 +22,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <converters:ResponsiveMessageBlockSizeConverter x:Key="ResponsiveMessageBlockSizeConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="250,8,50,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
+    <Grid ColumnDefinitions="300,8,50,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
 
         <!-- SideBar -->
         <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar" SizeChanged="SideBar_OnSizeChanged"

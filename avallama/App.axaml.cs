@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -11,6 +12,8 @@ using avallama.ViewModels;
 using avallama.Views;
 using avallama.Services;
 using Avalonia.Controls;
+using Avalonia.Styling;
+using HarfBuzzSharp;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;
@@ -26,9 +29,6 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-        // CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-        
         // Az összes dependency létrehozása és eltárolása egy ServiceCollectionben
         var collection = new ServiceCollection();
         collection.AddCommonServices();
@@ -40,6 +40,28 @@ public partial class App : Application
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var configurationService = services.GetRequiredService<ConfigurationService>();
+            
+            var colorScheme = configurationService.ReadSetting("color-scheme");
+            var language = configurationService.ReadSetting("language");
+
+            RequestedThemeVariant = colorScheme switch
+            {
+                "dark" => ThemeVariant.Dark,
+                "light" => ThemeVariant.Light,
+                _ => ThemeVariant.Default
+            };
+
+            var cultureInfo = language switch
+            {
+                "hungarian" => CultureInfo.GetCultureInfo("hu-HU"),
+                "english" => CultureInfo.InvariantCulture,
+                _ => CultureInfo.InvariantCulture
+            };
+            
+            var localizationService = services.GetRequiredService<LocalizationService>();
+            localizationService.ChangeLanguage(cultureInfo);
+            
             //feliratkozunk az OnStartup-ra és az OnExitre
             desktop.Startup += OnStartup;
             desktop.Exit += OnExit;

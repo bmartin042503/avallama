@@ -46,7 +46,7 @@ public partial class HomeView : UserControl
         else
         {
             if (_sideBarControl == null) return;
-            MainGrid.ColumnDefinitions = new ColumnDefinitions("250,8,50,7*");
+            MainGrid.ColumnDefinitions = new ColumnDefinitions("300,8,50,7*");
             MainGrid.Children.Insert(0, _sideBarControl);
             _sideBarExpanded = true;
         }  

@@ -10,7 +10,7 @@ public class LocalizationService : MarkupExtension
 {
     private static readonly System.Threading.Lock Lock = new();
     private static System.Resources.ResourceManager? _resourceMan;
-    private static readonly CultureInfo ResourceCulture = CultureInfo.CurrentUICulture;
+    private static CultureInfo _resourceCulture = CultureInfo.CurrentUICulture;
     
     // ResourceManager példány lekérése
     private static System.Resources.ResourceManager ResourceManager {
@@ -26,11 +26,16 @@ public class LocalizationService : MarkupExtension
         }
     }
 
+    public void ChangeLanguage(CultureInfo cultureInfo)
+    {
+        _resourceCulture = cultureInfo;
+    }
+
     // Lokalizált szöveg lekérése kulcs alapján
     public static string GetString(string key)
     {
         // nagy, izmos undefined szöveg xd csak hogy feltűnjön ha valamelyik ui elemre rossz a kulcs
-        return ResourceManager.GetString(key, ResourceCulture) ?? "[UNDEFINED_LOCALIZATION_KEY]";
+        return ResourceManager.GetString(key, _resourceCulture) ?? "[UNDEFINED_LOCALIZATION_KEY]";
     }
 
     // MarkupExtension

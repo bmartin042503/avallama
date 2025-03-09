@@ -145,4 +145,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DARK_THEME" xml:space="preserve">
         <value>Sötét</value>
     </data>
+    <data name="RESTART_NEEDED" xml:space="preserve">
+        <value>A változtatások érvényesítéséhez újra kell indítani az alkalmazást</value>
+    </data>
 </root>

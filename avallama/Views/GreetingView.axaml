@@ -45,7 +45,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 FontSize="14"
                 TextAlignment="Center"
                 Margin="0,30,0,0"
-                Foreground="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceStatusTextColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                Foreground="{DynamicResource OnSurface}"/>
         </StackPanel>
         
         <TextBlock Text="{localization:LocalizationService Key='VERSION'}"

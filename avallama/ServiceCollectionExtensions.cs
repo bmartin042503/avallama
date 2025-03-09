@@ -19,6 +19,11 @@ public static class ServiceCollectionExtensions
         // Singleton - Memóriában folytonosan jelen van
         // Transient - Csak akkor hozza létre amikor szükség van rá és ha nincs akkor törli
         
+        collection.AddSingleton<OllamaService>();
+        collection.AddSingleton<DialogService>();
+        collection.AddSingleton<LocalizationService>();
+        collection.AddSingleton<ConfigurationService>();
+        
         collection.AddSingleton<MainViewModel>();
         collection.AddTransient<GreetingViewModel>();
         collection.AddTransient<HomeViewModel>();
@@ -28,9 +33,6 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<DialogViewModelFactory>();
         
         collection.AddTransient<DialogWindow>();
-        
-        collection.AddSingleton<OllamaService>();
-        collection.AddSingleton<DialogService>();
 
         // PageFactoryba injektálandó delegate dependency
         // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint

@@ -107,10 +107,11 @@ Licensed under the MIT License. See LICENSE file for details.
                             Padding="14,8" HorizontalAlignment="Stretch">
                         <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                             <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
-                                                 Width="8" FillColor="{DynamicResource OnPrimary}"
+                                                 Width="8" FillColor="{DynamicResource OnSurfaceVariant}"
                                                  HorizontalAlignment="Center"/>
                             <ContentPresenter
                                 Content="{TemplateBinding Content}"
+                                Foreground="{DynamicResource OnSurfaceVariant}"
                                 VerticalAlignment="Center"
                                 FontSize="10"/>
                         </StackPanel>
