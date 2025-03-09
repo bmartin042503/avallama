@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<Func<ApplicationDialogContent, DialogViewModel>>(serviceProvider => content => content switch
         {
             ApplicationDialogContent.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
-            ApplicationDialogContent.Credits => new DialogViewModel(),
+            ApplicationDialogContent.Credits => serviceProvider.GetRequiredService<CreditsViewModel>(),
             _ => throw new InvalidOperationException()
         });
 
