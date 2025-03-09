@@ -6,6 +6,7 @@ using avallama.Constants;
 using avallama.ViewModels;
 using avallama.Factories;
 using avallama.Services;
+using avallama.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;
@@ -18,12 +19,20 @@ public static class ServiceCollectionExtensions
         // Singleton - Memóriában folytonosan jelen van
         // Transient - Csak akkor hozza létre amikor szükség van rá és ha nincs akkor törli
         
+        collection.AddSingleton<MainWindow>();
+        collection.AddTransient<DialogWindow>();
+        
         collection.AddSingleton<MainViewModel>();
         collection.AddTransient<GreetingViewModel>();
         collection.AddTransient<HomeViewModel>();
+        collection.AddTransient<SettingsViewModel>();
+        collection.AddTransient<CreditsViewModel>();
 
         collection.AddSingleton<PageFactory>();
+        collection.AddSingleton<DialogViewModelFactory>();
+        
         collection.AddSingleton<OllamaService>();
+        collection.AddSingleton<DialogService>();
 
         // PageFactoryba injektálandó delegate dependency
         // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint
@@ -34,9 +43,13 @@ public static class ServiceCollectionExtensions
             ApplicationPage.Home => serviceProvider.GetRequiredService<HomeViewModel>(),
             _ => throw new InvalidOperationException() // ha még nincs adott Page regisztrálva akkor kivétel
         });
-        
-        
-        
-        
+
+        collection.AddSingleton<Func<ApplicationDialogContent, DialogViewModel>>(serviceProvider => content => content switch
+        {
+            ApplicationDialogContent.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
+            ApplicationDialogContent.Credits => new DialogViewModel(),
+            _ => throw new InvalidOperationException()
+        });
+
     }
 }

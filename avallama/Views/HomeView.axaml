@@ -57,7 +57,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 </ItemsControl>
             </ScrollViewer>
             
-            <Button Grid.Row="2" Classes="svgButton" Margin="10" Cursor="Hand">
+            <Button Grid.Row="2" Classes="svgButton" Margin="10" Cursor="Hand" Command="{Binding OpenSettings}">
                 <controls:DynamicSvg
                     Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
             </Button>

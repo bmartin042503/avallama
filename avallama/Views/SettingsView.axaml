@@ -1,0 +1,18 @@
+<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:avallama.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="avallama.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+    <StackPanel Margin="30" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+        <Label>SettingsView</Label>
+        <Button Command="{Binding Close}" HorizontalAlignment="Center">Close</Button>
+    </StackPanel>
+</UserControl>

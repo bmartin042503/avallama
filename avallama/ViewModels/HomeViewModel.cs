@@ -21,6 +21,7 @@ public partial class HomeViewModel : PageViewModel
     public string NotDownloadedWarning { get; } = String.Format(LocalizationService.GetString("NOT_DOWNLOADED_WARNING"));
     
     private readonly OllamaService _ollamaService;
+    private readonly DialogService _dialogService;
 
     private ObservableCollection<Conversation> _conversations;
     
@@ -64,6 +65,12 @@ public partial class HomeViewModel : PageViewModel
         {
             await RegenerateConversationTitle();
         }
+    }
+
+    [RelayCommand]
+    public async Task OpenSettings()
+    {
+        await _dialogService.ShowDialog(ApplicationDialogContent.Settings);
     }
 
     private async Task AddGeneratedMessage()
@@ -144,10 +151,12 @@ public partial class HomeViewModel : PageViewModel
         IsDownloading = false;
     }
     
-    public HomeViewModel(OllamaService ollamaService)
+    public HomeViewModel(OllamaService ollamaService, DialogService dialogService)
     {
         // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
+        
+        _dialogService = dialogService;
 
         var conversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
