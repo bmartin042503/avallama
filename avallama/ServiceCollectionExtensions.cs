@@ -19,9 +19,6 @@ public static class ServiceCollectionExtensions
         // Singleton - Memóriában folytonosan jelen van
         // Transient - Csak akkor hozza létre amikor szükség van rá és ha nincs akkor törli
         
-        collection.AddSingleton<MainWindow>();
-        collection.AddTransient<DialogWindow>();
-        
         collection.AddSingleton<MainViewModel>();
         collection.AddTransient<GreetingViewModel>();
         collection.AddTransient<HomeViewModel>();
@@ -30,6 +27,8 @@ public static class ServiceCollectionExtensions
 
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<DialogViewModelFactory>();
+        
+        collection.AddTransient<DialogWindow>();
         
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<DialogService>();

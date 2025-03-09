@@ -10,6 +10,7 @@ using Avalonia.Markup.Xaml;
 using avallama.ViewModels;
 using avallama.Views;
 using avallama.Services;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;
@@ -42,12 +43,15 @@ public partial class App : Application
             //feliratkozunk az OnStartup-ra és az OnExitre
             desktop.Startup += OnStartup;
             desktop.Exit += OnExit;
+            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
             
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = services.GetRequiredService<MainWindow>();
-            desktop.MainWindow.DataContext = services.GetRequiredService<MainViewModel>();
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = services.GetRequiredService<MainViewModel>()
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

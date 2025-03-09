@@ -21,13 +21,11 @@ public interface IDialogService
 public class DialogService : IDialogService
 {
     private DialogWindow? _dialogWindow;
-    private MainWindow _mainWindow;
     private DialogViewModelFactory _dialogViewModelFactory;
 
-    public DialogService(DialogWindow dialogWindow, MainWindow mainWindow, DialogViewModelFactory dialogViewModelFactory)
+    public DialogService(DialogWindow dialogWindow, DialogViewModelFactory dialogViewModelFactory)
     {
         _dialogWindow = dialogWindow;
-        _mainWindow = mainWindow;
         _dialogViewModelFactory = dialogViewModelFactory;
         
         _dialogWindow.Closing += (s, e) =>
