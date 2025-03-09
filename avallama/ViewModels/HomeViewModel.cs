@@ -68,9 +68,9 @@ public partial class HomeViewModel : PageViewModel
     }
 
     [RelayCommand]
-    public async Task OpenSettings()
+    public void OpenSettings()
     {
-        await _dialogService.ShowDialog(ApplicationDialogContent.Settings);
+        _dialogService.ShowDialog(ApplicationDialogContent.Settings);
     }
 
     private async Task AddGeneratedMessage()

@@ -13,7 +13,7 @@ namespace avallama.Services;
 
 public interface IDialogService
 {
-    Task ShowDialog(ApplicationDialogContent dialogContent);
+    void ShowDialog(ApplicationDialogContent dialogContent);
     void CloseDialog();
 }
 
@@ -37,7 +37,7 @@ public class DialogService : IDialogService
         }; 
     }
     
-    public async Task ShowDialog(ApplicationDialogContent dialogContent)
+    public void ShowDialog(ApplicationDialogContent dialogContent)
     {
         if (_dialogWindow == null) return;
         var dialogViewModel = _dialogViewModelFactory.GetDialogViewModel(dialogContent);
@@ -47,7 +47,7 @@ public class DialogService : IDialogService
         var control = (Control)Activator.CreateInstance(type)!;
         control.DataContext = dialogViewModel;
         _dialogWindow.Content = control;
-        await _dialogWindow.ShowDialog(_mainWindow);
+        _dialogWindow.Show();
     }
 
     public void CloseDialog()
