@@ -125,13 +125,31 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="LICENSE" xml:space="preserve">
         <value>MIT License, see LICENSE file for details</value>
     </data>
-    <data name="LICENSE_LABEL" xml:space="preserve">
-        <value>License</value>
-    </data>
     <data name="GITHUB_BUTTON" xml:space="preserve">
-        <value>Open GitHub</value>
+        <value>GitHub</value>
     </data>
     <data name="FROM_ORG" xml:space="preserve">
         <value>From the 4foureyes organization</value>
+    </data>
+    <data name="CLOSE" xml:space="preserve">
+        <value>Close</value>
+    </data>
+    <data name="LANGUAGE_SETTING" xml:space="preserve">
+        <value>Language</value>
+    </data>
+    <data name="LANGUAGE_SETTING_DESC" xml:space="preserve">
+        <value>Changes the application language</value>
+    </data>
+    <data name="COLOR_SCHEME_SETTING" xml:space="preserve">
+        <value>Color scheme</value>
+    </data>
+    <data name="COLOR_SCHEME_SETTING_DESC" xml:space="preserve">
+        <value>The color scheme of the app</value>
+    </data>
+    <data name="LIGHT_THEME" xml:space="preserve">
+        <value>Light</value>
+    </data>
+    <data name="DARK_THEME" xml:space="preserve">
+        <value>Dark</value>
     </data>
 </root>

@@ -25,6 +25,10 @@ Licensed under the MIT License. See LICENSE file for details.
                               IsEnabled="False">
                         <ComboBoxItem Content="llama3.2" />
                     </ComboBox>
+                    <ComboBox SelectedIndex="0" HorizontalAlignment="Right" Classes="settingComboBox">
+                        <ComboBoxItem>Magyar</ComboBoxItem>
+                        <ComboBoxItem>English</ComboBoxItem>
+                    </ComboBox>
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
@@ -41,6 +45,28 @@ Licensed under the MIT License. See LICENSE file for details.
     <Style Selector="ComboBox:pressed, ComboBox:pointerover">
         <Style Selector="^ /template/ Border#Background">
             <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
+        </Style>
+    </Style>
+    
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+    
+    <!-- Beállításokban lévő combobox stílusok -->
+    <Style Selector="ComboBox.settingComboBox">
+        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+        <Setter Property="Width" Value="125"/>
+    </Style>
+    
+    <Style Selector="ComboBox.settingComboBox PathIcon#DropDownGlyph">
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+    </Style>
+    
+    <Style Selector="ComboBox.settingComboBox:pointerover">
+        <Style Selector="^ /template/ Border#Background">
+            <Setter Property="Background" Value="{DynamicResource Secondary}"/>
         </Style>
     </Style>
     

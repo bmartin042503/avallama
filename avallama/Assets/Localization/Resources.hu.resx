@@ -116,15 +116,33 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Felhasznált technológiák:</value>
     </data>
     <data name="LICENSE" xml:space="preserve">
-        <value>MIT licenz, részletekért tekintse meg a LICENSE fájlt</value>
-    </data>
-    <data name="LICENSE_LABEL" xml:space="preserve">
-        <value>Licenz</value>
+        <value>MIT licensz, részletekért tekintse meg a LICENSE fájlt</value>
     </data>
     <data name="GITHUB_BUTTON" xml:space="preserve">
-        <value>GitHub Megnyítása</value>
+        <value>GitHub</value>
     </data>
     <data name="FROM_ORG" xml:space="preserve">
         <value>A 4foureyes csapattól</value>
+    </data>
+    <data name="CLOSE" xml:space="preserve">
+        <value>Bezárás</value>
+    </data>
+    <data name="LANGUAGE_SETTING_DESC" xml:space="preserve">
+        <value>Az alkalmazás nyelvének megváltoztatása</value>
+    </data>
+    <data name="COLOR_SCHEME_SETTING" xml:space="preserve">
+        <value>Színséma</value>
+    </data>
+    <data name="LANGUAGE_SETTING" xml:space="preserve">
+        <value>Nyelv</value>
+    </data>
+    <data name="COLOR_SCHEME_SETTING_DESC" xml:space="preserve">
+        <value>Az alkalmazás színsémája</value>
+    </data>
+    <data name="LIGHT_THEME" xml:space="preserve">
+        <value>Világos</value>
+    </data>
+    <data name="DARK_THEME" xml:space="preserve">
+        <value>Sötét</value>
     </data>
 </root>

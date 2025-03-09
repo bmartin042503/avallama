@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
+using avallama.Services;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace avallama.Views;
@@ -37,15 +40,30 @@ public partial class HomeView : UserControl
         {
             _sideBarControl = SideBar;
             MainGrid.Children.RemoveAt(0);
-            MainGrid.ColumnDefinitions = new ColumnDefinitions("Auto,*");
+            MainGrid.ColumnDefinitions = new ColumnDefinitions("0,0,50,7*");
             _sideBarExpanded = false;
         }
         else
         {
             if (_sideBarControl == null) return;
-            MainGrid.ColumnDefinitions = new ColumnDefinitions("3*,0.5*,7*");
+            MainGrid.ColumnDefinitions = new ColumnDefinitions("250,8,50,7*");
             MainGrid.Children.Insert(0, _sideBarControl);
             _sideBarExpanded = true;
         }  
+    }
+
+    private void SideBar_OnSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        // ha átméretezi a sidebart akkor beállítjuk reszponzívan az új csevegés gomb szövegét
+        // mert ugye a konverter baszta átállítani
+        var sideBarWidth = SideBar.Bounds.Width;
+        var buttonText = sideBarWidth switch
+        {
+            < 205 => string.Empty,
+            < 375 => LocalizationService.GetString("NEW"),
+            >= 375 => LocalizationService.GetString("NEW_CONVERSATION"),
+            _ => string.Empty
+        };
+        NewConversationBtn.Content = buttonText;
     }
 }

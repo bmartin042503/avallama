@@ -14,4 +14,5 @@ Licensed under the MIT License. See LICENSE file for details.
         Icon="/Assets/avallama-circular.ico"
         ExtendClientAreaTitleBarHeightHint="0"
         PointerPressed="Window_PointerPressed"
-        WindowStartupLocation="CenterScreen"/>
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"/>

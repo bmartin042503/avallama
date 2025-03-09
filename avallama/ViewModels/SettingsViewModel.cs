@@ -10,7 +10,7 @@ namespace avallama.ViewModels;
 public partial class SettingsViewModel : DialogViewModel
 {
     private readonly DialogService _dialogService;
-    private readonly string url = @"https://github.com/4foureyes/avallama/";
+    private const string Url = @"https://github.com/4foureyes/avallama/";
 
     public SettingsViewModel(DialogService dialogService)
     {
@@ -22,7 +22,7 @@ public partial class SettingsViewModel : DialogViewModel
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = url,
+            FileName = Url,
             UseShellExecute = true
         });
     }

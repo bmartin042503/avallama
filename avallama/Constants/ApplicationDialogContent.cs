@@ -5,6 +5,5 @@ namespace avallama.Constants;
 
 public enum ApplicationDialogContent
 {
-    Settings,
-    Credits
+    Settings
 }
