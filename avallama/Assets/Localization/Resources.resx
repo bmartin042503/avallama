@@ -161,4 +161,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="ABOUT" xml:space="preserve">
         <value>About</value>
     </data>
+    <data name="DOWNLOAD_OLLAMA" xml:space="preserve">
+        <value>Download Ollama ({0})</value>
+    </data>
 </root>

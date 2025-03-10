@@ -108,7 +108,7 @@ public class OllamaService
         if (_ollamaProcess == null)
         {
             OnServiceStatusChanged(
-                ServiceStatus.Failed,
+                ServiceStatus.NotInstalled,
                 LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
             );
             return;

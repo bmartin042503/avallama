@@ -1,10 +1,8 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System.ComponentModel;
 using System.Diagnostics;
 using avallama.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace avallama.ViewModels;
