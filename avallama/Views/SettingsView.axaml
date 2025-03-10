@@ -92,6 +92,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <Button Command="{Binding Save}"
                     Cursor="Hand" HorizontalAlignment="Center"
                     CornerRadius="6"
+                    Click="SaveBtn_OnClick"
                     Content="{localization:LocalizationService Key='SAVE'}"/>
         </StackPanel>
     </Grid>

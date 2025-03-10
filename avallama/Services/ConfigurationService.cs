@@ -1,14 +1,11 @@
 using System;
 using System.Configuration;
-using System.Globalization;
 using Avalonia.Styling;
 
 namespace avallama.Services;
 
 public class ConfigurationService(LocalizationService localizationService)
 {
-    private readonly LocalizationService? _localizationService = localizationService;
-
     public string ReadSetting(string key)
     {
         try

@@ -29,7 +29,8 @@ Licensed under the MIT License. See LICENSE file for details.
                 <controls:DynamicSvg Path="/Assets/Svg/close.svg" Width="12"/>
             </Button>
         </StackPanel>
-        <ContentControl 
+        <ContentControl
+            x:Name="PageContent"
             Canvas.Left="0" 
             Canvas.Top="0" 
             Content="{Binding CurrentPageViewModel}" 
