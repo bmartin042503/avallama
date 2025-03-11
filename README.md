@@ -52,6 +52,7 @@ cd ~/Downloads
 sudo apt install ./avallama_0.1.0-alpha_amd64.deb
 ```
 *Replace `./avallama_0.1.0-alpha_amd64.deb` with the correct filename of the latest package*
+
 4. Once installed, execution permission must be granted manually with the following command:
 
 ```bash
