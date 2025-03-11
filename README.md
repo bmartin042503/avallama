@@ -47,15 +47,22 @@ For more details on all releases, please refer to the full [CHANGELOG](./CHANGEL
 ```bash
 cd ~/Downloads
 ```
-3. Install the package using one of the following commands:
+3. Install the package using the following command:
 ```bash
-sudo dpkg -i avallama_0.1.0-alpha_amd64.deb
-
 sudo apt install ./avallama_0.1.0-alpha_amd64.deb
 ```
-4. Once installed, you can run the application from the menu or by running `avallama`
+*Replace `./avallama_0.1.0-alpha_amd64.deb` with the correct filename of the latest package*
+4. Once installed, execution permission must be granted manually with the following command:
 
-To uninstall, run: `sudo apt remove avallama`
+```bash
+sudo chmod +x /usr/bin/avallama
+```
+5. After that, you can run the application from the application menu or with the `avallama` command
+
+To uninstall, run:
+```bash
+sudo apt remove avallama
+```
 
 
 ### Windows
@@ -64,7 +71,9 @@ To uninstall, run: `sudo apt remove avallama`
 2. Open the installer and go through the setup steps.
 3. Once installed, you can run the application from the Start Menu.
 
-*Note*: AvallamaSetup.exe is for installing Avallama on x86-64 based Windows systems, there is currently no support for Arm64.
+To uninstall, remove it through the `Apps > Installed apps` page in Settings, or navigate to the installation directory and run unins000.exe.
+
+**Note**: AvallamaSetup.exe is for installing Avallama on x86-64 based Windows systems, there is currently no support for Arm64.
 
 ### macOS
 
