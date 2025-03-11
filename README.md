@@ -41,7 +41,7 @@ For more details on all releases, please refer to the full [CHANGELOG](./CHANGEL
 
 ### Linux
 
-#### Debian/Ubuntu (x64 and arm64)
+#### Debian/Ubuntu (x64)
 1. Download the latest .deb package from the [releases](https://github.com/4foureyes/avallama/releases)
 2. Open a terminal and navigate to the directory where the file was downloaded, for example: 
 ```bash
