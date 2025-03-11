@@ -40,7 +40,23 @@ For more details on all releases, please refer to the full [CHANGELOG](./CHANGEL
 **Important notice**: a working installation of Ollama is required for Avallama to work properly. Before installing Avallama on any platform, please download and install Ollama from [this link](https://ollama.com/download).
 
 ### Linux
-I use arch btw
+
+#### Debian/Ubuntu (x64 and arm64)
+1. Download the latest .deb package from the [releases](https://github.com/4foureyes/avallama/releases)
+2. Open a terminal and navigate to the directory where the file was downloaded, for example: 
+```bash
+cd ~/Downloads
+```
+3. Install the package using one of the following commands:
+```bash
+sudo dpkg -i avallama_0.1.0-alpha_amd64.deb
+
+sudo apt install ./avallama_0.1.0-alpha_amd64.deb
+```
+4. Once installed, you can run the application from the menu or by running `avallama`
+
+For uninstall, enter: `sudo apt remove avallama`
+
 
 ### Windows
 
