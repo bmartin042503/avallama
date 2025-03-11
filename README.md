@@ -42,7 +42,7 @@ For more details on all releases, please refer to the full [CHANGELOG](./CHANGEL
 ### Linux
 
 #### Debian/Ubuntu (x64)
-1. Download the latest .deb package from the [releases](https://github.com/4foureyes/avallama/releases)
+1. Download the latest .deb package from the [releases](https://github.com/4foureyes/avallama/releases) page.
 2. Open a terminal and navigate to the directory where the file was downloaded, for example: 
 ```bash
 cd ~/Downloads
@@ -55,22 +55,16 @@ sudo apt install ./avallama_0.1.0-alpha_amd64.deb
 ```
 4. Once installed, you can run the application from the menu or by running `avallama`
 
-For uninstall, enter: `sudo apt remove avallama`
+To uninstall, run: `sudo apt remove avallama`
 
 
 ### Windows
 
-1. **Download AvallamaInstaller.exe from the [releases](https://github.com/4foureyes/avallama/releases) page**
-2. **Run the installer**
-    - Once you have downloaded the installer, locate the file and open it to start the installation process
-3. **Choose the installation directory**
-    - When prompted, select the directory where you would like to install Avallama.
-    - The default location is `C:\Program Files (x86)\Avallama`. If you prefer a different location, click **Browse...** to select a folder of your choice.
-4. **Complete the installation**
-    - Proceed through the installer, when prompted, click **Install**
-    - Wait for the installer to copy all necessary files, this may take a moment
-5. **Launch Avallama**
-    - After files are copied, untick **Launch application** to exit the installer, if ticked, Avallama will start after you click **Finish**.
+1. Download the latest version of AvallamaSetup.exe from the [releases](https://github.com/4foureyes/avallama/releases) page.
+2. Open the installer and go through the setup steps.
+3. Once installed, you can run the application from the Start Menu.
+
+*Note*: AvallamaSetup.exe is for installing Avallama on x86-64 based Windows systems, there is currently no support for Arm64.
 
 ### macOS
 
