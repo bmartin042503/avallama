@@ -1,10 +1,8 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System.ComponentModel;
 using System.Diagnostics;
 using avallama.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace avallama.ViewModels;
@@ -18,8 +16,10 @@ public partial class SettingsViewModel : DialogViewModel
     private int _selectedLanguageIndex;
     private int _selectedThemeIndex;
     private int _defaultLanguageIndex;
+    private bool _changesTextVisibility = false;
     private bool _restartNeeded;
 
+    // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et
     public bool RestartNeeded
     {
         get => _restartNeeded;
@@ -50,11 +50,22 @@ public partial class SettingsViewModel : DialogViewModel
             OnPropertyChanged();
         }
     }
+
+    public bool ChangesTextVisibility
+    {
+        get => _changesTextVisibility;
+        set
+        {
+            _changesTextVisibility = value;
+            OnPropertyChanged();
+        }
+    }
     
     public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService)
     {
         _dialogService = dialogService;
         _configurationService = configurationService;
+        ChangesTextVisibility = false;
         LoadSettings();
     }
 
@@ -95,6 +106,7 @@ public partial class SettingsViewModel : DialogViewModel
         };
         _configurationService.SaveSetting("color-scheme", colorScheme);
         _configurationService.SaveSetting("language", language);
+        ChangesTextVisibility = true;
     }
 
     [RelayCommand]

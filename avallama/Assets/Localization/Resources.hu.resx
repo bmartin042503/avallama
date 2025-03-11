@@ -148,4 +148,13 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="RESTART_NEEDED" xml:space="preserve">
         <value>A változtatások érvényesítéséhez újra kell indítani az alkalmazást</value>
     </data>
+    <data name="SETTINGS_SAVED" xml:space="preserve">
+        <value>Változtatások mentve</value>
+    </data>
+    <data name="ABOUT" xml:space="preserve">
+        <value>Névjegy</value>
+    </data>
+    <data name="DOWNLOAD_OLLAMA" xml:space="preserve">
+        <value>Ollama letöltése ({0})</value>
+    </data>
 </root>

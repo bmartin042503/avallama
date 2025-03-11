@@ -13,7 +13,6 @@ using avallama.Views;
 using avallama.Services;
 using Avalonia.Controls;
 using Avalonia.Styling;
-using HarfBuzzSharp;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;

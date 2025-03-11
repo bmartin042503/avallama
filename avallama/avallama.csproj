@@ -14,6 +14,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Update="Assets/Avallama.icns">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
       <AvaloniaResource Remove="Assets\Localization\Resources.resx" />
     </ItemGroup>
 

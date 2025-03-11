@@ -13,6 +13,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="15" Background="{DynamicResource Surface}">
                     <Button Content="Default Button"/>
+                    <Button Classes="secondaryButton" Content="Secondary Button"/>
                     <Button Classes="large" Content="Large Button"/>
                     <Button Content="Disabled Button" IsEnabled="False"/>
                     <Button Classes="windowManager">
@@ -48,8 +49,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </Style>
     
     <Style Selector="Button:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
     </Style>
     
     <!-- Nagy gombok -->
@@ -119,5 +120,15 @@ Licensed under the MIT License. See LICENSE file for details.
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+    
+    <Style Selector="Button.secondaryButton">
+        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+    </Style>
+    
+    <Style Selector="Button.secondaryButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SecondaryContainer}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainer}"/>
     </Style>
 </Styles>

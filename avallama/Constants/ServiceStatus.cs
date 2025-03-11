@@ -7,5 +7,6 @@ namespace avallama.Constants;
 public enum ServiceStatus
 {
     Running,
-    Failed
+    Failed,
+    NotInstalled
 }

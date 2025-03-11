@@ -15,22 +15,13 @@ public partial class MainViewModel : ViewModelBase
 {
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
-    public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     
-    [ObservableProperty]
-    private PageViewModel _currentPageViewModel;
-
-    [ObservableProperty] 
-    private bool _ollamaServiceRunning;
-
-    [ObservableProperty] 
-    private bool _ollamaServiceLoading;
-    
-    [ObservableProperty]
-    private string? _ollamaServiceStatusText;
-    
-    [ObservableProperty]
-    private SolidColorBrush _ollamaServiceStatusTextColor;
+    [ObservableProperty] private PageViewModel _currentPageViewModel;
+    [ObservableProperty] private bool _ollamaServiceRunning;
+    [ObservableProperty] private bool _ollamaServiceLoading;
+    [ObservableProperty] private string? _ollamaServiceStatusText;
+    [ObservableProperty] private string? _downloadButtonText;
+    [ObservableProperty] private bool _isDownloadButtonVisible;
     
     private OllamaService _ollamaService;
 
@@ -42,7 +33,7 @@ public partial class MainViewModel : ViewModelBase
         _ollamaService = ollamaService;
         _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
         OllamaServiceStatusText = LocalizationService.GetString("OLLAMA_STARTING");
-        OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Black);
+        IsDownloadButtonVisible = false;
         OllamaServiceLoading = true;
     }
 
@@ -65,18 +56,16 @@ public partial class MainViewModel : ViewModelBase
     {
         if(message != null) OllamaServiceStatusText = message;
         OllamaServiceLoading = false;
-        switch(status)
+        if (status == ServiceStatus.Running)
         {
-            case ServiceStatus.Running:
-                OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Green);
-                OllamaServiceRunning = true;
-                break;
-            case ServiceStatus.Failed:
-                OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Red);
-                break;
-            default:
-                OllamaServiceStatusTextColor = new SolidColorBrush(Colors.Black);
-                break;
+            OllamaServiceRunning = true;
+        }
+        else if (status == ServiceStatus.NotInstalled)
+        {
+            DownloadButtonText = string.Format(LocalizationService.GetString("DOWNLOAD_OLLAMA"),
+                RuntimeInformation.RuntimeIdentifier);
+            IsDownloadButtonVisible = true;
         }
     }
+    
 }

@@ -13,7 +13,7 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.SettingsView"
              x:DataType="vm:SettingsViewModel"
              Background="{DynamicResource Surface}">
-    <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="Auto,*" Margin="26">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" ColumnDefinitions="Auto,*" Margin="26">
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Margin="0,0,120,0" Width="450">
             <TextBlock Text="{localization:LocalizationService Key='LANGUAGE_SETTING'}"
                        FontSize="20" Foreground="{DynamicResource OnSurface}"/>
@@ -79,16 +79,20 @@ Licensed under the MIT License. See LICENSE file for details.
             </ScrollViewer>
         </Border>
         
-        <StackPanel HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-            <Button Command="{Binding Close}" 
+        <TextBlock Grid.Column="1" Grid.Row="3" Text="{localization:LocalizationService Key='SETTINGS_SAVED'}"
+                   Margin="0,20,0,0" IsVisible="{Binding ChangesTextVisibility}"
+                   FontSize="14" Foreground="{DynamicResource Outline}"/>
+        
+        <StackPanel HorizontalAlignment="Right" Spacing="14" Margin="0,20,0,0" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <Button Command="{Binding Close}"
+                    Classes="secondaryButton"
                     Cursor="Hand" HorizontalAlignment="Center"
-                    Background="{DynamicResource Secondary}"
-                    Foreground="{DynamicResource OnSecondary}"
                     CornerRadius="6"
                     Content="{localization:LocalizationService Key='CLOSE'}"/>
             <Button Command="{Binding Save}"
                     Cursor="Hand" HorizontalAlignment="Center"
                     CornerRadius="6"
+                    Click="SaveBtn_OnClick"
                     Content="{localization:LocalizationService Key='SAVE'}"/>
         </StackPanel>
     </Grid>

@@ -1,14 +1,11 @@
 using System;
 using System.Configuration;
-using System.Globalization;
 using Avalonia.Styling;
 
 namespace avallama.Services;
 
 public class ConfigurationService(LocalizationService localizationService)
 {
-    private readonly LocalizationService? _localizationService = localizationService;
-
     public string ReadSetting(string key)
     {
         try
@@ -40,16 +37,9 @@ public class ConfigurationService(LocalizationService localizationService)
             configFile.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
             if (Avalonia.Application.Current is not App app) return;
-            switch (key)
+            if (key == "color-scheme")
             {
-                case "color-scheme":
-                    app.RequestedThemeVariant = value == "light" ? ThemeVariant.Light : ThemeVariant.Dark;
-                    break;
-                case "language":
-                    _localizationService?.ChangeLanguage(value == "hungarian"
-                        ? CultureInfo.GetCultureInfo("hu-HU")
-                        : CultureInfo.InvariantCulture);
-                    break;
+                app.RequestedThemeVariant = value == "light" ? ThemeVariant.Light : ThemeVariant.Dark;
             }
         }
         catch (ConfigurationErrorsException e)
