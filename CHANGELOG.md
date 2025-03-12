@@ -2,7 +2,7 @@
 
 All releases of this project will be documented in this file.
 
-## 0.1.0-alpha - TBD
+## v0.1.0-alpha - 2025/03/12
 This is the first alpha release of Avallama. It serves as a proof of concept and lays the foundation for future features and improvements.
 
 ### Added
