@@ -78,13 +78,13 @@ makepkg -si
 
 ### Windows (x64)
 
+The Windows installer is **not signed with a trusted code-signing certificate**, so Windows SmartScreen may prevent it from running. If you wish to circumvent this, click `More info -> Run anyway`.
+
 1. Download the latest version of AvallamaSetup.exe from the [releases](https://github.com/4foureyes/avallama/releases) page.
 2. Open the installer and go through the setup steps.
 3. Once installed, you can run the application from the Start Menu.
 
 To uninstall, remove it through the `Apps > Installed apps` page in Settings, or navigate to the installation directory and run unins000.exe.
-
-**Note:** Since the installer is not signed with a trusted code-signing certificate, Windows SmartScreen will prevent it from running. If you wish to circumvent this, click `More info -> Run anyway`.
 
 ### macOS
 
