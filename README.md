@@ -95,6 +95,12 @@ This application is **not signed nor notarized**. MacOS may prevent it from runn
 3. Double click on Avallama to run it.
 4. *(Optional) Move the Avallama.app file to the Applications folder using Finder*.
 
+If the '*app is damaged or can't be opened*' error occurs, make sure you remove the quarantine flag of the ZIP file using the following command in the Terminal, and extract it again:
+```bash
+xattr -d com.apple.quarantine avallama_0.1.0-alpha_osx_arm64.zip
+```
+
+
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
