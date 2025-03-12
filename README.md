@@ -65,6 +65,16 @@ To uninstall, run:
 sudo apt remove avallama
 ```
 
+#### Arch Linux (x64)
+
+This installation method has not been verified and may run unexpectedly.
+
+1. Download the latest PKGBUILD and .tar.gz files from the [releases](https://github.com/4foureyes/avallama/releases) page.
+2. Open a terminal and navigate to the directory where the files were downloaded.
+3. Install the package using the following command:
+```bash
+makepkg -si
+```
 
 ### Windows
 
@@ -80,10 +90,10 @@ To uninstall, remove it through the `Apps > Installed apps` page in Settings, or
 
 This application is **not signed nor notarized**. MacOS may prevent it from running by default.
 
-1. Download the latest zip file from the [releases](https://github.com/4foureyes/avallama/releases) (for Intel use *osx_x64*, for Apple Silicon use *osx_arm64*)
-2. Double click on the ZIP file to extract it
-3. Double click on Avallama to run it
-4. *(Optional) Move the Avallama.app file to the Applications folder using Finder*
+1. Download the latest ZIP file from the [releases](https://github.com/4foureyes/avallama/releases) page. (for Intel use *osx_x64*, for Apple Silicon use *osx_arm64*)
+2. Double click on the ZIP file to extract it.
+3. Double click on Avallama to run it.
+4. *(Optional) Move the Avallama.app file to the Applications folder using Finder*.
 
 ## License
 
