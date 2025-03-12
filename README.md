@@ -78,7 +78,12 @@ To uninstall, remove it through the `Apps > Installed apps` page in Settings, or
 
 ### macOS
 
-idk a mac joke ngl
+This application is **not signed nor notarized**. MacOS may prevent it from running by default.
+
+1. Download the latest zip file from the [releases](https://github.com/4foureyes/avallama/releases) (for Intel use *osx_x64*, for Apple Silicon use *osx_arm64*)
+2. Double click on the ZIP file to extract it
+3. Double click on Avallama to run it
+4. *(Optional) Move the Avallama.app file to the Applications folder using Finder*
 
 ## License
 
