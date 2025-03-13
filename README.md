@@ -19,7 +19,7 @@ This project is currently being developed by Márk Csörgő and Martin Bartos.
 
 ## Contributions
 
-We are currently not accepting outside contributions, please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
+We are currently not accepting outside contributions, however we encourage users to report bugs, crashes or any unexpected behaviour. Please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
 
 ## Latest release
 
@@ -100,6 +100,12 @@ If the '*app is damaged or can't be opened*' error occurs, make sure you remove 
 xattr -d com.apple.quarantine avallama_0.1.0-alpha_osx_arm64.zip
 ```
 
+## Known issues
+
+This is a list of issues we are aware of that will be fixed in a subsequent release. Please do not open new issues for the following known problems, as they are already being addressed.
+
+- **Windows:** If installed in the `C:\Program Files` or `C:\Program Files (x86)` directory, settings cannot be updated unless Avallama is run as administrator.
+- **All platforms:** Parameter size indication is broken if model is downloaded through the app, to fix this, restart the app and parameter size indication should work as intended.
 
 ## License
 
