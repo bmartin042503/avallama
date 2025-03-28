@@ -4,7 +4,11 @@
 <h1 align="center">Avallama</h1>
 
 
-Avallama is a multi-platform desktop app designed to enable a user-friendly GUI for Ollama using the Avalonia framework.
+<p align="center">Avallama is a multi-platform desktop app designed to enable a user-friendly GUI for Ollama using the Avalonia framework.</p>
+
+<p align="center">
+    <img style="border-radius: 10px; box-shadow: 0 5px 25px #755085;" src="avallama/Assets/prodimg2.png" alt="Avallama picture">
+</p>
 
 This project is currently being developed by Márk Csörgő and Martin Bartos.
 
