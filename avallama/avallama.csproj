@@ -38,5 +38,16 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
         <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.2" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Views\Dialogs\OllamaServiceView.axaml.cs">
+        <DependentUpon>OllamaServiceView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Dialogs\SettingsView.axaml.cs">
+        <DependentUpon>SettingsView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
     
 </Project>

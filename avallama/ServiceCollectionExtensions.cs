@@ -28,11 +28,14 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<GreetingViewModel>();
         collection.AddTransient<HomeViewModel>();
         collection.AddTransient<SettingsViewModel>();
+        collection.AddSingleton<OllamaServiceViewModel>();
 
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<DialogViewModelFactory>();
         
         collection.AddTransient<DialogWindow>();
+        
+        collection.AddSingleton<AppLauncherService>();
 
         // PageFactoryba injektálandó delegate dependency
         // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint
@@ -47,6 +50,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<Func<ApplicationDialogContent, DialogViewModel>>(serviceProvider => content => content switch
         {
             ApplicationDialogContent.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
+            ApplicationDialogContent.OllamaService => serviceProvider.GetRequiredService<OllamaServiceViewModel>(),
             _ => throw new InvalidOperationException()
         });
 

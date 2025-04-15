@@ -1,10 +1,13 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System;
 using System.Configuration;
 using Avalonia.Styling;
 
 namespace avallama.Services;
 
-public class ConfigurationService(LocalizationService localizationService)
+public class ConfigurationService
 {
     public string ReadSetting(string key)
     {

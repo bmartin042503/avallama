@@ -41,7 +41,7 @@ public class OllamaService
         OllamaPath = "";
     }
 
-    private async Task Start()
+    public async Task Start()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -210,13 +210,20 @@ public class OllamaService
     public async Task<bool> IsModelDownloaded()
     {
         const string url = "http://localhost:11434/api/tags";
-        
-        using var client = new HttpClient();
-        var response = await client.GetAsync(url);
-        var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-        return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" || 
-                                                            m?["name"]?.ToString() == "llama3.2") 
-                                                            ?? false;
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.GetAsync(url);
+            var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
+            return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" || 
+                                                       m?["name"]?.ToString() == "llama3.2") 
+                   ?? false;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        return false;
     }
 
     public async Task<string> GetModelParamNum(string modelName)

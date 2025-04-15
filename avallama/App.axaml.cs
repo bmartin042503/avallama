@@ -7,10 +7,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
+using avallama.Constants;
 using Avalonia.Markup.Xaml;
+using avallama.Services;
 using avallama.ViewModels;
 using avallama.Views;
-using avallama.Services;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,10 +70,10 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = services.GetRequiredService<MainViewModel>()
-            };
+
+            // saját app launcher hogy először megjelenhessen a dialog és utána a MainWindow
+            var launcher = services.GetRequiredService<AppLauncherService>();
+            launcher.Run();
         }
 
         base.OnFrameworkInitializationCompleted();

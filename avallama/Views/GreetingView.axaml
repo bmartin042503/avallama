@@ -5,7 +5,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:avallama.ViewModels"
+             xmlns:vm="clr-namespace:avallama.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:localization="clr-namespace:avallama.Services"
@@ -25,34 +25,12 @@ Licensed under the MIT License. See LICENSE file for details.
                        Classes="subText"
                        HorizontalAlignment="Center"
                        Foreground="{DynamicResource OnSurfaceVariant}" />
-            <Button
-                Classes="large"
-                HorizontalAlignment="Center"
-                Margin="0,50,0,0"
-                IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceRunning, RelativeSource={RelativeSource AncestorType=Window}}"
-                Content="{localization:LocalizationService Key='GET_STARTED'}"
-                Cursor="Hand"
-                Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <ProgressBar IsIndeterminate="True"
-                         IsVisible="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceLoading, RelativeSource={RelativeSource AncestorType=Window}}"
-                         Width="200" Height="10"
-                         HorizontalAlignment="Center" VerticalAlignment="Top"
-                         Foreground="{DynamicResource Primary}"
-                         Background="Transparent"
-                         Margin="0,30,0,0" />
-
-            <TextBlock
-                Text="{Binding Path=((vm:MainViewModel)DataContext).OllamaServiceStatusText, RelativeSource={RelativeSource AncestorType=Window}}"
-                FontSize="14"
-                TextAlignment="Center"
-                Margin="0,30,0,0"
-                Foreground="{DynamicResource OnSurface}" />
-
-            <Button
-                Content="{Binding Path=((vm:MainViewModel)DataContext).DownloadButtonText, RelativeSource={RelativeSource AncestorType=Window}}"
-                IsVisible="{Binding Path=((vm:MainViewModel)DataContext).IsDownloadButtonVisible, RelativeSource={RelativeSource AncestorType=Window}}"
-                HorizontalAlignment="Center" Padding="14,8" Command="{Binding RedirectToOllamaDownload}" 
-                FontSize="12" Margin="0,14,0,0" Cursor="Hand" />
+            <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center" Margin="0,32,0,0">
+                <Button Content="{localization:LocalizationService Key='GET_STARTED'}"
+                        Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <Button Classes="lessSecondaryButton" Content="{localization:LocalizationService Key='SKIP_GUIDE'}"
+                        Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHomeCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </StackPanel>
         </StackPanel>
 
         <TextBlock Text="{localization:LocalizationService Key='VERSION'}"

@@ -47,7 +47,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ez a model nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
     </data>
     <data name="VERSION" xml:space="preserve">
-        <value>v0.1.0-alpha</value>
+        <value>v0.2.0</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>Jelenleg egyszerre csak egy beszélgetés támogatott</value>
@@ -156,5 +156,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="DOWNLOAD_OLLAMA" xml:space="preserve">
         <value>Ollama letöltése ({0})</value>
+    </data>
+    <data name="AVALLAMA_STARTING" xml:space="preserve">
+        <value>Avallama indítása..</value>
+    </data>
+    <data name="SKIP_GUIDE" xml:space="preserve">
+        <value>Útmutató kihagyása</value>
     </data>
 </root>

@@ -16,7 +16,7 @@ public partial class SettingsViewModel : DialogViewModel
     private int _selectedLanguageIndex;
     private int _selectedThemeIndex;
     private int _defaultLanguageIndex;
-    private bool _changesTextVisibility = false;
+    private bool _changesTextVisibility;
     private bool _restartNeeded;
 
     // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et

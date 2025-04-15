@@ -171,7 +171,6 @@ public partial class HomeViewModel : PageViewModel
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
 
         GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
-        
         //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
     }

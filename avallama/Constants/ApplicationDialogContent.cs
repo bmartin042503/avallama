@@ -5,5 +5,6 @@ namespace avallama.Constants;
 
 public enum ApplicationDialogContent
 {
-    Settings
+    Settings,
+    OllamaService
 }

@@ -14,6 +14,8 @@ Licensed under the MIT License. See LICENSE file for details.
                 <StackPanel Orientation="Vertical" Spacing="15" Background="{DynamicResource Surface}">
                     <Button Content="Default Button"/>
                     <Button Classes="secondaryButton" Content="Secondary Button"/>
+                    <!-- lessSecondaryButton: olyan gombok amik olyanok mint a secondary csak még inkább elbújnak a primary elől -->
+                    <Button Classes="lessSecondaryButton" Content="Less Secondary Button"/>
                     <Button Classes="large" Content="Large Button"/>
                     <Button Content="Disabled Button" IsEnabled="False"/>
                     <Button Classes="windowManager">
@@ -24,6 +26,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     <Button Classes="svgButton">
                         <controls:DynamicSvg Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
                     </Button>
+                    <Button Classes="errorButton" Content="Close"/>
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
@@ -130,5 +133,25 @@ Licensed under the MIT License. See LICENSE file for details.
     <Style Selector="Button.secondaryButton:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource SecondaryContainer}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainer}"/>
+    </Style>
+    
+    <Style Selector="Button.lessSecondaryButton">
+        <Setter Property="Background" Value="{DynamicResource SecondaryContainer}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainer}"/>
+    </Style>
+    
+    <Style Selector="Button.lessSecondaryButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+    </Style>
+    
+    <Style Selector="Button.errorButton">
+        <Setter Property="Background" Value="{DynamicResource ErrorContainer}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnErrorContainer}"/>
+    </Style>
+    
+    <Style Selector="Button.errorButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Error}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnError}"/>
     </Style>
 </Styles>

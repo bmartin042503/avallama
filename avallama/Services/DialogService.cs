@@ -2,12 +2,10 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
-using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Factories;
 using avallama.Views;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 
 namespace avallama.Services;
 
@@ -18,12 +16,16 @@ public interface IDialogService
 }
 
 // Később hozzáadni hogy adott Dialog Resultot is visszaadhasson ha kell vagy viewmodel kezelné idk
+// meg talán kibővíteni úgy hogy egyszerre több dialog is lehessen
 public class DialogService : IDialogService
 {
-    private DialogWindow? _dialogWindow;
-    private DialogViewModelFactory _dialogViewModelFactory;
+    private readonly DialogWindow? _dialogWindow;
+    private readonly DialogViewModelFactory _dialogViewModelFactory;
 
-    public DialogService(DialogWindow dialogWindow, DialogViewModelFactory dialogViewModelFactory)
+    public DialogService(
+        DialogWindow dialogWindow, 
+        DialogViewModelFactory dialogViewModelFactory
+    )
     {
         _dialogWindow = dialogWindow;
         _dialogViewModelFactory = dialogViewModelFactory;

@@ -1,0 +1,43 @@
+<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:avallama.ViewModels"
+             xmlns:services="clr-namespace:avallama.Services"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="avallama.Views.OllamaServiceView"
+             x:DataType="vm:OllamaServiceViewModel"
+             Background="{DynamicResource Surface}">
+    <StackPanel Orientation="Vertical" Margin="16" Spacing="16">
+        <ProgressBar IsIndeterminate="True"
+                     IsVisible="{Binding Path=OllamaServiceLoading}"
+                     Width="200" Height="10"
+                     HorizontalAlignment="Center" VerticalAlignment="Top"
+                     Foreground="{DynamicResource Primary}"
+                     Background="Transparent" />
+
+        <TextBlock
+            Text="{Binding Path=OllamaServiceStatusText}"
+            FontSize="14"
+            TextAlignment="Center"
+            Foreground="{DynamicResource OnSurface}" />
+
+        <Button
+            Content="{Binding Path=DownloadButtonText}"
+            IsVisible="{Binding Path=IsDownloadButtonVisible}"
+            HorizontalAlignment="Center" Padding="14,8" Command="{Binding RedirectToOllamaDownload}" 
+            FontSize="12" Cursor="Hand" />
+        
+        <Button
+            Classes="errorButton"
+            Content="{services:LocalizationService Key='CLOSE'}"
+            IsVisible="{Binding Path=IsCloseButtonVisible}"
+            HorizontalAlignment="Center" Padding="14,8" Command="{Binding Close}" 
+            FontSize="12" Cursor="Hand" />
+    </StackPanel>
+</UserControl>
