@@ -169,9 +169,17 @@ public partial class HomeViewModel : PageViewModel
         _ollamaService = ollamaService;
         
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
+        
+        _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
+    }
 
-        GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
-        //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
-        CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
+    private void OllamaServiceStatusChanged(ServiceStatus status, string? message)
+    {
+        if (status == ServiceStatus.Running)
+        {
+            GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
+            //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
+            CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
+        }
     }
 }

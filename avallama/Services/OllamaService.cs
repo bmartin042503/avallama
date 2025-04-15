@@ -41,7 +41,7 @@ public class OllamaService
         OllamaPath = "";
     }
 
-    public async Task Start()
+    private async Task Start()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

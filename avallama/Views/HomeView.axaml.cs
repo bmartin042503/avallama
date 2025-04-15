@@ -9,6 +9,8 @@ using Avalonia.Interactivity;
 
 namespace avallama.Views;
 
+// TODO: GridSplitter húzás fix (mert most ki lehet húzni teljesen balra ami kitolja a sidebart a felületről)
+
 public partial class HomeView : UserControl
 {
     public HomeView()
