@@ -117,6 +117,8 @@ public class OllamaService
         var isServerRunning = await IsOllamaServerRunning();
         if (isServerRunning)
         {
+            // TODO: fix
+            // Hiba: HomeViewModel később van inicializálva és így nem tudja megkapni ezt az eventet
             OnServiceStatusChanged(
                 ServiceStatus.Running,
                 LocalizationService.GetString("OLLAMA_STARTED")

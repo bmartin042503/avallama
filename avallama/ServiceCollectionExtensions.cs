@@ -25,10 +25,11 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<ConfigurationService>();
         
         collection.AddSingleton<MainViewModel>();
+        collection.AddSingleton<HomeViewModel>();
         collection.AddTransient<GreetingViewModel>();
-        collection.AddTransient<HomeViewModel>();
         collection.AddTransient<SettingsViewModel>();
         collection.AddSingleton<OllamaServiceViewModel>();
+        collection.AddTransient<GuideViewModel>();
 
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<DialogViewModelFactory>();
@@ -44,6 +45,7 @@ public static class ServiceCollectionExtensions
         {
             ApplicationPage.Greeting => serviceProvider.GetRequiredService<GreetingViewModel>(),
             ApplicationPage.Home => serviceProvider.GetRequiredService<HomeViewModel>(),
+            ApplicationPage.Guide => serviceProvider.GetRequiredService<GuideViewModel>(),
             _ => throw new InvalidOperationException() // ha még nincs adott Page regisztrálva akkor kivétel
         });
 

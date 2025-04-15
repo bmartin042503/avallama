@@ -170,4 +170,22 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SKIP_GUIDE" xml:space="preserve">
         <value>Skip guide</value>
     </data>
+    <data name="NEXT" xml:space="preserve">
+        <value>Next</value>
+    </data>
+    <data name="SKIP" xml:space="preserve">
+        <value>Skip</value>
+    </data>
+    <data name="GUIDE_1_MAIN_TEXT" xml:space="preserve">
+        <value>Start a new conversation with just one click</value>
+    </data>
+    <data name="GUIDE_1_SUB_TEXT" xml:space="preserve">
+        <value>Your data is stored locally, fully private and secure</value>
+    </data>
+    <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
+        <value>Explore and use different AI models</value>
+    </data>
+    <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
+        <value>Quick and easy access to all settings</value>
+    </data>
 </root>

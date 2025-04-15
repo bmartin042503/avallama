@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:services="clr-namespace:avallama.Services"
+             xmlns:vm="clr-namespace:avallama.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="avallama.Views.GuideView"
+             x:DataType="vm:GuideViewModel"
+             Background="{DynamicResource Surface}">
+    <StackPanel Orientation="Vertical" 
+                VerticalAlignment="Center" Margin="20"
+                HorizontalAlignment="Center">
+        <Border CornerRadius="8" ClipToBounds="True">
+            <Image Source="../Assets/prodimg2.png" Height="300"/>
+        </Border>
+        <TextBlock Text="Lorem ipsum dolor sit amet" HorizontalAlignment="Center"
+                   FontSize="20"
+                   Margin="0,20,0,0"
+                   Classes="subText"/>
+        <TextBlock Text="Lorem ipsum dolor sit amet" HorizontalAlignment="Center"
+                   Margin="0,8,0,0"/>
+        <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
+                    Margin="0,20,0,0">
+            <Button 
+                Content="{services:LocalizationService Key='NEXT'}"/>
+            <Button 
+                Classes="lessSecondaryButton" Content="{services:LocalizationService Key='SKIP'}"
+                Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHome, RelativeSource={RelativeSource AncestorType=Window}}"
+                />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

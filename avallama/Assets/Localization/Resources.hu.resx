@@ -163,4 +163,22 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SKIP_GUIDE" xml:space="preserve">
         <value>Útmutató kihagyása</value>
     </data>
+    <data name="NEXT" xml:space="preserve">
+        <value>Tovább</value>
+    </data>
+    <data name="SKIP" xml:space="preserve">
+        <value>Kihagyás</value>
+    </data>
+    <data name="GUIDE_1_MAIN_TEXT" xml:space="preserve">
+        <value>Indíts új beszélgetést egyetlen kattintással</value>
+    </data>
+    <data name="GUIDE_1_SUB_TEXT" xml:space="preserve">
+        <value>Minden adat lokálisan van tárolva, biztonságban</value>
+    </data>
+    <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
+        <value>Tölts le különböző AI modeleket</value>
+    </data>
+    <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
+        <value>Egyszerű, és személyreszabható</value>
+    </data>
 </root>

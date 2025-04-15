@@ -37,9 +37,15 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void GoToHome()
+    public void GoToHome()
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
+    }
+    
+    [RelayCommand]
+    private void GoToGuide()
+    {
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Guide);
     }
     
     // ezt lehet majd használni viewban commandként a retry gombra
