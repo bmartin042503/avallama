@@ -16,7 +16,7 @@ public class AppLauncherService
     private readonly MainViewModel _mainViewModel;
     private readonly DialogService _dialogService;
     
-    public AppLauncherService(DialogService dialogService, MainViewModel  mainViewModel)
+    public AppLauncherService(DialogService dialogService, MainViewModel mainViewModel)
     {
         _mainViewModel = mainViewModel;
         _dialogService = dialogService;

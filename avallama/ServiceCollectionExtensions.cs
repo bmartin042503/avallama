@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<ConfigurationService>();
         
         collection.AddSingleton<MainViewModel>();
-        collection.AddSingleton<HomeViewModel>();
+        collection.AddTransient<HomeViewModel>();
         collection.AddTransient<GreetingViewModel>();
         collection.AddTransient<SettingsViewModel>();
         collection.AddSingleton<OllamaServiceViewModel>();

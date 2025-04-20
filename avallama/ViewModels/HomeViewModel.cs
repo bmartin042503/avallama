@@ -16,9 +16,9 @@ namespace avallama.ViewModels;
 
 public partial class HomeViewModel : PageViewModel
 {
-    public string LanguageLimitationWarning { get; } = String.Format(LocalizationService.GetString("ONLY_SUPPORTED_MODEL"), "llama3.2");
-    public string ResourceLimitWarning { get; } = String.Format(LocalizationService.GetString("LOW_VRAM_WARNING"));
-    public string NotDownloadedWarning { get; } = String.Format(LocalizationService.GetString("NOT_DOWNLOADED_WARNING"));
+    public string LanguageLimitationWarning { get; } = string.Format(LocalizationService.GetString("ONLY_SUPPORTED_MODEL"), "llama3.2");
+    public string ResourceLimitWarning { get; } = string.Format(LocalizationService.GetString("LOW_VRAM_WARNING"));
+    public string NotDownloadedWarning { get; } = string.Format(LocalizationService.GetString("NOT_DOWNLOADED_WARNING"));
     
     private readonly OllamaService _ollamaService;
     private readonly DialogService _dialogService;
@@ -155,9 +155,8 @@ public partial class HomeViewModel : PageViewModel
     {
         // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
-        
         _dialogService = dialogService;
-
+        _ollamaService = ollamaService;
         var conversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
@@ -166,12 +165,16 @@ public partial class HomeViewModel : PageViewModel
         _conversations = [conversation];
         SelectedConversation = conversation;
         _availableModels = ["llama3.2", LocalizationService.GetString("LOADING_MODELS")];
-        _ollamaService = ollamaService;
-        
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
+        _ = OllamaInit();
+    }
+
+    private async Task OllamaInit()
+    {
+        await _ollamaService.OllamaServerStarted.Task;
         
         GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
         //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
-        CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
+        await CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
     }
 }

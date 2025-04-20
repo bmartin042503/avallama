@@ -25,6 +25,7 @@ public class OllamaService
 {
     private Process? _ollamaProcess;
     private static readonly HttpClient HttpClient = new();
+    public readonly TaskCompletionSource<bool> OllamaServerStarted = new();
     private string OllamaPath { get; set; }
 
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
@@ -204,6 +205,7 @@ public class OllamaService
     // ebben az eseteben a MainViewModelben lévő hívódik meg és átadja neki az értékeket
     private void OnServiceStatusChanged(ServiceStatus status, string? message = null)
     {
+        if(status == ServiceStatus.Running) OllamaServerStarted.SetResult(true);
         ServiceStatusChanged?.Invoke(status, message);
     }
 
