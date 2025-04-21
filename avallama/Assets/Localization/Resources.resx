@@ -54,7 +54,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>This model is not running optimally on your system due to low avaliable VRAM</value>
     </data>
     <data name="VERSION" xml:space="preserve">
-        <value>v0.2.0</value>
+        <value>v0.1.1</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>Currently only one conversation is supported at a time</value>

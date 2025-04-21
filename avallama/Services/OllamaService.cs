@@ -179,7 +179,7 @@ public class OllamaService
         }
     }
 
-    public void Stop()
+    public static void Stop()
     {
         var ollamaProcessList = Process.GetProcessesByName("ollama");
         foreach (var process in ollamaProcessList)
@@ -243,7 +243,7 @@ public class OllamaService
         using var client = new HttpClient();
         var response = await client.PostAsync(url, content);
         var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-        return ":" + json?["details"]?["parameter_size"]?.ToString().ToLower();
+        return (json?["details"]?["parameter_size"] == null ? "" : ":") + json?["details"]?["parameter_size"]?.ToString().ToLower();
         
     }
 
@@ -278,6 +278,7 @@ public class OllamaService
                 catch (JsonException)
                 {
                     // insert error handling here
+                    // TODO esetleg lehetne definialni egy custom error ablakot ami az ilyen hibakat kiirja?
                 }
                 if (json != null)
                 {

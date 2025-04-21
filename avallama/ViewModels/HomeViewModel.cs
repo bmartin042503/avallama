@@ -96,7 +96,7 @@ public partial class HomeViewModel : PageViewModel
     private async Task RegenerateConversationTitle()
     {
         SelectedConversation.Title = string.Empty;
-        const string request = "Generate just a single short title for this conversation with no use of \"";
+        const string request = "Generate only a single short title for this conversation with no use of quotation marks.";
         var tmpMessage = new Message(request);
         var messageHistory = new List<Message>(SelectedConversation.Messages.ToList()) { tmpMessage };
         await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
@@ -149,6 +149,7 @@ public partial class HomeViewModel : PageViewModel
 
         await CheckModelDownload();
         IsDownloading = false;
+        await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
     }
     
     public HomeViewModel(OllamaService ollamaService, DialogService dialogService)
