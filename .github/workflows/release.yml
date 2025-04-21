@@ -71,12 +71,16 @@ jobs:
           Description: Cross-platform GUI for interacting with LLMs via Ollama" > deb-root/DEBIAN/control
           dpkg-deb --build deb-root deb-root/avallama_${VERSION}_amd64.deb
 
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
       - name: Create .tar.gz (Arch-style)
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
+          VERSION="${{ steps.version.outputs.version }}"
           tar czvf avallama_${VERSION}_arch_x64.tar.gz -C linux-dist .
-
+      
+      
       - name: List files in working directory
         run: |
           echo "Listing files in current directory:"
@@ -87,8 +91,8 @@ jobs:
         with:
           name: linux-packages
           path: |
-            deb-root/avallama_${VERSION}_amd64.deb
-            avallama_${VERSION}_arch_x64.tar.gz
+            avallama_${{ steps.version.outputs.version }}_amd64.deb
+            avallama_${{ steps.version.outputs.version }}_arch_x64.tar.gz
             PKGBUILD
   
   build-macos:
