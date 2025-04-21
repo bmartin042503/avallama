@@ -188,4 +188,10 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
         <value>Quick and easy access to all settings</value>
     </data>
+    <data name="COMING_SOON" xml:space="preserve">
+        <value>Coming soon with more features..</value>
+    </data>
+    <data name="THANK_YOU" xml:space="preserve">
+        <value>Thank you for trying avallama!</value>
+    </data>
 </root>
