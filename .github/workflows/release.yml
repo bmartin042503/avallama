@@ -114,7 +114,7 @@ jobs:
       - name: Create app filestructure for x64
         run: |
           mkdir -p Avallama.app/Contents/{_CodeSignature,MacOS,Resources}
-          cp mac-dist-x64/* Avallama.app/Contents/MacOS/
+          cp -a mac-dist-x64/. Avallama.app/Contents/MacOS/
           cp avallama/avallama/Assets/Avallama.icns Avallama.app/Contents/Resources
           cat > Avallama.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -160,7 +160,7 @@ jobs:
       - name: Modify app file structure for arm64
         run: |
           rm -rf Avallama.app/Contents/MacOS/*
-          cp mac-dist-arm64/* Avallama.app/Contents/MacOS
+          cp -a mac-dist-arm64/. Avallama.app/Contents/MacOS/
 
       - name: Zip osx-arm64
         run: |
