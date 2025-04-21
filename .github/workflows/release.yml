@@ -27,7 +27,10 @@ jobs:
 
       - name: Restore & Publish
         run: |
-          dotnet publish avallama/avallama.csproj -c Release -r win-x64 --self-contained true -o win-dist /p:PublishSingleFile=true
+          dotnet publish avallama/avallama.csproj \
+            -c Release -r win-x64 --self-contained true \
+            -o win-dist \
+            /p:PublishSingleFile=true
 
       - name: Install Inno Setup
         run: |
@@ -68,7 +71,10 @@ jobs:
 
       - name: Publish (linux-x64)
         run: |
-          dotnet publish avallama/avallama.csproj -c Release -r linux-x64 --self-contained true -o linux-dist /p:PublishSingleFile=true
+          dotnet publish avallama/avallama.csproj \
+            -c Release -r linux-x64 --self-contained true \
+            -o linux-dist \
+            /p:PublishSingleFile=true
 
       - name: Create .deb
         run: |
@@ -115,11 +121,17 @@ jobs:
 
       - name: Publish for osx-x64
         run: |
-          dotnet publish avallama/avallama.csproj -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
+          dotnet publish avallama/avallama.csproj \
+            -c Release -r osx-x64 --self-contained true \
+            -o mac-dist-x64 \
+            /p:PublishSingleFile=true
 
       - name: Publish for osx-arm64
         run: |
-          dotnet publish avallama/avallama.csproj -c Release -r osx-arm64 --self-contained true -o mac-dist-arm64 /p:PublishSingleFile=true
+          dotnet publish avallama/avallama.csproj \
+            -c Release -r osx-arm64 --self-contained true \
+            -o mac-dist-arm64 \
+            /p:PublishSingleFile=true
 
       - name: Zip osx-x64
         run: zip -r avallama_${{ env.VERSION }}_osx_x64.zip mac-dist-x64/*
