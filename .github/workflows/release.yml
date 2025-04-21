@@ -6,138 +6,130 @@ on:
       - 'v*'
   workflow_dispatch:
 
-env:
-  DOTNET_VERSION: '9.x'
-
 jobs:
   build-windows:
     name: Windows Installer (.exe)
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: '9.x'
 
       - name: Restore & Publish
-        run: |
-          dotnet publish avallama/avallama.csproj \
-            -c Release -r win-x64 --self-contained true \
-            -o win-dist \
-            /p:PublishSingleFile=true
+        run: dotnet publish avallama/avallama.csproj -c Release -r win-x64 --self-contained true -o win-dist /p:PublishSingleFile=true
 
       - name: Install Inno Setup
         run: |
           Invoke-WebRequest https://jrsoftware.org/download.php/is.exe -OutFile is.exe
-          Start-Process .\is.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES' -Wait
+          Start-Process -FilePath .\is.exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -Wait
           echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
 
       - name: Build Installer
-        working-directory: win-dist
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" \
-            /DAppVersion="${{ env.VERSION }}" \
-            ../scripts/installer.iss
-
-      - name: Verify installer
-        run: dir win-dist
-
-      - name: Upload Installer Artifact
+          $VERSION = "${{ github.ref_name }}"
+          $VERSION = $VERSION.Substring(1)
+          cd win-dist
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            /DAppVersion="${VERSION}" `
+            scripts\installer.iss
+      
+      - name: Upload .exe Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Windows-Installer
-          path: win-dist/AvallamaSetup.exe
+          name: AvallamaSetup.exe
+          path: win-dist\AvallamaSetup.exe
 
   build-linux:
     name: Linux Packages (.deb, .tar.gz, PKGBUILD)
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: '9.x'
 
       - name: Publish (linux-x64)
-        run: |
-          dotnet publish avallama/avallama.csproj \
-            -c Release -r linux-x64 --self-contained true \
-            -o linux-dist \
-            /p:PublishSingleFile=true
+        run: dotnet publish avallama/avallama.csproj -c Release -r linux-x64 --self-contained true -o linux-dist /p:PublishSingleFile=true
 
       - name: Create .deb
         run: |
-          mkdir -p deb-root/usr/local/bin deb-root/DEBIAN
+          VERSION=${{ github.ref_name }}
+          VERSION=${VERSION#v}
+          mkdir -p deb-root/usr/local/bin
           cp linux-dist/avallama deb-root/usr/local/bin/avallama
-          cat > deb-root/DEBIAN/control <<EOF
-          Package: avallama
-          Version: ${{ env.VERSION }}
+          mkdir -p deb-root/DEBIAN
+
+          echo "Package: avallama
+          Version: ${VERSION}
           Architecture: amd64
           Maintainer: 4foureyes
-          Description: Cross-platform GUI for interacting with LLMs via Ollama
-          EOF
-          dpkg-deb --build deb-root avallama_${{ env.VERSION }}_amd64.deb
+          Description: Cross-platform GUI for interacting with LLMs via Ollama" > deb-root/DEBIAN/control
+
+          ls -R deb-root
+
+          dpkg-deb --build deb-root
+
+          echo "Listing current directory:"
+          ls -l
+          
+          mv deb-root/avallama_${VERSION}_amd64.deb .
 
       - name: Create .tar.gz (Arch-style)
-        run: tar czvf avallama_${{ env.VERSION }}_arch_x64.tar.gz -C linux-dist .
-
-      - name: List artifacts
-        run: ls -l
+        run: |
+          VERSION=${{ github.ref_name }}
+          VERSION=${VERSION#v}
+          tar czvf avallama_${VERSION}_arch_x64.tar.gz -C linux-dist .
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Linux-Packages
+          name: linux-packages
           path: |
-            avallama_${{ env.VERSION }}_amd64.deb
-            avallama_${{ env.VERSION }}_arch_x64.tar.gz
+            avallama_${{ steps.version.outputs.version }}_amd64.deb
+            avallama_${{ steps.version.outputs.version }}_arch_x64.tar.gz
             PKGBUILD
-
+  
   build-macos:
     name: macOS Packages (.zip for x64 and arm64)
     runs-on: macos-latest
+    
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: '9.x'
+
+      - name: Set version var
+        run: |
+          VERSION=${{ github.ref_name }}
+          echo "VERSION=${VERSION#v}" >> $GITHUB_ENV
 
       - name: Publish for osx-x64
-        run: |
-          dotnet publish avallama/avallama.csproj \
-            -c Release -r osx-x64 --self-contained true \
-            -o mac-dist-x64 \
-            /p:PublishSingleFile=true
+        run: dotnet publish avallama/avallama.csproj -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
 
       - name: Publish for osx-arm64
-        run: |
-          dotnet publish avallama/avallama.csproj \
-            -c Release -r osx-arm64 --self-contained true \
-            -o mac-dist-arm64 \
-            /p:PublishSingleFile=true
+        run: dotnet publish avallama/avallama.csproj -c Release -r osx-arm64 --self-contained true -o mac-dist-arm64 /p:PublishSingleFile=true
 
       - name: Zip osx-x64
-        run: zip -r avallama_${{ env.VERSION }}_osx_x64.zip mac-dist-x64/*
+        run: |
+          VERSION=${{ github.ref_name }}
+          VERSION=${VERSION#v}
+          zip -r avallama_${VERSION}_osx_x64.zip mac-dist-x64/*
 
       - name: Zip osx-arm64
-        run: zip -r avallama_${{ env.VERSION }}_osx_arm64.zip mac-dist-arm64/*
+        run: |
+          VERSION=${{ github.ref_name }}
+          VERSION=${VERSION#v}
+          zip -r avallama_${VERSION}_osx_arm64.zip mac-dist-arm64/*
 
       - name: Upload macOS x64 Artifact
         uses: actions/upload-artifact@v4
@@ -153,8 +145,9 @@ jobs:
 
   release:
     name: Publish GitHub Release
-    needs: [build-windows, build-linux, build-macos]
+    needs: [ build-windows, build-linux, build-macos ]
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
