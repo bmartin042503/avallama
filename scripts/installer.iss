@@ -75,7 +75,7 @@ begin
 end;
 
 [Files]
-Source: "..\avallama\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\Avallama"; Filename: "{app}\Avallama.exe"; IconFilename: "{app}\Avallama.exe"

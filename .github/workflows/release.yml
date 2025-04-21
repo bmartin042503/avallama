@@ -48,7 +48,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
 
       - name: Publish (linux-x64)
         run: dotnet publish avallama/avallama.csproj -c Release -r linux-x64 --self-contained true -o linux-dist /p:PublishSingleFile=true
@@ -88,7 +88,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
 
       - name: Publish for osx-x64
         run: dotnet publish avallama/avallama.csproj -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
