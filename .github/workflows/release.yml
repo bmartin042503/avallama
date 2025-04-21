@@ -17,7 +17,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
 
       - name: Restore & Publish
         run: dotnet publish avallama/avallama.csproj -c Release -r win-x64 --self-contained true -o win-dist /p:PublishSingleFile=true
@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Installer
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" scripts\installer.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" scripts\installer.iss
 
       - name: Upload .exe Artifact
         uses: actions/upload-artifact@v4
