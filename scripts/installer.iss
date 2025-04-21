@@ -77,7 +77,7 @@ begin
 end;
 
 [Files]
-Source: "{#SourcePath}\..\win-dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "win-dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\Avallama"; Filename: "{app}\Avallama.exe"; IconFilename: "{app}\Avallama.exe"
