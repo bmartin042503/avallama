@@ -30,8 +30,8 @@ jobs:
 
       - name: Build Installer
         run: |
-          $VERSION = "${{ github.ref_name }}"  # Get the tag name
-          $VERSION = $VERSION.Substring(1)  # Remove the leading 'v'
+          $VERSION = "${{ github.ref_name }}"
+          $VERSION = $VERSION.Substring(1)
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
             /DAppVersion="${VERSION}" `
             scripts\installer.iss
@@ -106,6 +106,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
+          
+      - name: Set version var
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Publish for osx-x64
         run: dotnet publish avallama/avallama.csproj -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
