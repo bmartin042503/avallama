@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AvallamaSetup.exe
-          path: AvallamaSetup.exe
+          path: installer\Output\AvallamaSetup.exe
 
   build-linux:
     name: Linux Packages (.deb, .tar.gz, PKGBUILD)
@@ -69,9 +69,8 @@ jobs:
           Architecture: amd64
           Maintainer: 4foureyes
           Description: Cross-platform GUI for interacting with LLMs via Ollama" > deb-root/DEBIAN/control
-          dpkg-deb --build deb-root
-          mv deb-root/avallama_${VERSION}_amd64.deb .
-      
+          dpkg-deb --build deb-root deb-root/avallama_${VERSION}_amd64.deb
+
       - name: Extract version
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
@@ -109,9 +108,7 @@ jobs:
           dotnet-version: '9.x'
           
       - name: Set version var
-        run: |
-          VERSION=${{ github.ref_name }}
-          echo "VERSION=${VERSION#v}" >> $GITHUB_ENV
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Publish for osx-x64
         run: dotnet publish avallama/avallama.csproj -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
@@ -137,13 +134,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-x64-package
-          path: avallama_${{ env.VERSION }}_osx_x64.zip
+          path: avallama_${VERSION}_osx_x64.zip
 
       - name: Upload macOS arm64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-package
-          path: avallama_${{ env.VERSION }}_osx_arm64.zip
+          path: avallama_${VERSION}_osx_arm64.zip
 
   release:
     name: Publish GitHub Release
