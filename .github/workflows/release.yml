@@ -32,16 +32,15 @@ jobs:
         run: |
           $VERSION = "${{ github.ref_name }}"
           $VERSION = $VERSION.Substring(1)
-          cd win-dist
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
             /DAppVersion="${VERSION}" `
             scripts\installer.iss
-      
+
       - name: Upload .exe Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AvallamaSetup.exe
-          path: win-dist\AvallamaSetup.exe
+          path: scripts\AvallamaSetup.exe
 
   build-linux:
     name: Linux Packages (.deb, .tar.gz, PKGBUILD)
@@ -54,46 +53,41 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
+          
+      - name: Set version var
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Publish (linux-x64)
         run: dotnet publish avallama/avallama.csproj -c Release -r linux-x64 --self-contained true -o linux-dist /p:PublishSingleFile=true
 
       - name: Create .deb
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
           mkdir -p deb-root/usr/local/bin
           cp linux-dist/avallama deb-root/usr/local/bin/avallama
           mkdir -p deb-root/DEBIAN
-
           echo "Package: avallama
-          Version: ${VERSION}
+          Version: ${{ env.VERSION }}
           Architecture: amd64
           Maintainer: 4foureyes
           Description: Cross-platform GUI for interacting with LLMs via Ollama" > deb-root/DEBIAN/control
-
-          ls -R deb-root
-
-          dpkg-deb --build deb-root
-
-          echo "Listing current directory:"
-          ls -l
-          
-          mv deb-root/avallama_${VERSION}_amd64.deb .
+          dpkg-deb --build deb-root deb-root/avallama_${{ env.VERSION }}_amd64.deb
 
       - name: Create .tar.gz (Arch-style)
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
-          tar czvf avallama_${VERSION}_arch_x64.tar.gz -C linux-dist .
+          tar czvf avallama_${{ env.VERSION }}_arch_x64.tar.gz -C linux-dist .
+      
+      - name: List files in working directory
+        run: |
+          echo "Listing files in current directory:"
+          ls -R .
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-packages
           path: |
-            avallama_${{ steps.version.outputs.version }}_amd64.deb
-            avallama_${{ steps.version.outputs.version }}_arch_x64.tar.gz
+            avallama_${{ env.VERSION }}_amd64.deb
+            avallama_${{ env.VERSION }}_arch_x64.tar.gz
             PKGBUILD
   
   build-macos:
@@ -107,11 +101,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
-
+          
       - name: Set version var
-        run: |
-          VERSION=${{ github.ref_name }}
-          echo "VERSION=${VERSION#v}" >> $GITHUB_ENV
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Publish for osx-x64
         run: dotnet publish avallama/avallama.csproj -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
@@ -121,15 +113,13 @@ jobs:
 
       - name: Zip osx-x64
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
-          zip -r avallama_${VERSION}_osx_x64.zip mac-dist-x64/*
+          cd mac-dist-x64
+          zip -r ../avallama_${{ env.VERSION }}_osx_x64.zip ./*
 
       - name: Zip osx-arm64
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
-          zip -r avallama_${VERSION}_osx_arm64.zip mac-dist-arm64/*
+          cd mac-dist-arm64
+          zip -r ../avallama_${{ env.VERSION }}_osx_arm64.zip ./*
 
       - name: Upload macOS x64 Artifact
         uses: actions/upload-artifact@v4
@@ -161,7 +151,7 @@ jobs:
         run: |
           git fetch --tags --force
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          TAG_MESSAGE=$(git show $TAG_NAME -s --format=%B)
+          TAG_MESSAGE=$(git for-each-ref refs/tags/$TAG_NAME --format='%(contents)')
           echo "tag_message<<EOF" >> $GITHUB_OUTPUT
           echo "$TAG_MESSAGE" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -169,7 +159,7 @@ jobs:
       - name: Flatten artifact directory
         run: |
           mkdir release-assets
-          find artifacts -type f -exec cp -- "{}" release-assets/ \;
+          find artifacts -type f -exec cp {} release-assets/ \;
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
