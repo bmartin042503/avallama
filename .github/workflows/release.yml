@@ -30,8 +30,8 @@ jobs:
 
       - name: Build Installer
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
+          $VERSION = "${{ github.ref_name }}"  # Get the tag name
+          $VERSION = $VERSION.Substring(1)  # Remove the leading 'v'
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
             /DAppVersion="${VERSION}" `
             scripts\installer.iss
@@ -69,7 +69,7 @@ jobs:
           Architecture: amd64
           Maintainer: 4foureyes
           Description: Cross-platform GUI for interacting with LLMs via Ollama" > deb-root/DEBIAN/control
-          dpkg-deb --build deb-root avallama_${VERSION}_amd64.deb
+          dpkg-deb --build deb-root deb-root/avallama_${VERSION}_amd64.deb
 
       - name: Create .tar.gz (Arch-style)
         run: |
@@ -77,15 +77,20 @@ jobs:
           VERSION=${VERSION#v}
           tar czvf avallama_${VERSION}_arch_x64.tar.gz -C linux-dist .
 
+      - name: List files in working directory
+        run: |
+          echo "Listing files in current directory:"
+          ls -R .
+
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-packages
           path: |
-            avallama_${VERSION}_amd64.deb
+            deb-root/avallama_${VERSION}_amd64.deb
             avallama_${VERSION}_arch_x64.tar.gz
             PKGBUILD
-
+  
   build-macos:
     name: macOS Packages (.zip for x64 and arm64)
     runs-on: macos-latest
