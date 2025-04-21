@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AvallamaSetup.exe
-          path: installer\Output\AvallamaSetup.exe
+          path: scripts\AvallamaSetup.exe
 
   build-linux:
     name: Linux Packages (.deb, .tar.gz, PKGBUILD)
@@ -53,33 +53,28 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
+          
+      - name: Set version var
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Publish (linux-x64)
         run: dotnet publish avallama/avallama.csproj -c Release -r linux-x64 --self-contained true -o linux-dist /p:PublishSingleFile=true
 
       - name: Create .deb
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
           mkdir -p deb-root/usr/local/bin
           cp linux-dist/avallama deb-root/usr/local/bin/avallama
           mkdir -p deb-root/DEBIAN
           echo "Package: avallama
-          Version: ${VERSION}
+          Version: ${{ env.VERSION }}
           Architecture: amd64
           Maintainer: 4foureyes
           Description: Cross-platform GUI for interacting with LLMs via Ollama" > deb-root/DEBIAN/control
-          dpkg-deb --build deb-root deb-root/avallama_${VERSION}_amd64.deb
-
-      - name: Extract version
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          dpkg-deb --build deb-root deb-root/avallama_${{ env.VERSION }}_amd64.deb
 
       - name: Create .tar.gz (Arch-style)
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          tar czvf avallama_${VERSION}_arch_x64.tar.gz -C linux-dist .
-      
+          tar czvf avallama_${{ env.VERSION }}_arch_x64.tar.gz -C linux-dist .
       
       - name: List files in working directory
         run: |
@@ -91,8 +86,8 @@ jobs:
         with:
           name: linux-packages
           path: |
-            avallama_${{ steps.version.outputs.version }}_amd64.deb
-            avallama_${{ steps.version.outputs.version }}_arch_x64.tar.gz
+            avallama_${{ env.VERSION }}_amd64.deb
+            avallama_${{ env.VERSION }}_arch_x64.tar.gz
             PKGBUILD
   
   build-macos:
@@ -118,29 +113,25 @@ jobs:
 
       - name: Zip osx-x64
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
           cd mac-dist-x64
-          zip -r ../avallama_${VERSION}_osx_x64.zip ./*
+          zip -r ../avallama_${{ env.VERSION }}_osx_x64.zip ./*
 
       - name: Zip osx-arm64
         run: |
-          VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
           cd mac-dist-arm64
-          zip -r ../avallama_${VERSION}_osx_arm64.zip ./*
+          zip -r ../avallama_${{ env.VERSION }}_osx_arm64.zip ./*
 
       - name: Upload macOS x64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-x64-package
-          path: avallama_${VERSION}_osx_x64.zip
+          path: avallama_${{ env.VERSION }}_osx_x64.zip
 
       - name: Upload macOS arm64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-package
-          path: avallama_${VERSION}_osx_arm64.zip
+          path: avallama_${{ env.VERSION }}_osx_arm64.zip
 
   release:
     name: Publish GitHub Release

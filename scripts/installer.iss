@@ -6,7 +6,7 @@ AppVersion={#AppVersion}
 DefaultDirName={localappdata}\Avallama
 DefaultGroupName=4foureyes
 UninstallDisplayIcon={app}\Avallama.exe
-OutputDir=installer/Output
+OutputDir=.
 OutputBaseFilename=AvallamaSetup
 PrivilegesRequired=lowest
 
