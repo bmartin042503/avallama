@@ -1,6 +1,8 @@
+#define AppVersion "0.0.0"
+
 [Setup]
 AppName=Avallama
-AppVersion=0.1.1
+AppVersion={#AppVersion}
 DefaultDirName={localappdata}\Avallama
 DefaultGroupName=4foureyes
 UninstallDisplayIcon={app}\Avallama.exe
@@ -75,7 +77,7 @@ begin
 end;
 
 [Files]
-Source: "..\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourcePath}\win-dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\Avallama"; Filename: "{app}\Avallama.exe"; IconFilename: "{app}\Avallama.exe"
