@@ -8,26 +8,28 @@
              x:Class="avallama.Views.GuideView"
              x:DataType="vm:GuideViewModel"
              Background="{DynamicResource Surface}">
-    <StackPanel Orientation="Vertical" 
-                VerticalAlignment="Center" Margin="20"
-                HorizontalAlignment="Center">
-        <Border CornerRadius="8" ClipToBounds="True">
-            <Image Source="../Assets/prodimg2.png" Height="300"/>
+    <Grid RowDefinitions="*,Auto,Auto,Auto" Margin="20">
+        <Border Grid.Row="0" Margin="20" CornerRadius="8" ClipToBounds="True">
+            <Image Source="{Binding CurrentImageSource}"
+                   IsVisible="{Binding IsImageVisible}"
+                   Stretch="Uniform"
+                   VerticalAlignment="Stretch"
+                   HorizontalAlignment="Stretch"/>
         </Border>
-        <TextBlock Text="Lorem ipsum dolor sit amet" HorizontalAlignment="Center"
-                   FontSize="20"
-                   Margin="0,20,0,0"
-                   Classes="subText"/>
-        <TextBlock Text="Lorem ipsum dolor sit amet" HorizontalAlignment="Center"
-                   Margin="0,8,0,0"/>
-        <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
-                    Margin="0,20,0,0">
+        <TextBlock Grid.Row="1" Text="{Binding CurrentMainText}" HorizontalAlignment="Center"
+                   FontSize="20"/>
+        <TextBlock Grid.Row="2" Text="{Binding CurrentSubText}" HorizontalAlignment="Center"
+                   Classes="subText" Opacity="0.5"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
+                    Margin="0,20,0,0" Classes="subText">
+            <Button
+                Command="{Binding Next}"
+                IsEnabled="{Binding IsNextButtonEnabled}"
+                IsVisible="{Binding IsNextButtonEnabled}"
+                Content="{services:LocalizationService Key='NEXT'}" Cursor="Hand"/>
             <Button 
-                Content="{services:LocalizationService Key='NEXT'}"/>
-            <Button 
-                Classes="lessSecondaryButton" Content="{services:LocalizationService Key='SKIP'}"
-                Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHome, RelativeSource={RelativeSource AncestorType=Window}}"
-                />
+                Classes="lessSecondaryButton" Content="{services:LocalizationService Key='SKIP'}" Cursor="Hand"
+                Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHome, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
-    </StackPanel>
+    </Grid>
 </UserControl>

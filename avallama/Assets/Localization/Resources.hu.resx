@@ -181,4 +181,10 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
         <value>Egyszerű, és személyreszabható</value>
     </data>
+    <data name="COMING_SOON" xml:space="preserve">
+        <value>Hamarosan elérhető további funkciókkal..</value>
+    </data>
+    <data name="THANK_YOU" xml:space="preserve">
+        <value>Köszönjük, hogy kipróbálod az avallamát!</value>
+    </data>
 </root>
