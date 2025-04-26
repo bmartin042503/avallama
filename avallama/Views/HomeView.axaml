@@ -63,11 +63,16 @@ Licensed under the MIT License. See LICENSE file for details.
                 </ItemsControl>
             </ScrollViewer>
             
-            <Button Grid.Row="2" Classes="svgButton" Margin="10" Cursor="Hand" Command="{Binding OpenSettings}">
-                <controls:DynamicSvg
-                    Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
-            </Button>
-
+            <StackPanel Grid.Row="2" Margin="10" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
+                <Button Classes="svgButton" Cursor="Hand" Command="{Binding OpenSettings}">
+                    <controls:DynamicSvg
+                        Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
+                </Button>
+                <Button Classes="svgButton" Cursor="Hand" Command="{Binding OpenModelManager}">
+                    <controls:DynamicSvg
+                        Path="/Assets/Svg/model-manager.svg" Width="28" FillColor="{DynamicResource Primary}" />
+                </Button>
+            </StackPanel>
         </Grid>
         
         <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" x:Name="GridSplitter"

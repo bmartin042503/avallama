@@ -7,7 +7,7 @@ using avallama.ViewModels;
 
 namespace avallama.Factories;
 
-public class DialogViewModelFactory(Func<ApplicationDialogContent, DialogViewModel> factory)
+public class DialogViewModelFactory(Func<ApplicationDialog, DialogViewModel> factory)
 {
-    public DialogViewModel GetDialogViewModel(ApplicationDialogContent dialogContent) => factory.Invoke(dialogContent);
+    public DialogViewModel GetDialogViewModel(ApplicationDialog dialog) => factory.Invoke(dialog);
 }

@@ -14,8 +14,8 @@ namespace avallama.Services;
 
 public interface IDialogService
 {
-    void ShowDialog(ApplicationDialogContent dialogContent);
-    void CloseDialog(ApplicationDialogContent dialogContent);
+    void ShowDialog(ApplicationDialog dialog);
+    void CloseDialog(ApplicationDialog dialog);
 }
 
 // Később hozzáadni hogy adott Dialog Resultot is visszaadhasson ha kell vagy viewmodel kezelné idk
@@ -24,18 +24,18 @@ public class DialogService(
     DialogViewModelFactory dialogViewModelFactory)
     : IDialogService
 {
-    private readonly Dictionary<ApplicationDialogContent, DialogWindow> _dialogs = [];
+    private readonly Dictionary<ApplicationDialog, DialogWindow> _dialogs = [];
 
     // létrehozza és megjeleníti a dialogot egy új dialogwindowban
-    public void ShowDialog(ApplicationDialogContent dialogContent)
+    public void ShowDialog(ApplicationDialog dialog)
     {
-        if (_dialogs.ContainsKey(dialogContent))
+        if (_dialogs.ContainsKey(dialog))
             return;
         
         var dialogWindow = new DialogWindow();
-        var dialogViewModel = dialogViewModelFactory.GetDialogViewModel(dialogContent);
-        var dialogContentName = dialogContent + "View";
-        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.{dialogContentName}");;
+        var dialogViewModel = dialogViewModelFactory.GetDialogViewModel(dialog);
+        var dialogName = dialog + "View";
+        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.{dialogName}");;
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)!;
         control.DataContext = dialogViewModel;
@@ -52,14 +52,14 @@ public class DialogService(
         {
             dialogWindow.ShowDialog(mainWindow);
         }
-        _dialogs.Add(dialogContent, dialogWindow);
-        dialogWindow.Closing += (_, _) => _dialogs.Remove(dialogContent);
+        _dialogs.Add(dialog, dialogWindow);
+        dialogWindow.Closing += (_, _) => _dialogs.Remove(dialog);
     }
 
-    public void CloseDialog(ApplicationDialogContent dialogContent)
+    public void CloseDialog(ApplicationDialog dialog)
     {
-        if (!_dialogs.TryGetValue(dialogContent, out var dialogWindow)) return;
+        if (!_dialogs.TryGetValue(dialog, out var dialogWindow)) return;
         dialogWindow.Close();
-        _dialogs.Remove(dialogContent);
+        _dialogs.Remove(dialog);
     }
 }

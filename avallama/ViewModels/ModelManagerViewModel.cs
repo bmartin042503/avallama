@@ -1,10 +1,9 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-namespace avallama.Constants;
+namespace avallama.ViewModels;
 
-public enum ApplicationDialogContent
+public class ModelManagerViewModel : DialogViewModel
 {
-    Settings,
-    OllamaService
+    
 }

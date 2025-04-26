@@ -10,7 +10,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:vm="clr-namespace:avallama.ViewModels"
              xmlns:services="clr-namespace:avallama.Services"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="avallama.Views.OllamaServiceView"
+             x:Class="avallama.Views.Dialogs.OllamaServiceView"
              x:DataType="vm:OllamaServiceViewModel"
              Background="{DynamicResource Surface}">
     <StackPanel Orientation="Vertical" Margin="16" Spacing="16">

@@ -1,7 +1,6 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using avallama.Constants;
@@ -45,7 +44,7 @@ public partial class OllamaServiceViewModel : DialogViewModel
         {
             case ServiceStatus.Running:
                 OllamaServiceRunning = true;
-                _dialogService.CloseDialog(ApplicationDialogContent.OllamaService);
+                _dialogService.CloseDialog(ApplicationDialog.OllamaService);
                 _appLauncherService.InitializeMainWindow();
                 break;
             case ServiceStatus.NotInstalled:

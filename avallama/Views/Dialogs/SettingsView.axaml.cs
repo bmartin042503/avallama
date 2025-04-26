@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 
-namespace avallama.Views;
+namespace avallama.Views.Dialogs;
 
 public partial class SettingsView : UserControl
 {

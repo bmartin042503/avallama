@@ -24,7 +24,7 @@ public class AppLauncherService
 
     public void Run()
     {
-        _dialogService.ShowDialog(ApplicationDialogContent.OllamaService);
+        _dialogService.ShowDialog(ApplicationDialog.OllamaService);
     }
 
     public void CloseApplication()

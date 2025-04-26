@@ -10,7 +10,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:vm="using:avallama.ViewModels"
              xmlns:localization="clr-namespace:avallama.Services"
              mc:Ignorable="d"
-             x:Class="avallama.Views.SettingsView"
+             x:Class="avallama.Views.Dialogs.SettingsView"
              x:DataType="vm:SettingsViewModel"
              Background="{DynamicResource Surface}">
     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" ColumnDefinitions="Auto,*" Margin="26">

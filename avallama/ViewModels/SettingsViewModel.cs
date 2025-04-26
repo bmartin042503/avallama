@@ -123,7 +123,7 @@ public partial class SettingsViewModel : DialogViewModel
     [RelayCommand]
     public void Close()
     {
-        _dialogService.CloseDialog(ApplicationDialogContent.Settings);
+        _dialogService.CloseDialog(ApplicationDialog.Settings);
     }
 
     [RelayCommand]

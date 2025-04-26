@@ -29,12 +29,13 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<GreetingViewModel>();
         collection.AddTransient<SettingsViewModel>();
         collection.AddSingleton<OllamaServiceViewModel>();
+        collection.AddTransient<ModelManagerViewModel>();
         collection.AddTransient<GuideViewModel>();
 
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<DialogViewModelFactory>();
         
-        collection.AddTransient<DialogWindow>();
+        // collection.AddTransient<DialogWindow>();
         
         collection.AddSingleton<AppLauncherService>();
 
@@ -49,10 +50,11 @@ public static class ServiceCollectionExtensions
             _ => throw new InvalidOperationException() // ha még nincs adott Page regisztrálva akkor kivétel
         });
 
-        collection.AddSingleton<Func<ApplicationDialogContent, DialogViewModel>>(serviceProvider => content => content switch
+        collection.AddSingleton<Func<ApplicationDialog, DialogViewModel>>(serviceProvider => content => content switch
         {
-            ApplicationDialogContent.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
-            ApplicationDialogContent.OllamaService => serviceProvider.GetRequiredService<OllamaServiceViewModel>(),
+            ApplicationDialog.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
+            ApplicationDialog.OllamaService => serviceProvider.GetRequiredService<OllamaServiceViewModel>(),
+            ApplicationDialog.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
             _ => throw new InvalidOperationException()
         });
 
