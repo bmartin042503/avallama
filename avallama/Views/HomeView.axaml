@@ -22,7 +22,14 @@ Licensed under the MIT License. See LICENSE file for details.
         <converters:ResponsiveMessageBlockSizeConverter x:Key="ResponsiveMessageBlockSizeConverter" />
     </UserControl.Resources>
 
-    <Grid ColumnDefinitions="300,8,50,7*" RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" MinWidth="180"></ColumnDefinition>
+            <ColumnDefinition Width="8"></ColumnDefinition>
+            <ColumnDefinition Width="50"></ColumnDefinition>
+            <ColumnDefinition Width="7*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
 
         <!-- SideBar -->
         <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar" SizeChanged="SideBar_OnSizeChanged"
@@ -63,8 +70,8 @@ Licensed under the MIT License. See LICENSE file for details.
 
         </Grid>
         
-        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" ResizeDirection="Columns"
-                      Background="{DynamicResource SurfaceContainer}"/>
+        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1"
+                      Background="{DynamicResource SurfaceContainer}" ResizeDirection="Columns"/>
 
         <!-- SideBar expand/hide gomb -->
         <Button Grid.Row="0" Grid.Column="2" Classes="svgButton" Margin="10,-10,0,0" 
