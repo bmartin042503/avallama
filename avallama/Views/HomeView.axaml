@@ -25,7 +25,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <Grid RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
         
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" MinWidth="180"></ColumnDefinition>
+            <ColumnDefinition Width="300" MinWidth="180" MaxWidth="400"></ColumnDefinition>
             <ColumnDefinition Width="8"></ColumnDefinition>
             <ColumnDefinition Width="50"></ColumnDefinition>
             <ColumnDefinition Width="7*"></ColumnDefinition>
@@ -70,7 +70,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
         </Grid>
         
-        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1"
+        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" x:Name="GridSplitter"
                       Background="{DynamicResource SurfaceContainer}" ResizeDirection="Columns"/>
 
         <!-- SideBar expand/hide gomb -->

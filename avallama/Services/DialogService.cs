@@ -6,6 +6,7 @@ using avallama.Constants;
 using avallama.Factories;
 using avallama.Views;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace avallama.Services;
 
@@ -17,41 +18,43 @@ public interface IDialogService
 
 // Később hozzáadni hogy adott Dialog Resultot is visszaadhasson ha kell vagy viewmodel kezelné idk
 // meg talán kibővíteni úgy hogy egyszerre több dialog is lehessen
-public class DialogService : IDialogService
+public class DialogService(
+    DialogWindow dialogWindow,
+    DialogViewModelFactory dialogViewModelFactory)
+    : IDialogService
 {
-    private readonly DialogWindow? _dialogWindow;
-    private readonly DialogViewModelFactory _dialogViewModelFactory;
+    private DialogWindow? _dialogWindow = dialogWindow;
 
-    public DialogService(
-        DialogWindow dialogWindow, 
-        DialogViewModelFactory dialogViewModelFactory
-    )
-    {
-        _dialogWindow = dialogWindow;
-        _dialogViewModelFactory = dialogViewModelFactory;
-        
-        _dialogWindow.Closing += (s, e) =>
-        {
-            ((Window)s!).Hide();
-            e.Cancel = true;
-        }; 
-    }
-    
     public void ShowDialog(ApplicationDialogContent dialogContent)
     {
-        if (_dialogWindow == null) return;
-        var dialogViewModel = _dialogViewModelFactory.GetDialogViewModel(dialogContent);
+        _dialogWindow = new DialogWindow();
+        var dialogViewModel = dialogViewModelFactory.GetDialogViewModel(dialogContent);
         var dialogContentName = dialogContent + "View";
         var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.{dialogContentName}");;
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)!;
         control.DataContext = dialogViewModel;
         _dialogWindow.Content = control;
-        _dialogWindow.Show();
+        var mainWindow =
+            Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+        if (mainWindow == null)
+        {
+            _dialogWindow.Show();
+        }
+        else
+        {
+            _dialogWindow.ShowDialog(mainWindow);
+        }
     }
 
     public void CloseDialog()
     {
-        _dialogWindow?.Hide();    
+        if (_dialogWindow != null)
+        {
+            _dialogWindow.Close();
+            _dialogWindow = null;
+        }  
     }
 }

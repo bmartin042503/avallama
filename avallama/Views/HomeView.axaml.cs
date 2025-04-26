@@ -9,8 +9,6 @@ using Avalonia.Interactivity;
 
 namespace avallama.Views;
 
-// TODO: GridSplitter húzás fix (mert most ki lehet húzni teljesen balra ami kitolja a sidebart a felületről)
-
 public partial class HomeView : UserControl
 {
     public HomeView()
@@ -23,6 +21,7 @@ public partial class HomeView : UserControl
     }
 
     private bool _sideBarExpanded = true;
+    private double _sideBarWidth;
     private Control? _sideBarControl;
 
     private void ScrollViewer_OnScrollChanged(object? sender, ScrollChangedEventArgs e)
@@ -64,7 +63,7 @@ public partial class HomeView : UserControl
             var columnDefinitions = new ColumnDefinitions
             {
                 // sidebar
-                new ColumnDefinition(new GridLength(300, GridUnitType.Pixel)) { MinWidth = 180 },
+                new ColumnDefinition(new GridLength(_sideBarWidth, GridUnitType.Pixel)) { MinWidth = 180, MaxWidth = 400 },
                 // gridsplitter
                 new ColumnDefinition(new GridLength(8, GridUnitType.Pixel)),
                 // sidebar expand/hide gomb
@@ -82,20 +81,14 @@ public partial class HomeView : UserControl
     {
         // ha átméretezi a sidebart akkor beállítjuk reszponzívan az új csevegés gomb szövegét
         // mert ugye a konverter baszta átállítani
-        var sideBarWidth = SideBar.Bounds.Width;
-        string buttonText = string.Empty;
-        switch (sideBarWidth)
+        _sideBarWidth = SideBar.Bounds.Width;
+        var buttonText = _sideBarWidth switch
         {
-            case < 205:
-                buttonText = string.Empty;
-                break;
-            case < 375:
-                buttonText = LocalizationService.GetString("NEW");
-                break;
-            case >= 375:
-                buttonText = LocalizationService.GetString("NEW_CONVERSATION");
-                break;
-        }
+            < 205 => string.Empty,
+            < 375 => LocalizationService.GetString("NEW"),
+            >= 375 => LocalizationService.GetString("NEW_CONVERSATION"),
+            _ => string.Empty
+        };
         NewConversationBtn.Content = buttonText;
     }
 }
