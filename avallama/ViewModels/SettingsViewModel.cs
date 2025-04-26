@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Diagnostics;
+using avallama.Constants;
 using avallama.Services;
 using CommunityToolkit.Mvvm.Input;
 
@@ -122,7 +123,7 @@ public partial class SettingsViewModel : DialogViewModel
     [RelayCommand]
     public void Close()
     {
-        _dialogService.CloseDialog();
+        _dialogService.CloseDialog(ApplicationDialogContent.Settings);
     }
 
     [RelayCommand]

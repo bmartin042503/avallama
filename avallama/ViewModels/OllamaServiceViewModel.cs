@@ -45,7 +45,7 @@ public partial class OllamaServiceViewModel : DialogViewModel
         {
             case ServiceStatus.Running:
                 OllamaServiceRunning = true;
-                _dialogService.CloseDialog();
+                _dialogService.CloseDialog(ApplicationDialogContent.OllamaService);
                 _appLauncherService.InitializeMainWindow();
                 break;
             case ServiceStatus.NotInstalled:

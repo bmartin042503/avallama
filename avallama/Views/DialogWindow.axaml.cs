@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Runtime.InteropServices;
+using avallama.Constants;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -10,6 +11,7 @@ namespace avallama.Views;
 
 public partial class DialogWindow : Window
 {
+
     public DialogWindow()
     {
         InitializeComponent();
