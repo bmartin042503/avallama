@@ -53,7 +53,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
-          
+
       - name: Set version var
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
@@ -75,7 +75,7 @@ jobs:
       - name: Create .tar.gz (Arch-style)
         run: |
           tar czvf avallama_${{ env.VERSION }}_arch_x64.tar.gz -C linux-dist .
-      
+
       - name: List files in working directory
         run: |
           echo "Listing files in current directory:"
@@ -101,7 +101,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
-          
+
       - name: Set version var
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
@@ -111,21 +111,60 @@ jobs:
       - name: Publish for osx-arm64
         run: dotnet publish avallama/avallama.csproj -c Release -r osx-arm64 --self-contained true -o mac-dist-arm64 /p:PublishSingleFile=true
 
+      - name: Create app filestructure for x64
+        run: |
+          mkdir -p Avallama.app/Contents/{_CodeSignature,MacOS,Resources}
+          cp -a mac-dist-x64/. Avallama.app/Contents/MacOS/
+          cp avallama/Assets/Avallama.icns Avallama.app/Contents/Resources
+          cat > Avallama.app/Contents/Info.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+            <dict>
+              <key>CFBundleIconFile</key>
+              <string>Avallama.icns</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.4foureyes.avallama</string>
+              <key>CFBundleName</key>
+              <string>Avallama</string>
+              <key>CFBundleDisplayName</key>
+              <string>Avallama</string>
+              <key>CFBundleVersion</key>
+              <string>${{ env.VERSION }}</string>
+              <key>LSMinimumSystemVersion</key>
+              <string>10.12</string>
+              <key>CFBundleExecutable</key>
+              <string>avallama</string>
+              <key>CFBundleInfoDictionaryVersion</key>
+              <string>6.0</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${{ env.VERSION }}</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+            </dict>
+          </plist>
+          EOF
+
       - name: Zip osx-x64
         run: |
-          cd mac-dist-x64
-          zip -r ../avallama_${{ env.VERSION }}_osx_x64.zip ./*
-
-      - name: Zip osx-arm64
-        run: |
-          cd mac-dist-arm64
-          zip -r ../avallama_${{ env.VERSION }}_osx_arm64.zip ./*
+          zip -r avallama_${{ env.VERSION }}_osx_x64.zip Avallama.app
 
       - name: Upload macOS x64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-x64-package
           path: avallama_${{ env.VERSION }}_osx_x64.zip
+          
+      - name: Modify app file structure for arm64
+        run: |
+          rm -rf Avallama.app/Contents/MacOS/*
+          cp -a mac-dist-arm64/. Avallama.app/Contents/MacOS/
+
+      - name: Zip osx-arm64
+        run: |
+          zip -r avallama_${{ env.VERSION }}_osx_arm64.zip Avallama.app
 
       - name: Upload macOS arm64 Artifact
         uses: actions/upload-artifact@v4
