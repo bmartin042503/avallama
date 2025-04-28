@@ -59,7 +59,7 @@ cp scripts/debian/pixmaps/avallama.png ./staging_folder/usr/share/pixmaps/
 # Hicolor icons
 mkdir ./staging_folder/usr/share/icons
 mkdir ./staging_folder/usr/share/icons/hicolor
-cp scripts/debian/icons/hicolor/* ./staging_folder/usr/share/icons/hicolor/
+cp -a scripts/debian/icons/hicolor/. ./staging_folder/usr/share/icons/hicolor/
 
 # Make .deb file
 dpkg-deb --root-owner-group --build ./staging_folder/ ./avallama_"${VERSION}"_amd64.deb
