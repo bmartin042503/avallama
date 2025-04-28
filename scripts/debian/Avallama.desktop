@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Avallama
+Comment=User-friendly GUI for Ollama
+Icon=avallama
+Exec=avallama
+StartupWMClass=avallama
+Terminal=false
+Type=Application
+Categories=Utility
+GenericName=Avallama
+Keywords=ollama; gui; avallama; artifical; intelligence

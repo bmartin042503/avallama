@@ -1,0 +1,9 @@
+Package: avallama
+Version: 0.1.0-alpha
+Section: devel
+Priority: optional
+Architecture: amd64
+Description: User-friendly GUI for Ollama
+Maintainer: Márk Csörgő, Martin Bartos - 4foureyes
+Homepage: https://github.com/4foureyes/avallama
+Copyright: 2025 Márk Csörgő, Martin Bartos
