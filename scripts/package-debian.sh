@@ -36,7 +36,7 @@ EOF
 # Starter script
 mkdir ./staging_folder/usr
 mkdir ./staging_folder/usr/bin
-cp avallama/scripts/debian/avallama.sh ./staging_folder/usr/bin/avallama
+cp scripts/debian/avallama.sh ./staging_folder/usr/bin/avallama
 chmod +x ./staging_folder/usr/bin/avallama # set executable permissions to starter script
 
 # Other files
@@ -49,17 +49,17 @@ chmod +x ./staging_folder/usr/lib/avallama/avallama # set executable permissions
 # Desktop shortcut
 mkdir ./staging_folder/usr/share
 mkdir ./staging_folder/usr/share/applications
-cp avallama/scripts/Avallama.desktop ./staging_folder/usr/share/applications/
+cp scripts/debian/Avallama.desktop ./staging_folder/usr/share/applications/
 
 # Desktop icon
 # A 1024px x 1024px PNG, like VS Code uses for its icon
 mkdir ./staging_folder/usr/share/pixmaps
-cp avallama/scripts/debian/pixmaps/avallama.png ./staging_folder/usr/share/pixmaps/avallama.png
+cp scripts/debian/pixmaps/avallama.png ./staging_folder/usr/share/pixmaps/
 
 # Hicolor icons
 mkdir ./staging_folder/usr/share/icons
 mkdir ./staging_folder/usr/share/icons/hicolor
-cp avallama/scripts/debian/icons/hicolor/* ./staging_folder/usr/share/icons/hicolor/
+cp scripts/debian/icons/hicolor/* ./staging_folder/usr/share/icons/hicolor/
 
 # Make .deb file
 dpkg-deb --root-owner-group --build ./staging_folder/ ./avallama_"${VERSION}"_amd64.deb
