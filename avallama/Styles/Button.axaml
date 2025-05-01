@@ -12,11 +12,12 @@ Licensed under the MIT License. See LICENSE file for details.
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="15" Background="{DynamicResource Surface}">
+                    <Button Classes="small" Content="Small Button"/>
                     <Button Content="Default Button"/>
+                    <Button Classes="large" Content="Large Button"/>
                     <Button Classes="secondaryButton" Content="Secondary Button"/>
                     <!-- lessSecondaryButton: olyan gombok amik olyanok mint a secondary csak még inkább elbújnak a primary elől -->
                     <Button Classes="lessSecondaryButton" Content="Less Secondary Button"/>
-                    <Button Classes="large" Content="Large Button"/>
                     <Button Content="Disabled Button" IsEnabled="False"/>
                     <Button Classes="windowManager">
                         <controls:DynamicSvg Path="/Assets/Svg/hide.svg"
@@ -54,6 +55,13 @@ Licensed under the MIT License. See LICENSE file for details.
     <Style Selector="Button:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
+    </Style>
+    
+    <!-- Kicsi gomb -->
+    <Style Selector="Button.small">
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Padding" Value="20, 4"/>
     </Style>
     
     <!-- Nagy gombok -->

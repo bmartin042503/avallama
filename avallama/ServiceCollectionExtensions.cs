@@ -55,7 +55,8 @@ public static class ServiceCollectionExtensions
             ApplicationDialog.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
             ApplicationDialog.OllamaService => serviceProvider.GetRequiredService<OllamaServiceViewModel>(),
             ApplicationDialog.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
-            _ => throw new InvalidOperationException()
+            _ => throw new InvalidOperationException() 
+            // Info és Error dialog nem kell
         });
 
     }

@@ -23,6 +23,9 @@ Licensed under the MIT License. See LICENSE file for details.
                     <TextBlock
                         Text="Heading2"
                         Classes="H2"/>
+                    <TextBlock
+                        Text="Heading3"
+                        Classes="H3"/>
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
@@ -47,5 +50,9 @@ Licensed under the MIT License. See LICENSE file for details.
     
     <Style Selector="TextBlock.H2">
         <Setter Property="FontSize" Value="20"/>
+    </Style>
+    
+    <Style Selector="TextBlock.H3">
+        <Setter Property="FontSize" Value="14"/>
     </Style>
 </Styles>

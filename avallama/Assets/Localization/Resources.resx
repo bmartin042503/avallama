@@ -233,4 +233,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="START" xml:space="preserve">
         <value>Start</value>
     </data>
+    <data name="ERROR_DIALOG_TITLE" xml:space="preserve">
+        <value>An error has occurred</value>
+    </data>
 </root>

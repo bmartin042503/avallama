@@ -20,7 +20,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H2" Opacity="0.5"
                 Foreground="{DynamicResource OnSurface}"/>
             <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}" 
-                                 Opacity="0.2" Width="20" Cursor="Hand"/>
+                                 Opacity="0.5" Width="20"/>
         </StackPanel>
     </Grid>
 </UserControl>

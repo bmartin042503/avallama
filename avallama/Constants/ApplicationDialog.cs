@@ -7,5 +7,7 @@ public enum ApplicationDialog
 {
     Settings,
     OllamaService,
-    ModelManager
+    ModelManager,
+    Information,
+    Error
 }

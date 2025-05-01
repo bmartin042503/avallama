@@ -226,4 +226,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="START" xml:space="preserve">
         <value>Kezdés</value>
     </data>
+    <data name="ERROR_DIALOG_TITLE" xml:space="preserve">
+        <value>Hiba történt</value>
+    </data>
 </root>

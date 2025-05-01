@@ -1,0 +1,27 @@
+<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:services="clr-namespace:avallama.Services"
+             xmlns:controls="clr-namespace:avallama.Controls"
+             mc:Ignorable="d"
+             x:Class="avallama.Views.Dialogs.ErrorView"
+             Background="{DynamicResource Surface}">
+    <StackPanel Orientation="Vertical" Margin="20">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg" Opacity="0.5" Width="24" 
+                                 FillColor="{DynamicResource OnSurfaceVariant}"/>
+            <TextBlock Classes="H2" Text="{services:LocalizationService Key='ERROR_DIALOG_TITLE'}"
+                       Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.5"/>
+        </StackPanel>
+        <TextBlock x:Name="DialogMessage" TextWrapping="Wrap" MaxWidth="400" Margin="0,10,0,0" Classes="H3" 
+                   Text="Error Dialog Message"/>
+        <Button Classes="small" HorizontalAlignment="Right" Content="{services:LocalizationService Key='CLOSE'}" 
+                Click="CloseButton_Click" Margin="0,40,0,0"/>
+    </StackPanel>
+</UserControl>

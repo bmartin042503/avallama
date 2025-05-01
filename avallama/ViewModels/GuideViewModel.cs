@@ -42,7 +42,7 @@ public partial class GuideViewModel : PageViewModel
         _guideImageSources.Add("avares://avallama/Assets/Images/settings.png");
     }
 
-    private Bitmap LoadGuideImage(string imageSource)
+    private static Bitmap LoadGuideImage(string imageSource)
     {
         var uri = new Uri(imageSource);
         return new Bitmap(AssetLoader.Open(uri));
