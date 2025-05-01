@@ -37,9 +37,9 @@ EOF
 
 cp scripts/debian/pixmaps/avallama.png avallama/
 
-tar -czvf $SOURCE_TAR avallama/
+tar -czvf "$SOURCE_TAR" avallama/
 
-SHA256_SUM=$(sha256sum $SOURCE_TAR | awk '{ print $1 }')
+SHA256_SUM=$(sha256sum "$SOURCE_TAR" | awk '{ print $1 }')
 
 cat > PKGBUILD <<EOF
 # Maintainer: Márk Csörgő, Martin Bartos (4foureyes)
@@ -54,9 +54,9 @@ source=(${SOURCE_TAR})
 sha256sums=("${SHA256_SUM}")
 
 package() {
-    install -Dm755 "${srcdir}/avallama/avallama" "${pkgdir}/usr/bin/avallama"
-    install -Dm644 "${srcdir}/avallama/avallama.desktop" "${pkgdir}/usr/share/applications/avallama.desktop"
-    install -Dm644 "${srcdir}/avallama/avallama.png" "${pkgdir}/usr/share/icons/hicolor/512x512/apps/avallama.png"
+    install -Dm755 "\${srcdir}/avallama/avallama" "\${pkgdir}/usr/bin/avallama"
+    install -Dm644 "\${srcdir}/avallama/avallama.desktop" "\${pkgdir}/usr/share/applications/avallama.desktop"
+    install -Dm644 "\${srcdir}/avallama/avallama.png" "\${pkgdir}/usr/share/icons/hicolor/512x512/apps/avallama.png"
     echo "Avallama ${VERSION} is installed"
 }
 EOF

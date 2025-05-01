@@ -69,6 +69,38 @@ jobs:
           path: |
             avallama_${{ env.VERSION }}_amd64.deb
   
+  build-arch:
+    name: Arch Package (.pkg.tar.zst)
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    
+    steps:
+      - name: Install base build tools and .NET
+        run: |
+          pacman -Sy --noconfirm base-devel git curl unzip icu dotnet-sdk dotnet-runtime
+          dotnet --version
+
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set version var
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Run Arch packaging script
+        run: |
+          chmod +x scripts/package-arch.sh
+          ./scripts/package-arch.sh "${{ env.VERSION }}"
+
+      - name: Upload Arch Tarball and PKGBUILD
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-tarball-pkgbuild
+          path: |
+            avallama_${{ env.VERSION }}_arch_x64.tar.gz
+            PKGBUILD
+  
+  
   build-macos:
     name: macOS Packages (.zip for x64 and arm64)
     runs-on: macos-latest
@@ -88,8 +120,8 @@ jobs:
         run: |
           chmod +x scripts/package-macos.sh
           ./scripts/package-macos.sh "${{ env.VERSION }}"
-      
-      
+
+
       - name: Upload macOS x64 Artifact
         uses: actions/upload-artifact@v4
         with:
