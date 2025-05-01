@@ -25,19 +25,6 @@ This project is currently being developed by Márk Csörgő and Martin Bartos.
 
 We are currently not accepting outside contributions, however we encourage users to report bugs, crashes or any unexpected behaviour. Please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
 
-## Latest release
-
-### v0.1.0 - 2025/03/12
-This is the first preview release of Avallama. It serves as a proof of concept and lays the foundation for future features and improvements.
-
-#### Release notes
-- Initial release of Avallama
-- Support for interacting with Llama3.2, with a limitation of one conversation at a time.
-- Automatic management of the Ollama process to optimize memory usage.
-- Llama3.2 can be downloaded through the app if not present on the system
-- UI settings for switching between Dark/Light Mode and toggling between English and Hungarian languages.
-
-For more details on all releases, please refer to the full [CHANGELOG](./CHANGELOG.md).
 
 ## Installation
 
@@ -53,16 +40,11 @@ cd ~/Downloads
 ```
 3. Install the package using the following command:
 ```bash
-sudo apt install ./avallama_0.1.0-alpha_amd64.deb
+sudo apt install ./avallama_0.1.0_amd64.deb
 ```
-*Replace `./avallama_0.1.0-alpha_amd64.deb` with the correct filename of the latest package*
+*Replace `./avallama_0.1.0_amd64.deb` with the correct filename of the latest package*
 
-4. Once installed, execution permission must be granted manually with the following command:
-
-```bash
-sudo chmod +x /usr/bin/avallama
-```
-5. After that, you can run the application from the application menu or with the `avallama` command
+4. After that, you can run the application from the application menu or with the `avallama` command
 
 To uninstall, run:
 ```bash
@@ -90,6 +72,10 @@ The Windows installer is **not signed with a trusted code-signing certificate**,
 
 To uninstall, remove it through the `Apps > Installed apps` page in Settings, or navigate to the installation directory and run unins000.exe.
 
+### Windows (arm64)
+
+Windows on Arm is not currently supported
+
 ### macOS
 
 This application is **not signed nor notarized**. MacOS may prevent it from running by default.
@@ -108,8 +94,7 @@ xattr -d com.apple.quarantine avallama_0.1.0-alpha_osx_arm64.zip
 
 This is a list of issues we are aware of that will be fixed in a subsequent release. Please do not open new issues for the following known problems, as they are already being addressed.
 
-- **Windows:** If installed in the `C:\Program Files` or `C:\Program Files (x86)` directory, settings cannot be updated unless Avallama is run as administrator.
-- **All platforms:** Parameter size indication is broken if model is downloaded through the app, to fix this, restart the app and parameter size indication should work as intended.
+- Arch Linux: Install is not functional
 
 ## License
 
