@@ -85,8 +85,8 @@ public partial class HomeView : UserControl
         var buttonText = _sideBarWidth switch
         {
             < 205 => string.Empty,
-            < 375 => LocalizationService.GetString("NEW"),
-            >= 375 => LocalizationService.GetString("NEW_CONVERSATION"),
+            >= 205 => LocalizationService.GetString("NEW"),
+            // >= 375 => LocalizationService.GetString("NEW_CONVERSATION"),
             _ => string.Empty
         };
         NewConversationBtn.Content = buttonText;

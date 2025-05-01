@@ -1,35 +1,45 @@
+<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:services="clr-namespace:avallama.Services"
              xmlns:vm="clr-namespace:avallama.ViewModels"
+             xmlns:converters="clr-namespace:avallama.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.GuideView"
              x:DataType="vm:GuideViewModel"
              Background="{DynamicResource Surface}">
-    <Grid RowDefinitions="*,Auto,Auto,Auto" Margin="20">
-        <Border Grid.Row="0" Margin="20" CornerRadius="8" ClipToBounds="True">
-            <Image Source="{Binding CurrentImageSource}"
-                   IsVisible="{Binding IsImageVisible}"
-                   Stretch="Uniform"
-                   VerticalAlignment="Stretch"
-                   HorizontalAlignment="Stretch"/>
-        </Border>
-        <TextBlock Grid.Row="1" Text="{Binding CurrentMainText}" HorizontalAlignment="Center"
-                   FontSize="20"/>
-        <TextBlock Grid.Row="2" Text="{Binding CurrentSubText}" HorizontalAlignment="Center"
-                   Classes="subText" Opacity="0.5"/>
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
-                    Margin="0,20,0,0" Classes="subText">
-            <Button
-                Command="{Binding Next}"
-                IsEnabled="{Binding IsNextButtonEnabled}"
-                IsVisible="{Binding IsNextButtonEnabled}"
-                Content="{services:LocalizationService Key='NEXT'}" Cursor="Hand"/>
-            <Button 
-                Classes="lessSecondaryButton" Content="{services:LocalizationService Key='SKIP'}" Cursor="Hand"
-                Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHome, RelativeSource={RelativeSource AncestorType=Window}}"/>
+    <UserControl.Resources>
+        <converters:ResponsiveGuideImageSizeConverter x:Key="ResponsiveGuideImageSizeConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Margin="20" CornerRadius="8" ClipToBounds="True"
+                    IsVisible="{Binding IsImageVisible}">
+                <Image Source="{Binding CurrentImageSource}"
+                       IsVisible="{Binding IsImageVisible}"
+                       MaxHeight="{Binding Path=Bounds.Height, Converter={StaticResource ResponsiveGuideImageSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </Border>
+            <TextBlock Text="{Binding CurrentMainText}" HorizontalAlignment="Center"
+                       FontSize="20" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding CurrentSubText}" HorizontalAlignment="Center"
+                       Classes="subText" Opacity="0.5"/>
+            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
+                        Margin="0,20,0,30" Classes="subText">
+                <Button
+                    Command="{Binding Next}"
+                    IsEnabled="{Binding IsNextButtonEnabled}"
+                    IsVisible="{Binding IsNextButtonEnabled}"
+                    Content="{services:LocalizationService Key='NEXT'}" Cursor="Hand"/>
+                <Button 
+                    Classes="lessSecondaryButton" Content="{Binding SkipButtonText}" Cursor="Hand"
+                    Command="{Binding Path=((vm:MainViewModel)DataContext).GoToHome, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>

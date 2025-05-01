@@ -220,4 +220,10 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="RUNS_GREAT" xml:space="preserve">
         <value>Nagyszerűen fut</value>
     </data>
+    <data name="MODEL_MANAGER_NOT_AVAILABLE" xml:space="preserve">
+        <value>A modelkezelő egy későbbi verzióban lesz elérhető</value>
+    </data>
+    <data name="START" xml:space="preserve">
+        <value>Kezdés</value>
+    </data>
 </root>

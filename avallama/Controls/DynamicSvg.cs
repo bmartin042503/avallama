@@ -12,6 +12,8 @@ namespace avallama.Controls;
 /// Svg megjelenítésére használható. A FillColor-al megadható az SVG színe.
 /// </summary>
 
+// TODO: megcsinálni úgy hogy property alapján alkalmazzon CSS-t
+// pl. megadva neki AXAML-ben: Fill, Stroke vagy FillStroke (ahol mindkettőt felülírja)
 public class DynamicSvg : Avalonia.Svg.Svg
 {
     /* SVG-t a következőképp lehet színezni megfelelően ezzel az osztállyal:
@@ -47,7 +49,7 @@ public class DynamicSvg : Avalonia.Svg.Svg
             if (colorParse)
             {
                 // az svg fájlban az összes elemre beállítja az adott színt
-                SetCurrentValue(CssProperty, $"* {{ fill: #{result}; stroke: #{result} ");
+                SetCurrentValue(CssProperty, $"* {{ fill: #{result}; ");
             }
         }
     }

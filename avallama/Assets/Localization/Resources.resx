@@ -227,4 +227,10 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="RUNS_GREAT" xml:space="preserve">
         <value>Runs great</value>
     </data>
+    <data name="MODEL_MANAGER_NOT_AVAILABLE" xml:space="preserve">
+        <value>Model manager will be available in a future version</value>
+    </data>
+    <data name="START" xml:space="preserve">
+        <value>Start</value>
+    </data>
 </root>

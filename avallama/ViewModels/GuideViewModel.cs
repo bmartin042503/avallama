@@ -15,6 +15,7 @@ public partial class GuideViewModel : PageViewModel
     [ObservableProperty] private Bitmap? _currentImageSource;
     [ObservableProperty] private bool _isNextButtonEnabled = true;
     [ObservableProperty] private bool _isImageVisible = true;
+    [ObservableProperty] private string _skipButtonText = LocalizationService.GetString("SKIP");
 
     private int _guideIndex;
 
@@ -56,6 +57,7 @@ public partial class GuideViewModel : PageViewModel
             CurrentSubText = string.Empty;
             IsImageVisible = false;
             IsNextButtonEnabled = false;
+            SkipButtonText = LocalizationService.GetString("START");
             return;
         }
         _guideIndex++;
