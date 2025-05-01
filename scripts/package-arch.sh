@@ -37,9 +37,9 @@ EOF
 
 cp scripts/debian/pixmaps/avallama.png avallama/
 
-tar -czvf $SOURCE_TAR avallama/
+tar -czvf "$SOURCE_TAR" avallama/
 
-SHA256_SUM=$(sha256sum $SOURCE_TAR | awk '{ print $1 }')
+SHA256_SUM=$(sha256sum "$SOURCE_TAR" | awk '{ print $1 }')
 
 cat > PKGBUILD <<EOF
 # Maintainer: Márk Csörgő, Martin Bartos (4foureyes)
