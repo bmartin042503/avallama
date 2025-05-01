@@ -194,4 +194,37 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="THANK_YOU" xml:space="preserve">
         <value>Thank you for trying avallama!</value>
     </data>
+    <data name="MODEL_MANAGER" xml:space="preserve">
+        <value>Model manager</value>
+    </data>
+    <data name="DOWNLOADED_MODELS" xml:space="preserve">
+        <value>Downloaded ({0})</value>
+    </data>
+    <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
+        <value>Available from Ollama ({0})</value>
+    </data>
+    <data name="DOWNLOADING" xml:space="preserve">
+        <value>Downloading.. {0}%</value>
+    </data>
+    <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
+        <value>Parameters: {0}B</value>
+    </data>
+    <data name="MODEL_QUANTIZATION" xml:space="preserve">
+        <value>Quantization: {0}</value>
+    </data>
+    <data name="NOT_ENOUGH_SPACE" xml:space="preserve">
+        <value>Not enough space</value>
+    </data>
+    <data name="SEARCH_FOR_MODELS" xml:space="preserve">
+        <value>Search for models..</value>
+    </data>
+    <data name="INSUFFICIENT_VRAM" xml:space="preserve">
+        <value>Insufficient VRAM</value>
+    </data>
+    <data name="RUNS_OKAY" xml:space="preserve">
+        <value>Runs okay</value>
+    </data>
+    <data name="RUNS_GREAT" xml:space="preserve">
+        <value>Runs great</value>
+    </data>
 </root>

@@ -7,7 +7,21 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:services="clr-namespace:avallama.Services"
+             xmlns:vm="using:avallama.ViewModels"
+             xmlns:controls="clr-namespace:avallama.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="avallama.Views.Dialogs.ModelManagerView">
-    <TextBlock>ModelManagerView</TextBlock>
+             x:Class="avallama.Views.Dialogs.ModelManagerView"
+             x:DataType="vm:ModelManagerViewModel"
+             Background="{DynamicResource Surface}">
+    <Grid Margin="26" ColumnDefinitions="*,*" RowDefinitions="Auto, Auto, Auto, Auto">
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+            <TextBlock 
+                Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H2" Opacity="0.5"
+                Foreground="{DynamicResource OnSurface}"/>
+            <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}" 
+                                 Opacity="0.15" Width="20" Cursor="Hand"/>
+            
+        </StackPanel>
+    </Grid>
 </UserControl>

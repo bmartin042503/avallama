@@ -9,7 +9,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
-                <StackPanel Orientation="Vertical" Spacing="0">
+                <StackPanel Orientation="Vertical" Spacing="13">
                     <TextBlock
                         Text="avallama"
                         Classes="mainText"
@@ -17,6 +17,12 @@ Licensed under the MIT License. See LICENSE file for details.
                     <TextBlock
                         Text="Run any open source LLM locally"
                         Classes="subText"/>
+                    <TextBlock
+                        Text="Heading1"
+                        Classes="H1"/>
+                    <TextBlock
+                        Text="Heading2"
+                        Classes="H2"/>
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
@@ -33,5 +39,13 @@ Licensed under the MIT License. See LICENSE file for details.
     
     <Style Selector="TextBlock.subText">
         <Setter Property="FontSize" Value="16"/>
+    </Style>
+    
+    <Style Selector="TextBlock.H1">
+        <Setter Property="FontSize" Value="26"/>
+    </Style>
+    
+    <Style Selector="TextBlock.H2">
+        <Setter Property="FontSize" Value="20"/>
     </Style>
 </Styles>
