@@ -19,9 +19,17 @@ Licensed under the MIT License. See LICENSE file for details.
                     <!-- lessSecondaryButton: olyan gombok amik olyanok mint a secondary csak még inkább elbújnak a primary elől -->
                     <Button Classes="lessSecondaryButton" Content="Less Secondary Button"/>
                     <Button Content="Disabled Button" IsEnabled="False"/>
-                    <Button Classes="windowManager">
+                    <Button Classes="windowManager hide">
                         <controls:DynamicSvg Path="/Assets/Svg/hide.svg"
                              Width="12"/>
+                    </Button>
+                    <Button Classes="windowManager minmax">
+                        <controls:DynamicSvg Path="/Assets/Svg/maximize.svg"
+                                             Width="12"/>
+                    </Button>
+                    <Button Classes="windowManager close">
+                        <controls:DynamicSvg Path="/Assets/Svg/close.svg"
+                                             Width="12"/>
                     </Button>
                     <Button Classes="avallamaWhite" Content="Icon Button" />
                     <Button Classes="svgButton">
@@ -78,23 +86,44 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Padding" Value="12"/>
     </Style>
     
+    <!-- DynamicSvg beállítás
+    Hide, Maximize, Minimize: FillColor
+    Close: StrokeColor
+     -->
+    
     <Style Selector="Button.windowManager /template/ ContentPresenter">
         <Setter Property="Transitions"><Transitions/></Setter>
     </Style>
     
-    <Style Selector="Button.windowManager controls|DynamicSvg">
-        <Setter Property="FillColor" Value="{DynamicResource OnSurface}"/>
+    <Style Selector="Button.windowManager.hide controls|DynamicSvg">
+        <Setter Property="FillColor" Value="{DynamicResource Primary}"/>
+    </Style>
+    
+    <Style Selector="Button.windowManager.minmax controls|DynamicSvg">
+        <Setter Property="FillColor" Value="{DynamicResource Primary}"/>
+    </Style>
+    
+    <Style Selector="Button.windowManager.close controls|DynamicSvg">
+        <Setter Property="StrokeColor" Value="{DynamicResource Primary}"/>
+    </Style>
+    
+    <Style Selector="Button.windowManager.hide:pointerover controls|DynamicSvg">
+        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+    
+    <Style Selector="Button.windowManager.minmax:pointerover controls|DynamicSvg">
+        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+    
+    <Style Selector="Button.windowManager.close:pointerover controls|DynamicSvg">
+        <Setter Property="StrokeColor" Value="{DynamicResource OnPrimary}"/>
     </Style>
     
     <Style Selector="Button.windowManager:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
     </Style>
     
-    <Style Selector="Button.windowManager:pointerover controls|DynamicSvg">
-        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}"/>
-    </Style>
-    
-    <Style Selector="Button.closeWindow:pointerover /template/ ContentPresenter">
+    <Style Selector="Button.windowManager.close:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Error}"/>
     </Style>
 
