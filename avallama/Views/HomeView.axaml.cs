@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
+using System.Runtime.InteropServices;
 using avallama.Services;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace avallama.Views;
@@ -18,22 +18,58 @@ public partial class HomeView : UserControl
         // focusable, hogy ha a messageblockban van kijelölés akkor átadhassa a homeviewnak a fókuszt ha kikattintanak a messageblockból
         // és így a kijelölés törölhető
         Focusable = true;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            // margin beállítás hogy legyen az ablakkezelő gomboknak helye macOS-en
+            SetMacOSMargin();
+        }
     }
 
     private bool _sideBarExpanded = true;
     private double _sideBarWidth;
     private Control? _sideBarControl;
 
+    // megnézi hogy milyen állapotban van az ablak és a sidebar
+    // majd eszerint beállítja a marginjukat, hogy macOS-en az ablakkezelő gombok használhatóak legyenek
+    private void SetMacOSMargin()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return;
+        
+        // ha a natív macOS ablak full screenben van
+        // Avaloniával ezt nem lehet elérni szóval natív külső könyvtár kellett hozzá (lásd: MacOSInterop.cs)
+        if (MacOSInterop.isKeyWindowInFullScreen())
+        {
+            SideBarTopGrid.Margin = new Thickness(10);
+            SideBarButton.Margin = new Thickness(10, -10, 0, 0);
+        }
+        else
+        {
+            if (_sideBarExpanded)
+            {
+                SideBarTopGrid.Margin = new Thickness(10,30,10,10);
+                SideBarButton.Margin = new Thickness(10, -10, 0, 0);
+            }
+            else
+            {
+                SideBarButton.Margin = new Thickness(10, 20, 0, 0);
+            }
+        }
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        SetMacOSMargin();
+    }
+
     private void ScrollViewer_OnScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
         // Ha a görgetési terület függőlegesen növekszik (új üzenet elem) akkor legörget az aljára
         // ezt majd lecserélni a görgetési beállításra
-        if (e.ExtentDelta.Y > 0)
-        {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer == null) return;
-            scrollViewer.ScrollToEnd();
-        }
+        if (!(e.ExtentDelta.Y > 0)) return;
+        var scrollViewer = sender as ScrollViewer;
+        scrollViewer?.ScrollToEnd();
     }
 
     private void SideBarBtn_OnClick(object? sender, RoutedEventArgs e)
@@ -74,7 +110,8 @@ public partial class HomeView : UserControl
             MainGrid.ColumnDefinitions = columnDefinitions;
             MainGrid.Children.Insert(0, _sideBarControl);
             _sideBarExpanded = true;
-        }  
+        }
+        SetMacOSMargin();
     }
 
     private void SideBar_OnSizeChanged(object? sender, SizeChangedEventArgs e)

@@ -23,11 +23,14 @@ public partial class MainWindow : Window
             ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.NoChrome;
             ExtendClientAreaTitleBarHeightHint = 0;
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            // Linux és macOS specifikus beállítások
-            
-            // Canvas elem Grid-re cserélése render hibák elkerülése miatt
+            // Title bar eltüntetése macOS-en, viszont az ablakkezelő gombok megmaradnak a bal felső sarokban
+            ExtendClientAreaToDecorationsHint = true;
+            ReplaceCanvasWithGrid();
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
             ReplaceCanvasWithGrid();
         }
     }
@@ -44,7 +47,7 @@ public partial class MainWindow : Window
     
     private void Window_PointerPressed(object? sender, RoutedEventArgs e)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             var args = e as PointerPressedEventArgs;
             if (args == null) return;

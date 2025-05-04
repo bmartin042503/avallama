@@ -21,6 +21,7 @@ namespace avallama;
 public partial class App : Application
 {
     private OllamaService? _ollamaService;
+    private DialogService? _dialogService;
     
     public override void Initialize()
     {
@@ -37,6 +38,7 @@ public partial class App : Application
         var services = collection.BuildServiceProvider();
         
         _ollamaService = services.GetRequiredService<OllamaService>();
+        _dialogService = services.GetRequiredService<DialogService>();
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -104,5 +106,11 @@ public partial class App : Application
         {
             BindingPlugins.DataValidators.Remove(plugin);
         }
+    }
+
+    private void About_OnClick(object? sender, EventArgs e)
+    {
+        // ezt később majd vmi fancy dialogra
+        _dialogService?.ShowInfoDialog("Avallama - " + LocalizationService.GetString("VERSION"));
     }
 }

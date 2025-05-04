@@ -261,12 +261,7 @@ public class AvallamaTextBlock : Control
             FontFamily ?? FontFamily.Default
         );
         
-        // TODO: optimalizálni jobban (ha még lehet)
-        // vagy úgy hogy megfelezni a real time generálást
-        // vagy saját beállítás szerint ahogy a felhasználó akarja (optimalizált szöveg/real time generált szöveg)
-        // vagy a nehezebbik út, hogy a szöveget elemezve valahogy újrahasználja a textlayoutot amit már létrehozott (ezt nem tudom még hogy lehetne)
-        // _newTextLayoutCount++;
-        // Console.WriteLine("New text layout created: " + _newTextLayoutCount);
+        // real-time generálásnál képes több ezres nagyságban létrehozni és felszabadítani TextLayout elemeket
         return new TextLayout(
             Text,
             typeface,
@@ -475,14 +470,7 @@ public class AvallamaTextBlock : Control
         switch (change.Property.Name)
         {
             // Méretet érintő változások:
-            
-            // Ha a Text-re figyel és meghívja az InvalidateMeasuret akkor történik a generálós szöveghozzáadás
-            // és minden új generált szóra/betűre ami hozzáadódik, létrejön egy új textlayout, ami majd fel is szabadul (ez a művelet több ezres nagyságú is lehet)
-            // TODO: esetleg beállításokban felhasználó beállíthatja, hogy optimalizált UI szövegek legyenek
-            // ez azt jelentené hogy a több ezres textlayout létrehozás helyett csak párszor hozná azt létre, viszont nem lenne real time generálás
-            // hanem csak a "Generálás folyamatban" szöveg és utána egyből megjelenne ha kész van a szöveg
             case nameof(Text):
-                
             case nameof(SubText):
             case nameof(TextFontSize):
             case nameof(SubTextFontSize):

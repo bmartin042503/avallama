@@ -35,7 +35,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar" SizeChanged="SideBar_OnSizeChanged"
               RowDefinitions="Auto,*,Auto"
               Background="{DynamicResource SurfaceContainer}">
-            <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" Margin="10">
+            <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" x:Name="SideBarTopGrid" Margin="10">
                 <Border Grid.Column="0" ToolTip.Tip="{localization:LocalizationService Key='CONVERSATIONS_NOT_AVAILABLE'}">
                     <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
                             Content="{localization:LocalizationService Key='NEW'}"
@@ -81,7 +81,7 @@ Licensed under the MIT License. See LICENSE file for details.
                       Background="{DynamicResource SurfaceContainer}" ResizeDirection="Columns"/>
 
         <!-- SideBar expand/hide gomb -->
-        <Button Grid.Row="0" Grid.Column="2" Classes="svgButton" Margin="10,-10,0,0" 
+        <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton" Margin="10,-10,0,0" 
                 Click="SideBarBtn_OnClick" Cursor="Hand">
             <controls:DynamicSvg
                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
