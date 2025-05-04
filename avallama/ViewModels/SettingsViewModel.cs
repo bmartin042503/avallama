@@ -64,6 +64,7 @@ public partial class SettingsViewModel : DialogViewModel
     
     public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService)
     {
+        DialogType = ApplicationDialog.Settings;
         _dialogService = dialogService;
         _configurationService = configurationService;
         ChangesTextVisibility = false;

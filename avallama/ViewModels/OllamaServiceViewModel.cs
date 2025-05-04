@@ -27,6 +27,7 @@ public partial class OllamaServiceViewModel : DialogViewModel
     
     public OllamaServiceViewModel(OllamaService ollamaService, DialogService dialogService, AppLauncherService appLauncherService)
     {
+        DialogType = ApplicationDialog.OllamaService;
         _dialogService = dialogService;
         _appLauncherService = appLauncherService;
         _ollamaServiceStatusText = LocalizationService.GetString("AVALLAMA_STARTING");
