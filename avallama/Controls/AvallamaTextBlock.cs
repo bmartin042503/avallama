@@ -180,6 +180,8 @@ public class AvallamaTextBlock : Control
     private int _selectionEnd;
     private string _selectedText = string.Empty;
 
+    // private int _newTextLayoutCount = 0;
+
     public AvallamaTextBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
@@ -259,6 +261,12 @@ public class AvallamaTextBlock : Control
             FontFamily ?? FontFamily.Default
         );
         
+        // TODO: optimalizálni jobban (ha még lehet)
+        // vagy úgy hogy megfelezni a real time generálást
+        // vagy saját beállítás szerint ahogy a felhasználó akarja (optimalizált szöveg/real time generált szöveg)
+        // vagy a nehezebbik út, hogy a szöveget elemezve valahogy újrahasználja a textlayoutot amit már létrehozott (ezt nem tudom még hogy lehetne)
+        // _newTextLayoutCount++;
+        // Console.WriteLine("New text layout created: " + _newTextLayoutCount);
         return new TextLayout(
             Text,
             typeface,
@@ -329,7 +337,6 @@ public class AvallamaTextBlock : Control
 
             _textLayout = CreateTextLayout();
             _subTextLayout = CreateSubTextLayout();
-            // InvalidateArrange();
         }
 
         // a lehető legnagyobb szélesség a textlayoutokra nézve
@@ -468,7 +475,14 @@ public class AvallamaTextBlock : Control
         switch (change.Property.Name)
         {
             // Méretet érintő változások:
+            
+            // Ha a Text-re figyel és meghívja az InvalidateMeasuret akkor történik a generálós szöveghozzáadás
+            // és minden új generált szóra/betűre ami hozzáadódik, létrejön egy új textlayout, ami majd fel is szabadul (ez a művelet több ezres nagyságú is lehet)
+            // TODO: esetleg beállításokban felhasználó beállíthatja, hogy optimalizált UI szövegek legyenek
+            // ez azt jelentené hogy a több ezres textlayout létrehozás helyett csak párszor hozná azt létre, viszont nem lenne real time generálás
+            // hanem csak a "Generálás folyamatban" szöveg és utána egyből megjelenne ha kész van a szöveg
             case nameof(Text):
+                
             case nameof(SubText):
             case nameof(TextFontSize):
             case nameof(SubTextFontSize):
@@ -516,7 +530,6 @@ public class AvallamaTextBlock : Control
                 var textIndex = TextIndexFromPointer(e.GetPosition(this));
                 _selectionEnd = textIndex;
                 InvalidateVisual();
-                InvalidateMeasure();
             }
         }
         else
@@ -575,7 +588,6 @@ public class AvallamaTextBlock : Control
         _selectionStart = wordStartIndex;
         _selectionEnd = wordEndIndex + 1;
         InvalidateVisual();
-        InvalidateMeasure();
         UpdateSelectedText();
     }
 
@@ -607,7 +619,6 @@ public class AvallamaTextBlock : Control
         _selectionStart = paragraphStartIndex;
         _selectionEnd = paragraphEndIndex + 1;
         InvalidateVisual();
-        InvalidateMeasure();
         UpdateSelectedText();
     }
 
@@ -617,7 +628,6 @@ public class AvallamaTextBlock : Control
         _selectionStart = 0;
         _selectionEnd = Text.Length;
         InvalidateVisual();
-        InvalidateMeasure();
     }
 
     private void ClearSelection()
@@ -626,7 +636,6 @@ public class AvallamaTextBlock : Control
         _selectionEnd = _selectionStart;
         _selectedText = string.Empty;
         InvalidateVisual();
-        InvalidateMeasure();
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -713,7 +722,7 @@ public class AvallamaTextBlock : Control
         // az alignmentet nem kell figyelni mert a szövegdoboz kerete az alignmenthez már igazodott
         // függőlegesen pedig veszi a pixelpontos magasságot és a sormagasságot, és ha az extenten kívül van akkor nincs a szövegen
         return !(_textLayout.TextLines[linePointerIndex].Width < pointerPosXInBox)
-               && (!(pointerPosYInBox < extentStartingPosY) && !(pointerPosYInBox > extentEndingPosY));
+               && !(pointerPosYInBox < extentStartingPosY) && !(pointerPosYInBox > extentEndingPosY);
     }
 
     protected override void OnGotFocus(GotFocusEventArgs e)

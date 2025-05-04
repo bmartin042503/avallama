@@ -9,12 +9,10 @@ using Avalonia.Media;
 namespace avallama.Controls;
 
 /// <summary>
-/// Svg megjelenítésére használható. A FillColor-al megadható az SVG színe.
+/// Svg megjelenítésére használható. A FillColor és a StrokeColor propertykkel megadható az SVG színe.
 /// </summary>
 
-// TODO: megcsinálni úgy hogy property alapján alkalmazzon CSS-t
-// pl. megadva neki AXAML-ben: Fill, Stroke vagy FillStroke (ahol mindkettőt felülírja)
-public class DynamicSvg : Avalonia.Svg.Svg
+public class DynamicSvg(IServiceProvider provider) : Avalonia.Svg.Svg(provider)
 {
     /* SVG-t a következőképp lehet színezni megfelelően ezzel az osztállyal:
      * - Az SVG fájl tartalmát módosítani kell úgy, hogy azok a részek, amiket színezni szeretnénk külön fill és stroke attribútumban legyenek.
@@ -26,31 +24,45 @@ public class DynamicSvg : Avalonia.Svg.Svg
     
     public static readonly StyledProperty<IBrush?> FillColorProperty = 
         AvaloniaProperty.Register<DynamicSvg, IBrush?>("FillColor");
+    
+    public static readonly StyledProperty<IBrush?> StrokeColorProperty = 
+        AvaloniaProperty.Register<DynamicSvg, IBrush?>("StrokeColor");
 
     public IBrush? FillColor
     {
         get => GetValue(FillColorProperty);
         set => SetValue(FillColorProperty, value);
     }
+
+    public IBrush? StrokeColor
+    {
+        get => GetValue(StrokeColorProperty);
+        set => SetValue(StrokeColorProperty, value);
+    }
     
     // public DynamicSvg(Uri baseUri) : base(baseUri) { }
-    public DynamicSvg(IServiceProvider provider) : base(provider) { }
+
+    private static string ConvertColorToHex(IBrush? propertyColor)
+    {
+        var colorParse = Color.TryParse(propertyColor?.ToString(), out var color);
+        if (!colorParse) return "000000"; // fekete szín ha a parse sikertelen
+        var rgb = color.ToUInt32(); 
+        var result = $"{rgb.ToString("x8", CultureInfo.InvariantCulture)}"; // hex-re parsolja
+        return result[2..]; // az első 2 karaktert leviszi, különben nem állítható be a szín
+
+    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == FillColorProperty)
         {
-            var color = Colors.Transparent; // ebbe próbálja parsolni a megadott colort
-            var colorParse = Color.TryParse(FillColor?.ToString(), out color);
-            var rgb = color.ToUInt32(); 
-            var result = $"{rgb.ToString("x8", CultureInfo.InvariantCulture)}"; // hex-re parsolja
-            result = result.Substring(2); // az első 2 karaktert leviszi, különben nem állítható be a szín
-            if (colorParse)
-            {
-                // az svg fájlban az összes elemre beállítja az adott színt
-                SetCurrentValue(CssProperty, $"* {{ fill: #{result}; ");
-            }
+            SetCurrentValue(CssProperty, $"* {{ fill: #{ConvertColorToHex(FillColor)} }}; ");
+        }
+
+        if (change.Property == StrokeColorProperty)
+        {
+            SetCurrentValue(CssProperty, $"* {{ stroke: #{ConvertColorToHex(StrokeColor)} }}; ");
         }
     }
 }
