@@ -229,4 +229,19 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="ERROR_DIALOG_TITLE" xml:space="preserve">
         <value>Hiba történt</value>
     </data>
+    <data name="SCROLL_TO_BOTTOM_SETTING" xml:space="preserve">
+        <value>Lefelé görgetés</value>
+    </data>
+    <data name="SCROLL_AUTOMATIC" xml:space="preserve">
+        <value>Automatikus</value>
+    </data>
+    <data name="SCROLL_FLOATING" xml:space="preserve">
+        <value>Felugró gomb</value>
+    </data>
+    <data name="NONE" xml:space="preserve">
+        <value>Egyik sem</value>
+    </data>
+    <data name="SCROLL_TO_BOTTOM_SETTING_DESC" xml:space="preserve">
+        <value>Görgetési beállítás új üzenet esetén</value>
+    </data>
 </root>

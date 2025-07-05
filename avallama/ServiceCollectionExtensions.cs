@@ -6,7 +6,6 @@ using avallama.Constants;
 using avallama.ViewModels;
 using avallama.Factories;
 using avallama.Services;
-using avallama.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;

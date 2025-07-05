@@ -9,5 +9,6 @@ public enum ApplicationDialog
     OllamaService,
     ModelManager,
     Information,
-    Error
+    Error,
+    Confirm
 }

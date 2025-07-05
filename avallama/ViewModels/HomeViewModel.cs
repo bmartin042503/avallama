@@ -22,6 +22,9 @@ public partial class HomeViewModel : PageViewModel
     
     private readonly OllamaService _ollamaService;
     private readonly DialogService _dialogService;
+    private readonly ConfigurationService _configurationService;
+
+    public string ScrollSetting;
 
     private ObservableCollection<Conversation> _conversations;
     
@@ -158,12 +161,16 @@ public partial class HomeViewModel : PageViewModel
         await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
     }
     
-    public HomeViewModel(OllamaService ollamaService, DialogService dialogService)
+    public HomeViewModel(OllamaService ollamaService, DialogService dialogService, ConfigurationService configurationService)
     {
         // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
         _dialogService = dialogService;
         _ollamaService = ollamaService;
+        _configurationService = configurationService;
+        
+        LoadSettings();
+        
         var conversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
@@ -183,5 +190,13 @@ public partial class HomeViewModel : PageViewModel
         GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
         //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         await CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
+    }
+
+    // első inicializálásnál és beállítások mentésénél ez meghívódik, hogy pl. ne kelljen restartolni az appot
+    // ha a felhasználó átváltja a görgetési beállítást, és újra betöltenie azt
+    // TODO: messengerrel kell valszeg megoldani hogy settingsviewmodel értesítse homeviewmodelt
+    private void LoadSettings()
+    {
+        ScrollSetting = _configurationService.ReadSetting("scroll-to-bottom");
     }
 }

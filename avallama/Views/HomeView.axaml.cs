@@ -1,14 +1,21 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Runtime.InteropServices;
 using avallama.Services;
+using avallama.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace avallama.Views;
 
+// TODO: scroll-to-bottom gomb animálása esetleg + Messenger osztállyal vagy vmi mással megoldani hogy
+// a SettingsViewModel küldjön értesítést HomeViewModelnek a beállítások újratöltésére
+// mert most újra kell tölteni az appot ha átállítjuk a beállításban
+// + confirmation Dialog resulttal (igen/nem) pl. hogy újraindítja-e az alkalmazást a beállítások érvényesítéséhezs
 public partial class HomeView : UserControl
 {
     public HomeView()
@@ -24,11 +31,17 @@ public partial class HomeView : UserControl
             // margin beállítás hogy legyen az ablakkezelő gomboknak helye macOS-en
             SetMacOSMargin();
         }
+        
+        // globálisan figyelünk a pointerwheeles görgetésre, különben a scrollviewer elkapná
+        // és ha nem lenne erre külön figyelve akkor új üzenet hozzáadásnál is mivel scrollbar növekszik megjelenne a scroll-to-bottom gomb
+        AddHandler(PointerWheelChangedEvent, OnGlobalPointerWheelChanged, RoutingStrategies.Tunnel);
     }
 
     private bool _sideBarExpanded = true;
     private double _sideBarWidth;
     private Control? _sideBarControl;
+    private string _scrollSetting = string.Empty;
+    private bool _userScrolledWithWheel;
 
     // megnézi hogy milyen állapotban van az ablak és a sidebar
     // majd eszerint beállítja a marginjukat, hogy macOS-en az ablakkezelő gombok használhatóak legyenek
@@ -65,11 +78,53 @@ public partial class HomeView : UserControl
 
     private void ScrollViewer_OnScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
-        // Ha a görgetési terület függőlegesen növekszik (új üzenet elem) akkor legörget az aljára
-        // ezt majd lecserélni a görgetési beállításra
-        if (!(e.ExtentDelta.Y > 0)) return;
+        if (_scrollSetting is "" or null)
+        {
+            if (DataContext is not HomeViewModel vm || vm.ScrollSetting == "")
+            {
+                _scrollSetting = "float";
+            }
+            else
+            {
+                _scrollSetting = vm.ScrollSetting;
+            }
+        }
+
         var scrollViewer = sender as ScrollViewer;
-        scrollViewer?.ScrollToEnd();
+        if (_scrollSetting == "auto")
+        {
+            if (!(e.ExtentDelta.Y > 0)) return;
+            scrollViewer?.ScrollToEnd();
+        } 
+        else if (_scrollSetting == "float")
+        {
+            // legörgetésnél megjelenik a scroll to bottom gomb
+            if (e.OffsetDelta.Y > 10 && !ScrollToBottomBtn.IsVisible && _userScrolledWithWheel)
+            {
+                ScrollToBottomBtn.IsVisible = true;
+                ScrollToBottomBtnShadow.IsVisible = true;
+            }
+            // felgörgetés valamennyit VAGY teljesen legörgetés az aljára ÉS felhasználói görgetés tehát nem üzenet generálás mozdítja a scrollbart
+            else if (e.OffsetDelta.Y < 0 || scrollViewer?.Offset.Y + scrollViewer?.Viewport.Height >= scrollViewer?.Extent.Height - 1
+                     && _userScrolledWithWheel && ScrollToBottomBtn.IsVisible)
+            {
+                ScrollToBottomBtn.IsVisible = false;
+                ScrollToBottomBtnShadow.IsVisible = false;
+            }
+            _userScrolledWithWheel = false;
+        }
+    }
+    
+    private void OnGlobalPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        _userScrolledWithWheel = true;
+    }
+    
+    private void ScrollToBottomBtn_OnClick(object? sender, RoutedEventArgs e)
+    {
+        ConversationScrollViewer.ScrollToEnd();
+        ScrollToBottomBtn.IsVisible = false;
+        ScrollToBottomBtnShadow.IsVisible = false;
     }
 
     private void SideBarBtn_OnClick(object? sender, RoutedEventArgs e)

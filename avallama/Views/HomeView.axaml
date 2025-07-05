@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
-        
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" MinWidth="180" MaxWidth="400"></ColumnDefinition>
             <ColumnDefinition Width="8"></ColumnDefinition>
@@ -36,11 +36,12 @@ Licensed under the MIT License. See LICENSE file for details.
               RowDefinitions="Auto,*,Auto"
               Background="{DynamicResource SurfaceContainer}">
             <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" x:Name="SideBarTopGrid" Margin="10">
-                <Border Grid.Column="0" ToolTip.Tip="{localization:LocalizationService Key='CONVERSATIONS_NOT_AVAILABLE'}">
+                <Border Grid.Column="0"
+                        ToolTip.Tip="{localization:LocalizationService Key='CONVERSATIONS_NOT_AVAILABLE'}">
                     <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
                             Content="{localization:LocalizationService Key='NEW'}"
                             Margin="0,0,10,0" HorizontalAlignment="Stretch" Cursor="Hand"
-                            IsEnabled="False"/>
+                            IsEnabled="False" />
                 </Border>
                 <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1">
                     <TextBox.InnerRightContent>
@@ -62,7 +63,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
             </ScrollViewer>
-            
+
             <StackPanel Grid.Row="2" Margin="10" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
                 <Button Classes="svgButton" Cursor="Hand" Command="{Binding OpenSettings}">
                     <controls:DynamicSvg
@@ -76,17 +77,17 @@ Licensed under the MIT License. See LICENSE file for details.
                 </Button>
             </StackPanel>
         </Grid>
-        
+
         <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" x:Name="GridSplitter"
-                      Background="{DynamicResource SurfaceContainer}" ResizeDirection="Columns"/>
+                      Background="{DynamicResource SurfaceContainer}" ResizeDirection="Columns" />
 
         <!-- SideBar expand/hide gomb -->
-        <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton" Margin="10,-10,0,0" 
+        <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton" Margin="10,-10,0,0"
                 Click="SideBarBtn_OnClick" Cursor="Hand">
             <controls:DynamicSvg
                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
         </Button>
-        
+
         <Grid Grid.Row="0" Grid.Column="3" ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <ComboBox
@@ -183,34 +184,52 @@ Licensed under the MIT License. See LICENSE file for details.
                     Text="{Binding DownloadAmount}"
                     Foreground="{DynamicResource OnPrimaryContainer}" />
             </StackPanel>
-            <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch"
-                          Margin="0, 15, 0, 0"
-                          Padding="10,0,10,0"
-                          ScrollChanged="ScrollViewer_OnScrollChanged">
-                <ItemsControl ItemsSource="{Binding SelectedConversation.Messages}">
-                    <ItemsControl.DataTemplates>
-                        <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
-                        <DataTemplate DataType="models:GeneratedMessage">
-                            <controls:AvallamaTextBlock
-                                Classes="generatedMessage"
-                                Text="{Binding Content}"
-                                TextColor="{DynamicResource SurfaceContainerHighest}"
-                                SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
-                                Background="{DynamicResource OutlineVariant}"
-                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
-                        </DataTemplate>
-                        <DataTemplate DataType="models:Message">
-                            <controls:AvallamaTextBlock
-                                HorizontalAlignment="Right"
-                                Classes="userMessage"
-                                Text="{Binding Content}"
-                                TextColor="{DynamicResource OnPrimary}"
-                                Background="{DynamicResource Primary}"
-                                MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
-                        </DataTemplate>
-                    </ItemsControl.DataTemplates>
-                </ItemsControl>
-            </ScrollViewer>
+
+            <Grid Grid.Row="0" HorizontalAlignment="Stretch"
+                  Margin="0, 15, 0, 0">
+                <ScrollViewer ScrollChanged="ScrollViewer_OnScrollChanged"
+                              Padding="10,0,10,0" x:Name="ConversationScrollViewer">
+                    <ItemsControl ItemsSource="{Binding SelectedConversation.Messages}">
+                        <ItemsControl.DataTemplates>
+                            <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
+                            <DataTemplate DataType="models:GeneratedMessage">
+                                <controls:AvallamaTextBlock
+                                    Classes="generatedMessage"
+                                    Text="{Binding Content}"
+                                    TextColor="{DynamicResource SurfaceContainerHighest}"
+                                    SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
+                                    Background="{DynamicResource OutlineVariant}"
+                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </DataTemplate>
+                            <DataTemplate DataType="models:Message">
+                                <controls:AvallamaTextBlock
+                                    HorizontalAlignment="Right"
+                                    Classes="userMessage"
+                                    Text="{Binding Content}"
+                                    TextColor="{DynamicResource OnPrimary}"
+                                    Background="{DynamicResource Primary}"
+                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </DataTemplate>
+                        </ItemsControl.DataTemplates>
+                    </ItemsControl>
+                </ScrollViewer>
+                <Border Width="40" Height="40" x:Name="ScrollToBottomBtnShadow"
+                        Background="Transparent"
+                        CornerRadius="24"
+                        BoxShadow="0 3 20 3 Gray"
+                        IsVisible="False"
+                        HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-3" />
+
+                <Button x:Name="ScrollToBottomBtn" IsVisible="False" Classes="svgButton" Cursor="Hand"
+                        Click="ScrollToBottomBtn_OnClick" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                        Margin="0,0,0,-5">
+                    <Border Padding="4" Background="{DynamicResource Primary}" CornerRadius="24">
+                        <controls:DynamicSvg
+                            Path="/Assets/Svg/arrow-down.svg" Width="40" FillColor="{DynamicResource OnPrimary}" />
+                    </Border>
+                </Button>
+            </Grid>
+
             <TextBox Grid.Row="1"
                      Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
                      Margin="0,30,0,20"

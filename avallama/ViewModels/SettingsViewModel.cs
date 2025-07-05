@@ -16,9 +16,14 @@ public partial class SettingsViewModel : DialogViewModel
 
     private int _selectedLanguageIndex;
     private int _selectedThemeIndex;
+    private int _selectedScrollIndex;
     private int _defaultLanguageIndex;
     private bool _changesTextVisibility;
     private bool _restartNeeded;
+
+    private const string LanguageKey = "language";
+    private const string ColorSchemeKey = "color-scheme";
+    private const string ScrollToBottomKey = "scroll-to-bottom";
 
     // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et
     public bool RestartNeeded
@@ -52,6 +57,16 @@ public partial class SettingsViewModel : DialogViewModel
         }
     }
 
+    public int SelectedScrollIndex
+    {
+        get => _selectedScrollIndex;
+        set
+        {
+            _selectedScrollIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool ChangesTextVisibility
     {
         get => _changesTextVisibility;
@@ -73,7 +88,7 @@ public partial class SettingsViewModel : DialogViewModel
 
     private void LoadSettings()
     {
-        var language = _configurationService.ReadSetting("language");
+        var language = _configurationService.ReadSetting(LanguageKey);
         SelectedLanguageIndex = language switch
         {
             "hungarian" => 0,
@@ -83,10 +98,19 @@ public partial class SettingsViewModel : DialogViewModel
         _defaultLanguageIndex = SelectedLanguageIndex;
         RestartNeeded = false;
         
-        var theme = _configurationService.ReadSetting("color-scheme");
+        var theme = _configurationService.ReadSetting(ColorSchemeKey);
         SelectedThemeIndex = theme switch
         {
             "light" => 0,
+            _ => 1
+        };
+
+        var scrollToBottom = _configurationService.ReadSetting(ScrollToBottomKey);
+        SelectedScrollIndex = scrollToBottom switch
+        {
+            "auto" => 0,
+            "float" => 1,
+            "none" => 2,
             _ => 1
         };
     }
@@ -106,8 +130,17 @@ public partial class SettingsViewModel : DialogViewModel
             1 => "english",
             _ => string.Empty
         };
-        _configurationService.SaveSetting("color-scheme", colorScheme);
-        _configurationService.SaveSetting("language", language);
+
+        var scrollToBottom = SelectedScrollIndex switch
+        {
+            0 => "auto",
+            1 => "float",
+            2 => "none",
+            _ => "float"
+        };
+        _configurationService.SaveSetting(ColorSchemeKey, colorScheme);
+        _configurationService.SaveSetting(LanguageKey, language);
+        _configurationService.SaveSetting(ScrollToBottomKey, scrollToBottom);
         ChangesTextVisibility = true;
     }
 
