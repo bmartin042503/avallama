@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
@@ -36,10 +37,30 @@ public class OllamaService
     // tudnak feliratkozni rá
     // a MainViewModelben az OllamaServiceStatusChanged iratkozik fel ide erre az eventre
     public event ServiceStatusChangedHandler? ServiceStatusChanged;
+    
+    private string? _apiHost = "localhost";
+    private string? _apiPort = "11434";
+    private readonly ConfigurationService _configurationService;
+    private readonly DialogService _dialogService;
 
-    public OllamaService()
+    private void LoadSettings()
+    {
+        var hostSetting = _configurationService.ReadSetting("api-host");
+        _apiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
+        
+        var portSetting = _configurationService.ReadSetting("api-port");
+        _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
+    }
+
+    private string ApiBaseUrl => $"http://{_apiHost}:{_apiPort}";
+
+    public OllamaService(ConfigurationService configurationService, DialogService dialogService)
     {
         OllamaPath = "";
+        _configurationService = configurationService;
+        _dialogService = dialogService;
+        LoadSettings();
+        Console.WriteLine(ApiBaseUrl);
     }
 
     private async Task Start()
@@ -165,12 +186,13 @@ public class OllamaService
         return (uint)ollamaProcesses.Length;
     }
 
-    private static async Task<bool> IsOllamaServerRunning()
+    private async Task<bool> IsOllamaServerRunning()
     {
+        LoadSettings();
         try
         {
             using var client = new HttpClient();
-            var response = await client.GetAsync("http://localhost:11434/api/version");
+            var response = await client.GetAsync($@"{ApiBaseUrl}/api/version");
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch
@@ -211,7 +233,8 @@ public class OllamaService
 
     public async Task<bool> IsModelDownloaded()
     {
-        const string url = "http://localhost:11434/api/tags";
+        LoadSettings();
+        var url = $@"{ApiBaseUrl}/api/tags";
         try
         {
             using var client = new HttpClient();
@@ -230,7 +253,8 @@ public class OllamaService
 
     public async Task<string> GetModelParamNum(string modelName)
     {
-        const string url = "http://localhost:11434/api/show";
+        LoadSettings();
+        var url = $@"{ApiBaseUrl}/api/show";
 
         var payload = new
         {
@@ -249,7 +273,8 @@ public class OllamaService
 
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
     {
-        const string url = "http://localhost:11434/api/chat";
+        LoadSettings();
+        var url = $@"{ApiBaseUrl}/api/chat";
 
         var chatRequest = new ChatRequest(messageHistory);
         var jsonPayload = chatRequest.ToJson();
@@ -262,7 +287,18 @@ public class OllamaService
         };
 
         using var client = new HttpClient();
-        using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        }
+        catch (HttpRequestException)
+        {
+            _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
+            yield break;
+        }
+
+
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
         string? line;
@@ -275,10 +311,9 @@ public class OllamaService
                 {
                     json = JsonSerializer.Deserialize<OllamaResponse>(line);
                 }
-                catch (JsonException)
+                catch (JsonException e)
                 {
-                    // insert error handling here
-                    // TODO esetleg lehetne definialni egy custom error ablakot ami az ilyen hibakat kiirja?
+                    _dialogService.ShowErrorDialog(e.Message);
                 }
                 if (json != null)
                 {
@@ -290,7 +325,8 @@ public class OllamaService
 
     public async IAsyncEnumerable<DownloadResponse> PullModel(string modelName)
     {
-        const string url = "http://localhost:11434/api/pull";
+        LoadSettings();
+        var url = $@"{ApiBaseUrl}/api/pull";
 
         var payload = new
         {
@@ -308,7 +344,16 @@ public class OllamaService
         };
         
         using var client = new HttpClient();
-        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        }
+        catch (HttpRequestException)
+        {
+            _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
+            yield break;
+        }
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
         
@@ -322,9 +367,9 @@ public class OllamaService
                 {
                     json = JsonSerializer.Deserialize<DownloadResponse>(line);
                 }
-                catch (JsonException)
+                catch (JsonException e)
                 {
-                    // Console.WriteLine("error json no good serialize");
+                    _dialogService.ShowErrorDialog(e.Message);
                 }
 
                 if (json != null)

@@ -251,4 +251,25 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SCROLL_TO_BOTTOM_SETTING_DESC" xml:space="preserve">
         <value>Scroll behavior on new message</value>
     </data>
+    <data name="API_HOST_SETTING" xml:space="preserve">
+        <value>Ollama API Host</value>
+    </data>
+    <data name="API_HOST_SETTING_DESC" xml:space="preserve">
+        <value>IP Address of Ollama host machine (default is localhost)</value>
+    </data>
+    <data name="API_PORT_SETTING" xml:space="preserve">
+        <value>Ollama API Port</value>
+    </data>
+    <data name="API_PORT_SETTING_DESC" xml:space="preserve">
+        <value>Exposed port of the Ollama host machine (default is 11434)</value>
+    </data>
+    <data name="INVALID_HOST_ERR" xml:space="preserve">
+        <value>Ollama API Host is invalid, please enter a valid host address. (IPv4 address, or localhost)</value>
+    </data>
+    <data name="INVALID_PORT_ERR" xml:space="preserve">
+        <value>Ollama API Port is invalid, please enter a valid port. (1 - 65535)</value>
+    </data>
+    <data name="HOST_CONNECTION_ERR" xml:space="preserve">
+        <value>Could not establish connection with the Ollama host machine, did you configure host settings correctly?</value>
+    </data>
 </root>
