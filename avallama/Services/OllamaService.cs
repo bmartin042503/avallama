@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
@@ -19,8 +18,6 @@ using System.Text.Json.Nodes;
 using avallama.Models;
 
 namespace avallama.Services;
-
-// TODO: Letesztelni memóriakezelést (meg linuxra és macos-re megvalósítani xd)
 
 public class OllamaService
 {
@@ -43,15 +40,6 @@ public class OllamaService
     private readonly ConfigurationService _configurationService;
     private readonly DialogService _dialogService;
 
-    private void LoadSettings()
-    {
-        var hostSetting = _configurationService.ReadSetting("api-host");
-        _apiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
-        
-        var portSetting = _configurationService.ReadSetting("api-port");
-        _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
-    }
-
     private string ApiBaseUrl => $"http://{_apiHost}:{_apiPort}";
 
     public OllamaService(ConfigurationService configurationService, DialogService dialogService)
@@ -60,7 +48,17 @@ public class OllamaService
         _configurationService = configurationService;
         _dialogService = dialogService;
         LoadSettings();
-        Console.WriteLine(ApiBaseUrl);
+    }
+    
+    // Ezt a metódust minden API hívásnál meghívja az app hogy up-to-date beállításokkal rendelkezzen
+    // anélkül hogy újra kelljen indítani a service beállítás módosításakor
+    private void LoadSettings()
+    {
+        var hostSetting = _configurationService.ReadSetting("api-host");
+        _apiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
+        
+        var portSetting = _configurationService.ReadSetting("api-port");
+        _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
     }
 
     private async Task Start()
@@ -297,8 +295,7 @@ public class OllamaService
             _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
             yield break;
         }
-
-
+        
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
         string? line;
