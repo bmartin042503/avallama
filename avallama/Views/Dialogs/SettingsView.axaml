@@ -59,8 +59,30 @@ Licensed under the MIT License. See LICENSE file for details.
                 <services:LocalizationService Key="NONE" />
             </ComboBoxItem>
         </ComboBox>
+        
+        <!-- Host és Port beállítás -->
+        
+        <StackPanel Grid.Row="3" Grid.Column="0" VerticalAlignment="Center">
+            <TextBlock Text="{services:LocalizationService Key='API_HOST_SETTING'}"
+                       FontSize="20" Foreground="{DynamicResource OnSurface}" />
+            <TextBlock Text="{services:LocalizationService Key='API_HOST_SETTING_DESC'}"
+                       Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
+        </StackPanel>
+        <TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Width="160" HorizontalAlignment="Right"
+                 Text="{Binding ApiHost}">
+        </TextBox>
+        
+        <StackPanel Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">
+            <TextBlock Text="{services:LocalizationService Key='API_PORT_SETTING'}"
+                       FontSize="20" Foreground="{DynamicResource OnSurface}" />
+            <TextBlock Text="{services:LocalizationService Key='API_PORT_SETTING_DESC'}"
+                       Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
+        </StackPanel>
+        <TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Width="160" HorizontalAlignment="Right"
+                 Text="{Binding ApiPort}">
+        </TextBox>
 
-        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" CornerRadius="15" Padding="10" Background="{DynamicResource SurfaceContainerLow}"
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" CornerRadius="15" Padding="10" Background="{DynamicResource SurfaceContainerLow}"
                 Margin="0,30,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <StackPanel Spacing="5">
@@ -101,13 +123,13 @@ Licensed under the MIT License. See LICENSE file for details.
             </ScrollViewer>
         </Border>
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4" Text="{services:LocalizationService Key='SETTINGS_SAVED'}"
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="6" Text="{services:LocalizationService Key='SETTINGS_SAVED'}"
                    Margin="0,20,0,0" IsVisible="{Binding ChangesTextVisibility}"
-                   FontSize="14" Foreground="{DynamicResource Outline}" HorizontalAlignment="Right" />
+                   FontSize="14" Foreground="{DynamicResource Outline}" HorizontalAlignment="Left" />
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" Text="{services:LocalizationService Key='RESTART_NEEDED'}" Margin="0,20,0,0"
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="6" Text="{services:LocalizationService Key='RESTART_NEEDED'}" Margin="0,20,0,0"
                    Foreground="{DynamicResource Error}" TextWrapping="Wrap"
-                   IsVisible="{Binding RestartNeeded}" HorizontalAlignment="Right" />
+                   IsVisible="{Binding RestartNeeded}" HorizontalAlignment="Left" />
         
         <StackPanel HorizontalAlignment="Right" Spacing="14" Margin="0,20,0,0" Grid.Row="6" Grid.Column="0"
                     Grid.ColumnSpan="2" Orientation="Horizontal">

@@ -244,4 +244,25 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SCROLL_TO_BOTTOM_SETTING_DESC" xml:space="preserve">
         <value>Görgetési beállítás új üzenet esetén</value>
     </data>
+    <data name="API_HOST_SETTING" xml:space="preserve">
+        <value>Ollama API Host</value>
+    </data>
+    <data name="API_HOST_SETTING_DESC" xml:space="preserve">
+        <value>IP címe az Ollama host számítógépnek (alapértelmezetten localhost)</value>
+    </data>
+    <data name="API_PORT_SETTING" xml:space="preserve">
+        <value>Ollama API Port</value>
+    </data>
+    <data name="API_PORT_SETTING_DESC" xml:space="preserve">
+        <value>Elérhető port-ja az Ollama host számítógépnek (alapértelmezetten 11434)</value>
+    </data>
+    <data name="INVALID_HOST_ERR" xml:space="preserve">
+        <value>Az Ollama API Host nem valid, adjon meg egy valid host címet. (IPv4 cím, vagy localhost)</value>
+    </data>
+    <data name="INVALID_PORT_ERR" xml:space="preserve">
+        <value>Az Ollama API Post nem valid, adjon meg a valid portot. (1 - 65535)</value>
+    </data>
+    <data name="HOST_CONNECTION_ERR" xml:space="preserve">
+        <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel, jól konfigurálta a host beállításokat?</value>
+    </data>
 </root>
