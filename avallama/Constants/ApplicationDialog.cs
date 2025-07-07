@@ -10,5 +10,6 @@ public enum ApplicationDialog
     ModelManager,
     Information,
     Error,
-    Confirm
+    Confirmation,
+    Input
 }
