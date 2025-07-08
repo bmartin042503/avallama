@@ -55,7 +55,7 @@ public static class ServiceCollectionExtensions
             ApplicationDialog.OllamaService => serviceProvider.GetRequiredService<OllamaServiceViewModel>(),
             ApplicationDialog.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
             _ => throw new InvalidOperationException() 
-            // Info és Error dialog nem kell
+            // Info, Error és a többi dialog nem kell, mert azok nem hívják meg ezt
         });
 
     }

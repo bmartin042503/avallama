@@ -7,17 +7,22 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:services="clr-namespace:avallama.Services"
              mc:Ignorable="d"
-             x:Class="avallama.Views.Dialogs.ConfirmationView"
+             x:Class="avallama.Views.Dialogs.InputView"
              Background="{DynamicResource Surface}">
     <StackPanel Orientation="Vertical" Margin="20">
         <TextBlock x:Name="DialogTitle" TextWrapping="Wrap" MaxWidth="400" Margin="0,10,0,0" Classes="H2"
-                   Text="Confirm dialog title" />
+                   Text="Input dialog title" />
         <TextBlock x:Name="DialogDescription" TextWrapping="Wrap" MaxWidth="400" Margin="0,12,0,0" Classes="H3"
-                   Text="Confirm dialog description" Foreground="{DynamicResource Outline}" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16" Margin="0, 34, 0, 0">
-            <Button Content="Positive" x:Name="PositiveButton" Cursor="Hand" />
-            <Button Content="Negative" x:Name="NegativeButton" Cursor="Hand" />
+                   Text="Input dialog description" Foreground="{DynamicResource Outline}" />
+        <TextBox Classes="settingTextBox" x:Name="InputTextBox" Margin="0,32" Watermark="Input Text"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16">
+            <Button Classes="lessSecondaryButton"
+                    Content="{services:LocalizationService Key='CLOSE'}"
+                    x:Name="CloseButton" Cursor="Hand" />
+            <Button Content="{services:LocalizationService Key='SAVE'}"
+                    x:Name="SaveButton" Cursor="Hand" />
         </StackPanel>
     </StackPanel>
 </UserControl>

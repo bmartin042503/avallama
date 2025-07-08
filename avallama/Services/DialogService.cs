@@ -15,7 +15,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace avallama.Services;
 
-// TODO: Windowson legyen a dialognak drop shadowja, vagy valamivel legyen különböző a keret, mert egybeolvad a háttérrel
+// TODO:
+// Windowson legyen a dialognak drop shadowja, vagy valamivel legyen különböző a keret, mert egybeolvad a háttérrel
+// async fix, lehessen több dialogot megjeleníteni egymás után
 
 public enum ConfirmationType
 {
@@ -26,7 +28,7 @@ public enum ConfirmationType
 public abstract record DialogResult;
 public record ConfirmationResult(ConfirmationType Confirmation) : DialogResult;
 public record InputResult(string Input) : DialogResult;
-public record NullResult: DialogResult;
+public record NullResult(string ErrorMessage = ""): DialogResult;
 
 public interface IDialogService
 {
@@ -35,9 +37,15 @@ public interface IDialogService
     void ShowErrorDialog(string errorMessage);
     Task<DialogResult> ShowConfirmationDialog(
         string title,
-        string positiveText,
-        string negativeText,
+        string description,
+        string positiveButtonText,
+        string negativeButtonText,
         ConfirmationType highlight
+    );
+    Task<DialogResult> ShowInputDialog(
+        string title,
+        string description,
+        string inputValue
     );
     void CloseDialog(ApplicationDialog dialog);
     void CloseDialog();
@@ -110,11 +118,14 @@ public class DialogService(
     /// <param name="title">
     /// A dialog címe vagy kérdés szövege.
     /// </param>
-    /// <param name="positiveText">
+    /// <param name="positiveButtonText">
     /// A bal oldali gomb szövege.
     /// </param>
-    /// <param name="negativeText">
+    /// <param name="negativeButtonText">
     /// A jobb oldali gomb szövege.
+    /// </param>
+    /// <param name="description">
+    /// A dialog leírása (elhagyható).
     /// </param>
     /// <param name="highlight">
     /// A kiemelendő gomb típusa, amely vizuálisan hangsúlyosabb lesz.
@@ -138,20 +149,30 @@ public class DialogService(
     /// </example>
     
     public async Task<DialogResult> ShowConfirmationDialog(
-        string title, 
-        string positiveText,
-        string negativeText,
+        string title,
+        string positiveButtonText,
+        string negativeButtonText,
+        string description = "",
         ConfirmationType highlight = ConfirmationType.Positive
     )
     {
         var dialogResult = new TaskCompletionSource<DialogResult>();
         var dialogWindow = new DialogWindow();
         var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.ConfirmationView");
-        if (type is null) return new NullResult();
+        if (type is null) return new NullResult("View type is null");
         var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
+        
         control!.DialogTitle.Text = title;
-        control.PositiveButton.Content = positiveText;
-        control.NegativeButton.Content = negativeText;
+        if (!string.IsNullOrEmpty(description))
+        {
+            control.DialogDescription.Text = description;
+        }
+        else
+        {
+            control.DialogDescription.IsVisible = false;
+        }
+        control.PositiveButton.Content = positiveButtonText;
+        control.NegativeButton.Content = negativeButtonText;
 
         // ha a positivet akarjuk kiemelni, akkor a negativera adunk egy kevésbé hatásosabb megjelenést, és fordítva
         // ez a class a stylesban már definiálva van
@@ -180,6 +201,52 @@ public class DialogService(
         dialogWindow.DataContext = new DialogViewModel
         {
             DialogType = ApplicationDialog.Confirmation
+        };
+        ShowDialogWindow(dialogWindow);
+        var result = await dialogResult.Task;
+        return result;
+    }
+
+    public async Task<DialogResult> ShowInputDialog(
+        string title,
+        string description = "",
+        string inputValue = ""
+    )
+    {
+        var dialogResult = new TaskCompletionSource<DialogResult>();
+        var dialogWindow = new DialogWindow();
+        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.InputView");
+        if (type is null) return new NullResult("View type is null");
+        var control = (Control)Activator.CreateInstance(type)! as InputView;
+        
+        control!.DialogTitle.Text = title;
+        control.InputTextBox.Text = inputValue;
+        if (!string.IsNullOrEmpty(description))
+        {
+            control.DialogDescription.Text = description;
+        }
+        else
+        {
+            control.DialogDescription.IsVisible = false;
+        }
+
+        control.CloseButton.Click += (_, _) =>
+        {
+            // bezárás esetén nem ad vissza resultot, hisz a felhasználó nem akart menteni semmit
+            dialogResult.TrySetResult(new NullResult());
+            CloseDialog(ApplicationDialog.Input);
+        };
+
+        control.SaveButton.Click += (_, _) =>
+        {
+            dialogResult.TrySetResult(new InputResult(control.InputTextBox.Text ?? string.Empty));
+            CloseDialog(ApplicationDialog.Input);
+        };
+        
+        dialogWindow.Content = control;
+        dialogWindow.DataContext = new DialogViewModel
+        {
+            DialogType = ApplicationDialog.Input
         };
         ShowDialogWindow(dialogWindow);
         var result = await dialogResult.Task;

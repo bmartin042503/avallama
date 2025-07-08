@@ -9,9 +9,12 @@ Licensed under the MIT License. See LICENSE file for details.
         <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
-                <TextBox 
-                         Watermark="TextBox Watermark"
-                         Margin="0,30,0,20"/>
+                <StackPanel Orientation="Vertical" Spacing="16">
+                    <TextBox Watermark="TextBox Watermark"/>
+                    <TextBox Classes="settingTextBox"
+                        Watermark="Setting TextBox"
+                        Text="Setting TextBox"/>
+                </StackPanel>
             </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
@@ -41,5 +44,10 @@ Licensed under the MIT License. See LICENSE file for details.
     
     <Style Selector="TextBox:not(:focus)">
         <Setter Property="CaretBrush" Value="Transparent"/>
+    </Style>
+    
+    <!-- Külön textbox beállításokhoz, hogy egységesebb legyen a corner radius -->
+    <Style Selector="TextBox.settingTextBox">
+        <Setter Property="CornerRadius" Value="6"/>
     </Style>
 </Styles>
