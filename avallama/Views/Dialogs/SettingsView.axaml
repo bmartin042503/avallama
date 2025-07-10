@@ -68,7 +68,7 @@ Licensed under the MIT License. See LICENSE file for details.
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
         </StackPanel>
         <TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Width="160" HorizontalAlignment="Right"
-                 Text="{Binding ApiHost}" Classes="settingTextBox">
+                 Text="{Binding ApiHost}" Classes="settingTextBox" MaxLines="1">
         </TextBox>
 
         <StackPanel Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">
@@ -78,7 +78,7 @@ Licensed under the MIT License. See LICENSE file for details.
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
         </StackPanel>
         <TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Width="160" HorizontalAlignment="Right"
-                 Text="{Binding ApiPort}" Classes="settingTextBox">
+                 Text="{Binding ApiPort}" Classes="settingTextBox" MaxLines="1">
         </TextBox>
 
         <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" CornerRadius="15" Padding="10"
