@@ -21,56 +21,56 @@ namespace avallama.Controls;
 /// <summary>
 /// Szövegdoboz állítható háttérrel, két szöveggel, személyre szabott propertykkel
 /// </summary>
-public class AvallamaTextBlock : Control
+public class MessageBlock : Control
 {
     // AXAML Styled Propertyk
     public static readonly StyledProperty<string?> TextProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, string?>("Text");
+        AvaloniaProperty.Register<MessageBlock, string?>("Text");
 
     public static readonly StyledProperty<IBrush?> TextColorProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("TextColor");
+        AvaloniaProperty.Register<MessageBlock, IBrush?>("TextColor");
 
     public static readonly StyledProperty<string?> SubTextProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, string?>("SubText");
+        AvaloniaProperty.Register<MessageBlock, string?>("SubText");
 
     public static readonly StyledProperty<IBrush?> SubTextColorProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("SubTextColor");
+        AvaloniaProperty.Register<MessageBlock, IBrush?>("SubTextColor");
 
     public static readonly StyledProperty<Thickness?> PaddingProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, Thickness?>("Padding");
+        AvaloniaProperty.Register<MessageBlock, Thickness?>("Padding");
 
     public static readonly StyledProperty<CornerRadius?> CornerRadiusProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, CornerRadius?>("CornerRadius");
+        AvaloniaProperty.Register<MessageBlock, CornerRadius?>("CornerRadius");
 
     public static readonly StyledProperty<double?> TextFontSizeProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, double?>("TextFontSize");
+        AvaloniaProperty.Register<MessageBlock, double?>("TextFontSize");
 
     public static readonly StyledProperty<double?> SubTextFontSizeProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, double?>("SubTextFontSize");
+        AvaloniaProperty.Register<MessageBlock, double?>("SubTextFontSize");
 
     public static readonly StyledProperty<TextAlignment?> TextAlignmentProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, TextAlignment?>("TextAlignment");
+        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("TextAlignment");
 
     public static readonly StyledProperty<TextAlignment?> SubTextAlignmentProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, TextAlignment?>("SubTextAlignment");
+        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("SubTextAlignment");
 
     public static readonly StyledProperty<FontFamily?> FontFamilyProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, FontFamily?>("FontFamily");
+        AvaloniaProperty.Register<MessageBlock, FontFamily?>("FontFamily");
 
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("Background");
+        AvaloniaProperty.Register<MessageBlock, IBrush?>("Background");
 
     public static readonly StyledProperty<double?> SpacingProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, double?>("Spacing");
+        AvaloniaProperty.Register<MessageBlock, double?>("Spacing");
 
     public static readonly StyledProperty<double?> LineHeightProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, double?>("LineHeight");
+        AvaloniaProperty.Register<MessageBlock, double?>("LineHeight");
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, IBrush?>("SelectionColor");
+        AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
     
     public static readonly StyledProperty<bool> SelectableProperty =
-        AvaloniaProperty.Register<AvallamaTextBlock, bool>("Selectable");
+        AvaloniaProperty.Register<MessageBlock, bool>("Selectable");
 
     public string? Text
     {
@@ -182,7 +182,7 @@ public class AvallamaTextBlock : Control
 
     // private int _newTextLayoutCount = 0;
 
-    public AvallamaTextBlock()
+    public MessageBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
         Focusable = true;

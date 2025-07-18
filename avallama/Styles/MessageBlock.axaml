@@ -11,22 +11,22 @@ Licensed under the MIT License. See LICENSE file for details.
         <ThemeVariantScope RequestedThemeVariant="Dark">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="10">
-                    <controls:AvallamaTextBlock
+                    <controls:MessageBlock
                         Classes="userMessage"
                         Text="User Message"/>
                 
-                    <controls:AvallamaTextBlock 
+                    <controls:MessageBlock 
                         Classes="generatedMessage"
                         Text="Generated Message"
                         SubText="SubText"/>
                     
-                    <controls:AvallamaTextBlock
+                    <controls:MessageBlock
                         Classes="conversationElement"
                         Text="Conversation Title"
                         Width="300"
                         SubText="llama3.2"/>
                     
-                    <controls:AvallamaTextBlock
+                    <controls:MessageBlock
                         Classes="conversationElement currentConversation"
                         Text="Current Conversation Title"
                         Width="300"
@@ -36,7 +36,7 @@ Licensed under the MIT License. See LICENSE file for details.
         </ThemeVariantScope>
     </Design.PreviewWith>
     
-    <Style Selector="controls|AvallamaTextBlock">
+    <Style Selector="controls|MessageBlock">
         <Setter Property="TextAlignment" Value="Left"/>
         <Setter Property="TextFontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="20"/>
@@ -45,7 +45,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="LineHeight" Value="22"/>
     </Style>
     
-    <Style Selector="controls|AvallamaTextBlock.userMessage">
+    <Style Selector="controls|MessageBlock.userMessage">
         <Setter Property="Selectable" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimary}"/>
@@ -53,7 +53,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="SelectionColor" Value="{DynamicResource OnPrimary}"/>
     </Style>
     
-    <Style Selector="controls|AvallamaTextBlock.generatedMessage">
+    <Style Selector="controls|MessageBlock.generatedMessage">
         <Setter Property="Selectable" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurfaceVariant}"/>
@@ -65,7 +65,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Spacing" Value="5"/>
     </Style>
     
-    <Style Selector="controls|AvallamaTextBlock.conversationElement">
+    <Style Selector="controls|MessageBlock.conversationElement">
         <Setter Property="Selectable" Value="False"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurface}"/>
@@ -76,7 +76,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="CornerRadius" Value="10"/>
     </Style>
     
-    <Style Selector="controls|AvallamaTextBlock.currentConversation">
+    <Style Selector="controls|MessageBlock.currentConversation">
         <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimaryContainer}"/>
         <Setter Property="SubTextColor" Value="{DynamicResource OnPrimaryContainer}"/>

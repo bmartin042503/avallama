@@ -14,32 +14,35 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
-    <Grid Margin="26" ColumnDefinitions="*,*" RowDefinitions="Auto, Auto, Auto, Auto">
-        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Left" 
-                    Margin="0,0,48,0" VerticalAlignment="Center">
-            <TextBlock 
-                Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H2" Opacity="0.5"
-                Foreground="{DynamicResource OnSurface}"/>
-            <Button Command="{Binding ShowInfo}" Classes="svgButton">
-                <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}" 
-                                     Opacity="0.5" Width="20"/>
-            </Button>
-        </StackPanel>
-        <TextBox Grid.Row="0" Grid.Column="1" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1"
-                 Width="200">
-            <TextBox.InnerRightContent>
-                <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
-                                     Margin="0,0,10,0" StrokeColor="{DynamicResource Primary}" />
-            </TextBox.InnerRightContent>
-        </TextBox>
-        <TextBlock Margin="0,40,0,0" Grid.Row="1" Grid.Column="0" Classes="H2" HorizontalAlignment="Left" Text="This text will be changed later"
-                   Foreground="{DynamicResource OnSurface}" Opacity="0.5"/>
-        <TextBlock Grid.Row="2" Grid.Column="0" Classes="H2" HorizontalAlignment="Left" Text="This text will be changed later"
-                   Foreground="{DynamicResource OnSurface}" Opacity="0.5"/>
-        <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Right"
+    <StackPanel Orientation="Vertical" Margin="26">
+        <Grid ColumnDefinitions="*,*">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Opacity="0.6"
+                        HorizontalAlignment="Left" Margin="0,0,120,0">
+                <TextBlock
+                    Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
+                    Foreground="{DynamicResource OnSurface}" />
+                <Button Command="{Binding ShowInfo}" Classes="svgButton">
+                    <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
+                                         Width="20" />
+                </Button>
+            </StackPanel>
+            <TextBox Grid.Column="1" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1"
+                     Width="240" HorizontalAlignment="Right">
+                <TextBox.InnerRightContent>
+                    <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
+                                         Margin="0,0,12,1" StrokeColor="{DynamicResource Primary}" />
+                </TextBox.InnerRightContent>
+            </TextBox>
+        </Grid>
+
+        <TextBlock Margin="0,40,0,0" Classes="H2" HorizontalAlignment="Left" Text="{Binding DownloadedModelsTitle}"
+                   IsVisible="{Binding HasDownloadedModels}" Foreground="{DynamicResource OnSurface}" Opacity="0.6" />
+        <TextBlock Margin="0,40,0,0" Classes="H2" HorizontalAlignment="Left" Text="{services:LocalizationService Key='POPULAR_MODELS'}"
+                   IsVisible="{Binding HasDownloadedModels}" Foreground="{DynamicResource OnSurface}" Opacity="0.6" />
+        <Button HorizontalAlignment="Right"
                 Margin="0,30,0,0"
                 Content="{services:LocalizationService Key='CLOSE'}"
                 Command="{Binding Close}"
-                Cursor="Hand"/>
-    </Grid>
+                Cursor="Hand" />
+    </StackPanel>
 </UserControl>

@@ -55,7 +55,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
                     <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
-                            <controls:AvallamaTextBlock
+                            <controls:MessageBlock
                                 Classes="conversationElement"
                                 Text="{Binding Title}"
                                 SubText="{Binding Model}" />
@@ -193,7 +193,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <ItemsControl.DataTemplates>
                             <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
                             <DataTemplate DataType="models:GeneratedMessage">
-                                <controls:AvallamaTextBlock
+                                <controls:MessageBlock
                                     Classes="generatedMessage"
                                     Text="{Binding Content}"
                                     TextColor="{DynamicResource SurfaceContainerHighest}"
@@ -202,7 +202,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                     MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </DataTemplate>
                             <DataTemplate DataType="models:Message">
-                                <controls:AvallamaTextBlock
+                                <controls:MessageBlock
                                     HorizontalAlignment="Right"
                                     Classes="userMessage"
                                     Text="{Binding Content}"

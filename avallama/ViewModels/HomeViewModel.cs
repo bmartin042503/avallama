@@ -79,7 +79,7 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     public void OpenModelManager()
     {
-        _dialogService.ShowDialog(ApplicationDialog.ModelManager);
+        _dialogService.ShowDialog(ApplicationDialog.ModelManager, true);
     }
 
     private async Task AddGeneratedMessage()

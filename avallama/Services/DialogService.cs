@@ -34,7 +34,7 @@ public record NullResult(string ErrorMessage = "") : DialogResult;
 
 public interface IDialogService
 {
-    void ShowDialog(ApplicationDialog dialog);
+    void ShowDialog(ApplicationDialog dialog, bool resizable);
     void ShowInfoDialog(string informationMessage);
     void ShowErrorDialog(string errorMessage);
 
@@ -68,10 +68,11 @@ public class DialogService(
     /// A megadott <see cref="ApplicationDialog"/> típushoz tartozó nézet alapján készíti el a dialogablakot.
     /// </summary>
     /// <param name="dialog">A megjelenítendő dialog típusa. Csak egyedi típus engedélyezett.</param>
+    /// <param name="resizable">A dialog átméretezhetősége (opcionális)</param>
     /// <exception cref="InvalidOperationException">
     /// Ha a dialog típusa nem megfelelő (pl. Information, Error, Confirmation, Input), kivételt dob.
     /// </exception>
-    public void ShowDialog(ApplicationDialog dialog)
+    public void ShowDialog(ApplicationDialog dialog, bool resizable = false)
     {
         if (dialog is ApplicationDialog.Information
             or ApplicationDialog.Error
@@ -89,6 +90,7 @@ public class DialogService(
         control.DataContext = dialogViewModelFactory.GetDialogViewModel(dialog);
         dialogWindow.DataContext = new DialogViewModel { DialogType = dialog };
         dialogWindow.Content = control;
+        dialogWindow.CanResize = resizable;
         ShowDialogWindow(dialogWindow);
     }
 
