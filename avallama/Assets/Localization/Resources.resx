@@ -270,6 +270,9 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ollama API Port is invalid, please enter a valid port. (1 - 65535)</value>
     </data>
     <data name="HOST_CONNECTION_ERR" xml:space="preserve">
-        <value>Could not establish connection with the Ollama host machine, did you configure host settings correctly?</value>
+        <value>Could not establish connection with the Ollama host machine. The host settings may not be configured correctly.</value>
+    </data>
+    <data name="POPULAR_MODELS" xml:space="preserve">
+        <value>Popular models</value>
     </data>
 </root>

@@ -83,7 +83,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>A model nincs letöltve</value>
     </data>
     <data name="LOADING_MODELS" xml:space="preserve">
-        <value>Modelek betöltése...</value>
+        <value>Modellek betöltése...</value>
     </data>
     <data name="STARTING_DOWNLOAD" xml:space="preserve">
         <value>Letöltés indítása...</value>
@@ -263,6 +263,9 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Az Ollama API Post nem valid, adjon meg a valid portot. (1 - 65535)</value>
     </data>
     <data name="HOST_CONNECTION_ERR" xml:space="preserve">
-        <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel, jól konfigurálta a host beállításokat?</value>
+        <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
+    </data>
+    <data name="POPULAR_MODELS" xml:space="preserve">
+        <value>Kiemelt modellek</value>
     </data>
 </root>

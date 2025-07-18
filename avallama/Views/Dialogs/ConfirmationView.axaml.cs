@@ -7,9 +7,9 @@ using Avalonia.Markup.Xaml;
 
 namespace avallama.Views.Dialogs;
 
-public partial class ConfirmView : UserControl
+public partial class ConfirmationView : UserControl
 {
-    public ConfirmView()
+    public ConfirmationView()
     {
         InitializeComponent();
     }

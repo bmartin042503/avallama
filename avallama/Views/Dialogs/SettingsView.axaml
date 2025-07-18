@@ -13,11 +13,11 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.SettingsView"
              x:DataType="vm:SettingsViewModel"
              Background="{DynamicResource Surface}">
-    <Grid RowDefinitions="65,65,65,*,Auto,Auto,Auto" ColumnDefinitions="500, *" Margin="26">
+    <Grid RowDefinitions="60,60,60,60,60,*,Auto,Auto,Auto" ColumnDefinitions="500, *" Margin="26">
         <!-- Nyelv -->
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
             <TextBlock Text="{services:LocalizationService Key='LANGUAGE_SETTING'}"
-                       FontSize="20" Foreground="{DynamicResource OnSurface}" />
+                       FontSize="18" Foreground="{DynamicResource OnSurface}" />
             <TextBlock Text="{services:LocalizationService Key='LANGUAGE_SETTING_DESC'}"
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
         </StackPanel>
@@ -30,7 +30,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <!-- Színséma -->
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
             <TextBlock Text="{services:LocalizationService Key='COLOR_SCHEME_SETTING'}"
-                       FontSize="20" Foreground="{DynamicResource OnSurface}" />
+                       FontSize="18" Foreground="{DynamicResource OnSurface}" />
             <TextBlock Text="{services:LocalizationService Key='COLOR_SCHEME_SETTING_DESC'}"
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
         </StackPanel>
@@ -43,7 +43,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <!-- Görgetési beállítás -->
         <StackPanel Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">
             <TextBlock Text="{services:LocalizationService Key='SCROLL_TO_BOTTOM_SETTING'}"
-                       FontSize="20" Foreground="{DynamicResource OnSurface}" />
+                       FontSize="18" Foreground="{DynamicResource OnSurface}" />
             <TextBlock Text="{services:LocalizationService Key='SCROLL_TO_BOTTOM_SETTING_DESC'}"
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
         </StackPanel>
@@ -59,30 +59,30 @@ Licensed under the MIT License. See LICENSE file for details.
                 <services:LocalizationService Key="NONE" />
             </ComboBoxItem>
         </ComboBox>
-        
+
         <!-- Host és Port beállítás -->
-        
         <StackPanel Grid.Row="3" Grid.Column="0" VerticalAlignment="Center">
             <TextBlock Text="{services:LocalizationService Key='API_HOST_SETTING'}"
-                       FontSize="20" Foreground="{DynamicResource OnSurface}" />
+                       FontSize="18" Foreground="{DynamicResource OnSurface}" />
             <TextBlock Text="{services:LocalizationService Key='API_HOST_SETTING_DESC'}"
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
         </StackPanel>
         <TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Width="160" HorizontalAlignment="Right"
-                 Text="{Binding ApiHost}">
+                 Text="{Binding ApiHost}" Classes="settingTextBox" MaxLines="1">
         </TextBox>
-        
+
         <StackPanel Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">
             <TextBlock Text="{services:LocalizationService Key='API_PORT_SETTING'}"
-                       FontSize="20" Foreground="{DynamicResource OnSurface}" />
+                       FontSize="18" Foreground="{DynamicResource OnSurface}" />
             <TextBlock Text="{services:LocalizationService Key='API_PORT_SETTING_DESC'}"
                        Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
         </StackPanel>
         <TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Width="160" HorizontalAlignment="Right"
-                 Text="{Binding ApiPort}">
+                 Text="{Binding ApiPort}" Classes="settingTextBox" MaxLines="1">
         </TextBox>
 
-        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" CornerRadius="15" Padding="10" Background="{DynamicResource SurfaceContainerLow}"
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" CornerRadius="15" Padding="10"
+                Background="{DynamicResource SurfaceContainerLow}"
                 Margin="0,30,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <StackPanel Spacing="5">
@@ -123,15 +123,17 @@ Licensed under the MIT License. See LICENSE file for details.
             </ScrollViewer>
         </Border>
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="6" Text="{services:LocalizationService Key='SETTINGS_SAVED'}"
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="6"
+                   Text="{services:LocalizationService Key='SETTINGS_SAVED'}"
                    Margin="0,20,0,0" IsVisible="{Binding ChangesTextVisibility}"
                    FontSize="14" Foreground="{DynamicResource Outline}" HorizontalAlignment="Left" />
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="6" Text="{services:LocalizationService Key='RESTART_NEEDED'}" Margin="0,20,0,0"
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="7"
+                   Text="{services:LocalizationService Key='RESTART_NEEDED'}" Margin="0,20,0,0"
                    Foreground="{DynamicResource Error}" TextWrapping="Wrap"
                    IsVisible="{Binding RestartNeeded}" HorizontalAlignment="Left" />
-        
-        <StackPanel HorizontalAlignment="Right" Spacing="14" Margin="0,20,0,0" Grid.Row="6" Grid.Column="0"
+
+        <StackPanel HorizontalAlignment="Right" Spacing="14" Margin="0,20,0,0" Grid.Row="8" Grid.Column="0"
                     Grid.ColumnSpan="2" Orientation="Horizontal">
             <Button Command="{Binding Close}"
                     Classes="secondaryButton"
