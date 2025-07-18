@@ -15,9 +15,9 @@ Licensed under the MIT License. See LICENSE file for details.
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
     <StackPanel Orientation="Vertical" Margin="26">
-        <Grid ColumnDefinitions="*,*">
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Opacity="0.6"
-                        HorizontalAlignment="Left" Margin="0,0,120,0">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Opacity="0.6"
+                        HorizontalAlignment="Left">
                 <TextBlock
                     Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
                     Foreground="{DynamicResource OnSurface}" />
@@ -26,7 +26,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                          Width="20" />
                 </Button>
             </StackPanel>
-            <TextBox Grid.Column="1" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1"
+            <TextBox Grid.Column="2" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1"
                      Width="240" HorizontalAlignment="Right">
                 <TextBox.InnerRightContent>
                     <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"

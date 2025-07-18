@@ -15,8 +15,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace avallama.Services;
 
-// TODO:
-// Windowson legyen a dialognak drop shadowja, vagy valamivel legyen különböző a keret, mert egybeolvad a háttérrel
+// TODO: Windows 10 UI fix
 
 public enum ConfirmationType
 {
@@ -34,7 +33,12 @@ public record NullResult(string ErrorMessage = "") : DialogResult;
 
 public interface IDialogService
 {
-    void ShowDialog(ApplicationDialog dialog, bool resizable);
+    void ShowDialog(
+        ApplicationDialog dialog, 
+        bool resizable,
+        double width,
+        double height
+    );
     void ShowInfoDialog(string informationMessage);
     void ShowErrorDialog(string errorMessage);
 
@@ -69,10 +73,17 @@ public class DialogService(
     /// </summary>
     /// <param name="dialog">A megjelenítendő dialog típusa. Csak egyedi típus engedélyezett.</param>
     /// <param name="resizable">A dialog átméretezhetősége (opcionális)</param>
+    /// <param name="width">A dialog ablakának szélessége (opcionális)</param>
+    /// <param name="height">A dialog ablakának magassága (opcionális)</param>
     /// <exception cref="InvalidOperationException">
     /// Ha a dialog típusa nem megfelelő (pl. Information, Error, Confirmation, Input), kivételt dob.
     /// </exception>
-    public void ShowDialog(ApplicationDialog dialog, bool resizable = false)
+    public void ShowDialog(
+        ApplicationDialog dialog, 
+        bool resizable = false,
+        double width = double.NaN,
+        double height = double.NaN
+    )
     {
         if (dialog is ApplicationDialog.Information
             or ApplicationDialog.Error
@@ -91,6 +102,26 @@ public class DialogService(
         dialogWindow.DataContext = new DialogViewModel { DialogType = dialog };
         dialogWindow.Content = control;
         dialogWindow.CanResize = resizable;
+
+        // ha külön megadjuk a height vagy width értéket akkor az átméretezést eszerint állítja be
+        // tehát ha csak width-et adunk meg akkor a magasságot a tartalomhoz igazítja és fordítva
+        if (double.IsNaN(width) && !double.IsNaN(height))
+        {
+            dialogWindow.SizeToContent = SizeToContent.Width;
+            dialogWindow.Height = height;
+        } 
+        else if (!double.IsNaN(width) && double.IsNaN(height))
+        {
+            dialogWindow.SizeToContent = SizeToContent.Height;
+            dialogWindow.Width = width;
+        }
+        else if (!double.IsNaN(height) && !double.IsNaN(width))
+        {
+            dialogWindow.SizeToContent = SizeToContent.Manual;
+            dialogWindow.Height = height;
+            dialogWindow.Width = width;
+        }
+
         ShowDialogWindow(dialogWindow);
     }
 

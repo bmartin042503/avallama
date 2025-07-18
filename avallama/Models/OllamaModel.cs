@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace avallama.Models;
 
+// ha nincs internet kapcsolat akkor a popular models alatt csak simán egy szöveg jelenne meg
 public enum ModelDownloadStatus
 {
     NotEnoughSpaceForDownload,
