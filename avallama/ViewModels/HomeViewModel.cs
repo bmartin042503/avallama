@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
+using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -23,12 +24,13 @@ public partial class HomeViewModel : PageViewModel
     private readonly OllamaService _ollamaService;
     private readonly DialogService _dialogService;
     private readonly ConfigurationService _configurationService;
+    private readonly DatabaseService _databaseService;
 
     public string ScrollSetting;
 
-    private ObservableCollection<Conversation> _conversations;
+    private ObservableStack<Conversation> _conversations;
     
-    public ObservableCollection<Conversation> Conversations
+    public ObservableStack<Conversation> Conversations
     {
         get => _conversations;
         set => SetProperty(ref _conversations, value);
@@ -84,6 +86,18 @@ public partial class HomeViewModel : PageViewModel
             true,
             700
         );
+    }
+
+    [RelayCommand]
+    public async Task CreateNewConversation()
+    {
+        var newConversation = new Conversation(
+            LocalizationService.GetString("NEW_CONVERSATION"),
+            "llama3.2"
+        );
+        Conversations.Push(newConversation);
+        SelectedConversation = newConversation;
+        SelectedConversation.ConversationId = await _databaseService.CreateConversation();
     }
 
     private async Task AddGeneratedMessage()
@@ -165,13 +179,14 @@ public partial class HomeViewModel : PageViewModel
         await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
     }
     
-    public HomeViewModel(OllamaService ollamaService, DialogService dialogService, ConfigurationService configurationService)
+    public HomeViewModel(OllamaService ollamaService, DialogService dialogService, ConfigurationService configurationService, DatabaseService databaseService)
     {
         // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
         _dialogService = dialogService;
         _ollamaService = ollamaService;
         _configurationService = configurationService;
+        _databaseService = databaseService;
         
         LoadSettings();
         
