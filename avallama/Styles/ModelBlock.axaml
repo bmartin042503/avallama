@@ -1,0 +1,31 @@
+<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:avallama.Controls">
+    <Design.PreviewWith>
+        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <ThemeVariantScope RequestedThemeVariant="Dark">
+            
+        </ThemeVariantScope>
+    </Design.PreviewWith>
+
+    <Style Selector="controls|ModelBlock">
+        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
+        <Setter Property="LabelBackground" Value="{DynamicResource Primary}"/>
+        <Setter Property="LabelForeground" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="StrongLabelBackground" Value="{DynamicResource Error}"/>
+        <Setter Property="StrongLabelForeground" Value="{DynamicResource OnError}"/>
+    </Style>
+    
+    <Style Selector="controls|ModelBlock.downloadedModel">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="LabelBackground" Value="{DynamicResource PrimaryContainer}"/>
+        <Setter Property="LabelForeground" Value="{DynamicResource OnPrimaryContainer}"/>
+    </Style>
+</Styles>
