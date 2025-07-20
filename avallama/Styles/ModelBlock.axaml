@@ -5,11 +5,40 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:avallama.Controls">
+        xmlns:controls="clr-namespace:avallama.Controls"
+        xmlns:models="clr-namespace:avallama.Models"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
     <Design.PreviewWith>
         <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
         <ThemeVariantScope RequestedThemeVariant="Dark">
-            
+            <Border Padding="20" Background="{DynamicResource Surface}">
+                <StackPanel Orientation="Vertical" Spacing="10">
+                    <controls:ModelBlock
+                        Title="llama3.2"
+                        SizeText="2.3 GB">
+                        <controls:ModelBlock.DetailItemsSource>
+                            <generic:Dictionary x:TypeArguments="system:String, system:String">
+                                <system:String x:Key="Parameters">3.25B</system:String>
+                                <system:String x:Key="Quantization">Q8_0</system:String>
+                            </generic:Dictionary>
+                        </controls:ModelBlock.DetailItemsSource>
+
+                        <controls:ModelBlock.LabelItemsSource>
+                            <generic:List x:TypeArguments="models:ModelLabel">
+                                <models:ModelLabel>
+                                    <models:ModelLabel.Name>Runs Great</models:ModelLabel.Name>
+                                    <models:ModelLabel.Highlight>Default</models:ModelLabel.Highlight>
+                                </models:ModelLabel>
+                                <models:ModelLabel>
+                                    <models:ModelLabel.Name>Insufficient VRAM</models:ModelLabel.Name>
+                                    <models:ModelLabel.Highlight>Strong</models:ModelLabel.Highlight>
+                                </models:ModelLabel>
+                            </generic:List>
+                        </controls:ModelBlock.LabelItemsSource>
+                    </controls:ModelBlock>
+                </StackPanel>
+            </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
 

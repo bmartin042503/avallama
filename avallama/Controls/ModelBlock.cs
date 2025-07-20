@@ -1,3 +1,6 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +13,17 @@ using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
 
 namespace avallama.Controls;
+
+// TODO:
+// labeleknek háttér
+// sizetext renderelése
+// downloadstatus alapján kattintható svg renderelése
+// új textlayout a letöltési információknak (Downloading.. 32%, Not enough space) stb.
+// labelek ne nyúljanak túl a controlon, legyen új sorban ha nem fér ki, reszponzívan
+// letöltési animációk, esetleg más animált megjelenés
+// gradient hozzáadása a háttérhez (ha megoldható)
+// command meghívása a paraméterével svgre kattintás esetén
+// optimalizálás, control invalidálása csak akkor ha szükséges
 
 public class ModelBlock : Control
 {
@@ -142,7 +156,8 @@ public class ModelBlock : Control
     }
 
     // egyelőre égetett értékekkel, ha később igény lenne rá akkor külön styledpropertyre átvihetőek
-    // TODO: korrigálni
+    // ha változtatni szeretnél a megjelenésen akkor itt lehet leginkább
+    private const double ControlWidth = 260;
     private readonly Thickness _basePadding = new(12);
     private readonly CornerRadius _cornerRadius = new(12);
     private const string FontFamilyName = "Manrope";
@@ -150,6 +165,7 @@ public class ModelBlock : Control
     private const double DetailsFontSize = 12;
     private const double LabelFontSize = 10;
     private const double DetailsOpacity = 0.6;
+    private const double DetailsLineHeight = 16;
 
     private TextLayout? _titleTextLayout;
     private TextLayout? _detailsTextLayout;
@@ -160,6 +176,9 @@ public class ModelBlock : Control
     {
         // Háttér renderelése
         RenderBackground(context);
+        
+        // Szövegek renderelése
+        RenderText(context);
     }
 
     private void RenderBackground(DrawingContext context)
@@ -171,6 +190,32 @@ public class ModelBlock : Control
                 _cornerRadius
             )
         );
+        
+        // TODO: labelek háttér renderelés
+    }
+
+    private void RenderText(DrawingContext context)
+    {
+        // Ezek hardcoded értékek, meg van szabva hogy melyik elem között mennyi hely legyen
+        // Mivel egyelőre nincs szükség propertyben megadva ezért így csináltam
+        
+        if (_titleTextLayout == null) return;
+        var startingYPos = _basePadding.Top;
+        _titleTextLayout.Draw(context, new Point(_basePadding.Left, startingYPos));
+        startingYPos += _titleTextLayout.Height + _basePadding.Top / 1.5;
+        if (_detailsTextLayout != null)
+        {
+            _detailsTextLayout.Draw(context, new Point(_basePadding.Left, startingYPos));
+            startingYPos += _detailsTextLayout.Height + _basePadding.Top / 1.5;
+        }
+
+        if (_labelTextLayouts == null) return;
+        var labelsWidth = 0.0;
+        foreach (var labelTextLayout in _labelTextLayouts)
+        {
+            labelTextLayout.Draw(context, new Point(_basePadding.Left + labelsWidth, startingYPos));
+            labelsWidth += labelTextLayout.Width + _basePadding.Left;
+        }
     }
 
     // TextLayoutok létrehozása
@@ -213,7 +258,8 @@ public class ModelBlock : Control
             new SolidColorBrush(
                 (Foreground as ImmutableSolidColorBrush)?.Color ?? Colors.Black,
                 DetailsOpacity
-            )
+            ),
+            lineHeight: DetailsLineHeight
         );
     }
 
@@ -255,5 +301,70 @@ public class ModelBlock : Control
                 DetailsOpacity
             )
         );
+    }
+    
+    protected override void OnMeasureInvalidated()
+    {
+        // felszabadítja a textLayoutokat
+        _titleTextLayout?.Dispose();
+        _titleTextLayout = null;
+        _detailsTextLayout?.Dispose();
+        _detailsTextLayout = null;
+        _sizeTextLayout?.Dispose();
+        _sizeTextLayout = null;
+        if (_labelTextLayouts != null)
+        {
+            foreach (var labelTextLayout in _labelTextLayouts)
+            {
+                labelTextLayout.Dispose();
+            }
+            _labelTextLayouts = null;
+        }
+        base.OnMeasureInvalidated();
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        _titleTextLayout ??= CreateTitleTextLayout();
+        _detailsTextLayout ??= CreateDetailsTextLayout();
+        _labelTextLayouts ??= CreateLabelTextLayouts();
+        _sizeTextLayout ??= CreateSizeTextLayout();
+        
+        var paddingHeight = _basePadding.Top + _basePadding.Bottom;
+        var innerPaddingHeight = _basePadding.Top * 2 / 1.5;
+        var textLayoutsHeight = _titleTextLayout?.Height + 
+            _detailsTextLayout?.Height +
+            (_labelTextLayouts as IList<TextLayout>)?[0].Height;
+        
+        return new Size(
+            ControlWidth,
+            paddingHeight + innerPaddingHeight + textLayoutsHeight ?? 0.0
+        );
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        
+        switch (change.Property.Name)
+        {
+            case nameof(Title):
+            case nameof(SizeText):
+            case nameof(DownloadStatus):
+            case nameof(DownloadProgress):
+            case nameof(DetailItemsSource):
+            case nameof(LabelItemsSource):
+            case nameof(Background):
+            case nameof(Foreground):
+            case nameof(LabelBackground):
+            case nameof(LabelForeground):
+            case nameof(StrongLabelBackground):
+            case nameof(StrongLabelForeground):
+                // TODO: megfelelően elhelyezni ezeket majd és optimalizálni a megjelenést
+                InvalidateVisual();
+                InvalidateMeasure();
+                InvalidateArrange();
+                break;
+        }
     }
 }

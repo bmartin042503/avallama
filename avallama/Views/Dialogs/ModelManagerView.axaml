@@ -15,6 +15,9 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
+
+    <!-- TODO: a Close button maradjon a jobb alsó sarokban rögzítve, mert jelenleg ha össze van húzva és van több model megjelenítve akkor eltűnik, ki lesz tolva alulra-->
+
     <StackPanel Orientation="Vertical" Margin="26">
         <Grid ColumnDefinitions="Auto,*,Auto">
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Opacity="0.6"
@@ -36,51 +39,59 @@ Licensed under the MIT License. See LICENSE file for details.
             </TextBox>
         </Grid>
 
-        <TextBlock Margin="0,40,0,0" Classes="H2" HorizontalAlignment="Left" Text="{Binding DownloadedModelsTitle}"
+        <TextBlock Margin="0,40,0,14" Classes="H2" HorizontalAlignment="Left" Text="{Binding DownloadedModelsTitle}"
                    IsVisible="{Binding HasDownloadedModels}" Foreground="{DynamicResource OnSurface}" Opacity="0.6" />
 
         <ScrollViewer>
-            <WrapPanel>
-                <ItemsControl ItemsSource="{Binding DownloadedModelsData}">
-                    <ItemsControl.DataTemplates>
-                        <DataTemplate DataType="models:OllamaModel">
-                            <controls:ModelBlock Classes="downloadedModel"
-                                                 Title="{Binding Name}"
-                                                 SizeText="{Binding Size}"
-                                                 DownloadStatus="{Binding DownloadStatus}"
-                                                 DownloadProgress="{Binding DownloadProgress}"
-                                                 DetailItemsSource="{Binding Details}"
-                                                 LabelItemsSource="{Binding Labels}"
-                                                 CommandParameter="{Binding }"
-                                                 Command="{Binding Path=ModelAction, RelativeSource={RelativeSource AncestorType=vm:ModelManagerViewModel}}" />
-                        </DataTemplate>
-                    </ItemsControl.DataTemplates>
-                </ItemsControl>
-            </WrapPanel>
+            <ItemsControl ItemsSource="{Binding DownloadedModelsData}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:OllamaModel">
+                        <controls:ModelBlock Classes="downloadedModel"
+                                             Margin="0,0,14,14"
+                                             Title="{Binding Name}"
+                                             SizeText="{Binding Size}"
+                                             DownloadStatus="{Binding DownloadStatus}"
+                                             DownloadProgress="{Binding DownloadProgress}"
+                                             DetailItemsSource="{Binding Details}"
+                                             LabelItemsSource="{Binding Labels}"
+                                             CommandParameter="{Binding }"
+                                             Command="{Binding Path=ModelAction, RelativeSource={RelativeSource AncestorType=vm:ModelManagerViewModel}}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollViewer>
 
-        <TextBlock Margin="0,40,0,0" Classes="H2" HorizontalAlignment="Left"
+        <TextBlock Margin="0,20,0,14" Classes="H2" HorizontalAlignment="Left"
                    Text="{services:LocalizationService Key='POPULAR_MODELS'}"
                    IsVisible="{Binding HasDownloadedModels}" Foreground="{DynamicResource OnSurface}" Opacity="0.6" />
 
         <ScrollViewer>
-            <WrapPanel>
-                <ItemsControl ItemsSource="{Binding PopularModelsData}">
-                    <ItemsControl.DataTemplates>
-                        <DataTemplate DataType="models:OllamaModel">
-                            <controls:ModelBlock
-                                Title="{Binding Name}"
-                                SizeText="{Binding Size}"
-                                DownloadStatus="{Binding DownloadStatus}"
-                                DownloadProgress="{Binding DownloadProgress}"
-                                DetailItemsSource="{Binding Details}"
-                                LabelItemsSource="{Binding Labels}"
-                                CommandParameter="{Binding }"
-                                Command="{Binding Path=ModelAction, RelativeSource={RelativeSource AncestorType=vm:ModelManagerViewModel}}" />
-                        </DataTemplate>
-                    </ItemsControl.DataTemplates>
-                </ItemsControl>
-            </WrapPanel>
+            <ItemsControl ItemsSource="{Binding PopularModelsData}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:OllamaModel">
+                        <controls:ModelBlock
+                            Margin="0,0,14,14"
+                            Title="{Binding Name}"
+                            SizeText="{Binding Size}"
+                            DownloadStatus="{Binding DownloadStatus}"
+                            DownloadProgress="{Binding DownloadProgress}"
+                            DetailItemsSource="{Binding Details}"
+                            LabelItemsSource="{Binding Labels}"
+                            CommandParameter="{Binding}"
+                            Command="{Binding Path=ModelAction, RelativeSource={RelativeSource AncestorType=vm:ModelManagerViewModel}}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollViewer>
 
         <Button HorizontalAlignment="Right"

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Tmds.DBus.Protocol;
 
 namespace avallama.Models;
 
@@ -27,10 +26,16 @@ public enum ModelLabelHighlight
     Strong
 }
 
-public class ModelLabel(string name, ModelLabelHighlight highlight = ModelLabelHighlight.Default)
+public class ModelLabel()
 {
-    public ModelLabelHighlight Highlight { get; set; } = highlight;
-    public string Name { get; set; } = name;
+    public ModelLabelHighlight Highlight { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    public ModelLabel(string name, ModelLabelHighlight highlight = ModelLabelHighlight.Default) : this()
+    {
+        Name = name;
+        Highlight = highlight;
+    }
 }
 
 public partial class OllamaModel : ObservableObject
