@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,6 +14,7 @@ public class Conversation : ObservableObject
     private string _model = string.Empty;
     private int _messageCountToRegenerateTitle;
     private ObservableCollection<Message> _messages = [];
+    private Guid _conversationId = Guid.Empty;
 
     public string Title
     {
@@ -36,6 +38,12 @@ public class Conversation : ObservableObject
     {
         get => _messageCountToRegenerateTitle;
         set => SetProperty(ref _messageCountToRegenerateTitle, value);
+    }
+
+    public Guid ConversationId
+    {
+        get => _conversationId;
+        set => SetProperty(ref _conversationId, value);
     }
     
     public Conversation(string title, string model)

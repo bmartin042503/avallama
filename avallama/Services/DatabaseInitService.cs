@@ -5,6 +5,11 @@ using Microsoft.Data.Sqlite;
 
 namespace avallama.Services;
 
+public interface IDatabaseInitService
+{
+    Task<SqliteConnection> GetOpenConnectionAsync();
+}
+
 public class DatabaseInitService : IDatabaseInitService
 {
     private readonly string _dbPath;

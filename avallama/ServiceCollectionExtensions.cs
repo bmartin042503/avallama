@@ -17,7 +17,8 @@ public static class ServiceCollectionExtensions
         // Dependencyk létrehozása
         // Singleton - Memóriában folytonosan jelen van
         // Transient - Csak akkor hozza létre amikor szükség van rá és ha nincs akkor törli
-        collection.AddSingleton<DatabaseInitService>();
+        collection.AddTransient<DatabaseInitService>();
+        collection.AddSingleton<DatabaseService>();
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<DialogService>();
         collection.AddSingleton<LocalizationService>();

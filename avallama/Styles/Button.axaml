@@ -138,29 +138,48 @@ Licensed under the MIT License. See LICENSE file for details.
     </Style>
     
     <!-- thank you bmartin -->
-    <Style Selector="Button.avallamaWhite"> 
-        <Setter Property="IsEnabled" Value="False"/>
+    <Style Selector="Button.avallamaWhite">
+        <Setter Property="Background" Value="{DynamicResource Primary}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
+        <Setter Property="Transitions">
+            <Setter.Value>
+                <Transitions>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.05" />
+                    <BrushTransition Property="Background" Duration="0:0:0.05" />
+                </Transitions>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate>
-                    <Border Background="{DynamicResource OutlineVariant}"
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
                             CornerRadius="8"
-                            Padding="14,8" HorizontalAlignment="Stretch">
-                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                            Padding="14,8">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="10"
+                                    HorizontalAlignment="Center">
                             <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
-                                                 Width="8" FillColor="{DynamicResource OnSurfaceVariant}"
-                                                 HorizontalAlignment="Center"/>
-                            <ContentPresenter
-                                Content="{TemplateBinding Content}"
-                                Foreground="{DynamicResource OnSurfaceVariant}"
-                                VerticalAlignment="Center"
-                                FontSize="10"/>
+                                                 Width="8"
+                                                 FillColor="{TemplateBinding Foreground}" />
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       FontSize="10"
+                                       Background="{TemplateBinding Background}"
+                                       VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style Selector="Button.avallamaWhite:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryContainer}" />
+    </Style>
+
+
+
     
     <Style Selector="Button.secondaryButton">
         <Setter Property="Background" Value="{DynamicResource Secondary}"/>
