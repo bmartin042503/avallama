@@ -11,12 +11,16 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
     <Design.PreviewWith>
         <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
-        <ThemeVariantScope RequestedThemeVariant="Dark">
+        <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <controls:ModelBlock
                         Title="llama3.2"
                         SizeText="2.3 GB">
+                        
+                        <!-- AXAML-ben megadható majd egyszerű propertyként mind a DetailItemsSource és LabelItemsSource, bindinggal,
+                        itt viszont így kell csinálni-->
+                        
                         <controls:ModelBlock.DetailItemsSource>
                             <generic:Dictionary x:TypeArguments="system:String, system:String">
                                 <system:String x:Key="Parameters">3.25B</system:String>
@@ -27,12 +31,20 @@ Licensed under the MIT License. See LICENSE file for details.
                         <controls:ModelBlock.LabelItemsSource>
                             <generic:List x:TypeArguments="models:ModelLabel">
                                 <models:ModelLabel>
-                                    <models:ModelLabel.Name>Runs Great</models:ModelLabel.Name>
+                                    <models:ModelLabel.Name>Runs great on your system</models:ModelLabel.Name>
                                     <models:ModelLabel.Highlight>Default</models:ModelLabel.Highlight>
                                 </models:ModelLabel>
                                 <models:ModelLabel>
-                                    <models:ModelLabel.Name>Insufficient VRAM</models:ModelLabel.Name>
+                                    <models:ModelLabel.Name>53.4 tokens/sec</models:ModelLabel.Name>
+                                    <models:ModelLabel.Highlight>Default</models:ModelLabel.Highlight>
+                                </models:ModelLabel>
+                                <models:ModelLabel>
+                                    <models:ModelLabel.Name>Unstable</models:ModelLabel.Name>
                                     <models:ModelLabel.Highlight>Strong</models:ModelLabel.Highlight>
+                                </models:ModelLabel>
+                                <models:ModelLabel>
+                                    <models:ModelLabel.Name>SFW</models:ModelLabel.Name>
+                                    <models:ModelLabel.Highlight>Default</models:ModelLabel.Highlight>
                                 </models:ModelLabel>
                             </generic:List>
                         </controls:ModelBlock.LabelItemsSource>

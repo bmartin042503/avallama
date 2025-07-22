@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +15,20 @@ using Avalonia.Media.TextFormatting;
 
 namespace avallama.Controls;
 
-// TODO:
-// labeleknek háttér
+// TODO megvalósításra vár:
 // sizetext renderelése
 // downloadstatus alapján kattintható svg renderelése
 // új textlayout a letöltési információknak (Downloading.. 32%, Not enough space) stb.
-// labelek ne nyúljanak túl a controlon, legyen új sorban ha nem fér ki, reszponzívan
 // letöltési animációk, esetleg más animált megjelenés
 // gradient hozzáadása a háttérhez (ha megoldható)
 // command meghívása a paraméterével svgre kattintás esetén
 // optimalizálás, control invalidálása csak akkor ha szükséges
+// strong kiemelt labelek legyenek utoljára kirenderelve
+
+// TODO hibák:
+// változtatni a labelek háttereinek megjelenésén hogy ne tűnjenek úgy mintha gombok lennének
+// measureoverrideba hozzáadni a labelek magasságait is
+// üres detailitemssource és labelitemssource esetén hibamentes üres megjelenés
 
 public class ModelBlock : Control
 {
@@ -158,8 +163,22 @@ public class ModelBlock : Control
     // egyelőre égetett értékekkel, ha később igény lenne rá akkor külön styledpropertyre átvihetőek
     // ha változtatni szeretnél a megjelenésen akkor itt lehet leginkább
     private const double ControlWidth = 260;
+    
+    // alap padding a ModelBlockon belül
     private readonly Thickness _basePadding = new(12);
+    
+    // alap padding a labelen belül
+    private readonly Thickness _labelPadding = new(8, 6);
+    
+    // labelek közti margin
+    private readonly Thickness _labelMargin = new(8);
+    
+    // a háttér corner radiusa
     private readonly CornerRadius _cornerRadius = new(12);
+    
+    // a label hátterének corner radiusa
+    private readonly CornerRadius _labelCornerRadius = new(6);
+    
     private const string FontFamilyName = "Manrope";
     private const double TitleFontSize = 20;
     private const double DetailsFontSize = 12;
@@ -172,13 +191,17 @@ public class ModelBlock : Control
     private IEnumerable<TextLayout>? _labelTextLayouts;
     private TextLayout? _sizeTextLayout;
 
+    private double _renderXPos;
+    private double _renderYPos;
+
     public override void Render(DrawingContext context)
     {
         // Háttér renderelése
         RenderBackground(context);
-        
-        // Szövegek renderelése
-        RenderText(context);
+
+        // Szövegek és labelek renderelése
+        RenderBaseText(context);
+        RenderLabels(context);
     }
 
     private void RenderBackground(DrawingContext context)
@@ -190,31 +213,80 @@ public class ModelBlock : Control
                 _cornerRadius
             )
         );
-        
-        // TODO: labelek háttér renderelés
     }
 
-    private void RenderText(DrawingContext context)
+    private void RenderBaseText(DrawingContext context)
     {
         // Ezek hardcoded értékek, meg van szabva hogy melyik elem között mennyi hely legyen
         // Mivel egyelőre nincs szükség propertyben megadva ezért így csináltam
-        
+
         if (_titleTextLayout == null) return;
-        var startingYPos = _basePadding.Top;
-        _titleTextLayout.Draw(context, new Point(_basePadding.Left, startingYPos));
-        startingYPos += _titleTextLayout.Height + _basePadding.Top / 1.5;
+        _renderYPos = _basePadding.Top;
+        _titleTextLayout.Draw(context, new Point(_basePadding.Left, _renderYPos));
+        _renderYPos += _titleTextLayout.Height + _basePadding.Top / 1.5;
         if (_detailsTextLayout != null)
         {
-            _detailsTextLayout.Draw(context, new Point(_basePadding.Left, startingYPos));
-            startingYPos += _detailsTextLayout.Height + _basePadding.Top / 1.5;
+            _detailsTextLayout.Draw(context, new Point(_basePadding.Left, _renderYPos));
+            _renderYPos += _detailsTextLayout.Height + _basePadding.Top / 1.5;
         }
+    }
 
-        if (_labelTextLayouts == null) return;
-        var labelsWidth = 0.0;
-        foreach (var labelTextLayout in _labelTextLayouts)
+    private void RenderLabels(DrawingContext context)
+    {
+        if (LabelItemsSource is not List<ModelLabel> labelItemsSource ||
+            _labelTextLayouts is not List<TextLayout> labelTextLayouts)
         {
-            labelTextLayout.Draw(context, new Point(_basePadding.Left + labelsWidth, startingYPos));
-            labelsWidth += labelTextLayout.Width + _basePadding.Left;
+            return;
+        }
+        
+        _renderXPos = _basePadding.Left;
+        _renderYPos += _labelPadding.Top;
+        
+        var remainingRowWidth = Bounds.Width - _basePadding.Left - _basePadding.Right;
+
+        for (var i = 0; i < labelItemsSource.Count; i++)
+        {
+            var labelBackground = labelItemsSource[i].Highlight == ModelLabelHighlight.Default
+                ? LabelBackground
+                : StrongLabelBackground;
+
+            var labelBackgroundSize = new Size(
+                labelTextLayouts[i].Width + _labelPadding.Left + _labelPadding.Right,
+                labelTextLayouts[i].Height + _labelPadding.Top + _labelPadding.Bottom
+            );
+
+            // ha nem fér bele a meglévő sorba a label, akkor új sorba viszi
+            if (remainingRowWidth < labelBackgroundSize.Width)
+            {
+                _renderXPos = _basePadding.Left;
+                _renderYPos += _labelMargin.Bottom + labelBackgroundSize.Height;
+                
+                // elérhető sor szélességet visszaállítjuk, mert új soron lesz kirenderelve
+                remainingRowWidth = Bounds.Width - _basePadding.Left - _basePadding.Right;
+            }
+            
+            remainingRowWidth -= labelBackgroundSize.Width + _labelMargin.Right;
+
+            // label háttér kirenderelése
+            context.DrawRectangle(labelBackground, null,
+                new RoundedRect(
+                    new Rect(
+                        new Point(_renderXPos, _renderYPos),
+                        labelBackgroundSize
+                    ),
+                    _labelCornerRadius
+                )
+            );
+            
+            // label szöveg kirenderelése
+            labelTextLayouts[i].Draw(context, 
+                new Point(
+                    _renderXPos + _labelPadding.Left, 
+                    _renderYPos + _labelPadding.Top
+                )
+            );
+
+            _renderXPos += labelBackgroundSize.Width + _labelMargin.Right;
         }
     }
 
@@ -274,11 +346,10 @@ public class ModelBlock : Control
 
         List<TextLayout> layouts = [];
         layouts.AddRange(
-            labelList.Select(
-                label => new TextLayout(
-                    label.Name, 
-                    new Typeface(FontFamilyName), 
-                    LabelFontSize, 
+            labelList.Select(label => new TextLayout(
+                    label.Name,
+                    new Typeface(FontFamilyName),
+                    LabelFontSize,
                     label.Highlight == ModelLabelHighlight.Default ? LabelForeground : StrongLabelForeground
                 )
             )
@@ -286,7 +357,7 @@ public class ModelBlock : Control
 
         return layouts;
     }
-    
+
     private TextLayout? CreateSizeTextLayout()
     {
         if (string.IsNullOrEmpty(SizeText)) return null;
@@ -302,7 +373,7 @@ public class ModelBlock : Control
             )
         );
     }
-    
+
     protected override void OnMeasureInvalidated()
     {
         // felszabadítja a textLayoutokat
@@ -318,8 +389,10 @@ public class ModelBlock : Control
             {
                 labelTextLayout.Dispose();
             }
+
             _labelTextLayouts = null;
         }
+
         base.OnMeasureInvalidated();
     }
 
@@ -329,23 +402,54 @@ public class ModelBlock : Control
         _detailsTextLayout ??= CreateDetailsTextLayout();
         _labelTextLayouts ??= CreateLabelTextLayouts();
         _sizeTextLayout ??= CreateSizeTextLayout();
+
+        var width = ControlWidth;
+        var contentHeight = 0.0;
         
-        var paddingHeight = _basePadding.Top + _basePadding.Bottom;
-        var innerPaddingHeight = _basePadding.Top * 2 / 1.5;
-        var textLayoutsHeight = _titleTextLayout?.Height + 
-            _detailsTextLayout?.Height +
-            (_labelTextLayouts as IList<TextLayout>)?[0].Height;
+        contentHeight += _basePadding.Top + _basePadding.Bottom;
         
-        return new Size(
-            ControlWidth,
-            paddingHeight + innerPaddingHeight + textLayoutsHeight ?? 0.0
-        );
+        if (_titleTextLayout is { } title)
+            contentHeight += title.Height;
+
+        if (_detailsTextLayout is { } details)
+            contentHeight += details.Height;
+
+        if (_labelTextLayouts is not List<TextLayout> labelLayouts) return new Size(width, contentHeight);
+        var currentRowWidth = 0.0;
+        var currentRowHeight = 0.0;
+        var totalLabelsHeight = 0.0;
+
+        var maxRowWidth = width - _basePadding.Left - _basePadding.Right;
+
+        foreach (var layout in labelLayouts)
+        {
+            var labelWidth = layout.Width + _labelPadding.Left + _labelPadding.Right;
+            var labelHeight = layout.Height + _labelPadding.Top + _labelPadding.Bottom;
+
+            if (currentRowWidth + labelWidth > maxRowWidth)
+            {
+                totalLabelsHeight += currentRowHeight + _labelMargin.Bottom;
+                currentRowWidth = 0.0;
+                currentRowHeight = labelHeight;
+            }
+            else
+            {
+                currentRowHeight = Math.Max(currentRowHeight, labelHeight);
+            }
+
+            currentRowWidth += labelWidth + _labelMargin.Right;
+        }
+        
+        totalLabelsHeight += currentRowHeight;
+        contentHeight += _basePadding.Top * 2 / 1.5 + totalLabelsHeight;
+
+        return new Size(width, contentHeight);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        
+
         switch (change.Property.Name)
         {
             case nameof(Title):

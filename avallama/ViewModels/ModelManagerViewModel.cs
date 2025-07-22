@@ -45,10 +45,10 @@ public partial class ModelManagerViewModel : DialogViewModel
                     { "Parameters", "3.25B" },
                     { "Quantization", "4 bits" }
                 },
-                [
-                    new ModelLabel("Runs great"),
-                    new ModelLabel("43 tokens/sec")
-                ],
+                new List<ModelLabel> {
+                    new ("Runs great"),
+                    new ("43 tokens/sec")
+                },
                 3221225472,
                 ModelDownloadStatus.Downloaded
             ),
@@ -59,9 +59,9 @@ public partial class ModelManagerViewModel : DialogViewModel
                     { "Parameters", "70B" },
                     { "Quantization", "8 bits" }
                 },
-                [
-                    new ModelLabel("Insufficient VRAM", ModelLabelHighlight.Strong)
-                ],
+                new List<ModelLabel> {
+                    new ("Insufficient VRAM", ModelLabelHighlight.Strong)
+                },
                 150323855360,
                 ModelDownloadStatus.ReadyForDownload
             ),
@@ -72,10 +72,10 @@ public partial class ModelManagerViewModel : DialogViewModel
                     { "Parameters", "7B" },
                     { "Quantization", "4 bits" }
                 },
-                [
-                    new ModelLabel("Fast inference"),
-                    new ModelLabel("Works on 8GB VRAM")
-                ],
+                new List<ModelLabel> {
+                    new ("Fast inference"),
+                    new ("Works on 8GB VRAM")
+                },
                 8589934592, // 8 GB
                 ModelDownloadStatus.Downloaded
             ),
@@ -86,9 +86,9 @@ public partial class ModelManagerViewModel : DialogViewModel
                     { "Parameters", "9B" },
                     { "Quantization", "6 bits" }
                 },
-                [
-                    new ModelLabel("14 tokens/sec")
-                ],
+                new List<ModelLabel> {
+                    new ("14 tokens/sec")
+                },
                 12884901888, // 12 GB
                 ModelDownloadStatus.Downloaded
             ),
@@ -98,10 +98,10 @@ public partial class ModelManagerViewModel : DialogViewModel
                 {
                     { "Parameters", "13B" }
                 },
-                [
-                    new ModelLabel("Good for code"),
-                    new ModelLabel("Insufficient VRAM", ModelLabelHighlight.Strong)
-                ],
+                new List<ModelLabel> {
+                    new ("Good for code"),
+                    new ("Insufficient VRAM", ModelLabelHighlight.Strong)
+                },
                 17179869184, // 16 GB
                 ModelDownloadStatus.ReadyForDownload
             ),
@@ -112,10 +112,10 @@ public partial class ModelManagerViewModel : DialogViewModel
                     { "Parameters", "2.7B" },
                     { "Quantization", "4 bits" }
                 },
-                [
-                    new ModelLabel("Lightweight"),
-                    new ModelLabel("Great for chatbots")
-                ],
+                new List<ModelLabel> {
+                    new ("Lightweight"),
+                    new ("Great for chatbots")
+                },
                 3221225472, // 3 GB
                 ModelDownloadStatus.Downloaded
             ),
@@ -126,10 +126,10 @@ public partial class ModelManagerViewModel : DialogViewModel
                     { "Parameters", "3B" },
                     { "Quantization", "4 bits" }
                 },
-                [
-                    new ModelLabel("Tiny model"),
-                    new ModelLabel("10 tokens/sec")
-                ],
+                new List<ModelLabel> {
+                    new ("Tiny model"),
+                    new ("10 tokens/sec")
+                },
                 3221225472, // 3 GB
                 ModelDownloadStatus.NotEnoughSpaceForDownload
             )
