@@ -54,7 +54,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <controls:ModelBlock Classes="downloadedModel"
                                              Margin="0,0,14,14"
                                              Title="{Binding Name}"
-                                             SizeText="{Binding Size}"
+                                             SizeInBytes="{Binding Size}"
                                              DownloadStatus="{Binding DownloadStatus}"
                                              DownloadProgress="{Binding DownloadProgress}"
                                              DetailItemsSource="{Binding Details}"
@@ -82,7 +82,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <controls:ModelBlock
                             Margin="0,0,14,14"
                             Title="{Binding Name}"
-                            SizeText="{Binding Size}"
+                            SizeInBytes="{Binding }"
                             DownloadStatus="{Binding DownloadStatus}"
                             DownloadProgress="{Binding DownloadProgress}"
                             DetailItemsSource="{Binding Details}"

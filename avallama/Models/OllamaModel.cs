@@ -73,4 +73,5 @@ public partial class OllamaModel : ObservableObject
         Size = size;
         DownloadStatus = downloadStatus;
     }
+
 }

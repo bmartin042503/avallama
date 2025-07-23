@@ -128,7 +128,9 @@ public partial class ModelManagerViewModel : DialogViewModel
                 },
                 new List<ModelLabel> {
                     new ("Tiny model"),
-                    new ("10 tokens/sec")
+                    new ("10 tokens/sec"),
+                    new ("Great for code"),
+                    new ("Great for video generation")
                 },
                 3221225472, // 3 GB
                 ModelDownloadStatus.NotEnoughSpaceForDownload

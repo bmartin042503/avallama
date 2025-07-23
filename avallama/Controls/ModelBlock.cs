@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using avallama.Models;
+using avallama.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -16,7 +17,6 @@ using Avalonia.Media.TextFormatting;
 namespace avallama.Controls;
 
 // TODO megvalósításra vár:
-// sizetext renderelése
 // downloadstatus alapján kattintható svg renderelése
 // új textlayout a letöltési információknak (Downloading.. 32%, Not enough space) stb.
 // letöltési animációk, esetleg más animált megjelenés
@@ -26,8 +26,10 @@ namespace avallama.Controls;
 // strong kiemelt labelek legyenek utoljára kirenderelve
 
 // TODO hibák:
+// valamit kezdeni azzal hogy sok label esetén ne legyen olyan nagy az elem magasság vagy scrollable legyen idk
 // változtatni a labelek háttereinek megjelenésén hogy ne tűnjenek úgy mintha gombok lennének
-// measureoverrideba hozzáadni a labelek magasságait is
+// measureoverrideba hozzáadni a labelek magasságait is, megfelelően
+// különböző felbontásokon a lehető legjobban jelenjenek meg a szövegek
 // üres detailitemssource és labelitemssource esetén hibamentes üres megjelenés
 
 public class ModelBlock : Control
@@ -35,8 +37,8 @@ public class ModelBlock : Control
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<ModelBlock, string?>("Title");
 
-    public static readonly StyledProperty<string> SizeTextProperty =
-        AvaloniaProperty.Register<ModelBlock, string>("SizeText");
+    public static readonly StyledProperty<double> SizeInBytesProperty =
+        AvaloniaProperty.Register<ModelBlock, double>("SizeInBytes");
 
     public static readonly StyledProperty<ModelDownloadStatus> DownloadStatusProperty =
         AvaloniaProperty.Register<ModelBlock, ModelDownloadStatus>("DownloadStatus");
@@ -82,10 +84,10 @@ public class ModelBlock : Control
         set => SetValue(TitleProperty, value);
     }
 
-    public string SizeText
+    public double SizeInBytes
     {
-        get => GetValue(SizeTextProperty);
-        set => SetValue(SizeTextProperty, value);
+        get => GetValue(SizeInBytesProperty);
+        set => SetValue(SizeInBytesProperty, value);
     }
 
     public ModelDownloadStatus DownloadStatus
@@ -162,7 +164,7 @@ public class ModelBlock : Control
 
     // egyelőre égetett értékekkel, ha később igény lenne rá akkor külön styledpropertyre átvihetőek
     // ha változtatni szeretnél a megjelenésen akkor itt lehet leginkább
-    private const double ControlWidth = 260;
+    private const double ControlWidth = 280;
     
     // alap padding a ModelBlockon belül
     private readonly Thickness _basePadding = new(12);
@@ -193,6 +195,8 @@ public class ModelBlock : Control
 
     private double _renderXPos;
     private double _renderYPos;
+
+    private double _labelsTotalHeight;
 
     public override void Render(DrawingContext context)
     {
@@ -229,20 +233,33 @@ public class ModelBlock : Control
             _detailsTextLayout.Draw(context, new Point(_basePadding.Left, _renderYPos));
             _renderYPos += _detailsTextLayout.Height + _basePadding.Top / 1.5;
         }
+
+        if (_sizeTextLayout == null) return;
+        var sizeTextPos = new Point(
+            Bounds.Width - _sizeTextLayout.Width - _basePadding.Right,
+            Bounds.Height - _sizeTextLayout.Height - _basePadding.Bottom
+        );
+
+        _sizeTextLayout.Draw(context, sizeTextPos);
     }
 
     private void RenderLabels(DrawingContext context)
     {
-        if (LabelItemsSource is not List<ModelLabel> labelItemsSource ||
-            _labelTextLayouts is not List<TextLayout> labelTextLayouts)
+        if (LabelItemsSource is not IEnumerable<ModelLabel> labelItemsEnum ||
+            _labelTextLayouts is not { } labelLayoutsEnum)
         {
             return;
         }
+
+        var labelItemsSource = labelItemsEnum.ToList();
+        var labelTextLayouts = labelLayoutsEnum.ToList();
         
         _renderXPos = _basePadding.Left;
         _renderYPos += _labelPadding.Top;
         
-        var remainingRowWidth = Bounds.Width - _basePadding.Left - _basePadding.Right;
+        var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right ?? 0;
+        
+        var remainingRowWidth = Bounds.Width - _basePadding.Left - sizeTextWidth - _basePadding.Right;
 
         for (var i = 0; i < labelItemsSource.Count; i++)
         {
@@ -262,7 +279,7 @@ public class ModelBlock : Control
                 _renderYPos += _labelMargin.Bottom + labelBackgroundSize.Height;
                 
                 // elérhető sor szélességet visszaállítjuk, mert új soron lesz kirenderelve
-                remainingRowWidth = Bounds.Width - _basePadding.Left - _basePadding.Right;
+                remainingRowWidth = Bounds.Width - _basePadding.Left - sizeTextWidth - _basePadding.Right;
             }
             
             remainingRowWidth -= labelBackgroundSize.Width + _labelMargin.Right;
@@ -306,21 +323,9 @@ public class ModelBlock : Control
 
     private TextLayout? CreateDetailsTextLayout()
     {
-        if (DetailItemsSource == null) return null;
+        if (DetailItemsSource == null || DetailItemsSource.Count == 0) return null;
 
-        // egy stringbe illeszti az összes detail itemet hogy egy textlayout elemként legyen lerenderelve
-        var mergedDetailsText = string.Empty;
-        var itemCount = 0;
-        foreach (var detailItem in DetailItemsSource)
-        {
-            mergedDetailsText += $"{detailItem.Key}: {detailItem.Value}";
-            if (itemCount != DetailItemsSource.Count - 1)
-            {
-                mergedDetailsText += "\n";
-            }
-
-            itemCount++;
-        }
+        var mergedDetailsText = string.Join('\n', DetailItemsSource.Select(kv => $"{kv.Key}: {kv.Value}"));
 
         return new TextLayout(
             mergedDetailsText,
@@ -335,35 +340,28 @@ public class ModelBlock : Control
         );
     }
 
-    private IEnumerable<TextLayout>? CreateLabelTextLayouts()
+    private List<TextLayout>? CreateLabelTextLayouts()
     {
-        if (LabelItemsSource is not IEnumerable<ModelLabel> labels)
-            return null;
+        if (LabelItemsSource is not IEnumerable<ModelLabel> labels) return null;
 
         var labelList = labels as IList<ModelLabel> ?? labels.ToList();
-        if (labelList.Count == 0)
-            return null;
+        if (labelList.Count == 0) return null;
 
-        List<TextLayout> layouts = [];
-        layouts.AddRange(
-            labelList.Select(label => new TextLayout(
-                    label.Name,
-                    new Typeface(FontFamilyName),
-                    LabelFontSize,
-                    label.Highlight == ModelLabelHighlight.Default ? LabelForeground : StrongLabelForeground
-                )
-            )
-        );
-
-        return layouts;
+        return labelList
+            .Select(label => new TextLayout(
+                label.Name,
+                new Typeface(FontFamilyName),
+                LabelFontSize,
+                label.Highlight == ModelLabelHighlight.Default ? LabelForeground : StrongLabelForeground))
+            .ToList();
     }
 
     private TextLayout? CreateSizeTextLayout()
     {
-        if (string.IsNullOrEmpty(SizeText)) return null;
+        if (double.IsNaN(SizeInBytes) || SizeInBytes < 0) return null;
 
         return new TextLayout(
-            SizeText,
+            GetSizeInGb(),
             new Typeface(FontFamilyName),
             null,
             DetailsFontSize,
@@ -372,6 +370,12 @@ public class ModelBlock : Control
                 DetailsOpacity
             )
         );
+    }
+    
+    private string GetSizeInGb()
+    {
+        var sizeInGb = SizeInBytes / (1024.0 * 1024.0 * 1024.0);
+        return string.Format(LocalizationService.GetString("SIZE_IN_GB"), sizeInGb.ToString("F2"));
     }
 
     protected override void OnMeasureInvalidated()
@@ -402,49 +406,68 @@ public class ModelBlock : Control
         _detailsTextLayout ??= CreateDetailsTextLayout();
         _labelTextLayouts ??= CreateLabelTextLayouts();
         _sizeTextLayout ??= CreateSizeTextLayout();
-
-        var width = ControlWidth;
+    
         var contentHeight = 0.0;
-        
-        contentHeight += _basePadding.Top + _basePadding.Bottom;
-        
+    
+        contentHeight += _basePadding.Top;
+    
         if (_titleTextLayout is { } title)
-            contentHeight += title.Height;
-
-        if (_detailsTextLayout is { } details)
-            contentHeight += details.Height;
-
-        if (_labelTextLayouts is not List<TextLayout> labelLayouts) return new Size(width, contentHeight);
-        var currentRowWidth = 0.0;
-        var currentRowHeight = 0.0;
-        var totalLabelsHeight = 0.0;
-
-        var maxRowWidth = width - _basePadding.Left - _basePadding.Right;
-
-        foreach (var layout in labelLayouts)
         {
-            var labelWidth = layout.Width + _labelPadding.Left + _labelPadding.Right;
-            var labelHeight = layout.Height + _labelPadding.Top + _labelPadding.Bottom;
-
-            if (currentRowWidth + labelWidth > maxRowWidth)
-            {
-                totalLabelsHeight += currentRowHeight + _labelMargin.Bottom;
-                currentRowWidth = 0.0;
-                currentRowHeight = labelHeight;
-            }
-            else
-            {
-                currentRowHeight = Math.Max(currentRowHeight, labelHeight);
-            }
-
-            currentRowWidth += labelWidth + _labelMargin.Right;
+            contentHeight += title.Height;
+            contentHeight += _basePadding.Top / 1.5;
         }
-        
-        totalLabelsHeight += currentRowHeight;
-        contentHeight += _basePadding.Top * 2 / 1.5 + totalLabelsHeight;
+    
+        if (_detailsTextLayout is { } details)
+        {
+            contentHeight += details.Height;
+            contentHeight += _basePadding.Top / 1.5;
+        }
+    
+        _labelsTotalHeight = 0.0;
 
-        return new Size(width, contentHeight);
+        if (_labelTextLayouts is List<TextLayout> { Count: > 0 } labelLayouts)
+        {
+            var currentRowWidth = 0.0;
+            var currentRowHeight = 0.0;
+            var totalLabelsHeight = 0.0;
+
+            var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right ?? 0;
+            var maxRowWidth = ControlWidth - _basePadding.Left - sizeTextWidth - _basePadding.Right;
+
+            foreach (var layout in labelLayouts)
+            {
+                var labelWidth = layout.Width + _labelPadding.Left + _labelPadding.Right;
+                var labelHeight = layout.Height + _labelPadding.Top + _labelPadding.Bottom;
+
+                if (currentRowWidth + labelWidth > maxRowWidth)
+                {
+                    totalLabelsHeight += currentRowHeight + _labelMargin.Bottom;
+                    currentRowWidth = 0.0;
+                    currentRowHeight = labelHeight;
+                }
+                else
+                {
+                    currentRowHeight = Math.Max(currentRowHeight, labelHeight);
+                }
+
+                currentRowWidth += labelWidth + _labelMargin.Right;
+            }
+
+            totalLabelsHeight += currentRowHeight;
+            _labelsTotalHeight = totalLabelsHeight + _labelPadding.Top;
+            contentHeight += _labelsTotalHeight;
+        }
+    
+        contentHeight += _basePadding.Bottom;
+
+        if (_sizeTextLayout is not { } sizeText) return new Size(ControlWidth, contentHeight);
+        var minHeight = sizeText.Height + _basePadding.Bottom;
+        if (contentHeight < minHeight)
+            contentHeight = minHeight;
+
+        return new Size(ControlWidth, contentHeight);
     }
+
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -453,22 +476,22 @@ public class ModelBlock : Control
         switch (change.Property.Name)
         {
             case nameof(Title):
-            case nameof(SizeText):
-            case nameof(DownloadStatus):
-            case nameof(DownloadProgress):
+            case nameof(SizeInBytes):
             case nameof(DetailItemsSource):
             case nameof(LabelItemsSource):
-            case nameof(Background):
-            case nameof(Foreground):
-            case nameof(LabelBackground):
-            case nameof(LabelForeground):
-            case nameof(StrongLabelBackground):
-            case nameof(StrongLabelForeground):
-                // TODO: megfelelően elhelyezni ezeket majd és optimalizálni a megjelenést
                 InvalidateVisual();
                 InvalidateMeasure();
-                InvalidateArrange();
+                break;
+
+            case nameof(Foreground):
+            case nameof(LabelForeground):
+            case nameof(StrongLabelForeground):
+            case nameof(Background):
+            case nameof(LabelBackground):
+            case nameof(StrongLabelBackground):
+                InvalidateVisual();
                 break;
         }
     }
+
 }

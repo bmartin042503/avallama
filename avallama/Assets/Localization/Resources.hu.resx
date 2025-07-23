@@ -47,7 +47,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ez a model nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
     </data>
     <data name="VERSION" xml:space="preserve">
-        <value>v0.1.1</value>
+        <value>v0.2.0</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>Jelenleg egyszerre csak egy beszélgetés támogatott</value>
@@ -267,5 +267,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
         <value>Kiemelt modellek</value>
+    </data>
+    <data name="SIZE_IN_GB" xml:space="preserve">
+        <value>{0} GB</value>
     </data>
 </root>

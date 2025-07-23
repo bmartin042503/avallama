@@ -11,12 +11,12 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
     <Design.PreviewWith>
         <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
-        <ThemeVariantScope RequestedThemeVariant="Light">
+        <ThemeVariantScope RequestedThemeVariant="Dark">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <controls:ModelBlock
                         Title="llama3.2"
-                        SizeText="2.3 GB">
+                        SizeInBytes="3221225472">
                         
                         <!-- AXAML-ben megadható majd egyszerű propertyként mind a DetailItemsSource és LabelItemsSource, bindinggal,
                         itt viszont így kell csinálni-->
@@ -48,6 +48,17 @@ Licensed under the MIT License. See LICENSE file for details.
                                 </models:ModelLabel>
                             </generic:List>
                         </controls:ModelBlock.LabelItemsSource>
+                    </controls:ModelBlock>
+                    <controls:ModelBlock
+                        Title="llama3.2"
+                        SizeInBytes="3221225472">
+                        
+                        <controls:ModelBlock.DetailItemsSource>
+                            <generic:Dictionary x:TypeArguments="system:String, system:String">
+                                <system:String x:Key="Parameters">3.25B</system:String>
+                                <system:String x:Key="Quantization">Q8_0</system:String>
+                            </generic:Dictionary>
+                        </controls:ModelBlock.DetailItemsSource>
                     </controls:ModelBlock>
                 </StackPanel>
             </Border>
