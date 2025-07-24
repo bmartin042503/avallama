@@ -28,7 +28,6 @@ namespace avallama.Controls;
 // TODO hibák:
 // valamit kezdeni azzal hogy sok label esetén ne legyen olyan nagy az elem magasság vagy scrollable legyen idk
 // változtatni a labelek háttereinek megjelenésén hogy ne tűnjenek úgy mintha gombok lennének
-// measureoverrideba hozzáadni a labelek magasságait is, megfelelően
 // különböző felbontásokon a lehető legjobban jelenjenek meg a szövegek
 // üres detailitemssource és labelitemssource esetén hibamentes üres megjelenés
 
@@ -257,7 +256,7 @@ public class ModelBlock : Control
         _renderXPos = _basePadding.Left;
         _renderYPos += _labelPadding.Top;
         
-        var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right ?? 0;
+        var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right + _basePadding.Left;
         
         var remainingRowWidth = Bounds.Width - _basePadding.Left - sizeTextWidth - _basePadding.Right;
 
@@ -431,7 +430,7 @@ public class ModelBlock : Control
             var currentRowHeight = 0.0;
             var totalLabelsHeight = 0.0;
 
-            var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right ?? 0;
+            var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right + _basePadding.Left;
             var maxRowWidth = ControlWidth - _basePadding.Left - sizeTextWidth - _basePadding.Right;
 
             foreach (var layout in labelLayouts)

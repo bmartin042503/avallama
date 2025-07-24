@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
-using System.Configuration;
-using System.Runtime.InteropServices;
 using avallama.Constants;
 using avallama.Factories;
 using avallama.Services;
-using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -17,17 +13,21 @@ public partial class MainViewModel : ViewModelBase
 {
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
-    private readonly string _firstTime;
+    private readonly string? _firstTime;
     private readonly ConfigurationService _configurationService;
     
     [ObservableProperty] private PageViewModel? _currentPageViewModel;
     
 
-    public MainViewModel(PageFactory pageFactory, ConfigurationService configurationService)
+    public MainViewModel(
+        PageFactory pageFactory, 
+        ConfigurationService configurationService
+    )
     {
         _pageFactory = pageFactory;
         _configurationService = configurationService;
-        _firstTime = _configurationService.ReadSetting("first-time");
+        
+        _firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
         if (string.IsNullOrEmpty(_firstTime))
         {
             CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Greeting);
@@ -43,7 +43,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (string.IsNullOrEmpty(_firstTime))
         {
-            _configurationService.SaveSetting("first-time", "false");
+            _configurationService.SaveSetting(ConfigurationKey.FirstTime, "false");
         }
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
     }

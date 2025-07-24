@@ -40,10 +40,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Views\Dialogs\OllamaServiceView.axaml.cs">
-        <DependentUpon>OllamaServiceView.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
       <Compile Update="Views\Dialogs\SettingsView.axaml.cs">
         <DependentUpon>SettingsView.axaml</DependentUpon>
         <SubType>Code</SubType>

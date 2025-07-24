@@ -10,8 +10,10 @@ using avallama.Factories;
 using avallama.ViewModels;
 using avallama.Views;
 using avallama.Views.Dialogs;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.Services;
 
@@ -23,24 +25,59 @@ public enum ConfirmationType
     Negative
 }
 
+public class InputField(
+    int maxLength = 255,
+    string placeholder = "",
+    string inputValue = "",
+    bool isPassword = false,
+    Func<string, bool>? validator = null,
+    string validationErrorMessage = "")
+{
+    public int MaxLength { get; set; } = maxLength;
+    public string Placeholder { get; set; } = placeholder;
+    public string InputValue { get; set; } = inputValue;
+    public bool IsPassword { get; set; } = isPassword;
+
+    // a validatorban megadhatjuk, hogy mikor van egy érték helyesen megadva (pl. value => value.Contains("@")) ha emailre néznénk
+    public Func<string, bool>? Validator { get; set; } = validator;
+
+    // ez pedig egy error üzenet ami akkor fog megjelenni ha a validálás nem járt sikerrel
+    public string ValidationErrorMessage { get; set; } = validationErrorMessage;
+
+    public bool IsValid => Validator == null || Validator(InputValue);
+}
+
 public abstract record DialogResult;
 
 public record ConfirmationResult(ConfirmationType Confirmation) : DialogResult;
 
-public record InputResult(string Input) : DialogResult;
+public record InputResult(IEnumerable<string?> Results) : DialogResult;
 
 public record NullResult(string ErrorMessage = "") : DialogResult;
 
 public interface IDialogService
 {
     void ShowDialog(
-        ApplicationDialog dialog, 
+        ApplicationDialog dialog,
         bool resizable,
         double width,
         double height
     );
+
     void ShowInfoDialog(string informationMessage);
-    void ShowErrorDialog(string errorMessage);
+
+    void ShowErrorDialog(
+        string errorMessage,
+        bool shutDownApp
+    );
+
+    void ShowActionDialog(
+        string title,
+        string actionButtonText,
+        Action action,
+        Action? closeAction,
+        string description
+    );
 
     Task<DialogResult> ShowConfirmationDialog(
         string title,
@@ -52,8 +89,8 @@ public interface IDialogService
 
     Task<DialogResult> ShowInputDialog(
         string title,
-        string description,
-        string inputValue
+        IEnumerable<InputField> fields,
+        string description
     );
 
     void CloseDialog(ApplicationDialog dialog);
@@ -62,7 +99,8 @@ public interface IDialogService
 }
 
 public class DialogService(
-    DialogViewModelFactory dialogViewModelFactory)
+    DialogViewModelFactory dialogViewModelFactory,
+    IMessenger messenger)
     : IDialogService
 {
     private Stack<DialogWindow> _dialogStack = new();
@@ -79,7 +117,7 @@ public class DialogService(
     /// Ha a dialog típusa nem megfelelő (pl. Information, Error, Confirmation, Input), kivételt dob.
     /// </exception>
     public void ShowDialog(
-        ApplicationDialog dialog, 
+        ApplicationDialog dialog,
         bool resizable = false,
         double width = double.NaN,
         double height = double.NaN
@@ -88,7 +126,8 @@ public class DialogService(
         if (dialog is ApplicationDialog.Information
             or ApplicationDialog.Error
             or ApplicationDialog.Confirmation
-            or ApplicationDialog.Input)
+            or ApplicationDialog.Input
+            or ApplicationDialog.Action)
         {
             throw new InvalidOperationException($"{dialog} dialog can not be used with ShowDialog.");
         }
@@ -109,7 +148,7 @@ public class DialogService(
         {
             dialogWindow.SizeToContent = SizeToContent.Width;
             dialogWindow.Height = height;
-        } 
+        }
         else if (!double.IsNaN(width) && double.IsNaN(height))
         {
             dialogWindow.SizeToContent = SizeToContent.Height;
@@ -132,7 +171,7 @@ public class DialogService(
     public void ShowInfoDialog(string informationMessage)
     {
         var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.InformationView");
+        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InformationView");
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)! as InformationView;
         control!.DialogMessage.Text = informationMessage;
@@ -148,13 +187,26 @@ public class DialogService(
     /// Megjelenít egy hibaüzenetet tartalmazó dialogot, amely figyelmezteti a felhasználót valamilyen problémára.
     /// </summary>
     /// <param name="errorMessage">A megjelenítendő hibaüzenet.</param>
-    public void ShowErrorDialog(string errorMessage)
+    /// <param name="shutdownApp">Az alkalmazás leállítása a dialog bezárását követően (opcionális).</param>
+    public void ShowErrorDialog(
+        string errorMessage,
+        bool shutdownApp = false
+    )
     {
         var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.ErrorView");
+        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ErrorView");
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)! as ErrorView;
         control!.DialogMessage.Text = errorMessage;
+        control.CloseButton.Click += (_, _) =>
+        {
+            CloseDialog(ApplicationDialog.Error);
+            if (shutdownApp)
+            {
+                messenger.Send(new ShutdownMessage());
+            }
+        };
+
         dialogWindow.Content = control;
         dialogWindow.DataContext = new DialogViewModel
         {
@@ -162,7 +214,87 @@ public class DialogService(
         };
         ShowDialogWindow(dialogWindow);
     }
-    
+
+    /// <summary>
+    /// Megjelenít egy cselekvésre felszólító dialogot, egy megadható <see cref="Action"/> metódussal, ami lefut, ha a
+    /// dialogban lévő action (bal oldali) gombra kattintanak.
+    /// </summary>
+    /// <param name="title">
+    /// A dialog címe vagy kérdés szövege.
+    /// </param>
+    /// <param name="actionButtonText">
+    /// A bal oldali gomb szövege.
+    /// </param>
+    /// <param name="action">
+    /// A metódus ami lefut az action gomb megnyomása esetén.
+    /// </param>
+    /// <param name="closeAction">
+    /// A metódus ami lefut a bezárás gomb megnyomása esetén (opcionális).
+    /// </param>
+    /// <param name="description">
+    /// A dialog leírása (opcionális).
+    /// </param>
+    /// <example>
+    /// Példa használatra:
+    /// <code>
+    /// _dialogService.ShowActionDialog(
+    ///     title: LocalizationService.GetString("OLLAMA_NOT_INSTALLED"),
+    ///     actionButtonText:  LocalizationService.GetString("DOWNLOAD"),
+    ///     action: RedirectToOllamaDownload,
+    ///     closeAction: _appService.Shutdown,
+    ///     description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC")
+    /// );
+    /// </code>
+    /// </example>
+    public void ShowActionDialog(
+        string title,
+        string actionButtonText,
+        Action action,
+        Action? closeAction = null,
+        string description = ""
+    )
+    {
+        var dialogWindow = new DialogWindow();
+        // szándékosan ConfirmationView, hisz annak a View-ja újrafelhasználható
+        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ConfirmationView");
+        if (type is null) return;
+        var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
+
+        control!.DialogTitle.Text = title;
+        if (!string.IsNullOrEmpty(description))
+        {
+            control.DialogDescription.Text = description;
+        }
+        else
+        {
+            control.DialogDescription.IsVisible = false;
+        }
+
+        control.PositiveButton.Content = actionButtonText;
+        control.NegativeButton.Content = LocalizationService.GetString("CLOSE");
+        control.NegativeButton.Classes.Add("lessSecondaryButton");
+
+        control.PositiveButton.Click += (_, _) =>
+        {
+            CloseDialog(ApplicationDialog.Action);
+            action();
+        };
+
+        control.NegativeButton.Click += (_, _) =>
+        {
+            CloseDialog(ApplicationDialog.Action);
+            closeAction?.Invoke();
+        };
+
+        dialogWindow.Content = control;
+        dialogWindow.DataContext = new DialogViewModel
+        {
+            DialogType = ApplicationDialog.Action
+        };
+
+        ShowDialogWindow(dialogWindow);
+    }
+
     // azért kell hogy async legyenek ezek a metódusok, mert resulttal rendelkeznek és ezeket megfelelően be kell várni
     // ha nem async lenne akkor a UI szálon próbálná bevárni a resultot, ezáltal az lefagyna és nem lehetne beállítani resultot TrySetResult-al hiszen a UI szál már foglalt
 
@@ -213,7 +345,7 @@ public class DialogService(
     {
         var dialogResult = new TaskCompletionSource<DialogResult>();
         var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.ConfirmationView");
+        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ConfirmationView");
         if (type is null) return new NullResult("View type is null");
         var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
 
@@ -273,14 +405,14 @@ public class DialogService(
     }
 
     // esetleg később kibővíteni hogy lehessen jelszavas megjelenítés, max karakterhossz megadás stb. ha lenne rá igény
-    
+
     /// <summary>
-    /// Megjelenít egy TextBox mezőt tartalmazó dialogot a felhasználónak, amely lehetővé teszi egy szöveg megadását.
+    /// Megjelenít egy TextBox mezőt tartalmazó dialogot a felhasználónak, amely lehetővé teszi több szöveg megadását beviteli mezőkön keresztül, mint <see cref="InputField"/> típus.
     /// A dialog két gombot tartalmaz: mentés és bezárás. A felhasználó válasza alapján visszatér egy <see cref="DialogResult"/>-tel.
     /// </summary>
     /// <param name="title">A dialog címe.</param>
     /// <param name="description">Kiegészítő leírás a dialoghoz (opcionális).</param>
-    /// <param name="inputValue">Előre kitöltött érték a beviteli mezőben (opcionális).</param>
+    /// <param name="inputFields">Beviteli mezők</param>
     /// <returns>
     /// Egy <see cref="Task{DialogResult}"/> amely tartalmazza a felhasználó által megadott szöveget <see cref="InputResult"/> formájában,
     /// vagy <see cref="NullResult"/>-ot, ha a dialog bezárásra került válasz nélkül.
@@ -288,32 +420,46 @@ public class DialogService(
     /// <example>
     /// Példa használatra:
     /// <code>
-    /// var conversationName = "Conversation 1";
-    /// var result = await _dialogService.ShowInputDialog(
-    ///     "Beszélgetés neve",
-    ///     "A beszélgetés nevének módosítása",
-    ///     conversationName
+    /// var dialogResult = await _dialogService.ShowInputDialog(
+    ///     title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
+    ///     description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"), 
+    ///     inputFields: new List()
+    ///     {
+    ///         new (placeholder: LocalizationService.GetString("API_HOST_SETTING")),
+    ///         new (
+    ///             placeholder: LocalizationService.GetString("API_PORT_SETTING"),
+    ///             inputValue: 11434.ToString()
+    ///         )
+    ///     }
     /// );
-    /// if (result is InputResult inputResult)
+    ///     
+    /// if (dialogResult is InputResult inputResult)
     /// {
-    ///     Console.WriteLine("Új név: " + inputResult.Input);
+    ///     var count = 0;
+    ///     foreach (var result in inputResult.Results)
+    ///     {
+    ///         Console.WriteLine($"({count}) Input Field Value: {result}");
+    ///         count++;
+    ///     }
     /// }
     /// </code>
     /// </example>
     public async Task<DialogResult> ShowInputDialog(
         string title,
-        string description = "",
-        string inputValue = ""
+        IEnumerable<InputField> inputFields,
+        string description = ""
     )
     {
+        var fields = inputFields.ToList();
+        if (fields.Count == 0) return new NullResult("Empty input fields");
+
         var dialogResult = new TaskCompletionSource<DialogResult>();
         var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.InputView");
+        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InputView");
         if (type is null) return new NullResult("View type is null");
         var control = (Control)Activator.CreateInstance(type)! as InputView;
 
         control!.DialogTitle.Text = title;
-        control.InputTextBox.Text = inputValue;
         if (!string.IsNullOrEmpty(description))
         {
             control.DialogDescription.Text = description;
@@ -321,6 +467,29 @@ public class DialogService(
         else
         {
             control.DialogDescription.IsVisible = false;
+        }
+
+        control.InputFieldsStackPanel.Children.Clear();
+        control.ErrorMessage.IsVisible = false;
+
+        foreach (var field in fields)
+        {
+            var inputTextBox = new TextBox();
+            inputTextBox.Classes.Add("settingTextBox");
+
+            if (field.IsPassword)
+            {
+                inputTextBox.PasswordChar = '*';
+            }
+
+            if (!string.IsNullOrEmpty(field.Placeholder))
+                inputTextBox.Watermark = field.Placeholder;
+
+            if (!string.IsNullOrEmpty(field.InputValue))
+                inputTextBox.Text = field.InputValue;
+
+            inputTextBox.MaxLength = field.MaxLength;
+            control.InputFieldsStackPanel.Children.Add(inputTextBox);
         }
 
         control.CloseButton.Click += (_, _) =>
@@ -332,7 +501,35 @@ public class DialogService(
 
         control.SaveButton.Click += (_, _) =>
         {
-            dialogResult.TrySetResult(new InputResult(control.InputTextBox.Text ?? string.Empty));
+            control.ErrorMessage.IsVisible = false;
+            control.ErrorMessage.Text = string.Empty;
+            
+            // validation check
+            for (var i = 0; i < fields.Count; i++)
+            {
+                if (control.InputFieldsStackPanel.Children[i] is TextBox fieldTextBox)
+                {
+                    // frissítjük az inputfieldek tartalmát hogy lehessen újravalidálni
+                    fields[i].InputValue = fieldTextBox.Text ?? string.Empty;
+                }
+
+                if (!fields[i].IsValid)
+                {
+                    control.ErrorMessage.IsVisible = true;
+                    control.ErrorMessage.Text = fields[i].ValidationErrorMessage;
+                    return;
+                }
+            }
+            
+            // a textboxok, vagyis a beviteli mezők szövegeit összevonja egy List<string>-be
+            var inputList = control.InputFieldsStackPanel.Children.Select(item =>
+                    item as TextBox
+                )
+                .OfType<TextBox>()
+                .Select(textBoxItem => textBoxItem.Text)
+                .ToList();
+
+            dialogResult.TrySetResult(new InputResult(inputList));
             CloseDialog(ApplicationDialog.Input);
         };
 
@@ -364,7 +561,7 @@ public class DialogService(
     {
         var parent = _dialogStack.Count > 0
             ? _dialogStack.Peek()
-            : Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            : Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow
                 : null;
         if (parent == null)

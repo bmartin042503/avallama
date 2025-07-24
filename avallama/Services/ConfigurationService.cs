@@ -7,7 +7,25 @@ using Avalonia.Styling;
 
 namespace avallama.Services;
 
-public class ConfigurationService
+public static class ConfigurationKey
+{
+    public const string StartOllamaFrom = "start-ollama-from";
+    public const string FirstTime = "first-time";
+    public const string Language = "language";
+    public const string ColorScheme = "color-scheme";
+    public const string ScrollToBottom = "scroll-to-bottom";
+    public const string ApiHost = "api-host";
+    public const string ApiPort = "api-port";
+}
+
+public interface IConfigurationService
+{
+    string ReadSetting(string key);
+    void SaveSetting(string key, string value);
+}
+
+
+public class ConfigurationService : IConfigurationService
 {
     public string ReadSetting(string key)
     {

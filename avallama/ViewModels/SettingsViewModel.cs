@@ -25,12 +25,6 @@ public partial class SettingsViewModel : DialogViewModel
     private bool _changesTextVisibility;
     private bool _restartNeeded;
 
-    private const string LanguageKey = "language";
-    private const string ColorSchemeKey = "color-scheme";
-    private const string ScrollToBottomKey = "scroll-to-bottom";
-    private const string ApiHostKey = "api-host";
-    private const string ApiPortKey = "api-port";
-
     // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et
     public bool RestartNeeded
     {
@@ -114,7 +108,7 @@ public partial class SettingsViewModel : DialogViewModel
 
     private void LoadSettings()
     {
-        var language = _configurationService.ReadSetting(LanguageKey);
+        var language = _configurationService.ReadSetting(ConfigurationKey.Language);
         SelectedLanguageIndex = language switch
         {
             "hungarian" => 0,
@@ -124,14 +118,14 @@ public partial class SettingsViewModel : DialogViewModel
         _defaultLanguageIndex = SelectedLanguageIndex;
         RestartNeeded = false;
         
-        var theme = _configurationService.ReadSetting(ColorSchemeKey);
+        var theme = _configurationService.ReadSetting(ConfigurationKey.ColorScheme);
         SelectedThemeIndex = theme switch
         {
             "light" => 0,
             _ => 1
         };
 
-        var scrollToBottom = _configurationService.ReadSetting(ScrollToBottomKey);
+        var scrollToBottom = _configurationService.ReadSetting(ConfigurationKey.ScrollToBottom);
         SelectedScrollIndex = scrollToBottom switch
         {
             "auto" => 0,
@@ -142,7 +136,7 @@ public partial class SettingsViewModel : DialogViewModel
         
         var hostSetting = _configurationService.ReadSetting("api-host");
         ApiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
-        var portString = _configurationService.ReadSetting(ApiPortKey);
+        var portString = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         ApiPort = int.TryParse(portString, out var parsedPort) ? parsedPort : 11434;
     }
 
@@ -169,27 +163,27 @@ public partial class SettingsViewModel : DialogViewModel
             2 => "none",
             _ => "float"
         };
-        _configurationService.SaveSetting(ColorSchemeKey, colorScheme);
-        _configurationService.SaveSetting(LanguageKey, language);
-        _configurationService.SaveSetting(ScrollToBottomKey, scrollToBottom);
+        _configurationService.SaveSetting(ConfigurationKey.ColorScheme, colorScheme);
+        _configurationService.SaveSetting(ConfigurationKey.Language, language);
+        _configurationService.SaveSetting(ConfigurationKey.ScrollToBottom, scrollToBottom);
         ChangesTextVisibility = true;
 
         if (!IsValidHost(ApiHost))
         {
             _dialogService.ShowErrorDialog(LocalizationService.GetString("INVALID_HOST_ERR"));
-            ApiHost = _configurationService.ReadSetting(ApiHostKey);
+            ApiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
             return;
         }
         
         if (!IsValidPort(ApiPort.ToString()))
         {
             _dialogService.ShowErrorDialog(LocalizationService.GetString("INVALID_PORT_ERR"));
-            ApiPort = int.Parse(_configurationService.ReadSetting(ApiPortKey));
+            ApiPort = int.Parse(_configurationService.ReadSetting(ConfigurationKey.ApiPort));
             return;
         }
         
-        _configurationService.SaveSetting(ApiHostKey, ApiHost);
-        _configurationService.SaveSetting(ApiPortKey, ApiPort.ToString());
+        _configurationService.SaveSetting(ConfigurationKey.ApiHost, ApiHost);
+        _configurationService.SaveSetting(ConfigurationKey.ApiPort, ApiPort.ToString());
     }
 
     [RelayCommand]

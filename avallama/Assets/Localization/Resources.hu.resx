@@ -271,4 +271,28 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SIZE_IN_GB" xml:space="preserve">
         <value>{0} GB</value>
     </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_TITLE" xml:space="preserve">
+        <value>Honnan szeretnéd indítani az Ollamát?</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_DESC" xml:space="preserve">
+        <value>Az Ollama futhat helyileg a gépeden, vagy csatlakozhatsz egy szerverhez is.</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_LOCAL" xml:space="preserve">
+        <value>Indítás a gépen</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_REMOTE" xml:space="preserve">
+        <value>Csatlakozás szerverhez</value>
+    </data>
+    <data name="OLLAMA_NOT_INSTALLED_DESC" xml:space="preserve">
+        <value>Szeretnéd letölteni?</value>
+    </data>
+    <data name="DOWNLOAD" xml:space="preserve">
+        <value>Letöltés</value>
+    </data>
+    <data name="OLLAMA_REMOTE_DIALOG_TITLE" xml:space="preserve">
+        <value>Csatlakozás szerverhez</value>
+    </data>
+    <data name="OLLAMA_REMOTE_DIALOG_DESC" xml:space="preserve">
+        <value>Kérlek add meg a szerver IP címét és portját</value>
+    </data>
 </root>

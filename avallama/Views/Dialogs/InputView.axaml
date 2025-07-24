@@ -13,16 +13,20 @@ Licensed under the MIT License. See LICENSE file for details.
              Background="{DynamicResource Surface}">
     <StackPanel Orientation="Vertical" Margin="20">
         <TextBlock x:Name="DialogTitle" TextWrapping="Wrap" MaxWidth="400" Margin="0,10,0,0" Classes="H2"
-                   Text="Input dialog title" />
-        <TextBlock x:Name="DialogDescription" TextWrapping="Wrap" MaxWidth="400" Margin="0,12,0,0" Classes="H3"
-                   Text="Input dialog description" Foreground="{DynamicResource Outline}" />
-        <TextBox Classes="settingTextBox" x:Name="InputTextBox" Margin="0,32" Watermark="Input Text"/>
+                   Text="Input dialog title" HorizontalAlignment="Left" />
+        <TextBlock x:Name="DialogDescription" TextWrapping="Wrap" MaxWidth="400" Margin="0,10,0,0" Classes="H3"
+                   Text="Input dialog description" Foreground="{DynamicResource Outline}" HorizontalAlignment="Left" />
+        <TextBlock x:Name="ErrorMessage" Foreground="{DynamicResource Error}" FontWeight="Bold"
+                   Text="Form validation error text" Margin="0,26,0,0" MaxWidth="300" TextWrapping="Wrap" />
+        <StackPanel Orientation="Vertical" x:Name="InputFieldsStackPanel" Margin="0,14, 0, 32" Spacing="20">
+            <TextBox Classes="settingTextBox" Watermark="Input Text" />
+        </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16">
+            <Button Content="{services:LocalizationService Key='SAVE'}"
+                    x:Name="SaveButton" Cursor="Hand" />
             <Button Classes="lessSecondaryButton"
                     Content="{services:LocalizationService Key='CLOSE'}"
                     x:Name="CloseButton" Cursor="Hand" />
-            <Button Content="{services:LocalizationService Key='SAVE'}"
-                    x:Name="SaveButton" Cursor="Hand" />
         </StackPanel>
     </StackPanel>
 </UserControl>

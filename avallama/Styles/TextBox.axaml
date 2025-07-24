@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="25"/>
-        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="Padding" Value="14,10"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="MaxLines" Value="8"/>
         <Setter Property="AcceptsReturn" Value="True"/>

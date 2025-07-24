@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
+using System.Threading.Tasks;
 using avallama.Constants;
 using Avalonia.Markup.Xaml;
 using avallama.Services;
@@ -44,8 +45,8 @@ public partial class App : Application
         {
             var configurationService = services.GetRequiredService<ConfigurationService>();
             
-            var colorScheme = configurationService.ReadSetting("color-scheme");
-            var language = configurationService.ReadSetting("language");
+            var colorScheme = configurationService.ReadSetting(ConfigurationKey.ColorScheme);
+            var language = configurationService.ReadSetting(ConfigurationKey.Language);
 
             RequestedThemeVariant = colorScheme switch
             {
@@ -57,7 +58,6 @@ public partial class App : Application
             var cultureInfo = language switch
             {
                 "hungarian" => CultureInfo.GetCultureInfo("hu-HU"),
-                "english" => CultureInfo.InvariantCulture,
                 _ => CultureInfo.InvariantCulture
             };
             
@@ -73,9 +73,9 @@ public partial class App : Application
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
 
-            // saját app launcher hogy először megjelenhessen a dialog és utána a MainWindow
-            var launcher = services.GetRequiredService<AppLauncherService>();
-            launcher.Run();
+            var launcher = services.GetRequiredService<IAppService>();
+            launcher.InitializeMainWindow();
+            _ = launcher.CheckOllamaStart();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -83,11 +83,21 @@ public partial class App : Application
     
     private void OnStartup(object? sender, ControlledApplicationLifetimeStartupEventArgs e)
     {
-        /*
-         ide kell egy kis delay kulonben elobb inditja a servicet mint hogy betoltene a UI-t es ugy nem igazan
-         lehet kiirni a hibakat UI-ra
-        */
-        _ollamaService?.StartWithDelay(TimeSpan.FromSeconds(2));
+        // külön szálon, aszinkron fut le elvileg
+        // nem valószínű hogy elkapna valaha is bármilyen kivételt de biztos ami biztos
+        // gondoltam mivel elég alapvető service, nem lenne helyes egy soros _ = _ollamaService?.Start()-al letudni xd
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _ollamaService!.Start();
+            }
+            catch (Exception ex)
+            {
+                // TODO: ehelyett majd logolás
+                Console.WriteLine(ex);
+            }
+        });
     }
 
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
