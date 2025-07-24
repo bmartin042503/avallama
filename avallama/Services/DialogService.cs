@@ -76,7 +76,8 @@ public interface IDialogService
         string actionButtonText,
         Action action,
         Action? closeAction,
-        string description
+        string description,
+        bool actionButtonOnly
     );
 
     Task<DialogResult> ShowConfirmationDialog(
@@ -234,6 +235,9 @@ public class DialogService(
     /// <param name="description">
     /// A dialog leírása (opcionális).
     /// </param>
+    /// <param name="actionButtonOnly">
+    /// Csak az action button jelenjen meg-e, tehát a bezárás gomb nélkül (opcionális).
+    /// </param>
     /// <example>
     /// Példa használatra:
     /// <code>
@@ -251,7 +255,8 @@ public class DialogService(
         string actionButtonText,
         Action action,
         Action? closeAction = null,
-        string description = ""
+        string description = "",
+        bool actionButtonOnly = false
     )
     {
         var dialogWindow = new DialogWindow();
@@ -271,19 +276,25 @@ public class DialogService(
         }
 
         control.PositiveButton.Content = actionButtonText;
-        control.NegativeButton.Content = LocalizationService.GetString("CLOSE");
-        control.NegativeButton.Classes.Add("lessSecondaryButton");
+        if (actionButtonOnly)
+        {
+            control.NegativeButton.IsVisible = false;
+        }
+        else
+        {
+            control.NegativeButton.Content = LocalizationService.GetString("CLOSE");
+            control.NegativeButton.Classes.Add("lessSecondaryButton");
+            control.NegativeButton.Click += (_, _) =>
+            {
+                CloseDialog(ApplicationDialog.Action);
+                closeAction?.Invoke();
+            };
+        }
 
         control.PositiveButton.Click += (_, _) =>
         {
             CloseDialog(ApplicationDialog.Action);
             action();
-        };
-
-        control.NegativeButton.Click += (_, _) =>
-        {
-            CloseDialog(ApplicationDialog.Action);
-            closeAction?.Invoke();
         };
 
         dialogWindow.Content = control;

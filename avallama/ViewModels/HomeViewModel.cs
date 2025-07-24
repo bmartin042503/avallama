@@ -218,7 +218,10 @@ public partial class HomeViewModel : PageViewModel
     {
         // megvárja amíg kapcsolódik az ollama szerverhez, ez gondolom azért kell, mert hamarabb futna le ez a metódus mint hogy a szerver elindul (?)
         await _ollamaServerStarted.Task;
+        
+        // TODO: fix, GuideView után ez nem fog lefutni valamiért
         await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
+        
         //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         await CheckModelDownload().WaitAsync(TimeSpan.FromMilliseconds(100));
     }

@@ -24,6 +24,7 @@ public interface IAppService
 // segéd osztály az alkalmazással kapcsolatos műveletek (indítás, leállítás) személyre szabásához
 public class ShutdownMessage() : ValueChangedMessage<bool>(true);
 
+public class CheckOllamaStartMessage() : ValueChangedMessage<bool>(true);
 public class AppService : IAppService
 {
     private bool _isMainWindowInitialized;
@@ -42,64 +43,60 @@ public class AppService : IAppService
         _mainViewModel = mainViewModel;
         _configurationService = configurationService;
         messenger.Register<ShutdownMessage>(this, (r, msg) => { Shutdown(); });
+        messenger.Register<CheckOllamaStartMessage>(this, (r, msg) =>
+        {
+            // TODO: ezt majd meg kell nézni, hogy mennyire optimális így, okozhat-e hibát
+            
+            // egyelőre fő szálon, mert apple NSWindow csak így megy, de ezt majd megnézem jobban még
+            _ = CheckOllamaStart();
+        });
     }
 
     public async Task CheckOllamaStart()
     {
-        // igaz hogy configurationben már meg van adva hogy localhost és ha az nem az, akkor lehet tudni hogy remote
-        // de kell egy másik configuration key arra is, hogy már megválaszolta-e ezt a kérdést, így nem dobja fel megint
-        var startOllamaFrom = _configurationService.ReadSetting(ConfigurationKey.StartOllamaFrom);
-        
-        var firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
-
-        // ez csak akkor fut le ha már a felhasználó végigment a greeting screenen de valami miatt még nem válaszolt a kérdésre
-        // technikailag új felhasználóknak soha nem futna le ez, but who knows
-        if (string.IsNullOrEmpty(startOllamaFrom) && firstTime == "false")
+        var result = await _dialogService.ShowConfirmationDialog(
+            title: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_TITLE"),
+            positiveButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_LOCAL"),
+            negativeButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_REMOTE"),
+            description: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_DESC")
+        );
+        if (result is ConfirmationResult confirmationResult)
         {
-            var result = await _dialogService.ShowConfirmationDialog(
-                title: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_TITLE"),
-                positiveButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_LOCAL"),
-                negativeButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_REMOTE"),
-                description: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_DESC")
-            );
-            if (result is ConfirmationResult confirmationResult)
+            if (confirmationResult.Confirmation == ConfirmationType.Negative)
             {
-                if (confirmationResult.Confirmation == ConfirmationType.Negative)
-                {
-                    var dialogResult = await _dialogService.ShowInputDialog(
-                        title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
-                        description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"), 
-                        inputFields: new List<InputField>
-                        {
-                            new (
-                                placeholder: LocalizationService.GetString("API_HOST_SETTING"),
-                                validator: host => host == "localhost" || IPAddress.TryParse(host, out _),
-                                validationErrorMessage: LocalizationService.GetString("INVALID_HOST_ERR")
-                            ),
-                            new (
-                                placeholder: LocalizationService.GetString("API_PORT_SETTING"),
-                                inputValue: 11434.ToString(),
-                                validator: port => int.TryParse(port, out var parsed) && parsed is > 0 and < 65536,
-                                validationErrorMessage: LocalizationService.GetString("INVALID_PORT_ERR")
-                            )
-                        }
-                    );
-                    if (dialogResult is InputResult inputResult)
+                var dialogResult = await _dialogService.ShowInputDialog(
+                    title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
+                    description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"), 
+                    inputFields: new List<InputField>
                     {
-                        var remoteServerInfo = inputResult.Results.ToList();
-                        _configurationService.SaveSetting(ConfigurationKey.ApiHost, remoteServerInfo[0]!);
-                        if (remoteServerInfo[0]! == "localhost" || remoteServerInfo[0] == "127.0.0.1")
-                        {
-                            _configurationService.SaveSetting(ConfigurationKey.StartOllamaFrom, "local");
-                        }
-                        _configurationService.SaveSetting(ConfigurationKey.ApiPort, remoteServerInfo[1]!);
-                        _configurationService.SaveSetting(ConfigurationKey.StartOllamaFrom, "remote");
+                        new (
+                            placeholder: LocalizationService.GetString("API_HOST_SETTING"),
+                            validator: host => host == "localhost" || IPAddress.TryParse(host, out _),
+                            validationErrorMessage: LocalizationService.GetString("INVALID_HOST_ERR")
+                        ),
+                        new (
+                            placeholder: LocalizationService.GetString("API_PORT_SETTING"),
+                            inputValue: 11434.ToString(),
+                            validator: port => int.TryParse(port, out var parsed) && parsed is > 0 and < 65536,
+                            validationErrorMessage: LocalizationService.GetString("INVALID_PORT_ERR")
+                        )
                     }
-                }
-                else 
+                );
+                if (dialogResult is InputResult inputResult)
                 {
-                    _configurationService.SaveSetting(ConfigurationKey.StartOllamaFrom, "local");
+                    var remoteServerInfo = inputResult.Results.ToList();
+                    _configurationService.SaveSetting(ConfigurationKey.ApiHost, remoteServerInfo[0]!);
+                    if (remoteServerInfo[0]! == "localhost" || remoteServerInfo[0] == "127.0.0.1")
+                    {
+                        _configurationService.SaveSetting(ConfigurationKey.StartOllamaFrom, "local");
+                    }
+                    _configurationService.SaveSetting(ConfigurationKey.ApiPort, remoteServerInfo[1]!);
+                    _configurationService.SaveSetting(ConfigurationKey.StartOllamaFrom, "remote");
                 }
+            }
+            else 
+            {
+                _configurationService.SaveSetting(ConfigurationKey.StartOllamaFrom, "local");
             }
         }
     }

@@ -75,9 +75,20 @@ public partial class App : Application
 
             var launcher = services.GetRequiredService<IAppService>();
             launcher.InitializeMainWindow();
-            _ = launcher.CheckOllamaStart();
-        }
+            
+            // igaz hogy configurationben már meg van adva hogy localhost és ha az nem az, akkor lehet tudni hogy remote
+            // de kell egy másik configuration key arra is, hogy már megválaszolta-e ezt a kérdést, így nem dobja fel megint
+            var startOllamaFrom = configurationService.ReadSetting(ConfigurationKey.StartOllamaFrom);
+        
+            var firstTime = configurationService.ReadSetting(ConfigurationKey.FirstTime);
 
+            // ez csak akkor fut le ha már a felhasználó végigment a greeting screenen de valami miatt még nem válaszolt a kérdésre
+            // technikailag új felhasználóknak soha nem futna le ez, but who knows
+            if (string.IsNullOrEmpty(startOllamaFrom) && firstTime == "false")
+            {
+                _ = launcher.CheckOllamaStart();
+            }
+        }
         base.OnFrameworkInitializationCompleted();
     }
     

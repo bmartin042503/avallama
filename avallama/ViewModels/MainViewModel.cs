@@ -6,6 +6,7 @@ using avallama.Factories;
 using avallama.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
 
@@ -15,17 +16,20 @@ public partial class MainViewModel : ViewModelBase
     private readonly PageFactory _pageFactory;
     private readonly string? _firstTime;
     private readonly ConfigurationService _configurationService;
+    private readonly IMessenger _messenger;
     
     [ObservableProperty] private PageViewModel? _currentPageViewModel;
     
 
     public MainViewModel(
         PageFactory pageFactory, 
-        ConfigurationService configurationService
+        ConfigurationService configurationService,
+        IMessenger messenger
     )
     {
         _pageFactory = pageFactory;
         _configurationService = configurationService;
+        _messenger = messenger;
         
         _firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
         if (string.IsNullOrEmpty(_firstTime))
@@ -44,6 +48,9 @@ public partial class MainViewModel : ViewModelBase
         if (string.IsNullOrEmpty(_firstTime))
         {
             _configurationService.SaveSetting(ConfigurationKey.FirstTime, "false");
+            
+            // ha új felhasználó akkor AppService-t megkérjük arra hogy villantsa fel azt a mindent tudó dialogját
+            _messenger.Send(new CheckOllamaStartMessage());
         }
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
     }
@@ -53,12 +60,4 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Guide);
     }
-    
-    // ezt lehet majd használni viewban commandként a retry gombra
-    [RelayCommand]
-    public void RetryOllamaService()
-    {
-        // TODO: Start() metódus
-    }
-    
 }

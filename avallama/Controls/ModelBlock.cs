@@ -399,6 +399,8 @@ public class ModelBlock : Control
         base.OnMeasureInvalidated();
     }
 
+    // megméri hogy mekkora a Control és ezt a méretet visszaadja
+    // ez kell pl. ahhoz hogy megfelelő magasságot tudjon beállítani neki, ha rendereli a hátteret (Bounds.Height) stb.
     protected override Size MeasureOverride(Size availableSize)
     {
         _titleTextLayout ??= CreateTitleTextLayout();
