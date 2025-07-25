@@ -82,7 +82,6 @@ public class OllamaService
 
     public async Task Start()
     {
-        await Task.Delay(5000);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             OllamaPath = Path.Combine(
