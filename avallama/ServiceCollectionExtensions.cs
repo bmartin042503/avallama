@@ -1,4 +1,4 @@
-﻿// Copyright (c) Márk Csörgő and Martin Bartos
+// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
@@ -27,6 +27,9 @@ public static class ServiceCollectionExtensions
         // gyenge referenciás messenger, ami azt jelenti hogy nem kell manuálisan törölni őket
         collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
         
+        collection.AddTransient<DatabaseInitService>();
+        collection.AddSingleton<DatabaseService>();
+
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<DialogService>();
         collection.AddSingleton<LocalizationService>();

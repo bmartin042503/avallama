@@ -1,4 +1,4 @@
-﻿// Copyright (c) Márk Csörgő and Martin Bartos
+// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
+using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -32,14 +33,15 @@ public partial class HomeViewModel : PageViewModel
     private readonly OllamaService _ollamaService;
     private readonly DialogService _dialogService;
     private readonly ConfigurationService _configurationService;
+    private readonly DatabaseService _databaseService;
+
     private readonly TaskCompletionSource<bool> _ollamaServerStarted = new();
     private readonly IMessenger _messenger;
 
     public string ScrollSetting = string.Empty;
 
-    private ObservableCollection<Conversation> _conversations;
-
-    public ObservableCollection<Conversation> Conversations
+    private ObservableStack<Conversation> _conversations;
+    public ObservableStack<Conversation> Conversations
     {
         get => _conversations;
         set => SetProperty(ref _conversations, value);
@@ -95,6 +97,18 @@ public partial class HomeViewModel : PageViewModel
             true,
             700
         );
+    }
+
+    [RelayCommand]
+    public async Task CreateNewConversation()
+    {
+        var newConversation = new Conversation(
+            LocalizationService.GetString("NEW_CONVERSATION"),
+            "llama3.2"
+        );
+        Conversations.Push(newConversation);
+        SelectedConversation = newConversation;
+        SelectedConversation.ConversationId = await _databaseService.CreateConversation();
     }
 
     private async Task AddGeneratedMessage()
@@ -188,6 +202,7 @@ public partial class HomeViewModel : PageViewModel
         OllamaService ollamaService,
         DialogService dialogService,
         ConfigurationService configurationService,
+        DatabaseService databaseService,
         IMessenger messenger
     )
     {
@@ -198,8 +213,11 @@ public partial class HomeViewModel : PageViewModel
         _ollamaService = ollamaService;
         _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
         _configurationService = configurationService;
+        _databaseService = databaseService;
         _messenger = messenger;
-
+        
+        _databaseService = databaseService;
+        
         LoadSettings();
 
         var conversation = new Conversation(

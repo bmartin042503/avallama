@@ -15,6 +15,7 @@ using avallama.ViewModels;
 using avallama.Views;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace avallama;
@@ -23,7 +24,8 @@ public partial class App : Application
 {
     private OllamaService? _ollamaService;
     private DialogService? _dialogService;
-    
+    private DatabaseInitService? _databaseInitService;
+    public static SqliteConnection SharedDbConnection { get; private set; } = null!;
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -40,6 +42,8 @@ public partial class App : Application
         
         _ollamaService = services.GetRequiredService<OllamaService>();
         _dialogService = services.GetRequiredService<DialogService>();
+        _databaseInitService = services.GetRequiredService<DatabaseInitService>();
+        SharedDbConnection = Task.Run(() => _databaseInitService.GetOpenConnectionAsync()).GetAwaiter().GetResult();
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
