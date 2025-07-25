@@ -6,10 +6,10 @@ namespace avallama.Constants;
 public enum ApplicationDialog
 {
     Settings,
-    OllamaService,
     ModelManager,
     Information,
     Error,
     Confirmation,
-    Input
+    Input,
+    Action
 }

@@ -47,7 +47,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ez a model nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
     </data>
     <data name="VERSION" xml:space="preserve">
-        <value>v0.1.1</value>
+        <value>v0.2.0</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>Jelenleg egyszerre csak egy beszélgetés támogatott</value>
@@ -267,5 +267,32 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
         <value>Kiemelt modellek</value>
+    </data>
+    <data name="SIZE_IN_GB" xml:space="preserve">
+        <value>{0} GB</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_TITLE" xml:space="preserve">
+        <value>Honnan szeretnéd indítani az Ollamát?</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_DESC" xml:space="preserve">
+        <value>Az Ollama futhat lokálisan a gépeden, vagy csatlakozhatsz egy szerverhez is.</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_LOCAL" xml:space="preserve">
+        <value>Indítás lokálisan</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_REMOTE" xml:space="preserve">
+        <value>Csatlakozás szerverhez</value>
+    </data>
+    <data name="OLLAMA_NOT_INSTALLED_DESC" xml:space="preserve">
+        <value>Szeretnéd letölteni?</value>
+    </data>
+    <data name="DOWNLOAD" xml:space="preserve">
+        <value>Letöltés</value>
+    </data>
+    <data name="OLLAMA_REMOTE_DIALOG_TITLE" xml:space="preserve">
+        <value>Csatlakozás szerverhez</value>
+    </data>
+    <data name="OLLAMA_REMOTE_DIALOG_DESC" xml:space="preserve">
+        <value>Kérlek add meg a szerver IP címét és portját</value>
     </data>
 </root>

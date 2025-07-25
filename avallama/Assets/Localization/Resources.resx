@@ -54,7 +54,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>This model is not running optimally on your system due to low avaliable VRAM</value>
     </data>
     <data name="VERSION" xml:space="preserve">
-        <value>v0.1.1</value>
+        <value>v0.2.0</value>
     </data>
     <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
         <value>Currently only one conversation is supported at a time</value>
@@ -274,5 +274,32 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
         <value>Popular models</value>
+    </data>
+    <data name="SIZE_IN_GB" xml:space="preserve">
+        <value>{0} GB</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_TITLE" xml:space="preserve">
+        <value>Where would you like to start Ollama from?</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_DESC" xml:space="preserve">
+        <value>You can run Ollama locally on your device or connect to a remote server.</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_LOCAL" xml:space="preserve">
+        <value>Run locally</value>
+    </data>
+    <data name="OLLAMA_RUN_FROM_DIALOG_REMOTE" xml:space="preserve">
+        <value>Connect to a server</value>
+    </data>
+    <data name="OLLAMA_NOT_INSTALLED_DESC" xml:space="preserve">
+        <value>Would you like to download it?</value>
+    </data>
+    <data name="DOWNLOAD" xml:space="preserve">
+        <value>Download</value>
+    </data>
+    <data name="OLLAMA_REMOTE_DIALOG_TITLE" xml:space="preserve">
+        <value>Connecting to a remote server</value>
+    </data>
+    <data name="OLLAMA_REMOTE_DIALOG_DESC" xml:space="preserve">
+        <value>Please enter the server's IP address and port</value>
     </data>
 </root>

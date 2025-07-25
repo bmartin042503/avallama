@@ -16,14 +16,16 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using avallama.Models;
+using Avalonia.Threading;
 
 namespace avallama.Services;
 
 public class OllamaService
 {
     private Process? _ollamaProcess;
-    private static readonly HttpClient HttpClient = new();
-    public readonly TaskCompletionSource<bool> OllamaServerStarted = new();
+
+    private ServiceStatus? _serviceStatus;
+    private string? _serviceMessage;
     private string OllamaPath { get; set; }
 
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
@@ -33,8 +35,25 @@ public class OllamaService
     // az event létrehozása, ami ugye az előzőleg létrehozott delegate típusú, tehát a megfelelő szignatúrájú metódusok
     // tudnak feliratkozni rá
     // a MainViewModelben az OllamaServiceStatusChanged iratkozik fel ide erre az eventre
-    public event ServiceStatusChangedHandler? ServiceStatusChanged;
-    
+
+    // ez most rinyál hogy jajj de jobb lenne a ServiceStatusChanged név a privátnak is, de muszáj hogy legyen privát
+    // különben nem lennének kezelhetőek az add és remove accessorok
+    private event ServiceStatusChangedHandler? _serviceStatusChanged;
+
+    public event ServiceStatusChangedHandler? ServiceStatusChanged
+    {
+        // add és remove - akkor hívódnak meg ha feliratkoznak az eventre vagy leiratkoznak róla
+        add
+        {
+            _serviceStatusChanged += value;
+            if (_serviceStatus != null)
+            {
+                value?.Invoke(_serviceStatus.Value, _serviceMessage);
+            }
+        }
+        remove => _serviceStatusChanged -= value;
+    }
+
     private string? _apiHost = "localhost";
     private string? _apiPort = "11434";
     private readonly ConfigurationService _configurationService;
@@ -49,19 +68,19 @@ public class OllamaService
         _dialogService = dialogService;
         LoadSettings();
     }
-    
+
     // Ezt a metódust minden API hívásnál meghívja az app hogy up-to-date beállításokkal rendelkezzen
     // anélkül hogy újra kelljen indítani a service beállítás módosításakor
     private void LoadSettings()
     {
-        var hostSetting = _configurationService.ReadSetting("api-host");
+        var hostSetting = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         _apiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
-        
-        var portSetting = _configurationService.ReadSetting("api-port");
+
+        var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
     }
 
-    private async Task Start()
+    public async Task Start()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -92,7 +111,7 @@ public class OllamaService
                 );
                 return;
         }
-        
+
         var startInfo = new ProcessStartInfo
         {
             FileName = OllamaPath,
@@ -110,7 +129,7 @@ public class OllamaService
         catch (Win32Exception)
         {
             OnServiceStatusChanged(
-                ServiceStatus.Failed,
+                ServiceStatus.NotInstalled,
                 LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
             );
         }
@@ -160,7 +179,7 @@ public class OllamaService
                     await Task.Delay(500);
                     continue;
                 }
-                
+
                 OnServiceStatusChanged(
                     ServiceStatus.Running,
                     LocalizationService.GetString("OLLAMA_STARTED")
@@ -215,20 +234,6 @@ public class OllamaService
         process.Dispose();
     }
 
-    public async Task StartWithDelay(TimeSpan delay)
-    {
-        await Task.Delay(delay);
-        await Start();
-    }
-
-    // meghívjuk az eventet, ami azt jelenti hogy a feliratkozott metódusok is meghívódnak
-    // ebben az eseteben a MainViewModelben lévő hívódik meg és átadja neki az értékeket
-    private void OnServiceStatusChanged(ServiceStatus status, string? message = null)
-    {
-        if(status == ServiceStatus.Running) OllamaServerStarted.SetResult(true);
-        ServiceStatusChanged?.Invoke(status, message);
-    }
-
     public async Task<bool> IsModelDownloaded()
     {
         LoadSettings();
@@ -238,14 +243,15 @@ public class OllamaService
             using var client = new HttpClient();
             var response = await client.GetAsync(url);
             var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-            return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" || 
-                                                       m?["name"]?.ToString() == "llama3.2") 
+            return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" ||
+                                                       m?["name"]?.ToString() == "llama3.2")
                    ?? false;
         }
         catch (HttpRequestException e)
         {
             Console.WriteLine(e.Message);
         }
+
         return false;
     }
 
@@ -258,15 +264,15 @@ public class OllamaService
         {
             model = modelName
         };
-        
+
         var jsonPayload = JsonSerializer.Serialize(payload);
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-        
+
         using var client = new HttpClient();
         var response = await client.PostAsync(url, content);
         var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-        return (json?["details"]?["parameter_size"] == null ? "" : ":") + json?["details"]?["parameter_size"]?.ToString().ToLower();
-        
+        return (json?["details"]?["parameter_size"] == null ? "" : ":") +
+               json?["details"]?["parameter_size"]?.ToString().ToLower();
     }
 
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
@@ -278,7 +284,7 @@ public class OllamaService
         var jsonPayload = chatRequest.ToJson();
 
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-        
+
         var request = new HttpRequestMessage(HttpMethod.Post, url)
         {
             Content = content
@@ -295,7 +301,7 @@ public class OllamaService
             _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
             yield break;
         }
-        
+
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
         string? line;
@@ -312,6 +318,7 @@ public class OllamaService
                 {
                     _dialogService.ShowErrorDialog(e.Message);
                 }
+
                 if (json != null)
                 {
                     yield return json;
@@ -330,16 +337,16 @@ public class OllamaService
             model = modelName,
             stream = true
         };
-        
+
         var jsonPayload = JsonSerializer.Serialize(payload);
-        
+
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-        
+
         var request = new HttpRequestMessage(HttpMethod.Post, url)
         {
             Content = content
         };
-        
+
         using var client = new HttpClient();
         HttpResponseMessage response;
         try
@@ -351,9 +358,10 @@ public class OllamaService
             _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
             yield break;
         }
+
         await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
-        
+
         string? line;
         while ((line = await reader.ReadLineAsync()) != null)
         {
@@ -374,6 +382,25 @@ public class OllamaService
                     yield return json;
                 }
             }
+        }
+    }
+
+    // meghívjuk az eventet, ami azt jelenti hogy a feliratkozott metódusok is meghívódnak
+    // erre egy metódus iratkozott fel, HomeViewModelben
+    private void OnServiceStatusChanged(ServiceStatus status, string? message = null)
+    {
+        _serviceStatus = status;
+        _serviceMessage = message;
+
+        // ezt azért adtam hozzá mert tesztelés során 'NSWindow should only be instantiated on the main thread!' kivételt dobott
+        // macOS specific error i guess de azért legyen mindenképp UI szálon ha UI hívások vannak
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            _serviceStatusChanged?.Invoke(status, message);
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(() => { _serviceStatusChanged?.Invoke(status, message); });
         }
     }
 }
