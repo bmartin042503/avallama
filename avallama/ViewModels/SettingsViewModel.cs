@@ -134,7 +134,7 @@ public partial class SettingsViewModel : DialogViewModel
             _ => 1
         };
         
-        var hostSetting = _configurationService.ReadSetting("api-host");
+        var hostSetting = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         ApiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
         var portString = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         ApiPort = int.TryParse(portString, out var parsedPort) ? parsedPort : 11434;

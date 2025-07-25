@@ -275,10 +275,10 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Honnan szeretnéd indítani az Ollamát?</value>
     </data>
     <data name="OLLAMA_RUN_FROM_DIALOG_DESC" xml:space="preserve">
-        <value>Az Ollama futhat helyileg a gépeden, vagy csatlakozhatsz egy szerverhez is.</value>
+        <value>Az Ollama futhat lokálisan a gépeden, vagy csatlakozhatsz egy szerverhez is.</value>
     </data>
     <data name="OLLAMA_RUN_FROM_DIALOG_LOCAL" xml:space="preserve">
-        <value>Indítás a gépen</value>
+        <value>Indítás lokálisan</value>
     </data>
     <data name="OLLAMA_RUN_FROM_DIALOG_REMOTE" xml:space="preserve">
         <value>Csatlakozás szerverhez</value>

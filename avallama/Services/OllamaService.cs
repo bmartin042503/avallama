@@ -73,15 +73,16 @@ public class OllamaService
     // anélkül hogy újra kelljen indítani a service beállítás módosításakor
     private void LoadSettings()
     {
-        var hostSetting = _configurationService.ReadSetting("api-host");
+        var hostSetting = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         _apiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
 
-        var portSetting = _configurationService.ReadSetting("api-port");
+        var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
     }
 
     public async Task Start()
     {
+        await Task.Delay(5000);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             OllamaPath = Path.Combine(

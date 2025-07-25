@@ -58,7 +58,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             <controls:MessageBlock
                                 Classes="conversationElement"
                                 Text="{Binding Title}"
-                                SubText="{Binding  Model}" />
+                                SubText="{Binding Model}" />
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
