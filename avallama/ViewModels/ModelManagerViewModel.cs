@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -15,21 +16,39 @@ namespace avallama.ViewModels;
 public partial class ModelManagerViewModel : DialogViewModel
 {
     private readonly DialogService _dialogService;
-    private readonly OllamaService _ollamaService;
 
-    [ObservableProperty] private ObservableCollection<OllamaModel> _downloadedModelsData = [];
-    [ObservableProperty] private ObservableCollection<OllamaModel> _popularModelsData = [];
+    private IEnumerable<OllamaModel>? _ollamaModelsData;
+    
+    [ObservableProperty] private ObservableCollection<OllamaModel> _downloadedModels = [];
+    [ObservableProperty] private ObservableCollection<OllamaModel> _popularModels = [];
     [ObservableProperty] private bool _hasDownloadedModels;
+    [ObservableProperty] private bool _hasPopularModels;
+    [ObservableProperty] private bool _hasNoModelsToDisplay;
     [ObservableProperty] private string _downloadedModelsTitle = string.Empty;
 
-    public ModelManagerViewModel(DialogService dialogService, OllamaService ollamaService)
+    private string _searchBoxText = string.Empty;
+    public string SearchBoxText
+    {
+        get => _searchBoxText;
+        set
+        {
+            _searchBoxText = value;
+            
+            // ollama modellek újraszűrése a searchbox értéke alapján
+            FilterModelsData();
+            
+            OnPropertyChanged();
+        }
+    }
+
+    public ModelManagerViewModel(DialogService dialogService)
     {
         DialogType = ApplicationDialog.ModelManager;
 
         _dialogService = dialogService;
-        _ollamaService = ollamaService;
 
         LoadModelsData();
+        FilterModelsData();
     }
 
     private void LoadModelsData()
@@ -49,7 +68,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                     new ("Runs great"),
                     new ("43 tokens/sec")
                 },
-                3221225472,
+                3291225472,
                 ModelDownloadStatus.Downloaded
             ),
             new(
@@ -62,7 +81,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                 new List<ModelLabel> {
                     new ("Insufficient VRAM", ModelLabelHighlight.Strong)
                 },
-                150323855360,
+                159323855360,
                 ModelDownloadStatus.ReadyForDownload
             ),
             new(
@@ -76,7 +95,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                     new ("Fast inference"),
                     new ("Works on 8GB VRAM")
                 },
-                8589934592, // 8 GB
+                8569934592,
                 ModelDownloadStatus.Downloaded
             ),
             new(
@@ -89,7 +108,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                 new List<ModelLabel> {
                     new ("14 tokens/sec")
                 },
-                12884901888, // 12 GB
+                12884901888,
                 ModelDownloadStatus.Downloaded
             ),
             new(
@@ -102,7 +121,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                     new ("Good for code"),
                     new ("Insufficient VRAM", ModelLabelHighlight.Strong)
                 },
-                17179869184, // 16 GB
+                17179869184,
                 ModelDownloadStatus.ReadyForDownload
             ),
             new(
@@ -116,7 +135,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                     new ("Lightweight"),
                     new ("Great for chatbots")
                 },
-                3221225472, // 3 GB
+                3261225472,
                 ModelDownloadStatus.Downloaded
             ),
             new(
@@ -132,11 +151,11 @@ public partial class ModelManagerViewModel : DialogViewModel
                     new ("Great for code"),
                     new ("Great for video generation")
                 },
-                3221225472, // 3 GB
+                3241225472,
                 ModelDownloadStatus.NotEnoughSpaceForDownload
             )
         };
-
+        
         // ez szerintem majd úgy működhetne hogy valami Service visszaadja az összes modelt
         // tehát azokat a modelleket amik le vannak töltve és láthatóak Ollama API-n keresztül meg egyelőre a beégetett popular modelleket
         // a serviceben meg úgy lenne esetleg megvalósítva hogy bejárva a beégetett popularmodelst létrehoz azokból OllamaModel elemeket
@@ -147,19 +166,54 @@ public partial class ModelManagerViewModel : DialogViewModel
         // meg nyilván további infókat is hozzáadna az adott service, pl. labels, details, tehát a paraméterekről, kvantálásról stb. infók
         // a futtathatóságról, sebességről stb.
         // szerintem ez így működhet de ha van valami jobb ötlet írj
-        DownloadedModelsData = new ObservableCollection<OllamaModel>(
-            dummyData.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+        
+        _ollamaModelsData = dummyData;
+        if (_ollamaModelsData.ToList().Count > 0)
+        {
+            HasNoModelsToDisplay = false;
+        }
+    }
+
+    private void FilterModelsData()
+    {
+        if (_ollamaModelsData == null)
+        {
+            HasNoModelsToDisplay = true;
+            return;
+        }
+
+        var search = SearchBoxText.Trim();
+        var hasSearch = !string.IsNullOrEmpty(search);
+        
+        DownloadedModels = new ObservableCollection<OllamaModel>(
+            _ollamaModelsData
+                .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                .Where(m => !hasSearch || m.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
         );
-        HasDownloadedModels = DownloadedModelsData.Count > 0;
+        
+        PopularModels = new ObservableCollection<OllamaModel>(
+            _ollamaModelsData
+                .Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded)
+                .Where(m => !hasSearch || m.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+        );
+        
+        HasDownloadedModels = DownloadedModels.Count > 0;
         if (HasDownloadedModels)
         {
             DownloadedModelsTitle = string.Format(LocalizationService.GetString("DOWNLOADED_MODELS"),
-                DownloadedModelsData.Count);
+                DownloadedModels.Count);
         }
 
-        PopularModelsData = new ObservableCollection<OllamaModel>(
-            dummyData.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded)
-        );
+        HasPopularModels = PopularModels.Count > 0;
+        if (HasDownloadedModels || HasPopularModels)
+        {
+            HasNoModelsToDisplay = false;
+        }
+        else
+        {
+            HasNoModelsToDisplay = true;
+        }
+        
     }
 
     // ez akkor hívódik meg ha a felhasználó a letöltés/törlésre kattint

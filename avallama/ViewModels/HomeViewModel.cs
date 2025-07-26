@@ -95,7 +95,7 @@ public partial class HomeViewModel : PageViewModel
         _dialogService.ShowDialog(
             ApplicationDialog.ModelManager,
             true,
-            700
+            800
         );
     }
 
@@ -152,7 +152,7 @@ public partial class HomeViewModel : PageViewModel
         //ezt majd jobban kéne
         AvailableModels[AvailableModels.IndexOf(modelName)] =
             modelName + await _ollamaService.GetModelParamNum(modelName);
-        CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName;
+        CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName; 
     }
 
     private async Task CheckModelDownload()

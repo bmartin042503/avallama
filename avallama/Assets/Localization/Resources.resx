@@ -302,4 +302,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="OLLAMA_REMOTE_DIALOG_DESC" xml:space="preserve">
         <value>Please enter the server's IP address and port</value>
     </data>
+    <data name="NO_MODELS_FOUND" xml:space="preserve">
+        <value>No models found</value>
+    </data>
 </root>

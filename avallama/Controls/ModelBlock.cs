@@ -29,7 +29,6 @@ namespace avallama.Controls;
 // valamit kezdeni azzal hogy sok label esetén ne legyen olyan nagy az elem magasság vagy scrollable legyen idk
 // változtatni a labelek háttereinek megjelenésén hogy ne tűnjenek úgy mintha gombok lennének
 // különböző felbontásokon a lehető legjobban jelenjenek meg a szövegek
-// üres detailitemssource és labelitemssource esetén hibamentes üres megjelenés
 
 public class ModelBlock : Control
 {
@@ -163,13 +162,13 @@ public class ModelBlock : Control
 
     // egyelőre égetett értékekkel, ha később igény lenne rá akkor külön styledpropertyre átvihetőek
     // ha változtatni szeretnél a megjelenésen akkor itt lehet leginkább
-    private const double ControlWidth = 280;
+    private const double ControlWidth = 360;
     
     // alap padding a ModelBlockon belül
-    private readonly Thickness _basePadding = new(12);
+    private readonly Thickness _basePadding = new(14);
     
     // alap padding a labelen belül
-    private readonly Thickness _labelPadding = new(8, 6);
+    private readonly Thickness _labelPadding = new(8.5, 4.5);
     
     // labelek közti margin
     private readonly Thickness _labelMargin = new(8);
@@ -178,13 +177,18 @@ public class ModelBlock : Control
     private readonly CornerRadius _cornerRadius = new(12);
     
     // a label hátterének corner radiusa
-    private readonly CornerRadius _labelCornerRadius = new(6);
+    private readonly CornerRadius _labelCornerRadius = new(10);
     
+    // üres hely nagysága a sizetext és a labelek között
+    private const double SizeTextSpacing = 32;
+
     private const string FontFamilyName = "Manrope";
-    private const double TitleFontSize = 20;
-    private const double DetailsFontSize = 12;
+    private const double TitleFontSize = 24;
+    private const double DetailsFontSize = 14;
+    private const double SizeFontSize = 16;
     private const double LabelFontSize = 10;
-    private const double DetailsOpacity = 0.6;
+    private const double DetailsOpacity = 0.75;
+    private const double SizeOpacity = 0.8;
     private const double DetailsLineHeight = 16;
 
     private TextLayout? _titleTextLayout;
@@ -226,7 +230,7 @@ public class ModelBlock : Control
         if (_titleTextLayout == null) return;
         _renderYPos = _basePadding.Top;
         _titleTextLayout.Draw(context, new Point(_basePadding.Left, _renderYPos));
-        _renderYPos += _titleTextLayout.Height + _basePadding.Top / 1.5;
+        _renderYPos += _titleTextLayout.Height + _basePadding.Top / 3;
         if (_detailsTextLayout != null)
         {
             _detailsTextLayout.Draw(context, new Point(_basePadding.Left, _renderYPos));
@@ -256,7 +260,7 @@ public class ModelBlock : Control
         _renderXPos = _basePadding.Left;
         _renderYPos += _labelPadding.Top;
         
-        var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right + _basePadding.Left;
+        var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right + _basePadding.Left + SizeTextSpacing;
         
         var remainingRowWidth = Bounds.Width - _basePadding.Left - sizeTextWidth - _basePadding.Right;
 
@@ -363,10 +367,10 @@ public class ModelBlock : Control
             GetSizeInGb(),
             new Typeface(FontFamilyName),
             null,
-            DetailsFontSize,
+            SizeFontSize,
             new SolidColorBrush(
                 (Foreground as ImmutableSolidColorBrush)?.Color ?? Colors.Black,
-                DetailsOpacity
+                SizeOpacity
             )
         );
     }
@@ -374,7 +378,14 @@ public class ModelBlock : Control
     private string GetSizeInGb()
     {
         var sizeInGb = SizeInBytes / (1024.0 * 1024.0 * 1024.0);
-        return string.Format(LocalizationService.GetString("SIZE_IN_GB"), sizeInGb.ToString("F2"));
+        var rounded = Math.Round(sizeInGb, 1);
+    
+        // ha a tizedesjegy nulla, ne jelenjen meg
+        var displayValue = rounded % 1 == 0 
+            ? ((int)rounded).ToString() 
+            : rounded.ToString("0.0");
+
+        return string.Format(LocalizationService.GetString("SIZE_IN_GB"), displayValue);
     }
 
     protected override void OnMeasureInvalidated()
@@ -415,7 +426,7 @@ public class ModelBlock : Control
         if (_titleTextLayout is { } title)
         {
             contentHeight += title.Height;
-            contentHeight += _basePadding.Top / 1.5;
+            contentHeight += _basePadding.Top / 3;
         }
     
         if (_detailsTextLayout is { } details)
@@ -432,7 +443,7 @@ public class ModelBlock : Control
             var currentRowHeight = 0.0;
             var totalLabelsHeight = 0.0;
 
-            var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right + _basePadding.Left;
+            var sizeTextWidth = _sizeTextLayout?.Width + _basePadding.Right + _basePadding.Left + SizeTextSpacing;
             var maxRowWidth = ControlWidth - _basePadding.Left - sizeTextWidth - _basePadding.Right;
 
             foreach (var layout in labelLayouts)
@@ -458,14 +469,19 @@ public class ModelBlock : Control
             _labelsTotalHeight = totalLabelsHeight + _labelPadding.Top;
             contentHeight += _labelsTotalHeight;
         }
-    
-        contentHeight += _basePadding.Bottom;
 
-        if (_sizeTextLayout is not { } sizeText) return new Size(ControlWidth, contentHeight);
-        var minHeight = sizeText.Height + _basePadding.Bottom;
-        if (contentHeight < minHeight)
-            contentHeight = minHeight;
-
+        // ha vannak labelek akkor a labelek alatti basepaddingot megadjuk
+        if (_labelsTotalHeight > 0)
+        {
+            contentHeight += _basePadding.Bottom;
+        }
+        else
+        {
+            // ha pedig nincsenek akkor hozzáadjuk a basepaddingot de úgy hogy kivonjuk belőle a már eddigi hozzáadott paddinget
+            // a második érték (_basePadding.Bottom / 1.5) ez egy padding érték ami a detailstext alá menne, de nyilván ha nincsenek labelek
+            // akkor ezt a paddinget átírjuk úgy hogy egyezzen a sima base_paddingel
+            contentHeight += _basePadding.Bottom - _basePadding.Bottom / 1.5;
+        }
         return new Size(ControlWidth, contentHeight);
     }
 

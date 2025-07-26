@@ -11,12 +11,12 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
     <Design.PreviewWith>
         <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
-        <ThemeVariantScope RequestedThemeVariant="Dark">
+        <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <controls:ModelBlock
                         Title="llama3.2"
-                        SizeInBytes="3221225472">
+                        SizeInBytes="3221225472" Classes="downloadedModel">
                         
                         <!-- AXAML-ben megadható majd egyszerű propertyként mind a DetailItemsSource és LabelItemsSource, bindinggal,
                         itt viszont így kell csinálni-->
@@ -52,6 +52,18 @@ Licensed under the MIT License. See LICENSE file for details.
                     <controls:ModelBlock
                         Title="llama3.2"
                         SizeInBytes="3221225472">
+                        <controls:ModelBlock.LabelItemsSource>
+                            <generic:List x:TypeArguments="models:ModelLabel">
+                                <models:ModelLabel>
+                                    <models:ModelLabel.Name>Runs okay on your system</models:ModelLabel.Name>
+                                    <models:ModelLabel.Highlight>Default</models:ModelLabel.Highlight>
+                                </models:ModelLabel>
+                                <models:ModelLabel>
+                                    <models:ModelLabel.Name>43 tokens/sec</models:ModelLabel.Name>
+                                    <models:ModelLabel.Highlight>Default</models:ModelLabel.Highlight>
+                                </models:ModelLabel>
+                            </generic:List>
+                        </controls:ModelBlock.LabelItemsSource>
                         
                         <controls:ModelBlock.DetailItemsSource>
                             <generic:Dictionary x:TypeArguments="system:String, system:String">
@@ -60,13 +72,17 @@ Licensed under the MIT License. See LICENSE file for details.
                             </generic:Dictionary>
                         </controls:ModelBlock.DetailItemsSource>
                     </controls:ModelBlock>
+                    <controls:ModelBlock
+                        Title="llama3.2"
+                        SizeInBytes="3221225472">
+                    </controls:ModelBlock>
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
 
     <Style Selector="controls|ModelBlock">
-        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
         <Setter Property="LabelBackground" Value="{DynamicResource Primary}"/>
         <Setter Property="LabelForeground" Value="{DynamicResource OnPrimary}"/>
@@ -75,9 +91,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </Style>
     
     <Style Selector="controls|ModelBlock.downloadedModel">
-        <Setter Property="Background" Value="{DynamicResource Primary}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
-        <Setter Property="LabelBackground" Value="{DynamicResource PrimaryContainer}"/>
-        <Setter Property="LabelForeground" Value="{DynamicResource OnPrimaryContainer}"/>
+        <!-- egyelőre stílus nélkül -->
     </Style>
 </Styles>
