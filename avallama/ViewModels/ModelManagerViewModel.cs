@@ -55,6 +55,21 @@ public partial class ModelManagerViewModel : DialogViewModel
     {
         // egyelőre dummy adatokkal, de itt lenne a lokális és popular modellek adatainak betöltése
         // ez csak azért megy pushban hogy látható legyen a működés és segítsen abban hogy kell majd használni
+        var downloadingModel = new OllamaModel(
+            "llama4",
+            new Dictionary<string, string>
+            {
+                { "Parameters", "70B" },
+                { "Quantization", "8 bits" }
+            },
+            new List<ModelLabel>
+            {
+                new("Insufficient VRAM", ModelLabelHighlight.Strong)
+            },
+            159323855360,
+            ModelDownloadStatus.Downloading
+        );
+        downloadingModel.DownloadProgress += 20;
         var dummyData = new List<OllamaModel>
         {
             new(
@@ -82,7 +97,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                     new ("Insufficient VRAM", ModelLabelHighlight.Strong)
                 },
                 159323855360,
-                ModelDownloadStatus.ReadyForDownload
+                ModelDownloadStatus.Downloading
             ),
             new(
                 "mistral7b",
@@ -96,7 +111,7 @@ public partial class ModelManagerViewModel : DialogViewModel
                     new ("Works on 8GB VRAM")
                 },
                 8569934592,
-                ModelDownloadStatus.Downloaded
+                ModelDownloadStatus.NoConnectionForDownload
             ),
             new(
                 "gemma2-9b",
@@ -153,9 +168,10 @@ public partial class ModelManagerViewModel : DialogViewModel
                 },
                 3241225472,
                 ModelDownloadStatus.NotEnoughSpaceForDownload
-            )
+            ),
+            downloadingModel
         };
-        
+
         // ez szerintem majd úgy működhetne hogy valami Service visszaadja az összes modelt
         // tehát azokat a modelleket amik le vannak töltve és láthatóak Ollama API-n keresztül meg egyelőre a beégetett popular modelleket
         // a serviceben meg úgy lenne esetleg megvalósítva hogy bejárva a beégetett popularmodelst létrehoz azokból OllamaModel elemeket

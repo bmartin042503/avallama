@@ -15,6 +15,9 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
+    
+    <!-- TODO: vízszintes átméretezésnél valamiért megnő a középső hely, megugrik az ablak mérete, ezt kijavítani -->  
+    
     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,*,Auto" Margin="26">
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Opacity="0.6"

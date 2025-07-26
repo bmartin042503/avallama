@@ -16,7 +16,8 @@ Licensed under the MIT License. See LICENSE file for details.
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <controls:ModelBlock
                         Title="llama3.2"
-                        SizeInBytes="3221225472" Classes="downloadedModel">
+                        SizeInBytes="3221225472" Classes="downloadedModel"
+                        DownloadStatus="ReadyForDownload">
                         
                         <!-- AXAML-ben megadható majd egyszerű propertyként mind a DetailItemsSource és LabelItemsSource, bindinggal,
                         itt viszont így kell csinálni-->

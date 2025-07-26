@@ -89,7 +89,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Letöltés indítása...</value>
     </data>
     <data name="VERIFYING_DOWNLOAD" xml:space="preserve">
-        <value>Letöltés ellenörzése...</value>
+        <value>Letöltés ellenőrzése...</value>
     </data>
     <data name="NEW_CONVERSATION" xml:space="preserve">
         <value>Új csevegés</value>
@@ -297,5 +297,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="NO_MODELS_FOUND" xml:space="preserve">
         <value>Nincs megjeleníthető modell</value>
+    </data>
+    <data name="NO_CONNECTION" xml:space="preserve">
+        <value>Nincs kapcsolat</value>
     </data>
 </root>

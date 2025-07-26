@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Media;
 
@@ -22,6 +23,8 @@ public class DynamicSvg(IServiceProvider provider) : Avalonia.Svg.Svg(provider)
      * tehát style-ba szervezzük úgy hogy a DynamicSvg ne használja
      */
     
+    // 'fill-opacity' property hozzáadása esetleg később
+     
     public static readonly StyledProperty<IBrush?> FillColorProperty = 
         AvaloniaProperty.Register<DynamicSvg, IBrush?>("FillColor");
     
