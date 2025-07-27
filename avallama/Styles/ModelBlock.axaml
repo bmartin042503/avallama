@@ -92,6 +92,9 @@ Licensed under the MIT License. See LICENSE file for details.
     </Style>
     
     <Style Selector="controls|ModelBlock.downloadedModel">
-        <!-- egyelőre stílus nélkül -->
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="LabelBackground" Value="{DynamicResource PrimaryContainer}"/>
+        <Setter Property="LabelForeground" Value="{DynamicResource OnPrimaryContainer}"/>
     </Style>
 </Styles>

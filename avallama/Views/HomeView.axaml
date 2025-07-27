@@ -77,11 +77,11 @@ Licensed under the MIT License. See LICENSE file for details.
             </StackPanel>
         </Grid>
 
-        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" x:Name="GridSplitter"
+        <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" x:Name="GridSplitter" Opacity="0"
                       Background="{DynamicResource SurfaceContainer}" ResizeDirection="Columns" />
 
         <!-- SideBar expand/hide gomb -->
-        <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton" Margin="10,-10,0,0"
+        <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton"
                 Click="SideBarBtn_OnClick" Cursor="Hand">
             <controls:DynamicSvg
                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
@@ -232,6 +232,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <TextBox Grid.Row="1"
                      Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
                      Margin="0,30,0,20"
+                     Padding="24, 12"
                      IsEnabled="{Binding IsDownloaded}"
                      Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>

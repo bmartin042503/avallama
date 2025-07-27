@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
 using avallama.Models;
@@ -24,7 +25,6 @@ namespace avallama.Controls;
 // downloadstatus alapján kattintható svg renderelése
 // új textlayout a letöltési információknak (Downloading.. 32%, Not enough space) stb.
 // letöltési animációk, esetleg más animált megjelenés
-// gradient hozzáadása a háttérhez (ha megoldható)
 // command meghívása a paraméterével svgre kattintás esetén
 // optimalizálás, control invalidálása megfelelően, svg cachelése stb.
 // strong kiemelt labelek legyenek utoljára kirenderelve
@@ -167,13 +167,13 @@ public class ModelBlock : Control
 
     // egyelőre égetett értékekkel, ha később igény lenne rá akkor külön styledpropertyre átvihetőek
     // ha változtatni szeretnél a megjelenésen akkor itt lehet leginkább
-    private const double ControlWidth = 360;
+    private const double ControlWidth = 340;
 
     // alap padding a ModelBlockon belül
-    private static readonly Thickness BasePadding = new(14);
+    private static readonly Thickness BasePadding = new(12);
 
     // alap padding a labelen belül
-    private static readonly Thickness LabelPadding = new(8.5, 4.5);
+    private static readonly Thickness LabelPadding = new(9, 4);
 
     // labelek közti margin
     private static readonly Thickness LabelMargin = new(8);
@@ -191,16 +191,16 @@ public class ModelBlock : Control
     private readonly double _titleBottomPadding = BasePadding.Bottom / 3;
 
     // Details alatt lévő padding
-    private readonly double _detailsBottomPadding = BasePadding.Bottom / 1.5;
+    private readonly double _detailsBottomPadding = BasePadding.Bottom * 1.5;
 
-    private const string FontFamilyName = "Manrope";
-    private const double TitleFontSize = 24;
-    private const double DetailsFontSize = 14;
-    private const double SizeFontSize = 16;
-    private const double LabelFontSize = 10;
-    private const double DownloadInfoFontSize = 14;
-    private const double DetailsOpacity = 0.75;
-    private const double DownloadInfoOpacity = 0.75;
+    private readonly FontFamily _manropeFontFamily = new("avares://avallama/Assets/Fonts/#Manrope");
+    private const double TitleFontSize = 22;
+    private const double DetailsFontSize = 12;
+    private const double SizeFontSize = 14;
+    private const double LabelFontSize = 9;
+    private const double DownloadInfoFontSize = 12;
+    private const double DetailsOpacity = 0.8;
+    private const double DownloadInfoOpacity = 0.5;
     private const double SizeOpacity = 0.8;
     private const double DetailsLineHeight = 16;
 
@@ -235,10 +235,51 @@ public class ModelBlock : Control
         RenderStatus(context);
     }
 
+    // gradienthez színvilágosító
+    private static Color LightenColor(Color color, double factor = 0.4)
+    {
+        return Color.FromArgb(
+            color.A,
+            (byte)Math.Min(color.R + (255 - color.R) * factor, 255),
+            (byte)Math.Min(color.G + (255 - color.G) * factor, 255),
+            (byte)Math.Min(color.B + (255 - color.B) * factor, 255)
+        );
+    }
+
+    // gradienthez színsötétítő
+    private static Color DarkenColor(Color color, double factor = 0.4)
+    {
+        return Color.FromArgb(
+            color.A,
+            (byte)(color.R * factor),
+            (byte)(color.G * factor),
+            (byte)(color.B * factor)
+        );
+    }
+
     private void RenderBackground(DrawingContext context)
     {
-        // TODO: gradientet hozzáadni?
-        context.DrawRectangle(Background, null,
+        var backgroundBrush = Background;
+
+        if (DownloadStatus == ModelDownloadStatus.Downloaded)
+        {
+            var baseColor = (Background as ImmutableSolidColorBrush)?.Color ?? Colors.White;
+            var darkerColor = DarkenColor(baseColor, 0.75);
+
+            backgroundBrush = new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops =
+                [
+                    new GradientStop(baseColor, 0),
+                    new GradientStop(darkerColor, 1)
+                ]
+            };
+        }
+
+
+        context.DrawRectangle(backgroundBrush, null,
             new RoundedRect(
                 new Rect(Bounds.Size),
                 _cornerRadius
@@ -252,7 +293,7 @@ public class ModelBlock : Control
         // Mivel egyelőre nincs szükség propertyben megadva ezért így csináltam
 
         if (_titleTextLayout == null) return;
-        _renderYPos = BasePadding.Top;
+        _renderYPos = BasePadding.Top - 5; // korrekció a betűtípus miatt, hogy fentebb kerüljön
         _titleTextLayout.Draw(context, new Point(BasePadding.Left, _renderYPos));
         _renderYPos += _titleTextLayout.Height + _titleBottomPadding;
         if (_detailsTextLayout != null)
@@ -349,15 +390,17 @@ public class ModelBlock : Control
     }
 
     private void RenderSvg(
-        DrawingContext context, 
-        string svgPath, 
+        DrawingContext context,
+        string svgPath,
         double svgScale,
         double xTranslation = 0.0,
         double yTranslation = 0.0
     )
     {
-        // szín beállítása css-el, úgy hogy a Foreground propertyt átalakítjuk hex-re hogy css-nek át tudjuk adni
-        var css = $"* {{ fill: {BrushToHex(Foreground)}; }}";
+        // szín és opacity beállítása css-el, úgy hogy a Foreground propertyt átalakítjuk hex-re hogy css-nek át tudjuk adni
+        // opacity-nél invariantculture kell, különben máshogy nem működik, vagyis vesszővel nem jó, pont kell a tizedesjegy elé
+        var css =
+            $"* {{ fill: {BrushToHex(Foreground)}; fill-opacity: {DownloadInfoOpacity.ToString("0.0", CultureInfo.InvariantCulture)}; }}";
         var parameters = new SvgParameters(null, css);
 
         // svg betöltése
@@ -404,10 +447,9 @@ public class ModelBlock : Control
                     new Point(
                         Bounds.Width - _downloadInfoTextLayout.Width - BasePadding.Right * 3 -
                         (_svgPicture?.CullRect.Width ?? 0.0),
-                        BasePadding.Top +
-                        2.5 // kis korrekció hogy a "downloading.." szöveg egy vonalban legyen a pause svg-vel
+                        BasePadding.Top // kis korrekció hogy a "downloading.." szöveg egy vonalban legyen a pause svg-vel
                     ));
-                RenderSvg(context, PauseSvgPath, 1.15, xTranslation: -4.5);
+                RenderSvg(context, PauseSvgPath, 1.15, xTranslation: -4.5, yTranslation: +2);
                 break;
             case ModelDownloadStatus.Downloaded:
             default:
@@ -423,7 +465,7 @@ public class ModelBlock : Control
 
         return new TextLayout(
             Title,
-            new Typeface(FontFamilyName),
+            new Typeface(_manropeFontFamily),
             null,
             TitleFontSize,
             Foreground ?? Brushes.Black
@@ -438,7 +480,7 @@ public class ModelBlock : Control
 
         return new TextLayout(
             mergedDetailsText,
-            new Typeface(FontFamilyName),
+            new Typeface(_manropeFontFamily, weight: FontWeight.Light),
             null,
             DetailsFontSize,
             new SolidColorBrush(
@@ -459,7 +501,7 @@ public class ModelBlock : Control
         return labelList
             .Select(label => new TextLayout(
                 label.Name,
-                new Typeface(FontFamilyName),
+                new Typeface(_manropeFontFamily, weight: FontWeight.Medium),
                 LabelFontSize,
                 label.Highlight == ModelLabelHighlight.Default ? LabelForeground : StrongLabelForeground))
             .ToList();
@@ -471,7 +513,7 @@ public class ModelBlock : Control
 
         return new TextLayout(
             GetSizeInGb(),
-            new Typeface(FontFamilyName),
+            new Typeface(_manropeFontFamily),
             null,
             SizeFontSize,
             new SolidColorBrush(
@@ -490,13 +532,13 @@ public class ModelBlock : Control
             ModelDownloadStatus.NoConnectionForDownload => LocalizationService.GetString("NO_CONNECTION"),
             ModelDownloadStatus.NotEnoughSpaceForDownload => LocalizationService.GetString("NOT_ENOUGH_SPACE"),
             ModelDownloadStatus.Downloading => string.Format(LocalizationService.GetString("DOWNLOADING"),
-                DownloadProgress?.ToString("0.00")),
+                DownloadProgress?.ToString("0.00", CultureInfo.InvariantCulture)),
             _ => string.Empty
         };
 
         return new TextLayout(
             downloadText,
-            new Typeface(FontFamilyName),
+            new Typeface(_manropeFontFamily),
             null,
             DownloadInfoFontSize,
             new SolidColorBrush(
@@ -514,7 +556,7 @@ public class ModelBlock : Control
         // ha a tizedesjegy nulla, ne jelenjen meg
         var displayValue = rounded % 1 == 0
             ? ((int)rounded).ToString()
-            : rounded.ToString("0.0");
+            : rounded.ToString("0.0", CultureInfo.InvariantCulture);
 
         return string.Format(LocalizationService.GetString("SIZE_IN_GB"), displayValue);
     }

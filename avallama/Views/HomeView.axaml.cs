@@ -15,13 +15,13 @@ namespace avallama.Views;
 // TODO: scroll-to-bottom gomb animálása esetleg + Messenger osztállyal vagy vmi mással megoldani hogy
 // a SettingsViewModel küldjön értesítést HomeViewModelnek a beállítások újratöltésére
 // mert most újra kell tölteni az appot ha átállítjuk a beállításban
-// + confirmation Dialog resulttal (igen/nem) pl. hogy újraindítja-e az alkalmazást a beállítások érvényesítéséhezs
+// + confirmation Dialog resulttal (igen/nem) pl. hogy újraindítja-e az alkalmazást a beállítások érvényesítéséhez
 public partial class HomeView : UserControl
 {
     public HomeView()
     {
         InitializeComponent();
-        
+
         // focusable, hogy ha a messageblockban van kijelölés akkor átadhassa a homeviewnak a fókuszt ha kikattintanak a messageblockból
         // és így a kijelölés törölhető
         Focusable = true;
@@ -31,7 +31,7 @@ public partial class HomeView : UserControl
             // margin beállítás hogy legyen az ablakkezelő gomboknak helye macOS-en
             SetMacOSMargin();
         }
-        
+
         // globálisan figyelünk a pointerwheeles görgetésre, különben a scrollviewer elkapná
         // és ha nem lenne erre külön figyelve akkor új üzenet hozzáadásnál is mivel scrollbar növekszik megjelenne a scroll-to-bottom gomb
         AddHandler(PointerWheelChangedEvent, OnGlobalPointerWheelChanged, RoutingStrategies.Tunnel);
@@ -48,20 +48,20 @@ public partial class HomeView : UserControl
     private void SetMacOSMargin()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return;
-        
+
         // ha a natív macOS ablak full screenben van
         // Avaloniával ezt nem lehet elérni szóval natív külső könyvtár kellett hozzá (lásd: MacOSInterop.cs)
         if (MacOSInterop.isKeyWindowInFullScreen())
         {
             SideBarTopGrid.Margin = new Thickness(10);
-            SideBarButton.Margin = new Thickness(10, -10, 0, 0);
+            SideBarButton.Margin = _sideBarExpanded ? new Thickness(0, -10, 0, 0) : new Thickness(10, -10, 0, 0);
         }
         else
         {
             if (_sideBarExpanded)
             {
-                SideBarTopGrid.Margin = new Thickness(10,30,10,10);
-                SideBarButton.Margin = new Thickness(10, -10, 0, 0);
+                SideBarTopGrid.Margin = new Thickness(10, 30, 10, 10);
+                SideBarButton.Margin = new Thickness(0, -10, 0, 0);
             }
             else
             {
@@ -95,7 +95,7 @@ public partial class HomeView : UserControl
         {
             if (!(e.ExtentDelta.Y > 0)) return;
             scrollViewer?.ScrollToEnd();
-        } 
+        }
         else if (_scrollSetting == "float")
         {
             // legörgetésnél megjelenik a scroll to bottom gomb
@@ -105,21 +105,23 @@ public partial class HomeView : UserControl
                 ScrollToBottomBtnShadow.IsVisible = true;
             }
             // felgörgetés valamennyit VAGY teljesen legörgetés az aljára ÉS felhasználói görgetés tehát nem üzenet generálás mozdítja a scrollbart
-            else if (e.OffsetDelta.Y < 0 || scrollViewer?.Offset.Y + scrollViewer?.Viewport.Height >= scrollViewer?.Extent.Height - 1
+            else if (e.OffsetDelta.Y < 0 || scrollViewer?.Offset.Y + scrollViewer?.Viewport.Height >=
+                     scrollViewer?.Extent.Height - 1
                      && _userScrolledWithWheel && ScrollToBottomBtn.IsVisible)
             {
                 ScrollToBottomBtn.IsVisible = false;
                 ScrollToBottomBtnShadow.IsVisible = false;
             }
+
             _userScrolledWithWheel = false;
         }
     }
-    
+
     private void OnGlobalPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         _userScrolledWithWheel = true;
     }
-    
+
     private void ScrollToBottomBtn_OnClick(object? sender, RoutedEventArgs e)
     {
         ConversationScrollViewer.ScrollToEnd();
@@ -154,7 +156,8 @@ public partial class HomeView : UserControl
             var columnDefinitions = new ColumnDefinitions
             {
                 // sidebar
-                new ColumnDefinition(new GridLength(_sideBarWidth, GridUnitType.Pixel)) { MinWidth = 180, MaxWidth = 400 },
+                new ColumnDefinition(new GridLength(_sideBarWidth, GridUnitType.Pixel))
+                    { MinWidth = 180, MaxWidth = 400 },
                 // gridsplitter
                 new ColumnDefinition(new GridLength(8, GridUnitType.Pixel)),
                 // sidebar expand/hide gomb
@@ -166,6 +169,7 @@ public partial class HomeView : UserControl
             MainGrid.Children.Insert(0, _sideBarControl);
             _sideBarExpanded = true;
         }
+
         SetMacOSMargin();
     }
 

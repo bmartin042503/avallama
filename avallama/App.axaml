@@ -18,7 +18,7 @@ Licensed under the MIT License. See LICENSE file for details.
                  <MergeResourceInclude Source="/Styles/AppColors.axaml" />
              </ResourceDictionary.MergedDictionaries>
          </ResourceDictionary>
-         <FontFamily x:Key="Manrope">avares://Assets/Fonts/#Manrope</FontFamily>
+         <FontFamily x:Key="Manrope">avares://avallama/Assets/Fonts#Manrope</FontFamily>
      </Application.Resources>
              
      <Application.Styles>

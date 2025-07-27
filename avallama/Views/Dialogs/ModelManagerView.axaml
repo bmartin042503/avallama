@@ -48,16 +48,16 @@ Licensed under the MIT License. See LICENSE file for details.
                    IsVisible="{Binding HasDownloadedModels}" Foreground="{DynamicResource OnSurface}" Opacity="0.6" />
 
         <ScrollViewer Grid.Row="3">
-            <ItemsControl ItemsSource="{Binding DownloadedModels}">
+            <ItemsControl x:Name="DownloadedModelsItemsControl" ItemsSource="{Binding DownloadedModels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
+                        <UniformGrid Columns="2" Margin="0,0,-20,0"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:OllamaModel">
                         <controls:ModelBlock Classes="downloadedModel"
-                                             Margin="0,0,14,14"
+                                             Margin="0,0,20,20"
                                              Title="{Binding Name}"
                                              SizeInBytes="{Binding Size}"
                                              DownloadStatus="{Binding DownloadStatus}"
@@ -76,16 +76,16 @@ Licensed under the MIT License. See LICENSE file for details.
                    IsVisible="{Binding HasPopularModels}" Foreground="{DynamicResource OnSurface}" Opacity="0.6" />
 
         <ScrollViewer Grid.Row="5">
-            <ItemsControl ItemsSource="{Binding PopularModels}">
+            <ItemsControl x:Name="PopularModelsItemsControl" ItemsSource="{Binding PopularModels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
+                        <UniformGrid Columns="2" Margin="0,0,-20,0"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:OllamaModel">
                         <controls:ModelBlock
-                            Margin="0,0,14,14"
+                            Margin="0,0,20,20"
                             Title="{Binding Name}"
                             SizeInBytes="{Binding Size}"
                             DownloadStatus="{Binding DownloadStatus}"

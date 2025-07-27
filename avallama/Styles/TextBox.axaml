@@ -23,18 +23,18 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="25"/>
-        <Setter Property="Padding" Value="14,10"/>
+        <Setter Property="Padding" Value="14,6"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="MaxLines" Value="8"/>
         <Setter Property="AcceptsReturn" Value="True"/>
-        <Setter Property="FontFamily" Value="Manrope"/>
+        <Setter Property="FontFamily" Value="{StaticResource Manrope}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
     </Style>
     
     <Style Selector="TextBox:focus, TextBox:pointerover">
         <Style Selector="^ /template/ TextBlock#PART_Watermark">
             <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
-            <Setter Property="FontFamily" Value="Manrope"/>
+            <Setter Property="FontFamily" Value="{StaticResource Manrope}"/>
         </Style>
         <Style Selector="^ /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="{DynamicResource SurfaceContainerHigh}"/>
