@@ -20,56 +20,42 @@ public enum ModelDownloadStatus
     Downloaded
 }
 
-public enum ModelLabelHighlight
-{
-    Default,
-    Strong
-}
-
-public class ModelLabel()
-{
-    public ModelLabelHighlight Highlight { get; set; }
-    public string Name { get; set; } = string.Empty;
-
-    public ModelLabel(string name, ModelLabelHighlight highlight = ModelLabelHighlight.Default) : this()
-    {
-        Name = name;
-        Highlight = highlight;
-    }
-}
-
 public partial class OllamaModel : ObservableObject
 {
     // model neve
     [ObservableProperty] private string _name = string.Empty;
+    [ObservableProperty] private int _quantization;
+    [ObservableProperty] private double _parameters = double.NaN;
     
-    // A detailshez és a labelshez lehetne hozzáadni azokat az adatokat a modelhez amik elérhetőek
-    // pl. parameters, quantization stb. dinamikusan
+    // pl. GGUF, MLX stb.
+    [ObservableProperty] private string _format = string.Empty;
     
-    // a modelblock részletei, pl. 'Parameters' '3.25B' stb.
-    // azért string hogy lehessen majd előtte lokalizált formában hozzáadni
+    // modell részletei szótárban, például
+    // 'General architecture:' -> 'llama'
+    // 'Context length:' -> '8192'
+    // stb.
     [ObservableProperty] private IDictionary<string, string> _details;
-    
-    // a modelblock címkéi, Label típusokban
-    // ez azt jelentené hogy a modelhez kapcsolódó kisebb infókat pl. gyorsaság, futtathatóság kisebb címkékben jelenítené meg
-    // LabelHighlight, vagyis különböző kiemeléssel, (pl. insufficientvram kapna egy erősebb 'Strong' címkét)
-    [ObservableProperty] private IEnumerable<ModelLabel> _labels;
     
     [ObservableProperty] private long _size; // byteokban
     [ObservableProperty] private ModelDownloadStatus _downloadStatus;
     [ObservableProperty] private double _downloadProgress; // ha a status Downloading
 
+    // ha nincs elég vram vagy bármi hasonló ami miatt lassan futhat akkor ezt true-ra kell állítani
+    [ObservableProperty] private bool _runsSlow;
+
     public OllamaModel(
         string name,
+        int quantization,
+        double parameters,
         IDictionary<string, string> details,
-        IEnumerable<ModelLabel> labels,
         long size,
         ModelDownloadStatus downloadStatus
     )
     {
         Name = name;
+        Quantization = quantization;
+        Parameters = parameters;
         Details = details;
-        Labels = labels;
         Size = size;
         DownloadStatus = downloadStatus;
     }

@@ -190,9 +190,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_MANAGER" xml:space="preserve">
         <value>Modelkezelő</value>
     </data>
-    <data name="DOWNLOADED_MODELS" xml:space="preserve">
-        <value>Letöltve ({0})</value>
-    </data>
     <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
         <value>Elérhető az Ollamatól ({0})</value>
     </data>
@@ -203,7 +200,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>{0} milliárd paraméter</value>
     </data>
     <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Kvantálás: {0}</value>
+        <value>Kvantálás: {0} bit</value>
     </data>
     <data name="NOT_ENOUGH_SPACE" xml:space="preserve">
         <value>Nincs elég hely</value>
@@ -219,9 +216,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="RUNS_GREAT" xml:space="preserve">
         <value>Nagyszerűen fut</value>
-    </data>
-    <data name="MODEL_MANAGER_NOT_AVAILABLE" xml:space="preserve">
-        <value>A modelkezelő egy későbbi verzióban lesz elérhető</value>
     </data>
     <data name="START" xml:space="preserve">
         <value>Kezdés</value>
@@ -300,5 +294,35 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="NO_CONNECTION" xml:space="preserve">
         <value>Nincs kapcsolat</value>
+    </data>
+    <data name="LEARN_MORE" xml:space="preserve">
+        <value>További információ</value>
+    </data>
+    <data name="CONTEXT_LENGTH" xml:space="preserve">
+        <value>Kontextus hossza:</value>
+    </data>
+    <data name="EMBEDDING_LENGTH" xml:space="preserve">
+        <value>Beágyazási hossz:</value>
+    </data>
+    <data name="GENERAL_ARCHITECTURE" xml:space="preserve">
+        <value>Általános architektúra:</value>
+    </data>
+    <data name="BLOCK_COUNT" xml:space="preserve">
+        <value>Blokkok száma:</value>
+    </data>
+    <data name="TOKEN_SEC_FORMAT" xml:space="preserve">
+        <value>{0} token/mp</value>
+    </data>
+    <data name="MIGHT_RUN_SLOW" xml:space="preserve">
+        <value>Lassan futhat a rendszereden</value>
+    </data>
+    <data name="DOWNLOADED_MODELS_INFO" xml:space="preserve">
+        <value>{0} letöltött modell ({1} GB)</value>
+    </data>
+    <data name="GENERATION_SPEED" xml:space="preserve">
+        <value>Generálás sebessége:</value>
+    </data>
+    <data name="ORDER_BY" xml:space="preserve">
+        <value>Rendezés:</value>
     </data>
 </root>
