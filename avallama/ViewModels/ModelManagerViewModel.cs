@@ -26,6 +26,7 @@ public partial class ModelManagerViewModel : DialogViewModel
     [ObservableProperty] private string _downloadedModelsInfo = string.Empty;
     [ObservableProperty] private bool _hasDownloadedModels;
     [ObservableProperty] private bool _hasModelsToDisplay;
+    [ObservableProperty] private int _selectedModelIndex = 2;
 
     private string _searchBoxText = string.Empty;
     public string SearchBoxText

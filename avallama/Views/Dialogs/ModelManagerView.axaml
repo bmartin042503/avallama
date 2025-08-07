@@ -38,7 +38,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <!-- Bal oldali modelválasztó, kereső, rendező rész -->
         <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
             <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,24,0,0" Width="220">
-                
+
                 <!-- Keresőmező -->
                 <TextBox Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1" Padding="16,8"
                          HorizontalAlignment="Stretch" Text="{Binding SearchBoxText}"
@@ -48,7 +48,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                              Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
                     </TextBox.InnerRightContent>
                 </TextBox>
-                
+
                 <!-- Rendező szöveg és rendező combobox -->
                 <Grid ColumnDefinitions="Auto,*" Margin="0,12,0,0">
                     <TextBlock Grid.Column="0"
@@ -56,7 +56,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                VerticalAlignment="Center"
                                FontSize="12"
                                Foreground="{DynamicResource OnSurface}"
-                               FontWeight="Bold"/>
+                               FontWeight="Bold" />
                     <ComboBox Grid.Column="1" Margin="8,0,0,0"
                               SelectedIndex="1"
                               HorizontalAlignment="Stretch">
@@ -65,16 +65,22 @@ Licensed under the MIT License. See LICENSE file for details.
                         <ComboBoxItem>Parameters</ComboBoxItem>
                     </ComboBox>
                 </Grid>
-                
+
                 <!-- Modelválasztó -->
-                <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                    <ItemsControl>
-                        <DataTemplate DataType="models:OllamaModel">
-                            <Border>
-                                
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl>
+                <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Center" MaxHeight="500">
+                    <controls:IndexedItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
+                        <controls:IndexedItemsControl.ItemTemplate>
+                            <DataTemplate DataType="models:OllamaModel">
+                                <controls:ModelBlock
+                                    Margin="0,18,0,0"
+                                    Title="{Binding Name}"
+                                    DownloadStatus="{Binding DownloadStatus}"
+                                    DownloadProgress="{Binding DownloadProgress}"
+                                    Index="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(controls:IndexedItemsControl.ItemIndex)}"
+                                    SelectedIndex="{Binding RelativeSource={RelativeSource AncestorType=vm:ModelManagerViewModel}, Path=SelectedModelIndex}" />
+                            </DataTemplate>
+                        </controls:IndexedItemsControl.ItemTemplate>
+                    </controls:IndexedItemsControl>
                 </ScrollViewer>
             </StackPanel>
         </Grid>

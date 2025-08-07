@@ -8,7 +8,7 @@ using Avalonia.Styling;
 
 namespace avallama.Utilities;
 
-public enum AppColors
+public enum AppColor
 {
     Primary,
     SurfaceTint,
@@ -65,8 +65,7 @@ public enum AppColors
 // a témának megfelelő színt adja vissza a szín kulcsának alapján
 public static class ColorProvider
 {
-    // colorKey pl. "Primary", "Secondary" stb.
-    public static ImmutableSolidColorBrush GetColor(AppColors appColor)
+    public static ImmutableSolidColorBrush GetColor(AppColor appColor)
     {
         var defaultColorBrush = new ImmutableSolidColorBrush(Colors.Black);
         

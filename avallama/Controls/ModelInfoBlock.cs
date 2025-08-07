@@ -122,8 +122,7 @@ public class ModelInfoBlock : Control
         get => GetValue(CommandParameterProperty);
         set => SetValue(CommandParameterProperty, value);
     }
-
-    private readonly FontFamily _manropeFontFamily = new("avares://avallama/Assets/Fonts/#Manrope");
+    
     private const double TitleFontSize = 22;
     private const double DetailsFontSize = 12;
     private const double SizeFontSize = 14;
@@ -163,10 +162,10 @@ public class ModelInfoBlock : Control
 
         return new TextLayout(
             Title,
-            new Typeface(_manropeFontFamily),
+            new Typeface(RenderHelper.ManropeFont),
             null,
             TitleFontSize,
-            ColorProvider.GetColor(AppColors.OnSurface)
+            ColorProvider.GetColor(AppColor.OnSurface)
         );
     }
 
@@ -178,11 +177,11 @@ public class ModelInfoBlock : Control
 
         return new TextLayout(
             mergedDetailsText,
-            new Typeface(_manropeFontFamily, weight: FontWeight.Light),
+            new Typeface(RenderHelper.ManropeFont, weight: FontWeight.Light),
             null,
             DetailsFontSize,
             new SolidColorBrush(
-                ColorProvider.GetColor(AppColors.OnSurface).Color,
+                ColorProvider.GetColor(AppColor.OnSurface).Color,
                 DetailsOpacity
             ),
             lineHeight: DetailsLineHeight
@@ -204,11 +203,11 @@ public class ModelInfoBlock : Control
 
         return new TextLayout(
             downloadText,
-            new Typeface(_manropeFontFamily),
+            new Typeface(RenderHelper.ManropeFont),
             null,
             DownloadInfoFontSize,
             new SolidColorBrush(
-                ColorProvider.GetColor(AppColors.OnSurface).Color,
+                ColorProvider.GetColor(AppColor.OnSurface).Color,
                 DownloadInfoOpacity
             )
         );
