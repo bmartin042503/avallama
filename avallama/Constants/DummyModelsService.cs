@@ -31,7 +31,7 @@ public static class DummyModelsService
                 ModelDownloadStatus.Downloaded
             ),
             new(
-                name: "llama3.8",
+                name: "verylongmodelnamellamasomething-coder-pro-ultra-max3.8",
                 quantization: 4,
                 parameters: 3.8,
                 details: new Dictionary<string, string>
@@ -42,7 +42,7 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "4608" },
                 },
                 size: 3825205248,
-                ModelDownloadStatus.ReadyForDownload
+                ModelDownloadStatus.Downloading
             ),
             new(
                 name: "mistral7b",
@@ -56,7 +56,7 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "5120" }
                 },
                 size: 7516192768,
-                ModelDownloadStatus.ReadyForDownload
+                ModelDownloadStatus.Downloading
             ),
 
             new(

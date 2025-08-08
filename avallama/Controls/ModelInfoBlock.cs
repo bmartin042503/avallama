@@ -132,9 +132,6 @@ public class ModelInfoBlock : Control
     
     private static readonly Thickness BasePadding = new(12);
 
-    private const string DownloadSvgPath = "Assets/Svg/download.svg";
-    private const string PauseSvgPath = "Assets/Svg/pause.svg";
-
     private TextLayout? _titleTextLayout;
     private TextLayout? _detailsTextLayout;
     private IEnumerable<TextLayout>? _labelTextLayouts;

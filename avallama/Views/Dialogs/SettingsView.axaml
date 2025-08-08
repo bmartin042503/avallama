@@ -13,7 +13,7 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.SettingsView"
              x:DataType="vm:SettingsViewModel"
              Background="{DynamicResource Surface}">
-    <Grid RowDefinitions="60,60,60,60,60,*,Auto,Auto,Auto" ColumnDefinitions="500, *" Margin="26">
+    <Grid RowDefinitions="60,60,60,60,60,*,Auto,Auto,Auto" ColumnDefinitions="500, *" Margin="22">
         <!-- Nyelv -->
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
             <TextBlock Text="{services:LocalizationService Key='LANGUAGE_SETTING'}"

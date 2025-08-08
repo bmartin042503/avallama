@@ -3,11 +3,11 @@
 
 using System;
 using System.Globalization;
-using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Svg;
+using ShimSkiaSharp;
 using Svg.Model;
 
 namespace avallama.Utilities;
@@ -15,6 +15,10 @@ namespace avallama.Utilities;
 public static class RenderHelper
 {
     public static readonly FontFamily ManropeFont = new("avares://avallama/Assets/Fonts/#Manrope");
+    
+    public const string DownloadSvgPath = "Assets/Svg/download.svg";
+    public const string CircularProgressSvgPath = "Assets/Svg/circular-progress.svg";
+    public const string PauseSvgPath = "Assets/Svg/pause.svg";
     
     public static string? BrushToHex(IBrush? brush)
     {
@@ -31,22 +35,41 @@ public static class RenderHelper
     }
     
     // svg betöltése megadott szín és áttetszőség alapján
-    // renderelésre készíti elő, ahhoz hogy jól megjelenjen még kell eltolásokat, skálázást adni 'Matrix' típusban
-    public static AvaloniaPicture? LoadSvg(
-        string svgPath,
-        IBrush? svgColor = null,
-        double svgOpacity = 0.0
+    // renderelésre készíti elő, a render pozícióját Matrix eltolásokban lehet megadni, ezt a drawingcontext-re kell alkalmazni (context.PushTransform())
+    // ahhoz hogy rajzolható legyen meg kell hívni ezt: AvaloniaPicture.Record(svgPicture) ez visszaad egy AvaloniaPicturet amin van Draw metódus
+    // a színt úgy kell megadni ahogyan az az svg fájlban van (stroke vagy fill attól függően mit használ)
+    public static SKPicture? LoadSvg(
+        string path,
+        IBrush? fillColor = null,
+        IBrush? strokeColor = null,
+        double opacity = 1.0
     )
     {
         // szín és opacity beállítása css-el, úgy hogy a megadott színt átalakítjuk hex-re hogy css-nek át tudjuk adni
         // opacity-nél invariantculture kell, különben máshogy nem működik, vagyis vesszővel nem jó, pont kell a tizedesjegy elé
-        var css =
-            $"* {{ fill: {BrushToHex(ColorProvider.GetColor(AppColor.OnSurface))}; fill-opacity: {svgOpacity.ToString("0.0", CultureInfo.InvariantCulture)}; }}";
+
+        // css felépítése
+        var css = "* { ";
+        if (fillColor is not null)
+        {
+            css +=
+                $"fill: {BrushToHex(fillColor)}; fill-opacity: {opacity.ToString("0.0", CultureInfo.InvariantCulture)}; ";
+        }
+
+        if (strokeColor is not null)
+        {
+            css +=
+                $"stroke: {BrushToHex(strokeColor)}; stroke-opacity: {opacity.ToString("0.0", CultureInfo.InvariantCulture)}; ";
+        }
+        css += "}";
+        
         var parameters = new SvgParameters(null, css);
 
         // svg betöltése
-        using var stream = AssetLoader.Open(new Uri($"avares://avallama/{svgPath}"));
+        using var stream = AssetLoader.Open(new Uri($"avares://avallama/{path}"));
+        
+        // TODO: optimalizálni, folyamatosan allokál
         var svgPicture = SvgSource.LoadPicture(stream, parameters);
-        return svgPicture is null ? null : AvaloniaPicture.Record(svgPicture);
+        return svgPicture;
     }
 }

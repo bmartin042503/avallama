@@ -16,79 +16,75 @@ Licensed under the MIT License. See LICENSE file for details.
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
 
-    <Grid RowDefinitions="Auto,Auto,Auto" Margin="26">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
-                        HorizontalAlignment="Left">
-                <TextBlock
-                    Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H2"
-                    Foreground="{DynamicResource OnSurface}" />
-                <Button Command="{Binding ShowInfo}" Classes="svgButton">
-                    <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
-                                         Width="20" />
-                </Button>
-            </StackPanel>
-            <TextBlock Grid.Column="2"
-                       IsVisible="{Binding HasDownloadedModels}"
-                       Text="{Binding DownloadedModelsInfo}"
-                       Classes="H3" VerticalAlignment="Center" HorizontalAlignment="Center"
-                       Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.6" />
-        </Grid>
+    <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*,*" Margin="22">
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                    HorizontalAlignment="Left">
+            <TextBlock
+                Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H2"
+                Foreground="{DynamicResource OnSurface}" />
+            <Button Command="{Binding ShowInfo}" Classes="svgButton">
+                <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
+                                     Width="20" />
+            </Button>
+        </StackPanel>
+        <TextBlock Grid.Row="0" Grid.Column="2"
+                   IsVisible="{Binding HasDownloadedModels}"
+                   Text="{Binding DownloadedModelsInfo}"
+                   Classes="H3" VerticalAlignment="Center" HorizontalAlignment="Right"
+                   Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.6" />
 
         <!-- Bal oldali modelválasztó, kereső, rendező rész -->
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
-            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,24,0,0" Width="260">
+        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*" HorizontalAlignment="Left" Margin="0,20,0,0">
 
-                <!-- Keresőmező -->
-                <TextBox Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1" Padding="16,8"
-                         HorizontalAlignment="Stretch" Text="{Binding SearchBoxText}"
-                         CornerRadius="8">
-                    <TextBox.InnerRightContent>
-                        <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
-                                             Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
-                    </TextBox.InnerRightContent>
-                </TextBox>
+            <!-- Keresőmező -->
+            <TextBox Grid.Row="0" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1" Padding="16,8"
+                     HorizontalAlignment="Stretch" Text="{Binding SearchBoxText}"
+                     CornerRadius="8">
+                <TextBox.InnerRightContent>
+                    <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
+                                         Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
+                </TextBox.InnerRightContent>
+            </TextBox>
 
-                <!-- Rendező szöveg és rendező combobox -->
-                <Grid ColumnDefinitions="Auto,*" Margin="0,12,0,0">
-                    <TextBlock Grid.Column="0"
-                               Text="{services:LocalizationService Key='ORDER_BY'}"
-                               VerticalAlignment="Center"
-                               FontSize="12"
-                               Foreground="{DynamicResource OnSurface}"
-                               FontWeight="Bold" />
-                    <ComboBox Grid.Column="1" Margin="8,0,0,0"
-                              SelectedIndex="1"
-                              HorizontalAlignment="Stretch">
-                        <ComboBoxItem>Size</ComboBoxItem>
-                        <ComboBoxItem>Downloaded</ComboBoxItem>
-                        <ComboBoxItem>Parameters</ComboBoxItem>
-                    </ComboBox>
-                </Grid>
+            <!-- Rendező szöveg és rendező combobox -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,12,0,0">
+                <TextBlock Grid.Column="0"
+                           Text="{services:LocalizationService Key='ORDER_BY'}"
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{DynamicResource OnSurface}"
+                           FontWeight="Bold" />
+                <ComboBox Grid.Column="1" Margin="8,0,0,0"
+                          SelectedIndex="1"
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem>Size</ComboBoxItem>
+                    <ComboBoxItem>Downloaded</ComboBoxItem>
+                    <ComboBoxItem>Parameters</ComboBoxItem>
+                </ComboBox>
+            </Grid>
 
-                <!-- Modelválasztó -->
-                <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Center" MaxHeight="500" Margin="0,20,0,0">
-                    <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="models:OllamaModel">
-                                <controls:ModelBlock
-                                    Margin="0,14,0,0"
-                                    Title="{Binding Name}"
-                                    DownloadStatus="{Binding DownloadStatus}"
-                                    DownloadProgress="{Binding DownloadProgress}"
-                                    SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
-                                    Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
-                                    CommandParameter="{Binding Name}"
-                                    />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </StackPanel>
+            <!-- Modelválasztó -->
+            <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,14,0,0" AllowAutoHide="True" >
+                <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="models:OllamaModel">
+                            <controls:ModelBlock
+                                Margin="0,12,0,0"
+                                Title="{Binding Name}"
+                                DownloadStatus="{Binding DownloadStatus}"
+                                DownloadProgress="{Binding DownloadProgress}"
+                                SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
+                                CommandParameter="{Binding Name}"
+                                />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Grid>
 
-        <Button Grid.Row="2" HorizontalAlignment="Right"
-                Margin="0,15,0,0"
+        <Button Grid.Column="2" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,10,0,0"
                 Content="{services:LocalizationService Key='CLOSE'}"
                 Command="{Binding Close}"
                 Cursor="Hand" />

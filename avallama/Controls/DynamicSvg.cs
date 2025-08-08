@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Media;
 
@@ -42,8 +41,6 @@ public class DynamicSvg(IServiceProvider provider) : Avalonia.Svg.Svg(provider)
         get => GetValue(StrokeColorProperty);
         set => SetValue(StrokeColorProperty, value);
     }
-    
-    // public DynamicSvg(Uri baseUri) : base(baseUri) { }
 
     private static string ConvertColorToHex(IBrush? propertyColor)
     {
@@ -52,7 +49,6 @@ public class DynamicSvg(IServiceProvider provider) : Avalonia.Svg.Svg(provider)
         var rgb = color.ToUInt32(); 
         var result = $"{rgb.ToString("x8", CultureInfo.InvariantCulture)}"; // hex-re parsolja
         return result[2..]; // az első 2 karaktert leviszi, különben nem állítható be a szín
-
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
