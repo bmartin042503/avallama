@@ -26,7 +26,7 @@ public partial class ModelManagerViewModel : DialogViewModel
     [ObservableProperty] private string _downloadedModelsInfo = string.Empty;
     [ObservableProperty] private bool _hasDownloadedModels;
     [ObservableProperty] private bool _hasModelsToDisplay;
-    [ObservableProperty] private int _selectedModelIndex = 2;
+    [ObservableProperty] private string _selectedModelName = string.Empty;
 
     private string _searchBoxText = string.Empty;
     public string SearchBoxText
@@ -100,18 +100,28 @@ public partial class ModelManagerViewModel : DialogViewModel
         );
 
         HasModelsToDisplay = Models.Count != 0;
-        
+        if (string.IsNullOrEmpty(SelectedModelName)) SelectedModelName = Models[0].Name;
     }
 
     // ez akkor hívódik meg ha a felhasználó a letöltés/törlésre kattint
     // később esetleg kiterjeszthető a model beállításainak megjelenítésére (tehát törlés helyett beállítások ikon lenne és ott lehetne törölni is)
     [RelayCommand]
-    public void ModelAction(object? parameter)
+    public void ModelAction(object parameter)
     {
         if (parameter is OllamaModel model)
         {
             // TODO: downloadstatus alapján letöltés/törlés/letöltés szüneteltetése
             // esetleg valami letöltő animáció elindítása, ilyesmik
+        }
+    }
+
+    [RelayCommand]
+    public void SelectModel(object parameter)
+    {
+        if (parameter is string modelName)
+        {
+            if (string.IsNullOrEmpty(modelName)) return;
+            SelectedModelName = modelName;
         }
     }
 

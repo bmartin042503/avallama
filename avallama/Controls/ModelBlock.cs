@@ -2,10 +2,12 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
+using System.Windows.Input;
 using avallama.Models;
 using avallama.Utilities;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
@@ -13,6 +15,7 @@ namespace avallama.Controls;
 
 public class ModelBlock : Control
 {
+    // azért Title a property neve, mert a 'Name' már le van foglalva és szerintem összekavarodna
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<ModelBlock, string?>(nameof(Title));
 
@@ -29,22 +32,20 @@ public class ModelBlock : Control
             o => o.DownloadProgress,
             (o, v) => o.DownloadProgress = v
         );
-    
-    public static readonly DirectProperty<ModelBlock, int> IndexProperty =
-        AvaloniaProperty.RegisterDirect<ModelBlock, int>(
-            nameof(Index),
-            o => o.Index,
-            (o, v) => o.Index = v,
-            unsetValue: 0
-        );
 
-    public static readonly DirectProperty<ModelBlock, int> SelectedIndexProperty =
-        AvaloniaProperty.RegisterDirect<ModelBlock, int>(
-            nameof(SelectedIndex),
-            o => o.SelectedIndex,
-            (o, v) => o.SelectedIndex = v,
-            unsetValue: 0
+    public static readonly DirectProperty<ModelBlock, string?> SelectedNameProperty =
+        AvaloniaProperty.RegisterDirect<ModelBlock, string?>(
+            nameof(SelectedName),
+            o => o.SelectedName,
+            (o, v) => o.SelectedName = v,
+            unsetValue: string.Empty
         );
+    
+    public static readonly StyledProperty<ICommand> CommandProperty =
+        AvaloniaProperty.Register<ModelInfoBlock, ICommand>("Command");
+
+    public static readonly StyledProperty<object?> CommandParameterProperty =
+        AvaloniaProperty.Register<ModelInfoBlock, object?>("CommandParameter");
 
     public string? Title
     {
@@ -66,23 +67,27 @@ public class ModelBlock : Control
         set => SetAndRaise(DownloadProgressProperty, ref _downloadProgress, value);
     }
 
-    private int _index;
+    private string? _selectedName;
 
-    public int Index
+    public string? SelectedName
     {
-        get => _index;
-        set => SetAndRaise(IndexProperty, ref _index, value);
+        get => _selectedName;
+        set => SetAndRaise(SelectedNameProperty, ref _selectedName, value);
+    }
+    
+    public ICommand Command
+    {
+        get => GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
     }
 
-    private int _selectedIndex;
-
-    public int SelectedIndex
+    public object? CommandParameter
     {
-        get => _selectedIndex;
-        set => SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value);
+        get => GetValue(CommandParameterProperty);
+        set => SetValue(CommandParameterProperty, value);
     }
 
-    private static readonly Thickness BasePadding = new(12);
+    private static readonly Thickness BasePadding = new(10);
     private static readonly CornerRadius BaseCornerRadius = new(8);
     private const double TitleFontSize = 16;
 
@@ -99,7 +104,7 @@ public class ModelBlock : Control
 
     private void RenderBackground(DrawingContext context)
     {
-        var background = SelectedIndex == Index
+        var background = Title == SelectedName
             ? ColorProvider.GetColor(AppColor.Primary)
             : ColorProvider.GetColor(AppColor.SecondaryContainer);
         context.DrawRectangle(background, null,
@@ -122,7 +127,7 @@ public class ModelBlock : Control
     {
         if (string.IsNullOrEmpty(Title)) return null;
         
-        var textColor = SelectedIndex == Index
+        var textColor = Title == SelectedName
             ? ColorProvider.GetColor(AppColor.OnPrimary)
             : ColorProvider.GetColor(AppColor.OnSecondaryContainer);
 
@@ -135,6 +140,20 @@ public class ModelBlock : Control
             TextWrapping.Wrap,
             TextTrimming.CharacterEllipsis
         );
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        // kurzor átállítása, nem kell ellenőrizni hogy hol a kurzor, mert a PointerEventArgs alapból a Controlon belül van
+        Cursor = new Cursor(StandardCursorType.Hand);
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        if (Command.CanExecute(CommandParameter))
+        {
+            Command.Execute(CommandParameter);
+        }
     }
 
     protected override void OnMeasureInvalidated()
@@ -161,13 +180,11 @@ public class ModelBlock : Control
         switch (change.Property.Name)
         {
             case nameof(Title):
-                InvalidateVisual();
-                InvalidateMeasure();
-                break;
             case nameof(DownloadStatus):
             case nameof(DownloadProgress):
-            case nameof(SelectedIndex):
+            case nameof(SelectedName):
                 InvalidateVisual();
+                InvalidateMeasure();
                 break;
         }
     }

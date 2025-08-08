@@ -8,6 +8,7 @@ using Avalonia.Controls;
 namespace avallama.Controls;
 
 // ItemsControl aminek az elemei rendelkeznek index-el
+// létrehoztam de mégsem kellett, viszont elképzelhető, hogy a jövőben kelleni fog
 public class IndexedItemsControl : ItemsControl
 {
     // attached property, ezt megkapja minden ContentPresenter elem

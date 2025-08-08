@@ -37,7 +37,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <!-- Bal oldali modelválasztó, kereső, rendező rész -->
         <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
-            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,24,0,0" Width="220">
+            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,24,0,0" Width="260">
 
                 <!-- Keresőmező -->
                 <TextBox Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1" Padding="16,8"
@@ -67,20 +67,22 @@ Licensed under the MIT License. See LICENSE file for details.
                 </Grid>
 
                 <!-- Modelválasztó -->
-                <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Center" MaxHeight="500">
-                    <controls:IndexedItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
-                        <controls:IndexedItemsControl.ItemTemplate>
+                <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Center" MaxHeight="500" Margin="0,20,0,0">
+                    <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="models:OllamaModel">
                                 <controls:ModelBlock
-                                    Margin="0,18,0,0"
+                                    Margin="0,14,0,0"
                                     Title="{Binding Name}"
                                     DownloadStatus="{Binding DownloadStatus}"
                                     DownloadProgress="{Binding DownloadProgress}"
-                                    Index="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(controls:IndexedItemsControl.ItemIndex)}"
-                                    SelectedIndex="{Binding RelativeSource={RelativeSource AncestorType=vm:ModelManagerViewModel}, Path=SelectedModelIndex}" />
+                                    SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
+                                    CommandParameter="{Binding Name}"
+                                    />
                             </DataTemplate>
-                        </controls:IndexedItemsControl.ItemTemplate>
-                    </controls:IndexedItemsControl>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </StackPanel>
         </Grid>

@@ -12,12 +12,9 @@ using avallama.Utilities;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Platform;
 using Avalonia.Svg;
 using ShimSkiaSharp;
-using Svg.Model;
 
 namespace avallama.Controls;
 
