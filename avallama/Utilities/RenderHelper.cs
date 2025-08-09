@@ -17,7 +17,7 @@ public static class RenderHelper
     public static readonly FontFamily ManropeFont = new("avares://avallama/Assets/Fonts/#Manrope");
     
     public const string DownloadSvgPath = "Assets/Svg/download.svg";
-    public const string CircularProgressSvgPath = "Assets/Svg/circular-progress.svg";
+    public const string SpinnerSvgPath = "Assets/Svg/spinner.svg";
     public const string PauseSvgPath = "Assets/Svg/pause.svg";
     
     public static string? BrushToHex(IBrush? brush)
@@ -33,6 +33,8 @@ public static class RenderHelper
             // ha van áttetszőség, akkor #AARRGGBB
             $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
     }
+
+    private static int _allocationCount = 0;
     
     // svg betöltése megadott szín és áttetszőség alapján
     // renderelésre készíti elő, a render pozícióját Matrix eltolásokban lehet megadni, ezt a drawingcontext-re kell alkalmazni (context.PushTransform())
@@ -69,6 +71,8 @@ public static class RenderHelper
         using var stream = AssetLoader.Open(new Uri($"avares://avallama/{path}"));
         
         // TODO: optimalizálni, folyamatosan allokál
+        _allocationCount++;
+        // Console.WriteLine($"RenderHelper called and memory for SVG allocated : {_allocationCount}");
         var svgPicture = SvgSource.LoadPicture(stream, parameters);
         return svgPicture;
     }

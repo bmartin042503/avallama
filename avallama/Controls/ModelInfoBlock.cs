@@ -146,6 +146,11 @@ public class ModelInfoBlock : Control
 
     public override void Render(DrawingContext context)
     {
+        RenderBackground(context);
+    }
+
+    private void RenderBackground(DrawingContext context)
+    {
         
     }
 

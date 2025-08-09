@@ -180,8 +180,6 @@ public class MessageBlock : Control
     private int _selectionEnd;
     private string _selectedText = string.Empty;
 
-    // private int _newTextLayoutCount = 0;
-
     public MessageBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni

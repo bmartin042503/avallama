@@ -15,6 +15,8 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
+    
+    <!-- TODO: Ha nincs model megjelenítve akkor a kereső és a rendező mezők összehúzódnak, ezt kijavítani hogy maradjon egy a méret -->
 
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*,*" Margin="22">
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
@@ -47,7 +49,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </TextBox>
 
             <!-- Rendező szöveg és rendező combobox -->
-            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,12,0,0">
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,12,0,0" HorizontalAlignment="Stretch">
                 <TextBlock Grid.Column="0"
                            Text="{services:LocalizationService Key='ORDER_BY'}"
                            VerticalAlignment="Center"
