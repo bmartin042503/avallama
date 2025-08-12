@@ -15,7 +15,7 @@ namespace avallama.Controls;
 
 // esetleg később kibővíteni teljesen, hogy svgben meg lehessen adni tageket (pl. primary, secondary)
 // és akkor így dinamikusan bármilyen pathnek a színét módosítani
-public class DynamicSvg(IServiceProvider provider) : Avalonia.Svg.Svg(provider)
+public class DynamicSvg : Avalonia.Svg.Svg
 {
     /* SVG-t a következőképp lehet színezni megfelelően ezzel az osztállyal:
      * - Az SVG fájl tartalmát módosítani kell úgy, hogy azok a részek, amiket színezni szeretnénk külön fill és stroke attribútumban legyenek.
@@ -32,6 +32,12 @@ public class DynamicSvg(IServiceProvider provider) : Avalonia.Svg.Svg(provider)
     
     public static readonly StyledProperty<IBrush?> StrokeColorProperty = 
         AvaloniaProperty.Register<DynamicSvg, IBrush?>("StrokeColor");
+    
+    public DynamicSvg(IServiceProvider provider) : base(provider)
+    {
+        
+    }
+    
 
     public IBrush? FillColor
     {

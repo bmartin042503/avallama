@@ -37,6 +37,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </Design.PreviewWith>
     
     <Style Selector="controls|GeneralBlock">
+        <Setter Property="Clickable" Value="False"/>
         <Setter Property="TextAlignment" Value="Left"/>
         <Setter Property="TextFontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="20"/>
@@ -68,6 +69,7 @@ Licensed under the MIT License. See LICENSE file for details.
     
     <Style Selector="controls|GeneralBlock.conversationElement">
         <Setter Property="Selectable" Value="False"/>
+        <Setter Property="Clickable" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurface}"/>
         <Setter Property="TextFontSize" Value="16"/>

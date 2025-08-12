@@ -139,6 +139,7 @@ Licensed under the MIT License. See LICENSE file for details.
     
     <!-- thank you bmartin -->
     <Style Selector="Button.avallamaWhite">
+        <Setter Property="MinWidth" Value="45"/>
         <Setter Property="Background" Value="{DynamicResource Primary}" />
         <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
         <Setter Property="Transitions">
@@ -159,9 +160,11 @@ Licensed under the MIT License. See LICENSE file for details.
                                     Spacing="10"
                                     HorizontalAlignment="Center">
                             <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
-                                                 Width="8"
-                                                 FillColor="{TemplateBinding Foreground}" />
-                            <TextBlock Text="{TemplateBinding Content}"
+                                                 Width="10"
+                                                 FillColor="{TemplateBinding Foreground}"
+                                                 HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="ButtonTextContent"
+                                       Text="{TemplateBinding Content}"
                                        Foreground="{TemplateBinding Foreground}"
                                        FontSize="10"
                                        Background="{TemplateBinding Background}"

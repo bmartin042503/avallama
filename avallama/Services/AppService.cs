@@ -42,8 +42,8 @@ public class AppService : IAppService
         _dialogService = dialogService;
         _mainViewModel = mainViewModel;
         _configurationService = configurationService;
-        messenger.Register<ShutdownMessage>(this, (r, msg) => { Shutdown(); });
-        messenger.Register<CheckOllamaStartMessage>(this, (r, msg) =>
+        messenger.Register<ShutdownMessage>(this, (_, _) => { Shutdown(); });
+        messenger.Register<CheckOllamaStartMessage>(this, (_, _) =>
         {
             // TODO: ezt majd meg kell nézni, hogy mennyire optimális így, okozhat-e hibát
             

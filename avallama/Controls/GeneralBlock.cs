@@ -3,6 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using avallama.Constants;
+using avallama.Utilities;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -68,9 +71,33 @@ public class GeneralBlock : Control
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
         AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(SelectionColor));
-    
+
     public static readonly StyledProperty<bool> SelectableProperty =
         AvaloniaProperty.Register<GeneralBlock, bool>(nameof(Selectable));
+
+    public static readonly StyledProperty<bool> ClickableProperty =
+        AvaloniaProperty.Register<GeneralBlock, bool>(nameof(Clickable));
+
+    public static readonly StyledProperty<ICommand?> CommandProperty =
+        AvaloniaProperty.Register<GeneralBlock, ICommand?>(nameof(Command));
+
+    // saját ID
+    public static readonly DirectProperty<GeneralBlock, Guid?> IdProperty =
+        AvaloniaProperty.RegisterDirect<GeneralBlock, Guid?>(
+            nameof(Id),
+            o => o.Id,
+            (o, v) => o.Id = v,
+            unsetValue: Guid.Empty
+        );
+
+    // a jelenleg kiválasztott ID, ez összehasonlításhoz kell, hogy más stílust lehessen beállítani ha a kiválasztott control a jelenlegi
+    public static readonly DirectProperty<GeneralBlock, Guid?> SelectedIdProperty =
+        AvaloniaProperty.RegisterDirect<GeneralBlock, Guid?>(
+            nameof(SelectedId),
+            o => o.SelectedId,
+            (o, v) => o.SelectedId = v,
+            unsetValue: Guid.Empty
+        );
 
     public string? Text
     {
@@ -162,10 +189,38 @@ public class GeneralBlock : Control
         set => SetValue(SelectionColorProperty, value);
     }
 
+    public ICommand? Command
+    {
+        get => GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
+
     public bool Selectable
     {
         get => GetValue(SelectableProperty);
         set => SetValue(SelectableProperty, value);
+    }
+
+    public bool Clickable
+    {
+        get => GetValue(ClickableProperty);
+        set => SetValue(ClickableProperty, value);
+    }
+
+    private Guid? _id;
+
+    public Guid? Id
+    {
+        get => _id;
+        set => SetAndRaise(IdProperty, ref _id, value);
+    }
+
+    private Guid? _selectedId;
+
+    public Guid? SelectedId
+    {
+        get => _selectedId;
+        set => SetAndRaise(SelectedIdProperty, ref _selectedId, value);
     }
 
     private TextLayout? _textLayout;
@@ -201,10 +256,19 @@ public class GeneralBlock : Control
     private void RenderBackground(DrawingContext context)
     {
         // Ha van háttér megadva akkor lerendereljük a CornerRadius alapján (ami lehet 0 is)
-        var bg = Background;
-        if (bg == null) return;
+        IBrush? background;
+        if (Id != null && SelectedId != null && Id == SelectedId)
+        {
+            background = ColorProvider.GetColor(AppColor.PrimaryContainer);
+        }
+        else
+        {
+            background = Background;
+        }
+        
+        if (background == null) return;
         var cornerRadius = CornerRadius ?? new CornerRadius(0, 0, 0, 0);
-        context.DrawRectangle(bg, null,
+        context.DrawRectangle(background, null,
             new RoundedRect(
                 new Rect(Bounds.Size),
                 cornerRadius.TopLeft,
@@ -258,14 +322,24 @@ public class GeneralBlock : Control
         var typeface = new Typeface(
             FontFamily ?? FontFamily.Default
         );
-        
+
+        IBrush? textColor;
+        if (Id != null && SelectedId != null && Id == SelectedId)
+        {
+            textColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
+        }
+        else
+        {
+            textColor = TextColor;
+        }
+
         // real-time generálásnál képes több ezres nagyságban létrehozni és felszabadítani TextLayout elemeket
         return new TextLayout(
             Text,
             typeface,
             null,
             TextFontSize ?? 12,
-            TextColor ?? Brushes.Black,
+            textColor,
             TextAlignment ?? Avalonia.Media.TextAlignment.Left,
             TextWrapping.Wrap,
             TextTrimming.None,
@@ -282,11 +356,21 @@ public class GeneralBlock : Control
     {
         if (!string.IsNullOrEmpty(SubText))
         {
+            IBrush? subTextColor;
+            if (Id != null && SelectedId != null && Id == SelectedId)
+            {
+                subTextColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
+            }
+            else
+            {
+                subTextColor = SubTextColor;
+            }
+            
             return new TextLayout(
                 SubText,
                 new Typeface(FontFamily ?? FontFamily.Default),
                 SubTextFontSize ?? 8,
-                SubTextColor ?? Brushes.Black,
+                subTextColor,
                 SubTextAlignment ?? Avalonia.Media.TextAlignment.Right,
                 TextWrapping.Wrap,
                 null,
@@ -300,13 +384,24 @@ public class GeneralBlock : Control
         return null;
     }
 
-    protected override void OnMeasureInvalidated()
+    private void InvalidateGeneralBlock()
     {
-        // felszabadítja a textLayoutokat
         _textLayout?.Dispose();
         _textLayout = null;
         _subTextLayout?.Dispose();
         _subTextLayout = null;
+    }
+
+    private void CreateGeneralBlock()
+    {
+        _textLayout = CreateTextLayout();
+        _subTextLayout = CreateSubTextLayout();
+    }
+
+    protected override void OnMeasureInvalidated()
+    {
+        // felszabadítja a textLayoutokat
+        InvalidateGeneralBlock();
         base.OnMeasureInvalidated();
     }
 
@@ -487,7 +582,11 @@ public class GeneralBlock : Control
             case nameof(Background):
             case nameof(SelectionColor):
             case nameof(CornerRadius):
+            case nameof(Id):
+            case nameof(SelectedId):
             {
+                InvalidateGeneralBlock();
+                CreateGeneralBlock();
                 InvalidateVisual();
                 break;
             }
@@ -503,48 +602,67 @@ public class GeneralBlock : Control
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        if (_textLayout == null || Text == null || !Selectable) return;
+        if (_textLayout == null || Text == null) return;
 
-        var pointerPosition = e.GetPosition(this);
-
-        var isPointerOverText = IsPointerOverText(pointerPosition);
-        if (isPointerOverText)
+        if (Selectable)
         {
-            Cursor = new Cursor(StandardCursorType.Ibeam);
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            var pointerPosition = e.GetPosition(this);
+
+            var isPointerOverText = IsPointerOverText(pointerPosition);
+            if (isPointerOverText)
             {
-                var textIndex = TextIndexFromPointer(e.GetPosition(this));
-                _selectionEnd = textIndex;
-                InvalidateVisual();
+                Cursor = new Cursor(StandardCursorType.Ibeam);
+                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+                {
+                    var textIndex = TextIndexFromPointer(e.GetPosition(this));
+                    _selectionEnd = textIndex;
+                    InvalidateVisual();
+                }
+            }
+            else
+            {
+                Cursor = new Cursor(StandardCursorType.Arrow);
             }
         }
-        else
+        else if (Clickable)
         {
-            Cursor = new Cursor(StandardCursorType.Arrow);
+            Cursor = new Cursor(StandardCursorType.Hand);
         }
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (_textLayout == null || Text == null || !Selectable) return;
-        var textIndex = TextIndexFromPointer(e.GetPosition(this));
-        _selectionStart = textIndex;
+        if (_textLayout == null || Text == null) return;
 
-        switch (e.ClickCount)
+        if (Selectable)
         {
-            case 1:
-                if (_selectedText.Length > 0)
-                {
-                    ClearSelection();
-                }
+            var textIndex = TextIndexFromPointer(e.GetPosition(this));
+            _selectionStart = textIndex;
 
-                break;
-            case 2:
-                SelectWordByIndex(textIndex);
-                break;
-            case >= 3:
-                SelectParagraphByIndex(textIndex);
-                break;
+            switch (e.ClickCount)
+            {
+                case 1:
+                    if (_selectedText.Length > 0)
+                    {
+                        ClearSelection();
+                    }
+
+                    break;
+                case 2:
+                    SelectWordByIndex(textIndex);
+                    break;
+                case >= 3:
+                    SelectParagraphByIndex(textIndex);
+                    break;
+            }
+        }
+        else if (Clickable)
+        {
+            if (Id is null) return;
+            if (Command is not null && Command.CanExecute(Id))
+            {
+                Command.Execute(Id);
+            }
         }
     }
 
@@ -714,14 +832,14 @@ public class GeneralBlock : Control
     protected override void OnGotFocus(GotFocusEventArgs e)
     {
         base.OnGotFocus(e);
-        if(!Selectable) return;
+        if (!Selectable) return;
         UpdateSelectedText();
     }
 
     protected override void OnLostFocus(RoutedEventArgs e)
     {
         base.OnLostFocus(e);
-        if(!Selectable) return;
+        if (!Selectable) return;
         if (ContextFlyout is not { IsOpen: true } &&
             ContextMenu is not { IsOpen: true })
         {
@@ -739,16 +857,16 @@ public class GeneralBlock : Control
 
     private async Task OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if(!Selectable) return;
-        
+        if (!Selectable) return;
+
         // macOS billentyűk
         // Meta - nyomva tartott Command
         // LWin - lenyomott bal oldali Command
         // RWin - lenyomott jobb oldali Command
-        
+
         // CTRL+A - összes szöveg kijelölése
-        if (e.Key == Key.A && (e.KeyModifiers.HasFlag(KeyModifiers.Control) 
-            || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
+        if (e.Key == Key.A && (e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                               || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         {
             SelectAllText();
             e.Handled = true;
@@ -756,7 +874,7 @@ public class GeneralBlock : Control
 
         // CTRL+C - szöveg kimásolása vágólapra
         if (e.Key == Key.C && (e.KeyModifiers.HasFlag(KeyModifiers.Control)
-            || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
+                               || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         {
             UpdateSelectedText();
             await CopyToClipboardAsync(_selectedText);

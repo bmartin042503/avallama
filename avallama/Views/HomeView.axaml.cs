@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using avallama.Services;
 using avallama.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
@@ -53,14 +54,14 @@ public partial class HomeView : UserControl
         // Avaloniával ezt nem lehet elérni szóval natív külső könyvtár kellett hozzá (lásd: MacOSInterop.cs)
         if (MacOSInterop.isKeyWindowInFullScreen())
         {
-            SideBarTopGrid.Margin = new Thickness(10);
+            SideBarTopGrid.Margin = new Thickness(14,14,14,0);
             SideBarButton.Margin = _sideBarExpanded ? new Thickness(0, -10, 0, 0) : new Thickness(10, -10, 0, 0);
         }
         else
         {
             if (_sideBarExpanded)
             {
-                SideBarTopGrid.Margin = new Thickness(10, 30, 10, 10);
+                SideBarTopGrid.Margin = new Thickness(14, 30, 14, 0);
                 SideBarButton.Margin = new Thickness(0, -10, 0, 0);
             }
             else
@@ -157,7 +158,7 @@ public partial class HomeView : UserControl
             {
                 // sidebar
                 new ColumnDefinition(new GridLength(_sideBarWidth, GridUnitType.Pixel))
-                    { MinWidth = 180, MaxWidth = 400 },
+                    { MinWidth = 250, MaxWidth = 400 },
                 // gridsplitter
                 new ColumnDefinition(new GridLength(8, GridUnitType.Pixel)),
                 // sidebar expand/hide gomb
@@ -176,15 +177,20 @@ public partial class HomeView : UserControl
     private void SideBar_OnSizeChanged(object? sender, SizeChangedEventArgs e)
     {
         // ha átméretezi a sidebart akkor beállítjuk reszponzívan az új csevegés gomb szövegét
-        // mert ugye a konverter baszta átállítani
         _sideBarWidth = SideBar.Bounds.Width;
-        var buttonText = _sideBarWidth switch
+        
+        // textblock lekérése közvetlenül hogy tudjuk módosítani a láthatóságot és így középre tud igazodni az ikon
+        var buttonTextBlock = NewConversationBtn.GetTemplateChildren().FirstOrDefault(c => c is TextBlock) as TextBlock;
+        switch (_sideBarWidth)
         {
-            < 205 => string.Empty,
-            >= 205 => LocalizationService.GetString("NEW"),
-            // >= 375 => LocalizationService.GetString("NEW_CONVERSATION"),
-            _ => string.Empty
-        };
-        NewConversationBtn.Content = buttonText;
+            case < 295:
+                if (buttonTextBlock != null) buttonTextBlock.IsVisible = false;
+                NewConversationBtn.Content = string.Empty;
+                break;
+            case >= 295:
+                if (buttonTextBlock != null) buttonTextBlock.IsVisible = true;
+                NewConversationBtn.Content = LocalizationService.GetString("NEW");
+                break;
+        }
     }
 }

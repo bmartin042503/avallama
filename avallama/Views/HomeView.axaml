@@ -7,7 +7,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewModels="clr-namespace:avallama.ViewModels"
+             xmlns:vm="clr-namespace:avallama.ViewModels"
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:localization="clr-namespace:avallama.Services"
              xmlns:controls="clr-namespace:avallama.Controls"
@@ -15,7 +15,7 @@ Licensed under the MIT License. See LICENSE file for details.
              Background="{DynamicResource Surface}"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
-             x:DataType="viewModels:HomeViewModel">
+             x:DataType="vm:HomeViewModel">
 
     <UserControl.Resources>
         <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter" />
@@ -25,7 +25,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <Grid RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" MinWidth="180" MaxWidth="400" />
+            <ColumnDefinition Width="300" MinWidth="250" MaxWidth="425" />
             <ColumnDefinition Width="8" />
             <ColumnDefinition Width="50" />
             <ColumnDefinition Width="7*" />
@@ -35,14 +35,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" x:Name="SideBar" SizeChanged="SideBar_OnSizeChanged"
               RowDefinitions="Auto,*,Auto"
               Background="{DynamicResource SurfaceContainer}">
-            <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" x:Name="SideBarTopGrid" Margin="10">
-                <Border Grid.Column="0">
-                    <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
-                            Content="{localization:LocalizationService Key='NEW'}"
-                            Margin="0,0,10,0" HorizontalAlignment="Stretch" Cursor="Hand"
-                            IsEnabled="True" Command="{Binding CreateNewConversation}" />
-                </Border>
-                <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1">
+            <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" x:Name="SideBarTopGrid">
+                <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
+                        Content="{localization:LocalizationService Key='NEW'}"
+                        Margin="0,0,14,0" HorizontalAlignment="Stretch" Cursor="Hand"
+                        IsEnabled="True" Command="{Binding CreateNewConversation}" />
+                <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1"
+                         Background="{DynamicResource SurfaceContainerHighest}">
                     <TextBox.InnerRightContent>
                         <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
                                              Margin="0,0,10,0" StrokeColor="{DynamicResource Primary}" />
@@ -50,14 +49,18 @@ Licensed under the MIT License. See LICENSE file for details.
                 </TextBox>
             </Grid>
 
-            <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,5, 10, 15">
+            <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="14">
                 <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
                     <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
                             <controls:GeneralBlock
                                 Classes="conversationElement"
+                                Id="{Binding ConversationId}"
+                                SelectedId="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectedConversation.ConversationId}"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectConversation}"
                                 Text="{Binding Title}"
-                                SubText="{Binding Model}" />
+                                SubText="{Binding Model}"
+                                Margin="0,0,0,14"/>
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>

@@ -7,6 +7,7 @@ using System.Net;
 using avallama.Constants;
 using avallama.Services;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
 
@@ -14,6 +15,7 @@ public partial class SettingsViewModel : DialogViewModel
 {
     private readonly DialogService _dialogService;
     private readonly ConfigurationService _configurationService;
+    private readonly IMessenger _messenger;
     private const string Url = @"https://github.com/4foureyes/avallama/";
 
     private int _selectedLanguageIndex;
@@ -97,11 +99,12 @@ public partial class SettingsViewModel : DialogViewModel
         }
     }
     
-    public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService)
+    public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService,  IMessenger messenger)
     {
         DialogType = ApplicationDialog.Settings;
         _dialogService = dialogService;
         _configurationService = configurationService;
+        _messenger = messenger;
         ChangesTextVisibility = false;
         LoadSettings();
     }
@@ -184,6 +187,7 @@ public partial class SettingsViewModel : DialogViewModel
         
         _configurationService.SaveSetting(ConfigurationKey.ApiHost, ApiHost);
         _configurationService.SaveSetting(ConfigurationKey.ApiPort, ApiPort.ToString());
+        _messenger.Send(new ReloadSettingsMessage());
     }
 
     [RelayCommand]
