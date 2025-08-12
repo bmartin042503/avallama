@@ -322,7 +322,25 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="GENERATION_SPEED" xml:space="preserve">
         <value>Generálás sebessége:</value>
     </data>
-    <data name="ORDER_BY" xml:space="preserve">
+    <data name="SORT_BY" xml:space="preserve">
         <value>Rendezés:</value>
+    </data>
+    <data name="MODEL_SIZE" xml:space="preserve">
+        <value>Méret: {0}</value>
+    </data>
+    <data name="SORT_SIZE_DESCENDING" xml:space="preserve">
+        <value>Méret (csökkenő)</value>
+    </data>
+    <data name="SORT_SIZE_ASCENDING" xml:space="preserve">
+        <value>Méret (növekvő)</value>
+    </data>
+    <data name="SORT_PARAMETERS_DESCENDING" xml:space="preserve">
+        <value>Paraméter (csökkenő)</value>
+    </data>
+    <data name="SORT_PARAMETERS_ASCENDING" xml:space="preserve">
+        <value>Paraméter (növekvő)</value>
+    </data>
+    <data name="SORT_DOWNLOADED" xml:space="preserve">
+        <value>Letöltött</value>
     </data>
 </root>

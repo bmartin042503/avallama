@@ -11,11 +11,15 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:vm="using:avallama.ViewModels"
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:models="clr-namespace:avallama.Models"
+             xmlns:converters="clr-namespace:avallama.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.Dialogs.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
-
+    
+    <UserControl.Resources>
+        <converters:SortingOptionConverter x:Key="SortingOptionConverter"/>
+    </UserControl.Resources>
 
     <!-- ha az első oszlopot autora állítod akkor exceptiont kapsz, valszeg mert még nem tudja jól megmérni magát a modelblock control arra az esetre -->
     <Grid Margin="22" RowDefinitions="Auto,*,Auto">
@@ -62,7 +66,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,12,0,0" HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
                 <TextBlock Grid.Column="0"
-                           Text="{services:LocalizationService Key='ORDER_BY'}"
+                           Text="{services:LocalizationService Key='SORT_BY'}"
                            VerticalAlignment="Center"
                            FontSize="12"
                            Foreground="{DynamicResource OnSurface}"
@@ -70,14 +74,18 @@ Licensed under the MIT License. See LICENSE file for details.
                 <ComboBox Grid.Column="1" Margin="8,0,0,0"
                           SelectedIndex="1"
                           HorizontalAlignment="Stretch"
-                          Classes="sorting">
-                    <ComboBoxItem>Size</ComboBoxItem>
-                    <ComboBoxItem>Downloaded</ComboBoxItem>
-                    <ComboBoxItem>Parameters</ComboBoxItem>
+                          Classes="sorting"
+                          ItemsSource="{Binding SortingOptions}"
+                          SelectedItem="{Binding Path=SelectedSortingOption, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource SortingOptionConverter}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
                 </ComboBox>
             </Grid>
 
-            <!-- "Nincs model" svg és szöveg -->
+            <!-- "Nincs megjeleníthető model" svg és szöveg -->
             <StackPanel Grid.Row="2" Orientation="Vertical" IsVisible="{Binding !HasModelsToDisplay}"
                         Spacing="30" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <controls:DynamicSvg Path="/Assets/Svg/sad.svg" Height="120" FillColor="{DynamicResource Primary}" />

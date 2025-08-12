@@ -15,7 +15,7 @@ Licensed under the MIT License. See LICENSE file for details.
              x:DataType="vm:GuideViewModel"
              Background="{DynamicResource Surface}">
     <UserControl.Resources>
-        <converters:ResponsiveGuideImageSizeConverter x:Key="ResponsiveGuideImageSizeConverter"/>
+        <converters:GuideImageSizeConverter x:Key="GuideImageSizeConverter"/>
     </UserControl.Resources>
     <Grid>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     IsVisible="{Binding IsImageVisible}">
                 <Image Source="{Binding CurrentImageSource}"
                        IsVisible="{Binding IsImageVisible}"
-                       MaxHeight="{Binding Path=Bounds.Height, Converter={StaticResource ResponsiveGuideImageSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                       MaxHeight="{Binding Path=Bounds.Height, Converter={StaticResource GuideImageSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
             </Border>
             <TextBlock Text="{Binding CurrentMainText}" HorizontalAlignment="Center"
                        FontSize="20" VerticalAlignment="Center"/>

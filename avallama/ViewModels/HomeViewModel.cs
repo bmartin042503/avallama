@@ -116,16 +116,17 @@ public partial class HomeViewModel : PageViewModel
         var newConversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
-        );
+        )
+        {
+            ConversationId = await _databaseService.CreateConversation()
+        };
         Conversations.Push(newConversation);
         SelectedConversation = newConversation;
-        SelectedConversation.ConversationId = await _databaseService.CreateConversation();
     }
 
     [RelayCommand]
     public void SelectConversation(object parameter)
     {
-        
         if (parameter is Guid guid)
         {
             if (guid == SelectedConversation.ConversationId) return;

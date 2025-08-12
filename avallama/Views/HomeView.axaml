@@ -19,7 +19,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
     <UserControl.Resources>
         <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter" />
-        <converters:ResponsiveMessageBlockSizeConverter x:Key="ResponsiveMessageBlockSizeConverter" />
+        <converters:MessageBlockSizeConverter x:Key="MessageBlockSizeConverter" />
     </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
@@ -201,7 +201,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                     TextColor="{DynamicResource SurfaceContainerHighest}"
                                     SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
                                     Background="{DynamicResource OutlineVariant}"
-                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource MessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </DataTemplate>
                             <DataTemplate DataType="models:Message">
                                 <controls:GeneralBlock
@@ -210,7 +210,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                     Text="{Binding Content}"
                                     TextColor="{DynamicResource OnPrimary}"
                                     Background="{DynamicResource Primary}"
-                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource MessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </DataTemplate>
                         </ItemsControl.DataTemplates>
                     </ItemsControl>

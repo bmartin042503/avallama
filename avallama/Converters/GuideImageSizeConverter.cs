@@ -4,7 +4,7 @@ using Avalonia.Data.Converters;
 
 namespace avallama.Converters;
 
-public class ResponsiveGuideImageSizeConverter : IValueConverter
+public class GuideImageSizeConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {

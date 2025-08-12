@@ -384,7 +384,7 @@ public class GeneralBlock : Control
         return null;
     }
 
-    private void InvalidateGeneralBlock()
+    private void InvalidateTextLayouts()
     {
         _textLayout?.Dispose();
         _textLayout = null;
@@ -392,7 +392,7 @@ public class GeneralBlock : Control
         _subTextLayout = null;
     }
 
-    private void CreateGeneralBlock()
+    private void CreateTextLayouts()
     {
         _textLayout = CreateTextLayout();
         _subTextLayout = CreateSubTextLayout();
@@ -401,7 +401,7 @@ public class GeneralBlock : Control
     protected override void OnMeasureInvalidated()
     {
         // felszabadítja a textLayoutokat
-        InvalidateGeneralBlock();
+        InvalidateTextLayouts();
         base.OnMeasureInvalidated();
     }
 
@@ -585,8 +585,8 @@ public class GeneralBlock : Control
             case nameof(Id):
             case nameof(SelectedId):
             {
-                InvalidateGeneralBlock();
-                CreateGeneralBlock();
+                InvalidateTextLayouts();
+                CreateTextLayouts();
                 InvalidateVisual();
                 break;
             }

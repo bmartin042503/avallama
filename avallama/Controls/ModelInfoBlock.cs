@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
@@ -170,16 +171,19 @@ public class ModelInfoBlock : Control
         get => GetValue(CommandParameterProperty);
         set => SetValue(CommandParameterProperty, value);
     }
-    
+
     private const double TitleFontSize = 26;
     private const double WarningFontSize = 14;
-    private const double LabelFontSize = 14;
+    private const double LabelFontSize = 12;
     private const double DetailsFontSize = 12;
     private const double DetailsLineHeight = 16;
-    private const double BorderThickness = 0.5;
+    private const double BorderThickness = 0.25;
+    private const double LabelSpacing = 8.0;
 
     private static readonly Thickness BasePadding = new(16);
+    private static readonly Thickness LabelPadding = new(10, 4);
     private static readonly CornerRadius BaseCornerRadius = new(10);
+    private static readonly CornerRadius LabelCornerRadius = new(4);
 
     private TextLayout? _titleTextLayout;
     private TextLayout? _warningTextLayout;
@@ -187,23 +191,31 @@ public class ModelInfoBlock : Control
     private TextLayout? _parametersTextLayout;
     private TextLayout? _formatTextLayout;
     private TextLayout? _detailsTextLayout;
+    private TextLayout? _sizeTextLayout;
+    private TextLayout? _modelInfoTextLayout;
+    private TextLayout? _learnMoreTextLayout;
 
-    // private static double RenderPosX;
-    // private static double RenderPosY;
+    private double _renderPosX;
+    private double _renderPosY;
+
+    private double _labelsHeight;
 
     public override void Render(DrawingContext context)
     {
         // Háttér renderelése
         RenderBackground(context);
-        
-        // Model cím (+warning szöveg ha van) renderelés
+
+        // Model cím (+warning szöveg ha van) renderelése
         RenderTitle(context);
+
+        // alap címkék renderelése (kvantálás, paraméterek, format)
+        RenderLabels(context);
     }
 
     private void RenderBackground(DrawingContext context)
     {
         context.DrawRectangle(
-            ColorProvider.GetColor(AppColor.SurfaceContainerHigh),
+            ColorProvider.GetColor(AppColor.SurfaceContainer),
             new Pen(ColorProvider.GetColor(AppColor.OnSurface), BorderThickness),
             new RoundedRect(
                 new Rect(Bounds.Size),
@@ -220,12 +232,128 @@ public class ModelInfoBlock : Control
         );
 
         const double spacing = 6.0;
-        
+
         _warningTextLayout?.Draw(
             context,
             new Point(
-                Bounds.Width - _warningTextLayout.Width - BasePadding.Right, 
+                Bounds.Width - _warningTextLayout.Width - BasePadding.Right,
                 BasePadding.Top + spacing
+            )
+        );
+
+        _renderPosY += BasePadding.Top + (_titleTextLayout?.Height ?? 0) + BasePadding.Bottom;
+        _renderPosX = BasePadding.Left;
+    }
+
+    // kirajzol egy Labelt, egy hátteret és egy benne lévő szöveget, _renderPosX és _renderPosY alapján
+    private void DrawBaseLabel(
+        DrawingContext context,
+        double width,
+        double height,
+        TextLayout? textLayout
+    )
+    {
+        if (textLayout == null) return;
+
+        double posXChange;
+
+        // belefér a sorba a label
+        if (Bounds.Width - BasePadding.Left - BasePadding.Right - _renderPosX >= textLayout.Width)
+        {
+            posXChange = LabelPadding.Left + textLayout.Width + LabelPadding.Right + LabelSpacing;
+        }
+        else
+        {
+            // ha új sorba kezdődik akkor reseteljük a renderPosX-et és hozzáadjuk a label magasságot a renderPosY-hoz
+            posXChange = 0.0;
+            _renderPosX = BasePadding.Left;
+            _renderPosY += LabelPadding.Top + textLayout.Height + LabelPadding.Bottom + LabelSpacing;
+            _labelsHeight += LabelPadding.Top + textLayout.Height + LabelPadding.Bottom + LabelSpacing;
+        }
+
+        context.DrawRectangle(
+            ColorProvider.GetColor(AppColor.Secondary), null,
+            new RoundedRect(
+                new Rect(
+                    new Point(
+                        _renderPosX,
+                        _renderPosY
+                    ),
+                    new Size(
+                        width,
+                        height
+                    )
+                ),
+                LabelCornerRadius
+            )
+        );
+
+        textLayout.Draw(
+            context,
+            new Point(_renderPosX + LabelPadding.Left, _renderPosY + LabelPadding.Top)
+        );
+
+        // a render pozíció megkapja az X változást (ha pl. nem került új sorba az adott label akkor hozzáadjuk annak a hosszát
+        // egyébként meg nullát, ha új sorba került és akkor megint BasePadding.Left-ről kezdi
+        _renderPosX += posXChange;
+    }
+
+    private void RenderLabels(DrawingContext context)
+    {
+        if (_quantizationTextLayout != null && Quantization.HasValue)
+        {
+            DrawBaseLabel(context,
+                LabelPadding.Left + _quantizationTextLayout.Width + LabelPadding.Right,
+                LabelPadding.Top + _quantizationTextLayout.Height + LabelPadding.Bottom,
+                _quantizationTextLayout
+            );
+        }
+
+        if (_parametersTextLayout != null && Parameters.HasValue)
+        {
+            DrawBaseLabel(context,
+                LabelPadding.Left + _parametersTextLayout.Width + LabelPadding.Right,
+                LabelPadding.Top + _parametersTextLayout.Height + LabelPadding.Bottom,
+                _parametersTextLayout
+            );
+        }
+
+        if (_formatTextLayout != null && !string.IsNullOrEmpty(Format))
+        {
+            DrawBaseLabel(context,
+                LabelPadding.Left + _formatTextLayout.Width + LabelPadding.Right,
+                LabelPadding.Top + _formatTextLayout.Height + LabelPadding.Bottom,
+                _formatTextLayout
+            );
+        }
+
+        _renderPosY += _labelsHeight - LabelSpacing + BasePadding.Bottom;
+        
+        // SizeLabel (ehhez nem kell renderPosX és renderPosY mert fixen mindig a bal alsó sarokban lesz)
+        if (_sizeTextLayout == null) return;
+        context.DrawRectangle(
+            ColorProvider.GetColor(AppColor.SurfaceContainerHighest),
+            new Pen(ColorProvider.GetColor(AppColor.OnSurface), BorderThickness),
+            new RoundedRect(
+                new Rect(
+                    new Point(
+                        BasePadding.Left,
+                        Bounds.Height - BasePadding.Bottom - LabelPadding.Bottom - _sizeTextLayout.Height - LabelPadding.Top
+                    ),
+                    new Size(
+                        width: LabelPadding.Left + _sizeTextLayout.Width + LabelPadding.Right,
+                        height: LabelPadding.Top + _sizeTextLayout.Height + LabelPadding.Bottom
+                    )
+                ),
+                LabelCornerRadius
+            )
+        );
+        
+        _sizeTextLayout.Draw(
+            context,
+            new Point(
+                BasePadding.Left + LabelPadding.Left,
+                Bounds.Height - BasePadding.Bottom - LabelPadding.Bottom - _sizeTextLayout.Height
             )
         );
     }
@@ -235,7 +363,7 @@ public class ModelInfoBlock : Control
     {
         if (string.IsNullOrEmpty(Title)) return null;
 
-        const double spacing = 18.0;
+        const double spacing = 26.0;
 
         return new TextLayout(
             Title,
@@ -245,11 +373,11 @@ public class ModelInfoBlock : Control
             ColorProvider.GetColor(AppColor.OnSurface),
             maxWidth: Bounds.Width - BasePadding.Left - BasePadding.Right - (_warningTextLayout?.Width + spacing ?? 0),
             textWrapping: TextWrapping.Wrap,
-            maxLines: 3,
+            maxLines: 2,
             textTrimming: TextTrimming.CharacterEllipsis
         );
     }
-    
+
     // Warning textlayout létrehozása (ha szükség van rá, pl. ki kell írni hogy lassan futhat a model)
     private TextLayout? CreateWarningTextLayout()
     {
@@ -274,7 +402,7 @@ public class ModelInfoBlock : Control
             ColorProvider.GetColor(AppColor.OnSecondary)
         );
     }
-    
+
     // Model részleteihez tartozó textlayout létrehozása
     private TextLayout? CreateDetailsTextLayout()
     {
@@ -292,9 +420,25 @@ public class ModelInfoBlock : Control
             lineHeight: DetailsLineHeight
         );
     }
-    
+
+    private TextLayout? CreateSizeTextLayout()
+    {
+        if (!SizeInBytes.HasValue) return null;
+
+        var formattedSize = string.Format(LocalizationService.GetString("MODEL_SIZE"),
+            RenderHelper.GetSizeInGb(SizeInBytes.Value));
+
+        return new TextLayout(
+            formattedSize,
+            new Typeface(RenderHelper.ManropeFont, weight: FontWeight.Regular),
+            null,
+            LabelFontSize,
+            ColorProvider.GetColor(AppColor.OnSurface)
+        );
+    }
+
     // controlhoz tartozó layoutok stb. felszabadítása
-    private void InvalidateModelInfo()
+    private void InvalidateTextLayouts()
     {
         _warningTextLayout?.Dispose();
         _warningTextLayout = null;
@@ -308,9 +452,14 @@ public class ModelInfoBlock : Control
         _parametersTextLayout = null;
         _formatTextLayout?.Dispose();
         _formatTextLayout = null;
+        _sizeTextLayout?.Dispose();
+        _sizeTextLayout = null;
+
+        _renderPosX = 0;
+        _renderPosY = 0;
     }
 
-    private void CreateModelInfo()
+    private void CreateTextLayouts()
     {
         // ennek itt kell lennie legelöl, hogy a titleTextLayout tudja mekkora helyet foglal el a warning szöveg
         // és annak alapján fogja ő is kitölteni a helyet
@@ -318,18 +467,19 @@ public class ModelInfoBlock : Control
         
         _titleTextLayout ??= CreateTitleTextLayout();
         _detailsTextLayout ??= CreateDetailsTextLayout();
-        
+        _sizeTextLayout ??= CreateSizeTextLayout();
+
         if (Quantization is > 0)
         {
             _quantizationTextLayout ??= CreateLabelTextLayout(
-                string.Format(LocalizationService.GetString("MODEL_QUANTIZATION"), Quantization)    
+                string.Format(LocalizationService.GetString("MODEL_QUANTIZATION"), Quantization)
             );
         }
 
         if (Parameters is > 0)
         {
             _parametersTextLayout ??= CreateLabelTextLayout(
-                string.Format(LocalizationService.GetString("MODEL_PARAMETER_SIZE"), Parameters)    
+                string.Format(LocalizationService.GetString("MODEL_PARAMETER_SIZE"), Parameters)
             );
         }
 
@@ -338,16 +488,16 @@ public class ModelInfoBlock : Control
             _formatTextLayout ??= CreateLabelTextLayout(Format);
         }
     }
-    
+
     protected override void OnMeasureInvalidated()
     {
-        InvalidateModelInfo();
+        InvalidateTextLayouts();
         base.OnMeasureInvalidated();
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        CreateModelInfo();
+        CreateTextLayouts();
 
         // visszaadjuk a teljes elérhető szélességet, magasságot, hiszen ez a control kitölti a teljes rendelkezésre álló helyet
         return new Size(
@@ -355,7 +505,7 @@ public class ModelInfoBlock : Control
             height: availableSize.Height
         );
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -371,14 +521,13 @@ public class ModelInfoBlock : Control
             case nameof(DownloadStatus):
             case nameof(DownloadProgress):
             case nameof(RunsSlow):
-                InvalidateModelInfo();
+                InvalidateTextLayouts();
                 InvalidateVisual();
-                CreateModelInfo();
+                CreateTextLayouts();
                 break;
             case nameof(Bounds):
                 InvalidateMeasure();
                 break;
-                
         }
     }
 }

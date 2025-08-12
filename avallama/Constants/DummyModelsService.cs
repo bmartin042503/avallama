@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using avallama.Models;
 using avallama.Services;
 
@@ -22,13 +23,14 @@ public static class DummyModelsService
                 { LocalizationService.GetString("EMBEDDING_LENGTH"), "4608" },
             },
             size: 3825205248,
-            ModelDownloadStatus.Downloading
+            downloadStatus: ModelDownloadStatus.Downloading,
+            format: "MLX",
+            runsSlow: true
         )
         {
-            RunsSlow = true
+            DownloadProgress = 0.6942
         };
-        test1.DownloadProgress = 0.6942;
-        
+
         return new List<OllamaModel>
         {
             new(
@@ -47,7 +49,9 @@ public static class DummyModelsService
                     }
                 },
                 size: 3221225472,
-                ModelDownloadStatus.Downloaded
+                format: "GGUF",
+                downloadStatus: ModelDownloadStatus.Downloaded,
+                runsSlow: false
             ),
             test1,
             new(
@@ -62,7 +66,10 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "5120" }
                 },
                 size: 7516192768,
-                ModelDownloadStatus.Downloading
+                downloadStatus: ModelDownloadStatus.Downloading,
+                format: "GGUF",
+                runsSlow: false
+                
             ),
 
             new(
@@ -77,13 +84,15 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "3840" }
                 },
                 size: 2147483648,
-                ModelDownloadStatus.NotEnoughSpaceForDownload
+                downloadStatus: ModelDownloadStatus.NotEnoughSpace,
+                runsSlow: true,
+                format: string.Empty
             ),
 
             new(
                 name: "falcon1b",
-                quantization: 2,
-                parameters: 1.0,
+                quantization: 0,
+                parameters: 0,
                 details: new Dictionary<string, string>
                 {
                     { LocalizationService.GetString("GENERAL_ARCHITECTURE"), "falcon" },
@@ -96,12 +105,15 @@ public static class DummyModelsService
                     }
                 },
                 size: 1073741824,
-                ModelDownloadStatus.Downloaded
+                downloadStatus: ModelDownloadStatus.Downloaded,
+                format: string.Empty,
+                runsSlow: false
+                
             ),
 
             new(
                 name: "orca-mini",
-                quantization: 4,
+                quantization: 0,
                 parameters: 2.5,
                 details: new Dictionary<string, string>
                 {
@@ -115,13 +127,15 @@ public static class DummyModelsService
                     }
                 },
                 size: 2684354560,
-                ModelDownloadStatus.Downloaded
+                downloadStatus: ModelDownloadStatus.Downloaded,
+                format: "Custom",
+                runsSlow: true
             ),
 
             new(
                 name: "phi-2",
                 quantization: 3,
-                parameters: 1.5,
+                parameters: 0,
                 details: new Dictionary<string, string>
                 {
                     { LocalizationService.GetString("GENERAL_ARCHITECTURE"), "phi" },
@@ -130,7 +144,9 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "2560" }
                 },
                 size: 1610612736,
-                ModelDownloadStatus.ReadyForDownload
+                downloadStatus: ModelDownloadStatus.Ready,
+                runsSlow: true,
+                format: string.Empty
             ),
 
             new(
@@ -145,8 +161,13 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "5120" }
                 },
                 size: 7516192768,
-                ModelDownloadStatus.ReadyForDownload
-            ),
+                downloadStatus: ModelDownloadStatus.Downloading,
+                format: "GGUF",
+                runsSlow: false
+            )
+            {
+                DownloadProgress = 0.81
+            },
 
             new(
                 name: "zephyr-beta",
@@ -160,13 +181,15 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "4864" }
                 },
                 size: 7205759400,
-                ModelDownloadStatus.NotEnoughSpaceForDownload
+                downloadStatus: ModelDownloadStatus.NotEnoughSpace,
+                format: "VERY-LONG-FORMAT-NAME-FOR-TESTING",
+                runsSlow: false
             ),
 
             new(
-                name: "neural-chat",
+                name: "neural-chat:120b",
                 quantization: 5,
-                parameters: 4.5,
+                parameters: 120.5,
                 details: new Dictionary<string, string>
                 {
                     { LocalizationService.GetString("GENERAL_ARCHITECTURE"), "intel" },
@@ -179,12 +202,14 @@ public static class DummyModelsService
                     }
                 },
                 size: 4831838208,
-                ModelDownloadStatus.Downloaded
+                downloadStatus: ModelDownloadStatus.Downloaded,
+                format: "GGUF",
+                runsSlow: true
             ),
 
             new(
                 name: "openchat3.5",
-                quantization: 4,
+                quantization: 0,
                 parameters: 6.0,
                 details: new Dictionary<string, string>
                 {
@@ -194,7 +219,9 @@ public static class DummyModelsService
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "4800" }
                 },
                 size: 6442450944,
-                ModelDownloadStatus.NoConnectionForDownload
+                downloadStatus: ModelDownloadStatus.NoConnection,
+                format: string.Empty,
+                runsSlow: false
             )
         };
     }

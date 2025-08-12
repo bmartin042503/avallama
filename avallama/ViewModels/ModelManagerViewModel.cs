@@ -19,27 +19,44 @@ public partial class ModelManagerViewModel : DialogViewModel
 
     // ide lesz betöltve az összes model adat
     private IEnumerable<OllamaModel> _modelsData = [];
-    
+
+    public IEnumerable<SortingOption> SortingOptions { get; } = Enum.GetValues<SortingOption>();
+
     // megjelenített modellek, ez módosul, pl. keresésnél, rendezésnél stb.
     [ObservableProperty] private ObservableCollection<OllamaModel> _models = [];
-    
+
     [ObservableProperty] private string _downloadedModelsInfo = string.Empty;
     [ObservableProperty] private bool _hasDownloadedModels;
     [ObservableProperty] private bool _hasModelsToDisplay;
     [ObservableProperty] private string _selectedModelName = string.Empty;
     [ObservableProperty] private OllamaModel? _selectedModel;
 
+    private SortingOption _selectedSortingOption;
+
+    public SortingOption SelectedSortingOption
+    {
+        get => _selectedSortingOption;
+        set
+        {
+            _selectedSortingOption = value;
+            SortModels();
+            OnPropertyChanged();
+        }
+    }
+
     private string _searchBoxText = string.Empty;
+
     public string SearchBoxText
     {
         get => _searchBoxText;
         set
         {
             _searchBoxText = value;
-            
+
             // ollama modellek újraszűrése a searchbox értéke alapján
-            FilterModelsData();
-            
+            FilterModels();
+            SortModels();
+
             OnPropertyChanged();
         }
     }
@@ -50,8 +67,11 @@ public partial class ModelManagerViewModel : DialogViewModel
 
         _dialogService = dialogService;
 
+        SelectedSortingOption = SortingOption.Downloaded;
+
         LoadModelsData();
-        FilterModelsData();
+        FilterModels();
+        SortModels();
 
         if (!string.IsNullOrEmpty(SelectedModelName) && HasDownloadedModels)
         {
@@ -67,9 +87,9 @@ public partial class ModelManagerViewModel : DialogViewModel
 
         var ollamaModels = _modelsData as OllamaModel[] ?? _modelsData.ToArray();
         if (ollamaModels.Length == 0) return;
-        
+
         var downloadedModelsCount = ollamaModels.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
-        
+
         HasModelsToDisplay = true;
         HasDownloadedModels = downloadedModelsCount > 0;
 
@@ -78,9 +98,9 @@ public partial class ModelManagerViewModel : DialogViewModel
             var downloadedSizeSum = ollamaModels
                 .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
                 .Sum(m => m.Size);
-        
+
             var totalSizeInGb = downloadedSizeSum / 1_073_741_824.0;
-            
+
             DownloadedModelsInfo =
                 string.Format(
                     LocalizationService.GetString("DOWNLOADED_MODELS_INFO"),
@@ -90,7 +110,32 @@ public partial class ModelManagerViewModel : DialogViewModel
         }
     }
 
-    private void FilterModelsData()
+    // A rendezés beállítása alapján rendezi a modelleket
+    private void SortModels()
+    {
+        var sortedModels = SelectedSortingOption switch
+        {
+            SortingOption.Downloaded => Models
+                .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                .Concat(Models.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded)),
+            
+            SortingOption.ParametersAscending => Models.OrderBy(m => m.Parameters),
+            
+            SortingOption.ParametersDescending => Models.OrderByDescending(m => m.Parameters),
+            
+            SortingOption.SizeAscending => Models.OrderBy(m => m.Size),
+            
+            SortingOption.SizeDescending => Models.OrderByDescending(m => m.Size),
+            
+            _ => Models
+        };
+
+        Models = new ObservableCollection<OllamaModel>(sortedModels);
+    }
+
+
+    // A keresés szövege alapján szűri a modelleket
+    private void FilterModels()
     {
         if (!_modelsData.Any())
         {
@@ -100,7 +145,7 @@ public partial class ModelManagerViewModel : DialogViewModel
 
         var search = SearchBoxText.Trim();
         var hasSearch = !string.IsNullOrEmpty(search);
-        
+
         Models = new ObservableCollection<OllamaModel>(
             _modelsData
                 .Where(m => !hasSearch || m.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
@@ -127,7 +172,7 @@ public partial class ModelManagerViewModel : DialogViewModel
         {
             if (string.IsNullOrEmpty(modelName)) return;
             SelectedModelName = modelName;
-            
+
             var modelFromName = _modelsData.FirstOrDefault(m => m.Name == SelectedModelName);
             if (modelFromName != null) SelectedModel = modelFromName;
         }

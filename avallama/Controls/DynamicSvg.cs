@@ -13,8 +13,9 @@ namespace avallama.Controls;
 /// </summary>
 
 
-// esetleg később kibővíteni teljesen, hogy svgben meg lehessen adni tageket (pl. primary, secondary)
-// és akkor így dinamikusan bármilyen pathnek a színét módosítani
+// TODO:
+// ezt majd megcsinálom úgy hogy svg fájlban meg lehessen adni osztályokat/tageket (pl. Primary, OnPrimary stb.)
+// és akkor teljesen dinamikusan működne minden svg színezés
 public class DynamicSvg : Avalonia.Svg.Svg
 {
     /* SVG-t a következőképp lehet színezni megfelelően ezzel az osztállyal:
@@ -35,7 +36,7 @@ public class DynamicSvg : Avalonia.Svg.Svg
     
     public DynamicSvg(IServiceProvider provider) : base(provider)
     {
-        
+        // TODO: dinamikus színbeállítás
     }
     
 

@@ -329,7 +329,25 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="GENERATION_SPEED" xml:space="preserve">
         <value>Generation speed:</value>
     </data>
-    <data name="ORDER_BY" xml:space="preserve">
-        <value>Order by:</value>
+    <data name="SORT_BY" xml:space="preserve">
+        <value>Sort by:</value>
+    </data>
+    <data name="MODEL_SIZE" xml:space="preserve">
+        <value>Size: {0}</value>
+    </data>
+    <data name="SORT_SIZE_DESCENDING" xml:space="preserve">
+        <value>Size (descending)</value>
+    </data>
+    <data name="SORT_SIZE_ASCENDING" xml:space="preserve">
+        <value>Size (ascending)</value>
+    </data>
+    <data name="SORT_PARAMETERS_DESCENDING" xml:space="preserve">
+        <value>Parameters (descending)</value>
+    </data>
+    <data name="SORT_PARAMETERS_ASCENDING" xml:space="preserve">
+        <value>Parameters (ascending)</value>
+    </data>
+    <data name="SORT_DOWNLOADED" xml:space="preserve">
+        <value>Downloaded</value>
     </data>
 </root>
