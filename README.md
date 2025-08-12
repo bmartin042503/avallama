@@ -4,7 +4,7 @@
 <h1 align="center">Avallama</h1>
 
 
-<p align="center">Avallama is a multi-platform desktop app designed to enable a user-friendly GUI for Ollama using the Avalonia framework.</p>
+<p align="center">A cross-platform local AI desktop app powered by Ollama</p>
 
 <p align="center">
     <img style="border-radius: 10px; box-shadow: 0 5px 25px #755085;" src="avallama/Assets/prodimg2.png" alt="Avallama picture">
@@ -14,12 +14,12 @@ This project is currently being developed by Márk Csörgő and Martin Bartos.
 
 ## Features
 
--  **Automatic Ollama Process Management** – Ensures Ollama runs efficiently in the background without manual intervention
--  **No Internet Required** - Avallama makes no connection with the internet, using only Ollama's local server API to pull new models
--  **Chat with Llama3.2** – Seamlessly interact with Llama 3.2 in a user-friendly chat interface
--  **Multi-Platform Support** – Runs on Windows, Linux and macOS with Avalonia
+-  **Seamless Local LLMs** - Chat seamlessly with LLMs hosted locally on your machine
+-  **Your Data Stays With You** - Avallama runs completely locally, meaning your chats stay with you, and only you
+-  **Ollama On The Network** – Connect the app to an Ollama instance on your network to easily use your AI workstation on any device
+-  **Multi-Platform Support** – Runs on Windows, Linux and macOS utilizing the Avalonia framework
 -  **Lightweight and Efficient** – Designed to be minimal while providing a smooth experience
--  **Extensible Backend** – Future updates will include support for additional LLMs, and much more customization and QOL features
+-  **Automatic Ollama Process Management** – Ensures Ollama runs efficiently in the background without manual intervention
 
 ## Contributions
 
@@ -74,21 +74,25 @@ To uninstall, remove it through the `Apps > Installed apps` page in Settings, or
 
 ### Windows (arm64)
 
-Windows on Arm is not currently supported
+Windows on Arm is not currently supported.
 
 ### macOS
 
 This application is **not signed nor notarized**. MacOS may prevent it from running by default.
 
 1. Download the latest ZIP file from the [releases](https://github.com/4foureyes/avallama/releases) page. (for Intel use *osx_x64*, for Apple Silicon use *osx_arm64*)
-2. Double click on the ZIP file to extract it.
-3. Double click on Avallama to run it.
+2. Double-click on the ZIP file to extract it.
+3. Double-click on Avallama to run it.
 4. *(Optional) Move the Avallama.app file to the Applications folder using Finder*.
 
 If the '*app is damaged or can't be opened*' error occurs, make sure you remove the quarantine flag of the ZIP file using the following command in the Terminal, and extract it again:
 ```bash
 xattr -d com.apple.quarantine avallama_0.1.0-alpha_osx_arm64.zip
 ```
+
+### Building from source
+
+If you are comfortable building the app from source, feel free to clone the repository and build the application to test out the newest features we are actively implementing.
 
 ## Known issues
 
