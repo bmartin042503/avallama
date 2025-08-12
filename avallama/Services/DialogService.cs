@@ -61,7 +61,11 @@ public interface IDialogService
         ApplicationDialog dialog,
         bool resizable,
         double width,
-        double height
+        double height,
+        double minWidth,
+        double minHeight,
+        double maxWidth,
+        double maxHeight
     );
 
     void ShowInfoDialog(string informationMessage);
@@ -114,6 +118,10 @@ public class DialogService(
     /// <param name="resizable">A dialog átméretezhetősége (opcionális)</param>
     /// <param name="width">A dialog ablakának szélessége (opcionális)</param>
     /// <param name="height">A dialog ablakának magassága (opcionális)</param>
+    /// <param name="minWidth">A dialog ablakának minimális szélessége (ha átméretezhető)</param>
+    /// <param name="minHeight">A dialog ablakának minimális magassága (ha átméretezhető)</param>
+    /// <param name="maxWidth">A dialog ablakának maximális szélessége (ha átméretezhető)</param>
+    /// <param name="maxHeight">A dialog ablakának maximális magassága (ha átméretezhető)</param>
     /// <exception cref="InvalidOperationException">
     /// Ha a dialog típusa nem megfelelő (pl. Information, Error, Confirmation, Input), kivételt dob.
     /// </exception>
@@ -121,7 +129,11 @@ public class DialogService(
         ApplicationDialog dialog,
         bool resizable = false,
         double width = double.NaN,
-        double height = double.NaN
+        double height = double.NaN,
+        double minWidth = double.NaN,
+        double minHeight = double.NaN,
+        double maxWidth = double.NaN,
+        double maxHeight = double.NaN
     )
     {
         if (dialog is ApplicationDialog.Information
@@ -162,6 +174,14 @@ public class DialogService(
             dialogWindow.Width = width;
         }
 
+        if (resizable)
+        {
+            if (!double.IsNaN(minWidth)) dialogWindow.MinWidth = minWidth;
+            if (!double.IsNaN(minHeight)) dialogWindow.MinHeight = minHeight;
+            if (!double.IsNaN(maxWidth)) dialogWindow.MaxWidth = maxWidth;
+            if (!double.IsNaN(maxHeight)) dialogWindow.MaxHeight = maxHeight;
+        }
+        dialogWindow.InvalidateMeasure();
         ShowDialogWindow(dialogWindow);
     }
 

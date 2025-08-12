@@ -1,65 +1,13 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using avallama.Constants;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 
 namespace avallama.Utilities;
-
-public enum AppColor
-{
-    Primary,
-    SurfaceTint,
-    OnPrimary,
-    PrimaryContainer,
-    OnPrimaryContainer,
-    Secondary,
-    OnSecondary,
-    SecondaryContainer,
-    OnSecondaryContainer,
-    Tertiary,
-    OnTertiary,
-    TertiaryContainer,
-    OnTertiaryContainer,
-    Error,
-    OnError,
-    ErrorContainer,
-    OnErrorContainer,
-    Background,
-    OnBackground,
-    Surface,
-    OnSurface,
-    SurfaceVariant,
-    OnSurfaceVariant,
-    Outline,
-    OutlineVariant,
-    Shadow,
-    Scrim,
-    InverseSurface,
-    InverseOnSurface,
-    InversePrimary,
-    PrimaryFixed,
-    OnPrimaryFixed,
-    PrimaryFixedDim,
-    OnPrimaryFixedVariant,
-    SecondaryFixed,
-    OnSecondaryFixed,
-    SecondaryFixedDim,
-    OnSecondaryFixedVariant,
-    TertiaryFixed,
-    OnTertiaryFixed,
-    TertiaryFixedDim,
-    OnTertiaryFixedVariant,
-    SurfaceDim,
-    SurfaceBright,
-    SurfaceContainerLowest,
-    SurfaceContainerLow,
-    SurfaceContainer,
-    SurfaceContainerHigh,
-    SurfaceContainerHighest
-}
 
 
 // a témának megfelelő színt adja vissza a szín kulcsának alapján

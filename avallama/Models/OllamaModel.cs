@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Tmds.DBus.Protocol;
 
 namespace avallama.Models;
 
@@ -26,19 +27,19 @@ public partial class OllamaModel : ObservableObject
     [ObservableProperty] private string _name = string.Empty;
     [ObservableProperty] private int _quantization;
     [ObservableProperty] private double _parameters = double.NaN;
-    
+
     // pl. GGUF, MLX stb.
     [ObservableProperty] private string _format = string.Empty;
-    
+
     // modell részletei szótárban, például
     // 'General architecture:' -> 'llama'
     // 'Context length:' -> '8192'
     // stb.
     [ObservableProperty] private IDictionary<string, string> _details;
-    
+
     [ObservableProperty] private long _size; // byteokban
     [ObservableProperty] private ModelDownloadStatus _downloadStatus;
-    [ObservableProperty] private double _downloadProgress; // ha a status Downloading
+    [ObservableProperty] private double _downloadProgress; // ha a status Downloading, 0.0 és 1.0 közötti érték
 
     // ha nincs elég vram vagy bármi hasonló ami miatt lassan futhat akkor ezt true-ra kell állítani
     [ObservableProperty] private bool _runsSlow;
@@ -59,5 +60,4 @@ public partial class OllamaModel : ObservableObject
         Size = size;
         DownloadStatus = downloadStatus;
     }
-
 }

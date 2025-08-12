@@ -25,10 +25,10 @@ Licensed under the MIT License. See LICENSE file for details.
     <Grid RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" MinWidth="180" MaxWidth="400"></ColumnDefinition>
-            <ColumnDefinition Width="8"></ColumnDefinition>
-            <ColumnDefinition Width="50"></ColumnDefinition>
-            <ColumnDefinition Width="7*"></ColumnDefinition>
+            <ColumnDefinition Width="300" MinWidth="180" MaxWidth="400" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="50" />
+            <ColumnDefinition Width="7*" />
         </Grid.ColumnDefinitions>
 
         <!-- SideBar -->
@@ -54,7 +54,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
                     <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
-                            <controls:MessageBlock
+                            <controls:GeneralBlock
                                 Classes="conversationElement"
                                 Text="{Binding Title}"
                                 SubText="{Binding Model}" />
@@ -78,7 +78,7 @@ Licensed under the MIT License. See LICENSE file for details.
         </Grid>
 
         <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" x:Name="GridSplitter" Opacity="0"
-                      Background="{DynamicResource SurfaceContainer}" ResizeDirection="Columns" />
+                      ResizeDirection="Columns" />
 
         <!-- SideBar expand/hide gomb -->
         <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton"
@@ -113,7 +113,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <StackPanel Grid.Column="3" Grid.Row="1" Orientation="Vertical" Margin="25,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
+                <controls:DynamicSvg Path="/Assets/Svg/error.svg"
                                      FillColor="#808080"
                                      Width="18"
                                      Margin="0,0,5,5" />
@@ -126,7 +126,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </StackPanel>
 
             <StackPanel IsVisible="{Binding IsWarningVisible}" Orientation="Horizontal" HorizontalAlignment="Center">
-                <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
+                <controls:DynamicSvg Path="/Assets/Svg/error.svg"
                                      FillColor="#FFD700"
                                      Width="18"
                                      Margin="0,0,5,5" />
@@ -137,7 +137,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </StackPanel>
             <StackPanel IsVisible="{Binding IsNotDownloadedVisible}" Orientation="Horizontal"
                         HorizontalAlignment="Center">
-                <controls:DynamicSvg Path="/Assets/Svg/error_24dp.svg"
+                <controls:DynamicSvg Path="/Assets/Svg/error.svg"
                                      FillColor="{DynamicResource Error}"
                                      Width="18"
                                      Margin="0,0,5,5" />
@@ -192,7 +192,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <ItemsControl.DataTemplates>
                             <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
                             <DataTemplate DataType="models:GeneratedMessage">
-                                <controls:MessageBlock
+                                <controls:GeneralBlock
                                     Classes="generatedMessage"
                                     Text="{Binding Content}"
                                     TextColor="{DynamicResource SurfaceContainerHighest}"
@@ -201,7 +201,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                     MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource ResponsiveMessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </DataTemplate>
                             <DataTemplate DataType="models:Message">
-                                <controls:MessageBlock
+                                <controls:GeneralBlock
                                     HorizontalAlignment="Right"
                                     Classes="userMessage"
                                     Text="{Binding Content}"

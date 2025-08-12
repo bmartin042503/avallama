@@ -27,6 +27,7 @@ public partial class ModelManagerViewModel : DialogViewModel
     [ObservableProperty] private bool _hasDownloadedModels;
     [ObservableProperty] private bool _hasModelsToDisplay;
     [ObservableProperty] private string _selectedModelName = string.Empty;
+    [ObservableProperty] private OllamaModel? _selectedModel;
 
     private string _searchBoxText = string.Empty;
     public string SearchBoxText
@@ -51,11 +52,17 @@ public partial class ModelManagerViewModel : DialogViewModel
 
         LoadModelsData();
         FilterModelsData();
+
+        if (!string.IsNullOrEmpty(SelectedModelName) && HasDownloadedModels)
+        {
+            var modelFromName = _modelsData.FirstOrDefault(m => m.Name == SelectedModelName);
+            if (modelFromName != null) SelectedModel = modelFromName;
+        }
     }
 
     private void LoadModelsData()
     {
-        // TODO: összekötni db-vel és kitörölni a Constants dir-ben lévő dummy servicet ha már minden jó
+        // TODO: kitörölni a Constants dir-ben lévő dummy servicet ha már össze van kötve egy rendes service-el
         _modelsData = DummyModelsService.GetDummyOllamaModels();
 
         var ollamaModels = _modelsData as OllamaModel[] ?? _modelsData.ToArray();
@@ -104,14 +111,12 @@ public partial class ModelManagerViewModel : DialogViewModel
     }
 
     // ez akkor hívódik meg ha a felhasználó a letöltés/törlésre kattint
-    // később esetleg kiterjeszthető a model beállításainak megjelenítésére (tehát törlés helyett beállítások ikon lenne és ott lehetne törölni is)
     [RelayCommand]
     public void ModelAction(object parameter)
     {
         if (parameter is OllamaModel model)
         {
             // TODO: downloadstatus alapján letöltés/törlés/letöltés szüneteltetése
-            // esetleg valami letöltő animáció elindítása, ilyesmik
         }
     }
 
@@ -122,6 +127,9 @@ public partial class ModelManagerViewModel : DialogViewModel
         {
             if (string.IsNullOrEmpty(modelName)) return;
             SelectedModelName = modelName;
+            
+            var modelFromName = _modelsData.FirstOrDefault(m => m.Name == SelectedModelName);
+            if (modelFromName != null) SelectedModel = modelFromName;
         }
     }
 

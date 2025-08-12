@@ -12,6 +12,9 @@ namespace avallama.Controls;
 /// Svg megjelenítésére használható. A FillColor és a StrokeColor propertykkel megadható az SVG színe.
 /// </summary>
 
+
+// esetleg később kibővíteni teljesen, hogy svgben meg lehessen adni tageket (pl. primary, secondary)
+// és akkor így dinamikusan bármilyen pathnek a színét módosítani
 public class DynamicSvg(IServiceProvider provider) : Avalonia.Svg.Svg(provider)
 {
     /* SVG-t a következőképp lehet színezni megfelelően ezzel az osztállyal:

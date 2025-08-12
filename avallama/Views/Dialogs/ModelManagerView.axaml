@@ -15,12 +15,20 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
-    
-    <!-- TODO: Ha nincs model megjelenítve akkor a kereső és a rendező mezők összehúzódnak, ezt kijavítani hogy maradjon egy a méret -->
 
-    <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*,*" Margin="22">
+
+    <!-- ha az első oszlopot autora állítod akkor exceptiont kapsz, valszeg mert még nem tudja jól megmérni magát a modelblock control arra az esetre -->
+    <Grid Margin="22" RowDefinitions="Auto,*,Auto">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="225" MaxWidth="400"/>
+            <ColumnDefinition Width="22"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
-                    HorizontalAlignment="Left">
+                    HorizontalAlignment="Left" Margin="0,0,0,20">
             <TextBlock
                 Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H2"
                 Foreground="{DynamicResource OnSurface}" />
@@ -29,19 +37,21 @@ Licensed under the MIT License. See LICENSE file for details.
                                      Width="20" />
             </Button>
         </StackPanel>
-        <TextBlock Grid.Row="0" Grid.Column="2"
+        <TextBlock Grid.Row="0" Grid.Column="3"
                    IsVisible="{Binding HasDownloadedModels}"
                    Text="{Binding DownloadedModelsInfo}"
                    Classes="H3" VerticalAlignment="Center" HorizontalAlignment="Right"
-                   Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.6" />
+                   Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.6"
+                   Margin="0,0,0,20"/>
 
         <!-- Bal oldali modelválasztó, kereső, rendező rész -->
-        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*" HorizontalAlignment="Left" Margin="0,20,0,0">
+        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch">
 
             <!-- Keresőmező -->
-            <TextBox Grid.Row="0" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1" Padding="16,8"
+            <TextBox Grid.Row="0" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1"
+                     Padding="16,8"
                      HorizontalAlignment="Stretch" Text="{Binding SearchBoxText}"
-                     CornerRadius="8">
+                     CornerRadius="8" VerticalAlignment="Stretch">
                 <TextBox.InnerRightContent>
                     <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
                                          Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
@@ -49,7 +59,8 @@ Licensed under the MIT License. See LICENSE file for details.
             </TextBox>
 
             <!-- Rendező szöveg és rendező combobox -->
-            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,12,0,0" HorizontalAlignment="Stretch">
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,12,0,0" HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
                 <TextBlock Grid.Column="0"
                            Text="{services:LocalizationService Key='ORDER_BY'}"
                            VerticalAlignment="Center"
@@ -58,15 +69,28 @@ Licensed under the MIT License. See LICENSE file for details.
                            FontWeight="Bold" />
                 <ComboBox Grid.Column="1" Margin="8,0,0,0"
                           SelectedIndex="1"
-                          HorizontalAlignment="Stretch">
+                          HorizontalAlignment="Stretch"
+                          Classes="sorting">
                     <ComboBoxItem>Size</ComboBoxItem>
                     <ComboBoxItem>Downloaded</ComboBoxItem>
                     <ComboBoxItem>Parameters</ComboBoxItem>
                 </ComboBox>
             </Grid>
 
+            <!-- "Nincs model" svg és szöveg -->
+            <StackPanel Grid.Row="2" Orientation="Vertical" IsVisible="{Binding !HasModelsToDisplay}"
+                        Spacing="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <controls:DynamicSvg Path="/Assets/Svg/sad.svg" Height="120" FillColor="{DynamicResource Primary}" />
+
+                <TextBlock Text="{services:LocalizationService Key='NO_MODELS_FOUND'}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"
+                           FontSize="16" TextWrapping="Wrap" Foreground="{DynamicResource Primary}"
+                           TextAlignment="Center" />
+            </StackPanel>
+
             <!-- Modelválasztó -->
-            <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,14,0,0" AllowAutoHide="True" >
+            <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,14,0,0"
+                          AllowAutoHide="True">
                 <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="models:OllamaModel">
@@ -77,16 +101,33 @@ Licensed under the MIT License. See LICENSE file for details.
                                 DownloadProgress="{Binding DownloadProgress}"
                                 SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
-                                CommandParameter="{Binding Name}"
-                                />
+                                CommandParameter="{Binding Name}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
-
-        <Button Grid.Column="2" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Margin="0,10,0,0"
+        
+        <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
+                      Margin="4,0,4,0"/>
+        
+        <!-- valszeg itt lehetne az is hogy csak simán átadom az egész példányt bindingra, de egyelőre most külön vettem a propertyket -->
+        <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
+        <controls:ModelInfoBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                                 Title="{Binding SelectedModel.Name}"
+                                 Quantization="{Binding SelectedModel.Quantization}"
+                                 Parameters="{Binding SelectedModel.Parameters}"
+                                 Format="{Binding SelectedModel.Format}"
+                                 DetailItemsSource="{Binding SelectedModel.Details}"
+                                 SizeInBytes="{Binding SelectedModel.Size}"
+                                 DownloadStatus="{Binding SelectedModel.DownloadStatus}"
+                                 DownloadProgress="{Binding SelectedModel.DownloadProgress}"
+                                 RunsSlow="{Binding SelectedModel.RunsSlow}"
+                                 Command="{Binding ModelAction}"
+                                 CommandParameter="{Binding SelectedModel}"/>
+        
+        <Button Grid.Column="3" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,22,0,0"
                 Content="{services:LocalizationService Key='CLOSE'}"
                 Command="{Binding Close}"
                 Cursor="Hand" />

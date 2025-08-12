@@ -94,8 +94,11 @@ public partial class HomeViewModel : PageViewModel
     {
         _dialogService.ShowDialog(
             ApplicationDialog.ModelManager,
-            true,
-            800
+            resizable: true,
+            minWidth: 800,
+            minHeight: 600,
+            width: 900,
+            height: 700
         );
     }
 

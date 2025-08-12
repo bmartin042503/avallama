@@ -3,12 +3,12 @@
 
 using System;
 using System.Windows.Input;
+using avallama.Constants;
 using avallama.Models;
 using avallama.Utilities;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Svg;
@@ -17,9 +17,15 @@ using ShimSkiaSharp;
 
 namespace avallama.Controls;
 
-// TODO: measure optimalizáció, constraintekkel esetleg vagy measurecoret esetleg más measure metódust felülírva
+// TODO:
+// animáció modelblock kiválasztásánál
+// optimalizáció, hogy amikor átméreteződnek az elemek kevesebbszer hívódjon meg a measureoverride és társai
+
 public class ModelBlock : Control
 {
+    // StyledProperty - belekerül az Avalonia styles rendszerébe így például írhatunk rá stílusokat stb.
+    // DirectProperty - nem kerül bele, megadott egyszerű értékeknek, jobb teljesítmény (kell getter, setter)
+    
     // azért Title a property neve, mert a 'Name' már le van foglalva és szerintem összekavarodna
     // de ez a Model nevét tartalmazza amúgy
     public static readonly StyledProperty<string?> TitleProperty =
@@ -48,10 +54,10 @@ public class ModelBlock : Control
         );
     
     public static readonly StyledProperty<ICommand> CommandProperty =
-        AvaloniaProperty.Register<ModelInfoBlock, ICommand>("Command");
+        AvaloniaProperty.Register<ModelInfoBlock, ICommand>(nameof(Command));
 
     public static readonly StyledProperty<object?> CommandParameterProperty =
-        AvaloniaProperty.Register<ModelInfoBlock, object?>("CommandParameter");
+        AvaloniaProperty.Register<ModelInfoBlock, object?>(nameof(CommandParameter));
 
     public string? Title
     {
@@ -219,9 +225,9 @@ public class ModelBlock : Control
                 );
                 
                 // hasonlóképp mint a downloadSvg-nél
-                var progressSvgScale = _titleTextLayout.Height / _spinnerSkPicture!.CullRect.Height;
-                var progressSvgTranslate = Matrix.CreateTranslation(
-                    Bounds.Width - BasePadding.Right - _spinnerSkPicture.CullRect.Width * progressSvgScale,
+                var spinnerSvgScale = _titleTextLayout.Height / _spinnerSkPicture!.CullRect.Height;
+                var spinnerSvgTranslate = Matrix.CreateTranslation(
+                    Bounds.Width - BasePadding.Right - _spinnerSkPicture.CullRect.Width * spinnerSvgScale,
                     BasePadding.Top
                 );
                 
@@ -236,7 +242,7 @@ public class ModelBlock : Control
                     )
                 );
                 
-                context.PushTransform(Matrix.CreateScale(progressSvgScale, progressSvgScale) * progressSvgTranslate);
+                context.PushTransform(Matrix.CreateScale(spinnerSvgScale, spinnerSvgScale) * spinnerSvgTranslate);
                 
                 // forgatás hozzáadása
                 // ennek itt kell lennie, mert ha ez után hozzáadunk még egy transform-ot akkor világgá repül xD
@@ -265,7 +271,7 @@ public class ModelBlock : Control
             TextAlignment.Left,
             TextWrapping.NoWrap,
             TextTrimming.CharacterEllipsis,
-            maxWidth: Bounds.Width * 0.6
+            maxWidth: Bounds.Width * 0.5
         );
     }
 
@@ -278,7 +284,7 @@ public class ModelBlock : Control
             : ColorProvider.GetColor(AppColor.OnSecondaryContainer);
 
         return new TextLayout(
-            DownloadProgress?.ToString("0%") ?? "0%",
+            DownloadProgress?.ToString("P1") ?? "0%", // P2 = 0.00%-os megjelenítés
             new Typeface(RenderHelper.ManropeFont),
             DownloadTextFontSize,
             textColor,
@@ -295,6 +301,7 @@ public class ModelBlock : Control
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
+        // model kiválasztása, pontosabban ezzel meghívja a ModelManagerViewModelben lévő SelectModelt és átadja neki a kiválasztott model nevét
         if (Command.CanExecute(CommandParameter))
         {
             Command.Execute(CommandParameter);
@@ -314,12 +321,7 @@ public class ModelBlock : Control
         
         base.OnMeasureInvalidated();
     }
-
-    protected override Size MeasureCore(Size availableSize)
-    {
-        return base.MeasureCore(availableSize);
-    }
-
+    
     protected override Size MeasureOverride(Size availableSize)
     {
         _titleTextLayout ??= CreateTextLayout();

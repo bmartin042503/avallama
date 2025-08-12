@@ -21,56 +21,56 @@ namespace avallama.Controls;
 /// <summary>
 /// Szövegdoboz állítható háttérrel, két szöveggel, személyre szabott propertykkel
 /// </summary>
-public class MessageBlock : Control
+public class GeneralBlock : Control
 {
     // AXAML Styled Propertyk
     public static readonly StyledProperty<string?> TextProperty =
-        AvaloniaProperty.Register<MessageBlock, string?>("Text");
+        AvaloniaProperty.Register<GeneralBlock, string?>(nameof(Text));
 
     public static readonly StyledProperty<IBrush?> TextColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("TextColor");
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(TextColor));
 
     public static readonly StyledProperty<string?> SubTextProperty =
-        AvaloniaProperty.Register<MessageBlock, string?>("SubText");
+        AvaloniaProperty.Register<GeneralBlock, string?>(nameof(SubText));
 
     public static readonly StyledProperty<IBrush?> SubTextColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("SubTextColor");
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(SubTextColor));
 
     public static readonly StyledProperty<Thickness?> PaddingProperty =
-        AvaloniaProperty.Register<MessageBlock, Thickness?>("Padding");
+        AvaloniaProperty.Register<GeneralBlock, Thickness?>(nameof(Padding));
 
     public static readonly StyledProperty<CornerRadius?> CornerRadiusProperty =
-        AvaloniaProperty.Register<MessageBlock, CornerRadius?>("CornerRadius");
+        AvaloniaProperty.Register<GeneralBlock, CornerRadius?>(nameof(CornerRadius));
 
     public static readonly StyledProperty<double?> TextFontSizeProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("TextFontSize");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(TextFontSize));
 
     public static readonly StyledProperty<double?> SubTextFontSizeProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("SubTextFontSize");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(SubTextFontSize));
 
     public static readonly StyledProperty<TextAlignment?> TextAlignmentProperty =
-        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("TextAlignment");
+        AvaloniaProperty.Register<GeneralBlock, TextAlignment?>(nameof(TextAlignment));
 
     public static readonly StyledProperty<TextAlignment?> SubTextAlignmentProperty =
-        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("SubTextAlignment");
+        AvaloniaProperty.Register<GeneralBlock, TextAlignment?>(nameof(SubTextAlignment));
 
     public static readonly StyledProperty<FontFamily?> FontFamilyProperty =
-        AvaloniaProperty.Register<MessageBlock, FontFamily?>("FontFamily");
+        AvaloniaProperty.Register<GeneralBlock, FontFamily?>(nameof(FontFamily));
 
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("Background");
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(Background));
 
     public static readonly StyledProperty<double?> SpacingProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("Spacing");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(Spacing));
 
     public static readonly StyledProperty<double?> LineHeightProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("LineHeight");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(LineHeight));
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(SelectionColor));
     
     public static readonly StyledProperty<bool> SelectableProperty =
-        AvaloniaProperty.Register<MessageBlock, bool>("Selectable");
+        AvaloniaProperty.Register<GeneralBlock, bool>(nameof(Selectable));
 
     public string? Text
     {
@@ -180,7 +180,7 @@ public class MessageBlock : Control
     private int _selectionEnd;
     private string _selectedText = string.Empty;
 
-    public MessageBlock()
+    public GeneralBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
         Focusable = true;

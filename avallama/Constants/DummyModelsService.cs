@@ -10,6 +10,25 @@ public static class DummyModelsService
 {
     public static IEnumerable<OllamaModel> GetDummyOllamaModels()
     {
+        var test1 = new OllamaModel(
+            name: "verylongmodelnamellamasomething-coder-pro-ultra-max3.8",
+            quantization: 4,
+            parameters: 3.8,
+            details: new Dictionary<string, string>
+            {
+                { LocalizationService.GetString("GENERAL_ARCHITECTURE"), "llama" },
+                { LocalizationService.GetString("BLOCK_COUNT"), "40" },
+                { LocalizationService.GetString("CONTEXT_LENGTH"), "8192" },
+                { LocalizationService.GetString("EMBEDDING_LENGTH"), "4608" },
+            },
+            size: 3825205248,
+            ModelDownloadStatus.Downloading
+        )
+        {
+            RunsSlow = true
+        };
+        test1.DownloadProgress = 0.6942;
+        
         return new List<OllamaModel>
         {
             new(
@@ -30,20 +49,7 @@ public static class DummyModelsService
                 size: 3221225472,
                 ModelDownloadStatus.Downloaded
             ),
-            new(
-                name: "verylongmodelnamellamasomething-coder-pro-ultra-max3.8",
-                quantization: 4,
-                parameters: 3.8,
-                details: new Dictionary<string, string>
-                {
-                    { LocalizationService.GetString("GENERAL_ARCHITECTURE"), "llama" },
-                    { LocalizationService.GetString("BLOCK_COUNT"), "40" },
-                    { LocalizationService.GetString("CONTEXT_LENGTH"), "8192" },
-                    { LocalizationService.GetString("EMBEDDING_LENGTH"), "4608" },
-                },
-                size: 3825205248,
-                ModelDownloadStatus.Downloading
-            ),
+            test1,
             new(
                 name: "mistral7b",
                 quantization: 5,

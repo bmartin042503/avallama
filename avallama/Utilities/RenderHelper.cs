@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using avallama.Services;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -20,7 +21,14 @@ public static class RenderHelper
     public const string SpinnerSvgPath = "Assets/Svg/spinner.svg";
     public const string PauseSvgPath = "Assets/Svg/pause.svg";
     
-    public static string? BrushToHex(IBrush? brush)
+    /* csak mert mindig elfelejtem, így kell opacity-s brusht megadni, pl. ahova IBrush kell:
+        new SolidColorBrush(
+            ColorProvider.GetColor(AppColor.OnSurface).Color,
+            Opacity
+        )
+    */
+    
+    private static string? BrushToHex(IBrush? brush)
     {
         if (brush is not ImmutableSolidColorBrush solid) return null;
         var color = solid.Color;
@@ -33,8 +41,7 @@ public static class RenderHelper
             // ha van áttetszőség, akkor #AARRGGBB
             $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
     }
-
-    private static int _allocationCount = 0;
+    
     
     // svg betöltése megadott szín és áttetszőség alapján
     // renderelésre készíti elő, a render pozícióját Matrix eltolásokban lehet megadni, ezt a drawingcontext-re kell alkalmazni (context.PushTransform())
@@ -70,10 +77,20 @@ public static class RenderHelper
         // svg betöltése
         using var stream = AssetLoader.Open(new Uri($"avares://avallama/{path}"));
         
-        // TODO: optimalizálni, folyamatosan allokál
-        _allocationCount++;
-        // Console.WriteLine($"RenderHelper called and memory for SVG allocated : {_allocationCount}");
         var svgPicture = SvgSource.LoadPicture(stream, parameters);
         return svgPicture;
+    }
+    
+    public static string GetSizeInGb(long sizeInBytes)
+    {
+        var sizeInGb = sizeInBytes / (1024.0 * 1024.0 * 1024.0);
+        var rounded = Math.Round(sizeInGb, 1);
+
+        // ha a tizedesjegy nulla, ne jelenjen meg
+        var displayValue = rounded % 1 == 0
+            ? ((int)rounded).ToString()
+            : rounded.ToString("0.0", CultureInfo.InvariantCulture);
+
+        return string.Format(LocalizationService.GetString("SIZE_IN_GB"), displayValue);
     }
 }
