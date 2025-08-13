@@ -306,16 +306,16 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Learn more</value>
     </data>
     <data name="GENERAL_ARCHITECTURE" xml:space="preserve">
-        <value>General architecture:</value>
+        <value>General architecture</value>
     </data>
     <data name="BLOCK_COUNT" xml:space="preserve">
-        <value>Block count:</value>
+        <value>Block count</value>
     </data>
     <data name="CONTEXT_LENGTH" xml:space="preserve">
-        <value>Context length:</value>
+        <value>Context length</value>
     </data>
     <data name="EMBEDDING_LENGTH" xml:space="preserve">
-        <value>Embedding length:</value>
+        <value>Embedding length</value>
     </data>
     <data name="TOKEN_SEC_FORMAT" xml:space="preserve">
         <value>{0} tokens/sec</value>
@@ -327,7 +327,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>{0} downloaded models ({1} GB)</value>
     </data>
     <data name="GENERATION_SPEED" xml:space="preserve">
-        <value>Generation speed:</value>
+        <value>Generation speed</value>
     </data>
     <data name="SORT_BY" xml:space="preserve">
         <value>Sort by:</value>
@@ -349,5 +349,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="SORT_DOWNLOADED" xml:space="preserve">
         <value>Downloaded</value>
+    </data>
+    <data name="MODEL_INFORMATION" xml:space="preserve">
+        <value>Model information</value>
     </data>
 </root>

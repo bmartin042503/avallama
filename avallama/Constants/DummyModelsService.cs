@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
 using avallama.Models;
 using avallama.Services;
 
@@ -100,7 +99,7 @@ public static class DummyModelsService
                     { LocalizationService.GetString("CONTEXT_LENGTH"), "2048" },
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "2048" },
                     {
-                        LocalizationService.GetString("TOKEN_SEC_FORMAT"),
+                        LocalizationService.GetString("GENERATION_SPEED"),
                         string.Format(LocalizationService.GetString("TOKEN_SEC_FORMAT"), 50.2)
                     }
                 },
@@ -122,7 +121,7 @@ public static class DummyModelsService
                     { LocalizationService.GetString("CONTEXT_LENGTH"), "8192" },
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "3072" },
                     {
-                        LocalizationService.GetString("TOKEN_SEC_FORMAT"),
+                        LocalizationService.GetString("GENERATION_SPEED"),
                         string.Format(LocalizationService.GetString("TOKEN_SEC_FORMAT"), 33.3)
                     }
                 },
@@ -197,7 +196,7 @@ public static class DummyModelsService
                     { LocalizationService.GetString("CONTEXT_LENGTH"), "8192" },
                     { LocalizationService.GetString("EMBEDDING_LENGTH"), "4352" },
                     {
-                        LocalizationService.GetString("TOKEN_SEC_FORMAT"),
+                        LocalizationService.GetString("GENERATION_SPEED"),
                         string.Format(LocalizationService.GetString("TOKEN_SEC_FORMAT"), 36.0)
                     }
                 },

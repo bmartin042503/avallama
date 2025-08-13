@@ -17,8 +17,14 @@ using Avalonia.Media.TextFormatting;
 namespace avallama.Controls;
 
 // TODO:
+// Learn more gomb kattinthatóvá tétele és átirányítás ollama oldalára (url-be betéve a model nevét)
+// Letöltés, szüneteltetés, törlés UI
+// noconnection és notenoughspace figyelmeztetések
 // BorderThickness a kijelzőméret alapján, hogy a lehető legjobb megjelenése legyen
 // szövegkijelölés, vmi új felhasználható típusban
+// --------------------------------------------
+// scrollviewerbe tenni a modelinformationt
+// (ez még talán belefér későbbre, 4-6 sornyi infót még meg tud jeleníteni de ha ennél több van akkor valszeg ki fog nyúlni a szöveg alulra)
 public class ModelInfoBlock : Control
 {
     // StyledProperty - belekerül az Avalonia styles rendszerébe így például írhatunk rá stílusokat stb.
@@ -175,14 +181,16 @@ public class ModelInfoBlock : Control
     private const double TitleFontSize = 26;
     private const double WarningFontSize = 14;
     private const double LabelFontSize = 12;
-    private const double DetailsFontSize = 12;
-    private const double DetailsLineHeight = 16;
+    private const double DetailsFontSize = 14;
+    private const double DetailsLineHeight = 28;
     private const double BorderThickness = 0.25;
     private const double LabelSpacing = 8.0;
 
     private static readonly Thickness BasePadding = new(16);
-    private static readonly Thickness LabelPadding = new(10, 4);
+    private static readonly Thickness LabelPadding = new(10, 5);
+    private static readonly Thickness ContainerPadding = new(12);
     private static readonly CornerRadius BaseCornerRadius = new(10);
+    private static readonly CornerRadius ContainerCornerRadius = new(8);
     private static readonly CornerRadius LabelCornerRadius = new(4);
 
     private TextLayout? _titleTextLayout;
@@ -190,10 +198,10 @@ public class ModelInfoBlock : Control
     private TextLayout? _quantizationTextLayout;
     private TextLayout? _parametersTextLayout;
     private TextLayout? _formatTextLayout;
-    private TextLayout? _detailsTextLayout;
     private TextLayout? _sizeTextLayout;
+    private TextLayout? _detailsTextLayout;
     private TextLayout? _modelInfoTextLayout;
-    private TextLayout? _learnMoreTextLayout;
+    private TextLayout? _linkTextLayout;
 
     private double _renderPosX;
     private double _renderPosY;
@@ -208,8 +216,11 @@ public class ModelInfoBlock : Control
         // Model cím (+warning szöveg ha van) renderelése
         RenderTitle(context);
 
-        // alap címkék renderelése (kvantálás, paraméterek, format)
+        // alap címkék renderelése (kvantálás, paraméterek, format) + méret label
         RenderLabels(context);
+
+        // model információinak renderelése
+        RenderModelInformation(context);
     }
 
     private void RenderBackground(DrawingContext context)
@@ -245,7 +256,8 @@ public class ModelInfoBlock : Control
         _renderPosX = BasePadding.Left;
     }
 
-    // kirajzol egy Labelt, egy hátteret és egy benne lévő szöveget, _renderPosX és _renderPosY alapján
+    // kirajzol egy alap labelt, egy hátteret és egy benne lévő szöveget, _renderPosX és _renderPosY alapján
+    // a három alap infónak van ami kiemelten jelenik meg
     private void DrawBaseLabel(
         DrawingContext context,
         double width,
@@ -256,11 +268,13 @@ public class ModelInfoBlock : Control
         if (textLayout == null) return;
 
         double posXChange;
+        var labelHeight = LabelPadding.Top + textLayout.Height + LabelPadding.Bottom + LabelSpacing;
 
         // belefér a sorba a label
         if (Bounds.Width - BasePadding.Left - BasePadding.Right - _renderPosX >= textLayout.Width)
         {
             posXChange = LabelPadding.Left + textLayout.Width + LabelPadding.Right + LabelSpacing;
+            _labelsHeight = Math.Max(_labelsHeight, labelHeight);
         }
         else
         {
@@ -268,7 +282,7 @@ public class ModelInfoBlock : Control
             posXChange = 0.0;
             _renderPosX = BasePadding.Left;
             _renderPosY += LabelPadding.Top + textLayout.Height + LabelPadding.Bottom + LabelSpacing;
-            _labelsHeight += LabelPadding.Top + textLayout.Height + LabelPadding.Bottom + LabelSpacing;
+            _labelsHeight += labelHeight;
         }
 
         context.DrawRectangle(
@@ -327,8 +341,11 @@ public class ModelInfoBlock : Control
             );
         }
 
-        _renderPosY += _labelsHeight - LabelSpacing + BasePadding.Bottom;
-        
+        // renderPosY újra számítása, ugyanis itt nem lehetne szimplán hozzáadni a labelsHeightot mert a renderelés közben már
+        // hozzá lett adva, nem az egész, de így könnyebb ha újraszámoljuk hogy hol kell lennie a render pozíciónak
+        _renderPosY = BasePadding.Top + (_titleTextLayout?.Height ?? 0.0) + BasePadding.Bottom + _labelsHeight -
+            LabelSpacing + BasePadding.Bottom;
+
         // SizeLabel (ehhez nem kell renderPosX és renderPosY mert fixen mindig a bal alsó sarokban lesz)
         if (_sizeTextLayout == null) return;
         context.DrawRectangle(
@@ -338,7 +355,8 @@ public class ModelInfoBlock : Control
                 new Rect(
                     new Point(
                         BasePadding.Left,
-                        Bounds.Height - BasePadding.Bottom - LabelPadding.Bottom - _sizeTextLayout.Height - LabelPadding.Top
+                        Bounds.Height - BasePadding.Bottom - LabelPadding.Bottom - _sizeTextLayout.Height -
+                        LabelPadding.Top
                     ),
                     new Size(
                         width: LabelPadding.Left + _sizeTextLayout.Width + LabelPadding.Right,
@@ -348,12 +366,67 @@ public class ModelInfoBlock : Control
                 LabelCornerRadius
             )
         );
-        
+
         _sizeTextLayout.Draw(
             context,
             new Point(
                 BasePadding.Left + LabelPadding.Left,
                 Bounds.Height - BasePadding.Bottom - LabelPadding.Bottom - _sizeTextLayout.Height
+            )
+        );
+    }
+
+    private void RenderModelInformation(DrawingContext context)
+    {
+        // "model information" szöveg és a details text közötti térköz
+        const double spacing = 14.0;
+
+        context.DrawRectangle(
+            ColorProvider.GetColor(AppColor.SurfaceContainerHighest),
+            new Pen(ColorProvider.GetColor(AppColor.OnSurface), BorderThickness),
+            new RoundedRect(
+                new Rect(
+                    new Point(
+                        BasePadding.Left,
+                        _renderPosY
+                    ),
+                    new Size(
+                        width: Bounds.Width - BasePadding.Left - BasePadding.Right,
+                        height: Bounds.Height - _renderPosY - BasePadding.Bottom * 3 - LabelPadding.Top -
+                                (_sizeTextLayout?.Height ?? 0.0) - LabelPadding.Bottom
+                    )
+                ),
+                ContainerCornerRadius
+            )
+        );
+
+        _renderPosY += ContainerPadding.Top;
+        _renderPosX = BasePadding.Left + ContainerPadding.Left;
+        
+        _modelInfoTextLayout?.Draw(
+            context,
+            new Point(
+                _renderPosX,
+                _renderPosY
+            )
+        );
+
+        _renderPosY += (_modelInfoTextLayout?.Height ?? 0) + spacing;
+
+        _detailsTextLayout?.Draw(
+            context,
+            new Point(
+                _renderPosX,
+                _renderPosY
+            )
+        );
+
+        _linkTextLayout?.Draw(
+            context,
+            new Point(
+                BasePadding.Left + ContainerPadding.Left,
+                Bounds.Height - BasePadding.Bottom * 3 - LabelPadding.Bottom - (_sizeTextLayout?.Height ?? 0.0) -
+                LabelPadding.Top - ContainerPadding.Bottom - _linkTextLayout.Height
             )
         );
     }
@@ -437,6 +510,40 @@ public class ModelInfoBlock : Control
         );
     }
 
+    private TextLayout CreateModelInfoTextLayout()
+    {
+        return new TextLayout(
+            LocalizationService.GetString("MODEL_INFORMATION"),
+            new Typeface(RenderHelper.ManropeFont, weight: FontWeight.Bold),
+            null,
+            DetailsFontSize,
+            ColorProvider.GetColor(AppColor.OnSurface)
+        );
+    }
+
+    private TextLayout CreateLinkTextLayout()
+    {
+        return new TextLayout(
+            LocalizationService.GetString("LEARN_MORE"),
+            new Typeface(RenderHelper.ManropeFont, weight: FontWeight.Bold),
+            fontFeatures: null,
+            textDecorations:
+            [
+                new TextDecoration
+                {
+                    Location = TextDecorationLocation.Underline,
+                    Stroke = ColorProvider.GetColor(AppColor.Primary),
+                    StrokeThickness = 1,
+                    StrokeOffset = 0.75,
+                    StrokeThicknessUnit = TextDecorationUnit.Pixel,
+                    StrokeOffsetUnit = TextDecorationUnit.Pixel
+                }
+            ],
+            fontSize: DetailsFontSize,
+            foreground: ColorProvider.GetColor(AppColor.Primary)
+        );
+    }
+
     // controlhoz tartozó layoutok stb. felszabadítása
     private void InvalidateTextLayouts()
     {
@@ -454,9 +561,15 @@ public class ModelInfoBlock : Control
         _formatTextLayout = null;
         _sizeTextLayout?.Dispose();
         _sizeTextLayout = null;
+        _modelInfoTextLayout?.Dispose();
+        _modelInfoTextLayout = null;
+        _linkTextLayout?.Dispose();
+        _linkTextLayout = null;
 
         _renderPosX = 0;
         _renderPosY = 0;
+
+        _labelsHeight = 0;
     }
 
     private void CreateTextLayouts()
@@ -464,10 +577,12 @@ public class ModelInfoBlock : Control
         // ennek itt kell lennie legelöl, hogy a titleTextLayout tudja mekkora helyet foglal el a warning szöveg
         // és annak alapján fogja ő is kitölteni a helyet
         _warningTextLayout ??= CreateWarningTextLayout();
-        
+
         _titleTextLayout ??= CreateTitleTextLayout();
         _detailsTextLayout ??= CreateDetailsTextLayout();
         _sizeTextLayout ??= CreateSizeTextLayout();
+        _modelInfoTextLayout ??= CreateModelInfoTextLayout();
+        _linkTextLayout ??= CreateLinkTextLayout();
 
         if (Quantization is > 0)
         {

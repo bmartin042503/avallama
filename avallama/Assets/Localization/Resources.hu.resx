@@ -299,16 +299,16 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>További információ</value>
     </data>
     <data name="CONTEXT_LENGTH" xml:space="preserve">
-        <value>Kontextus hossza:</value>
+        <value>Kontextus hossza</value>
     </data>
     <data name="EMBEDDING_LENGTH" xml:space="preserve">
-        <value>Beágyazási hossz:</value>
+        <value>Beágyazási hossz</value>
     </data>
     <data name="GENERAL_ARCHITECTURE" xml:space="preserve">
-        <value>Általános architektúra:</value>
+        <value>Általános architektúra</value>
     </data>
     <data name="BLOCK_COUNT" xml:space="preserve">
-        <value>Blokkok száma:</value>
+        <value>Blokkok száma</value>
     </data>
     <data name="TOKEN_SEC_FORMAT" xml:space="preserve">
         <value>{0} token/mp</value>
@@ -320,7 +320,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>{0} letöltött modell ({1} GB)</value>
     </data>
     <data name="GENERATION_SPEED" xml:space="preserve">
-        <value>Generálás sebessége:</value>
+        <value>Generálás sebessége</value>
     </data>
     <data name="SORT_BY" xml:space="preserve">
         <value>Rendezés:</value>
@@ -342,5 +342,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="SORT_DOWNLOADED" xml:space="preserve">
         <value>Letöltött</value>
+    </data>
+    <data name="MODEL_INFORMATION" xml:space="preserve">
+        <value>Model részletei</value>
     </data>
 </root>
