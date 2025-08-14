@@ -13,7 +13,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:converters="clr-namespace:avallama.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="avallama.Views.Dialogs.ModelManagerView"
+             x:Class="avallama.Views.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
     
@@ -31,22 +31,16 @@ Licensed under the MIT License. See LICENSE file for details.
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         
-        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+        <StackPanel x:Name="PageTitle" Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6"
                     HorizontalAlignment="Left" Margin="0,0,0,20">
             <TextBlock
-                Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H2"
-                Foreground="{DynamicResource OnSurface}" />
+                Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
+                Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center"/>
             <Button Command="{Binding ShowInfo}" Classes="svgButton">
                 <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
-                                     Width="20" />
+                                     Width="20" VerticalAlignment="Center"/>
             </Button>
         </StackPanel>
-        <TextBlock Grid.Row="0" Grid.Column="3"
-                   IsVisible="{Binding HasDownloadedModels}"
-                   Text="{Binding DownloadedModelsInfo}"
-                   Classes="H3" VerticalAlignment="Center" HorizontalAlignment="Right"
-                   Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.6"
-                   Margin="0,0,0,20"/>
 
         <!-- Bal oldali modelválasztó, kereső, rendező rész -->
         <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch">
@@ -134,10 +128,17 @@ Licensed under the MIT License. See LICENSE file for details.
                                  Command="{Binding ModelAction}"
                                  CommandParameter="{Binding SelectedModel}"/>
         
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Margin="0,22,0,0"
+                   IsVisible="{Binding HasDownloadedModels}"
+                   Text="{Binding DownloadedModelsInfo}"
+                   Classes="H3" VerticalAlignment="Center" HorizontalAlignment="Left" Opacity="0.6"
+                   Foreground="{DynamicResource OnSurfaceVariant}"/>
+        
         <Button Grid.Column="3" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                 Margin="0,22,0,0"
-                Content="{services:LocalizationService Key='CLOSE'}"
-                Command="{Binding Close}"
+                Content="{services:LocalizationService Key='BACK'}"
+                Command="{Binding Path=((vm:MainViewModel)DataContext).OpenHome, RelativeSource={RelativeSource AncestorType=Window}}"
                 Cursor="Hand" />
     </Grid>
 </UserControl>

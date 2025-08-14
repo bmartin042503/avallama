@@ -32,6 +32,11 @@ public partial class HomeView : UserControl
             // margin beállítás hogy legyen az ablakkezelő gomboknak helye macOS-en
             SetMacOSMargin();
         }
+        else
+        {
+            SideBarTopGrid.Margin = new Thickness(14,14,14,0);
+            SideBarButton.Margin = new Thickness(0,-10,0,0);
+        }
 
         // globálisan figyelünk a pointerwheeles görgetésre, különben a scrollviewer elkapná
         // és ha nem lenne erre külön figyelve akkor új üzenet hozzáadásnál is mivel scrollbar növekszik megjelenne a scroll-to-bottom gomb
@@ -150,6 +155,8 @@ public partial class HomeView : UserControl
 
             MainGrid.ColumnDefinitions = columnDefinitions;
             _sideBarExpanded = false;
+            
+            SideBarButton.Margin = new Thickness(10,-10,0,0);
         }
         else
         {
@@ -183,11 +190,11 @@ public partial class HomeView : UserControl
         var buttonTextBlock = NewConversationBtn.GetTemplateChildren().FirstOrDefault(c => c is TextBlock) as TextBlock;
         switch (_sideBarWidth)
         {
-            case < 295:
+            case < 300:
                 if (buttonTextBlock != null) buttonTextBlock.IsVisible = false;
                 NewConversationBtn.Content = string.Empty;
                 break;
-            case >= 295:
+            case >= 300:
                 if (buttonTextBlock != null) buttonTextBlock.IsVisible = true;
                 NewConversationBtn.Content = LocalizationService.GetString("NEW");
                 break;

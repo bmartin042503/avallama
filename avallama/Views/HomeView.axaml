@@ -37,7 +37,7 @@ Licensed under the MIT License. See LICENSE file for details.
               Background="{DynamicResource SurfaceContainer}">
             <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" x:Name="SideBarTopGrid">
                 <Button x:Name="NewConversationBtn" Classes="avallamaWhite"
-                        Content="{localization:LocalizationService Key='NEW'}"
+                        Content="{localization:LocalizationService Key='NEW'}" FontWeight="Bold"
                         Margin="0,0,14,0" HorizontalAlignment="Stretch" Cursor="Hand"
                         IsEnabled="True" Command="{Binding CreateNewConversation}" />
                 <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1"
@@ -67,11 +67,11 @@ Licensed under the MIT License. See LICENSE file for details.
             </ScrollViewer>
 
             <StackPanel Grid.Row="2" Margin="10" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
-                <Button Classes="svgButton" Cursor="Hand" Command="{Binding OpenSettings}">
+                <Button Classes="svgButton" Cursor="Hand" Command="{Binding Path=((vm:MainViewModel)DataContext).OpenSettings, RelativeSource={RelativeSource AncestorType=Window}}">
                     <controls:DynamicSvg
                         Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
                 </Button>
-                <Button Classes="svgButton" Command="{Binding OpenModelManager}"
+                <Button Classes="svgButton" Command="{Binding Path=((vm:MainViewModel)DataContext).OpenModelManager, RelativeSource={RelativeSource AncestorType=Window}}"
                         Cursor="Hand">
                     <controls:DynamicSvg
                         Path="/Assets/Svg/model-manager.svg" Width="28"
@@ -234,8 +234,8 @@ Licensed under the MIT License. See LICENSE file for details.
 
             <TextBox Grid.Row="1"
                      Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
-                     Margin="0,30,0,20"
-                     Padding="24, 12"
+                     Margin="0,30,0,16"
+                     Padding="20, 10"
                      IsEnabled="{Binding IsDownloaded}"
                      Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>

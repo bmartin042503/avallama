@@ -43,7 +43,7 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void GoToHome()
+    public void OpenHome()
     {
         if (string.IsNullOrEmpty(_firstTime))
         {
@@ -56,8 +56,20 @@ public partial class MainViewModel : ViewModelBase
     }
     
     [RelayCommand]
-    private void GoToGuide()
+    public void OpenGuide()
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Guide);
+    }
+    
+    [RelayCommand]
+    public void OpenModelManager()
+    {
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
+    }
+    
+    [RelayCommand]
+    public void OpenSettings()
+    {
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Settings);
     }
 }

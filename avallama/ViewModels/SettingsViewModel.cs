@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
 
-public partial class SettingsViewModel : DialogViewModel
+public partial class SettingsViewModel : PageViewModel
 {
     private readonly DialogService _dialogService;
     private readonly ConfigurationService _configurationService;
@@ -101,7 +101,7 @@ public partial class SettingsViewModel : DialogViewModel
     
     public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService,  IMessenger messenger)
     {
-        DialogType = ApplicationDialog.Settings;
+        Page = ApplicationPage.Settings;
         _dialogService = dialogService;
         _configurationService = configurationService;
         _messenger = messenger;
@@ -198,12 +198,6 @@ public partial class SettingsViewModel : DialogViewModel
             FileName = Url,
             UseShellExecute = true
         });
-    }
-
-    [RelayCommand]
-    public void Close()
-    {
-        _dialogService.CloseDialog(ApplicationDialog.Settings);
     }
 
     [RelayCommand]

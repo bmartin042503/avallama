@@ -45,13 +45,14 @@ Licensed under the MIT License. See LICENSE file for details.
     <Style Selector="Button">
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
-        <Setter Property="CornerRadius" Value="25"/>
+        <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Padding" Value="25, 7.5"/>
+        <Setter Property="Padding" Value="20, 8"/>
         <Setter Property="FontFamily" Value="{StaticResource Manrope}"/>
-        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="FontWeight" Value="Bold"/>
     </Style>
     
+    <!-- button háttér animációja, ezt egyelőre kivettem mert lehet hogy inkább csak ront a megjelenésen
     <Style Selector="Button /template/ ContentPresenter">
         <Setter Property="Transitions">
             <Transitions>
@@ -59,6 +60,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </Transitions>
         </Setter>
     </Style>
+    -->
     
     <Style Selector="Button:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
@@ -142,6 +144,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="MinWidth" Value="45"/>
         <Setter Property="Background" Value="{DynamicResource Primary}" />
         <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
+        <!--
         <Setter Property="Transitions">
             <Setter.Value>
                 <Transitions>
@@ -150,6 +153,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 </Transitions>
             </Setter.Value>
         </Setter>
+        -->
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">

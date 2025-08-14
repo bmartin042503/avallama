@@ -18,6 +18,7 @@ using ShimSkiaSharp;
 namespace avallama.Controls;
 
 // TODO:
+// Download Paused állapot render
 // animáció modelblock kiválasztásánál
 // optimalizáció, hogy amikor átméreteződnek az elemek kevesebbszer hívódjon meg a measureoverride és társai
 

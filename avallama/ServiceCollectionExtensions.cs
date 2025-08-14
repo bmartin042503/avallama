@@ -36,10 +36,10 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<ConfigurationService>();
         
         collection.AddSingleton<MainViewModel>();
-        collection.AddTransient<HomeViewModel>();
+        collection.AddSingleton<HomeViewModel>();
         collection.AddTransient<GreetingViewModel>();
-        collection.AddTransient<SettingsViewModel>();
-        collection.AddTransient<ModelManagerViewModel>();
+        collection.AddSingleton<SettingsViewModel>();
+        collection.AddSingleton<ModelManagerViewModel>();
         collection.AddTransient<GuideViewModel>();
 
         collection.AddSingleton<PageFactory>();
@@ -55,16 +55,18 @@ public static class ServiceCollectionExtensions
             ApplicationPage.Greeting => serviceProvider.GetRequiredService<GreetingViewModel>(),
             ApplicationPage.Home => serviceProvider.GetRequiredService<HomeViewModel>(),
             ApplicationPage.Guide => serviceProvider.GetRequiredService<GuideViewModel>(),
+            ApplicationPage.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
+            ApplicationPage.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
             _ => throw new InvalidOperationException() // ha még nincs adott Page regisztrálva akkor kivétel
         });
-
+        
+         
         collection.AddSingleton<Func<ApplicationDialog, DialogViewModel>>(serviceProvider => content => content switch
         {
-            ApplicationDialog.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
-            ApplicationDialog.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
-            _ => throw new InvalidOperationException() 
+            // mivel a dialogok át lettek helyezve ezért kivételt dob, de ezt nem törölném hisz lehet még később olyan view
+            // ami személyre szabott és külön ablakban kell megjelennie dialogként
+            _ => throw new NotSupportedException() 
             // Info, Error és a többi dialog nem kell, mert azok nem hívják meg ezt
         });
-
     }
 }

@@ -13,6 +13,8 @@ namespace avallama.Models;
 // de arra gondoltam hogy ez így maradna ha esetleg később több forrásból (nem csak ollama) lehetne modelt letölteni
 // és ha nem elérhető a szerver a letöltéshez akkor így legalább külön választhatóak
 // tehát amit le tud tölteni azt letöltheti, amit nem az nem (de ez majd később)
+
+// a hiba státuszt meg egyelőre sztem elég egy dialoggal jelezni és a dialog után Ready-re váltani ismét
 public enum ModelDownloadStatus
 {
     NotEnoughSpace, // nincs elég hely a letöltéshez

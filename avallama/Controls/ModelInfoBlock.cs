@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using avallama.Constants;
@@ -11,24 +12,35 @@ using avallama.Services;
 using avallama.Utilities;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
 namespace avallama.Controls;
 
 // TODO:
-// Learn more gomb kattinthatóvá tétele és átirányítás ollama oldalára (url-be betéve a model nevét)
 // Letöltés, szüneteltetés, törlés UI
 // noconnection és notenoughspace figyelmeztetések
 // BorderThickness a kijelzőméret alapján, hogy a lehető legjobb megjelenése legyen
 // szövegkijelölés, vmi új felhasználható típusban
 // --------------------------------------------
 // scrollviewerbe tenni a modelinformationt
-// (ez még talán belefér későbbre, 4-6 sornyi infót még meg tud jeleníteni de ha ennél több van akkor valszeg ki fog nyúlni a szöveg alulra)
+// (ez még belefér későbbre, 4-6 sornyi infót még meg tud jeleníteni de ha ennél több van akkor valszeg ki fog nyúlni a szöveg alulra)
 public class ModelInfoBlock : Control
 {
     // StyledProperty - belekerül az Avalonia styles rendszerébe így például írhatunk rá stílusokat stb.
     // DirectProperty - nem kerül bele, megadott egyszerű értékeknek, jobb teljesítmény (kell getter, setter)
+
+    // interaktálható elemek
+    // None: a kurzor egy interaktálható elemen sincs rajta
+    // LinkText: "Learn more" szöveg
+    // ModelActionButton: letöltést kezelő gomb (más esetben csak szöveg és nem interaktálható)
+    private enum PointerActionItem
+    {
+        None,
+        LinkText,
+        ModelActionButton
+    }
 
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<ModelInfoBlock, string?>(nameof(Title));
@@ -68,8 +80,8 @@ public class ModelInfoBlock : Control
             (o, v) => o.SizeInBytes = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, ModelDownloadStatus?> DownloadStatusProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, ModelDownloadStatus?>(
+    public static readonly DirectProperty<ModelInfoBlock, ModelDownloadStatus> DownloadStatusProperty =
+        AvaloniaProperty.RegisterDirect<ModelInfoBlock, ModelDownloadStatus>(
             nameof(DownloadStatus),
             o => o.DownloadStatus,
             (o, v) => o.DownloadStatus = v
@@ -142,9 +154,9 @@ public class ModelInfoBlock : Control
         set => SetAndRaise(SizeInBytesProperty, ref _sizeInBytes, value);
     }
 
-    private ModelDownloadStatus? _downloadStatus;
+    private ModelDownloadStatus _downloadStatus;
 
-    public ModelDownloadStatus? DownloadStatus
+    public ModelDownloadStatus DownloadStatus
     {
         get => _downloadStatus;
         set => SetAndRaise(DownloadStatusProperty, ref _downloadStatus, value);
@@ -182,6 +194,7 @@ public class ModelInfoBlock : Control
     private const double WarningFontSize = 14;
     private const double LabelFontSize = 12;
     private const double DetailsFontSize = 14;
+    private const double ButtonFontSize = 12;
     private const double DetailsLineHeight = 28;
     private const double BorderThickness = 0.25;
     private const double LabelSpacing = 8.0;
@@ -189,9 +202,11 @@ public class ModelInfoBlock : Control
     private static readonly Thickness BasePadding = new(16);
     private static readonly Thickness LabelPadding = new(10, 5);
     private static readonly Thickness ContainerPadding = new(12);
+    private static readonly Thickness ButtonPadding = new(20, 8);
     private static readonly CornerRadius BaseCornerRadius = new(10);
     private static readonly CornerRadius ContainerCornerRadius = new(8);
     private static readonly CornerRadius LabelCornerRadius = new(4);
+    private static readonly CornerRadius ButtonCornerRadius = new(8);
 
     private TextLayout? _titleTextLayout;
     private TextLayout? _warningTextLayout;
@@ -202,11 +217,20 @@ public class ModelInfoBlock : Control
     private TextLayout? _detailsTextLayout;
     private TextLayout? _modelInfoTextLayout;
     private TextLayout? _linkTextLayout;
+    private TextLayout? _statusTextLayout;
 
     private double _renderPosX;
     private double _renderPosY;
 
     private double _labelsHeight;
+
+    private Point _linkTextLayoutStartPoint = new(0, 0);
+    private Point _modelActionButtonStartPoint = new(0, 0);
+
+    // az az elem amin a kurzor rajta van és interaktálható (ez vagy a learn more szöveg vagy a letöltés kezelő gomb)
+    private PointerActionItem _activeHoveredItem = PointerActionItem.None;
+
+    private const string OllamaLibraryUrl = @"https://ollama.com/library/";
 
     public override void Render(DrawingContext context)
     {
@@ -221,6 +245,9 @@ public class ModelInfoBlock : Control
 
         // model információinak renderelése
         RenderModelInformation(context);
+
+        // model (letöltési) állapotának renderelése
+        RenderStatus(context);
     }
 
     private void RenderBackground(DrawingContext context)
@@ -402,7 +429,7 @@ public class ModelInfoBlock : Control
 
         _renderPosY += ContainerPadding.Top;
         _renderPosX = BasePadding.Left + ContainerPadding.Left;
-        
+
         _modelInfoTextLayout?.Draw(
             context,
             new Point(
@@ -421,12 +448,63 @@ public class ModelInfoBlock : Control
             )
         );
 
+        _linkTextLayoutStartPoint = new Point(
+            BasePadding.Left + ContainerPadding.Left,
+            Bounds.Height - BasePadding.Bottom * 3 - LabelPadding.Bottom - (_sizeTextLayout?.Height ?? 0.0) -
+            LabelPadding.Top - ContainerPadding.Bottom - (_linkTextLayout?.Height ?? 0.0)
+        );
+
         _linkTextLayout?.Draw(
             context,
+            _linkTextLayoutStartPoint
+        );
+    }
+
+    private void RenderStatus(DrawingContext context)
+    {
+        AppColor? rectBackground = DownloadStatus switch
+        {
+            ModelDownloadStatus.Ready or ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused =>
+                _activeHoveredItem == PointerActionItem.ModelActionButton
+                    ? AppColor.PrimaryContainer
+                    : AppColor.Primary,
+            ModelDownloadStatus.Downloaded =>
+                _activeHoveredItem == PointerActionItem.ModelActionButton ? AppColor.ErrorContainer : AppColor.Error,
+            _ => null
+        };
+
+        var rectPosX =
+            Bounds.Width - BasePadding.Right - ButtonPadding.Right - (_statusTextLayout?.Width ?? 0.0) -
+            ButtonPadding.Left;
+        var rectPosY =
+            Bounds.Height - BasePadding.Bottom - ButtonPadding.Bottom - (_statusTextLayout?.Height ?? 0.0) -
+            ButtonPadding.Top;
+
+        _modelActionButtonStartPoint = new Point(rectPosX, rectPosY);
+
+        var rectWidth = ButtonPadding.Left + (_statusTextLayout?.Width ?? 0) + ButtonPadding.Right;
+        var rectHeight = ButtonPadding.Top + (_statusTextLayout?.Height ?? 0) + ButtonPadding.Bottom;
+
+        if (rectBackground != null)
+        {
+            context.DrawRectangle(
+                ColorProvider.GetColor(rectBackground.Value),
+                null,
+                new RoundedRect(
+                    new Rect(
+                        new Point(rectPosX, rectPosY),
+                        new Size(rectWidth, rectHeight)
+                    ),
+                    ButtonCornerRadius
+                )
+            );
+        }
+
+        _statusTextLayout?.Draw(
+            context,
             new Point(
-                BasePadding.Left + ContainerPadding.Left,
-                Bounds.Height - BasePadding.Bottom * 3 - LabelPadding.Bottom - (_sizeTextLayout?.Height ?? 0.0) -
-                LabelPadding.Top - ContainerPadding.Bottom - _linkTextLayout.Height
+                rectPosX + ButtonPadding.Left,
+                rectPosY + ButtonPadding.Top
             )
         );
     }
@@ -465,7 +543,7 @@ public class ModelInfoBlock : Control
     }
 
     // quantizationnek, parametersnek és a formatnak
-    private TextLayout CreateLabelTextLayout(string text)
+    private static TextLayout CreateLabelTextLayout(string text)
     {
         return new TextLayout(
             text,
@@ -510,7 +588,7 @@ public class ModelInfoBlock : Control
         );
     }
 
-    private TextLayout CreateModelInfoTextLayout()
+    private static TextLayout CreateModelInfoTextLayout()
     {
         return new TextLayout(
             LocalizationService.GetString("MODEL_INFORMATION"),
@@ -523,6 +601,8 @@ public class ModelInfoBlock : Control
 
     private TextLayout CreateLinkTextLayout()
     {
+        var textColor = _activeHoveredItem == PointerActionItem.LinkText ? AppColor.Primary : AppColor.OnSurface;
+
         return new TextLayout(
             LocalizationService.GetString("LEARN_MORE"),
             new Typeface(RenderHelper.ManropeFont, weight: FontWeight.Bold),
@@ -532,7 +612,7 @@ public class ModelInfoBlock : Control
                 new TextDecoration
                 {
                     Location = TextDecorationLocation.Underline,
-                    Stroke = ColorProvider.GetColor(AppColor.Primary),
+                    Stroke = ColorProvider.GetColor(textColor),
                     StrokeThickness = 1,
                     StrokeOffset = 0.75,
                     StrokeThicknessUnit = TextDecorationUnit.Pixel,
@@ -540,11 +620,62 @@ public class ModelInfoBlock : Control
                 }
             ],
             fontSize: DetailsFontSize,
-            foreground: ColorProvider.GetColor(AppColor.Primary)
+            foreground: ColorProvider.GetColor(textColor)
         );
     }
 
-    // controlhoz tartozó layoutok stb. felszabadítása
+    private TextLayout CreateStatusTextLayout()
+    {
+        var statusText = DownloadStatus switch
+        {
+            ModelDownloadStatus.NotEnoughSpace => LocalizationService.GetString("NOT_ENOUGH_SPACE_DOWNLOAD"),
+            ModelDownloadStatus.NoConnection => LocalizationService.GetString("NO_CONNECTION_DOWNLOAD"),
+            ModelDownloadStatus.Ready => LocalizationService.GetString("DOWNLOAD"),
+            ModelDownloadStatus.Downloading => string.Format(
+                LocalizationService.GetString("DOWNLOADING"),
+                DownloadProgress?.ToString("P1") ?? "0%"
+            ),
+            ModelDownloadStatus.Paused => string.Format(
+                LocalizationService.GetString("RESUME_DOWNLOAD"),
+                DownloadProgress?.ToString("P1") ?? "0%"
+            ),
+            ModelDownloadStatus.Downloaded => LocalizationService.GetString("DELETE"),
+            _ => string.Empty
+        };
+
+        var statusColor = DownloadStatus switch
+        {
+            ModelDownloadStatus.NotEnoughSpace or
+                ModelDownloadStatus.NoConnection => AppColor.OnSurface,
+
+            ModelDownloadStatus.Ready or
+                ModelDownloadStatus.Downloading or
+                ModelDownloadStatus.Paused =>
+                _activeHoveredItem == PointerActionItem.ModelActionButton
+                    ? AppColor.OnPrimaryContainer
+                    : AppColor.OnPrimary,
+
+            ModelDownloadStatus.Downloaded =>
+                _activeHoveredItem == PointerActionItem.ModelActionButton
+                    ? AppColor.OnErrorContainer
+                    : AppColor.OnError,
+
+            _ => AppColor.OnSurface
+        };
+
+        return new TextLayout(
+            statusText,
+            new Typeface(RenderHelper.ManropeFont, weight: FontWeight.Bold),
+            null,
+            ButtonFontSize,
+            new SolidColorBrush(
+                ColorProvider.GetColor(statusColor).Color,
+                DownloadStatus is ModelDownloadStatus.NotEnoughSpace or ModelDownloadStatus.NoConnection ? 0.6 : 1.0
+            )
+        );
+    }
+
+    // controlhoz tartozó elemek felszabadítása
     private void InvalidateTextLayouts()
     {
         _warningTextLayout?.Dispose();
@@ -565,6 +696,8 @@ public class ModelInfoBlock : Control
         _modelInfoTextLayout = null;
         _linkTextLayout?.Dispose();
         _linkTextLayout = null;
+        _statusTextLayout?.Dispose();
+        _statusTextLayout = null;
 
         _renderPosX = 0;
         _renderPosY = 0;
@@ -583,6 +716,7 @@ public class ModelInfoBlock : Control
         _sizeTextLayout ??= CreateSizeTextLayout();
         _modelInfoTextLayout ??= CreateModelInfoTextLayout();
         _linkTextLayout ??= CreateLinkTextLayout();
+        _statusTextLayout ??= CreateStatusTextLayout();
 
         if (Quantization is > 0)
         {
@@ -643,6 +777,93 @@ public class ModelInfoBlock : Control
             case nameof(Bounds):
                 InvalidateMeasure();
                 break;
+        }
+    }
+
+    private void InvalidateHoveredItems()
+    {
+        _linkTextLayout?.Dispose();
+        _linkTextLayout = null;
+        _linkTextLayout = CreateLinkTextLayout();
+        _statusTextLayout?.Dispose();
+        _statusTextLayout = null;
+        _statusTextLayout = CreateStatusTextLayout();
+
+        _renderPosX = 0;
+        _renderPosY = 0;
+        
+        InvalidateVisual();
+    }
+
+    private bool IsPointerOverLinkText(Point position)
+    {
+        return position.X >= _linkTextLayoutStartPoint.X &&
+               position.X <= _linkTextLayoutStartPoint.X + (_linkTextLayout?.Width ?? 0.0) &&
+               position.Y >= _linkTextLayoutStartPoint.Y &&
+               position.Y <= _linkTextLayoutStartPoint.Y + (_linkTextLayout?.Height ?? 0.0);
+    }
+
+    private bool IsPointerOverModelActionButton(Point position)
+    {
+        return position.X >= _modelActionButtonStartPoint.X &&
+               position.X <= _modelActionButtonStartPoint.X + (_statusTextLayout?.Width ?? 0.0) + ButtonPadding.Left +
+               ButtonPadding.Right &&
+               position.Y >= _modelActionButtonStartPoint.Y &&
+               position.Y <= _modelActionButtonStartPoint.Y + (_statusTextLayout?.Height ?? 0.0) + ButtonPadding.Top +
+               ButtonPadding.Bottom;
+    }
+    
+    private void SetHoveredItem(PointerActionItem newItem)
+    {
+        if (_activeHoveredItem != newItem)
+        {
+            _activeHoveredItem = newItem;
+            Cursor = new Cursor(newItem == PointerActionItem.None
+                ? StandardCursorType.Arrow
+                : StandardCursorType.Hand);
+            InvalidateHoveredItems();
+        }
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        var pos = e.GetPosition(this);
+
+        if (_linkTextLayout != null && _linkTextLayoutStartPoint != default &&
+            IsPointerOverLinkText(pos))
+        {
+            SetHoveredItem(PointerActionItem.LinkText);
+            return;
+        }
+
+        if (_statusTextLayout != null && _modelActionButtonStartPoint != default &&
+            DownloadStatus is not (ModelDownloadStatus.NoConnection or ModelDownloadStatus.NotEnoughSpace) &&
+            IsPointerOverModelActionButton(pos))
+        {
+            SetHoveredItem(PointerActionItem.ModelActionButton);
+            return;
+        }
+
+        SetHoveredItem(PointerActionItem.None);
+    }
+
+    // ha a learn more szövegre vagy az action buttonra (letöltési műveletek) kattintott akkor azt itt kezeli le
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        if (_activeHoveredItem == PointerActionItem.LinkText)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = OllamaLibraryUrl + Title,
+                UseShellExecute = true
+            });
+        }
+        else if (_activeHoveredItem == PointerActionItem.ModelActionButton)
+        {
+            if (Command.CanExecute(CommandParameter))
+            {
+                Command.Execute(CommandParameter);
+            }
         }
     }
 }

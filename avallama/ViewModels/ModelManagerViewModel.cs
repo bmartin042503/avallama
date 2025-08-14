@@ -13,7 +13,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace avallama.ViewModels;
 
-public partial class ModelManagerViewModel : DialogViewModel
+public partial class ModelManagerViewModel : PageViewModel
 {
     private readonly DialogService _dialogService;
 
@@ -63,7 +63,7 @@ public partial class ModelManagerViewModel : DialogViewModel
 
     public ModelManagerViewModel(DialogService dialogService)
     {
-        DialogType = ApplicationDialog.ModelManager;
+        Page = ApplicationPage.ModelManager;
 
         _dialogService = dialogService;
 
@@ -176,12 +176,6 @@ public partial class ModelManagerViewModel : DialogViewModel
             var modelFromName = _modelsData.FirstOrDefault(m => m.Name == SelectedModelName);
             if (modelFromName != null) SelectedModel = modelFromName;
         }
-    }
-
-    [RelayCommand]
-    public void Close()
-    {
-        _dialogService.CloseDialog(ApplicationDialog.ModelManager);
     }
 
     [RelayCommand]

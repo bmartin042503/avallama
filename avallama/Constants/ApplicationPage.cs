@@ -7,5 +7,7 @@ public enum ApplicationPage
 {
     Greeting,
     Home,
-    Guide
+    Guide,
+    Settings,
+    ModelManager
 }

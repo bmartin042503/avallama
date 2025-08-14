@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Vágjunk bele</value>
     </data>
     <data name="GREETING_SUBTEXT" xml:space="preserve">
-        <value>Futtass bármilyen LLM modelt lokálisan</value>
+        <value>Futtass bármilyen LLM modellt lokálisan</value>
     </data>
     <data name="GREETING_TEXT" xml:space="preserve">
         <value>Avallama</value>
@@ -38,13 +38,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>token/mp</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
-        <value>Jelenleg csak a(z) {0} model támogatott</value>
+        <value>Jelenleg csak a(z) {0} modell támogatott</value>
     </data>
     <data name="SEND_MESSAGE" xml:space="preserve">
         <value>Küldj üzenetet..</value>
     </data>
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
-        <value>Ez a model nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
+        <value>Ez a modell nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
     </data>
     <data name="VERSION" xml:space="preserve">
         <value>v0.2.0</value>
@@ -80,7 +80,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Generálás folyamatban...</value>
     </data>
     <data name="NOT_DOWNLOADED_WARNING" xml:space="preserve">
-        <value>A model nincs letöltve</value>
+        <value>A modell nincs letöltve</value>
     </data>
     <data name="LOADING_MODELS" xml:space="preserve">
         <value>Modellek betöltése...</value>
@@ -176,7 +176,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Minden adat lokálisan van tárolva, biztonságban</value>
     </data>
     <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
-        <value>Tölts le különböző AI modeleket</value>
+        <value>Tölts le különböző AI modelleket</value>
     </data>
     <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
         <value>Egyszerű, és személyreszabható</value>
@@ -188,13 +188,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Köszönjük, hogy kipróbálod az avallamát!</value>
     </data>
     <data name="MODEL_MANAGER" xml:space="preserve">
-        <value>Modelkezelő</value>
+        <value>Modellkezelő</value>
     </data>
     <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
         <value>Elérhető az Ollamatól ({0})</value>
     </data>
     <data name="DOWNLOADING" xml:space="preserve">
-        <value>Letöltés.. {0}%</value>
+        <value>Letöltés.. {0}</value>
     </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
@@ -202,8 +202,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_QUANTIZATION" xml:space="preserve">
         <value>Kvantálás: {0} bit</value>
     </data>
-    <data name="NOT_ENOUGH_SPACE" xml:space="preserve">
-        <value>Nincs elég hely</value>
+    <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
+        <value>Nincs elég hely a letöltéshez</value>
     </data>
     <data name="SEARCH_FOR_MODELS" xml:space="preserve">
         <value>Modellek keresése..</value>
@@ -292,8 +292,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="NO_MODELS_FOUND" xml:space="preserve">
         <value>Nincs megjeleníthető modell</value>
     </data>
-    <data name="NO_CONNECTION" xml:space="preserve">
-        <value>Nincs kapcsolat</value>
+    <data name="NO_CONNECTION_DOWNLOAD" xml:space="preserve">
+        <value>Nincs kapcsolat a letöltéshez</value>
     </data>
     <data name="LEARN_MORE" xml:space="preserve">
         <value>További információ</value>
@@ -344,6 +344,15 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Letöltött</value>
     </data>
     <data name="MODEL_INFORMATION" xml:space="preserve">
-        <value>Model részletei</value>
+        <value>Modell részletei</value>
+    </data>
+    <data name="BACK" xml:space="preserve">
+        <value>Vissza</value>
+    </data>
+    <data name="RESUME_DOWNLOAD" xml:space="preserve">
+        <value>Letöltés folytatása ({0})</value>
+    </data>
+    <data name="DELETE" xml:space="preserve">
+        <value>Törlés</value>
     </data>
 </root>
