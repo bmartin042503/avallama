@@ -18,9 +18,8 @@ using ShimSkiaSharp;
 namespace avallama.Controls;
 
 // TODO:
-// Download Paused állapot render
-// animáció modelblock kiválasztásánál
-// optimalizáció, hogy amikor átméreteződnek az elemek kevesebbszer hívódjon meg a measureoverride és társai
+// Paused svg renderelése
+// felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
 
 public class ModelBlock : Control
 {
@@ -109,9 +108,10 @@ public class ModelBlock : Control
     private TextLayout? _downloadTextLayout;
     
     // ebben lesz az svg
-    private AvaloniaPicture? _avaloniaPicture;
+    private AvaloniaPicture? _svg;
     private SKPicture? _downloadedSkPicture;
     private SKPicture? _spinnerSkPicture;
+    private SKPicture? _pauseSkPicture; // TODO: implementálni
 
     private readonly RotateTransform _rotateTransform = new();
     private double _currentRotationAngle;
@@ -216,8 +216,8 @@ public class ModelBlock : Control
                 
                 context.PushTransform(Matrix.CreateScale(downloadSvgScale, downloadSvgScale) * downloadSvgTranslate);
                 
-                _avaloniaPicture = AvaloniaPicture.Record(_downloadedSkPicture);
-                _avaloniaPicture.Draw(context);
+                _svg = AvaloniaPicture.Record(_downloadedSkPicture);
+                _svg.Draw(context);
                 break;
             case ModelDownloadStatus.Downloading:
                 _spinnerSkPicture ??= RenderHelper.LoadSvg(
@@ -250,8 +250,8 @@ public class ModelBlock : Control
                 StartRotatingAnimation(_spinnerSkPicture.CullRect.Height / 2);
                 context.PushTransform(_rotateTransform.Value);
                 
-                _avaloniaPicture = AvaloniaPicture.Record(_spinnerSkPicture);
-                _avaloniaPicture.Draw(context);
+                _svg = AvaloniaPicture.Record(_spinnerSkPicture);
+                _svg.Draw(context);
                 break;
         }
     }
@@ -315,8 +315,8 @@ public class ModelBlock : Control
         _titleTextLayout = null;
         _downloadTextLayout?.Dispose();
         _downloadTextLayout = null;
-        _avaloniaPicture?.Dispose();
-        _avaloniaPicture = null;
+        _svg?.Dispose();
+        _svg = null;
         _spinnerSkPicture = null;
         _downloadedSkPicture = null;
         

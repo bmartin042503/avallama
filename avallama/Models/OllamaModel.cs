@@ -25,6 +25,14 @@ public enum ModelDownloadStatus
     Downloaded
 }
 
+public enum ModelDownloadAction
+{
+    Start,
+    Pause,
+    Resume,
+    Cancel
+}
+
 public partial class OllamaModel : ObservableObject
 {
     // model neve
