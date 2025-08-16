@@ -21,6 +21,7 @@ public static class RenderHelper
     public const string SpinnerSvgPath = "Assets/Svg/spinner.svg";
     public const string PauseSvgPath = "Assets/Svg/pause.svg";
     public const string CloseSvgPath = "Assets/Svg/close.svg";
+    public const string ResumeSvgPath = "Assets/Svg/resume.svg";
     
     /* csak mert mindig elfelejtem, így kell opacity-s brusht megadni, pl. ahova IBrush kell:
         new SolidColorBrush(
@@ -44,7 +45,7 @@ public static class RenderHelper
     }
     
     
-    // svg betöltése megadott szín és áttetszőség alapján
+    // svg betöltése megadott szín, áttetszőség, körvonal alapján
     // renderelésre készíti elő, az svg pozícióját Matrix eltolásokban lehet megadni, ezt a drawingcontext-re kell alkalmazni (context.PushTransform())
     // ahhoz hogy rajzolható legyen meg kell hívni ezt: AvaloniaPicture.Record(svgPicture) ez visszaad egy AvaloniaPicturet amin van Draw metódus
     // a színt úgy kell megadni ahogyan az az svg fájlban van (stroke vagy fill attól függően mit használ)

@@ -15,7 +15,7 @@ Licensed under the MIT License. See LICENSE file for details.
              x:DataType="vm:GuideViewModel"
              Background="{DynamicResource Surface}">
     <UserControl.Resources>
-        <converters:GuideImageSizeConverter x:Key="GuideImageSizeConverter"/>
+        <converters:GuideImageSizeConverter x:Key="GuideImageSizeConverter" />
     </UserControl.Resources>
     <Grid>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -23,22 +23,22 @@ Licensed under the MIT License. See LICENSE file for details.
                     IsVisible="{Binding IsImageVisible}">
                 <Image Source="{Binding CurrentImageSource}"
                        IsVisible="{Binding IsImageVisible}"
-                       MaxHeight="{Binding Path=Bounds.Height, Converter={StaticResource GuideImageSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                       MaxHeight="{Binding Path=Bounds.Height, Converter={StaticResource GuideImageSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
             </Border>
             <TextBlock Text="{Binding CurrentMainText}" HorizontalAlignment="Center"
-                       FontSize="20" VerticalAlignment="Center"/>
+                       FontSize="20" VerticalAlignment="Center" />
             <TextBlock Text="{Binding CurrentSubText}" HorizontalAlignment="Center"
-                       Classes="subText" Opacity="0.5"/>
+                       Classes="subText" Opacity="0.5" />
             <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
                         Margin="0,20,0,30" Classes="subText">
                 <Button
                     Command="{Binding Next}"
                     IsEnabled="{Binding IsNextButtonEnabled}"
                     IsVisible="{Binding IsNextButtonEnabled}"
-                    Content="{services:LocalizationService Key='NEXT'}" Cursor="Hand"/>
-                <Button 
+                    Content="{services:LocalizationService Key='NEXT'}" Cursor="Hand" />
+                <Button
                     Classes="lessSecondaryButton" Content="{Binding SkipButtonText}" Cursor="Hand"
-                    Command="{Binding Path=((vm:MainViewModel)DataContext).OpenHome, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                    Command="{Binding Path=((vm:MainViewModel)DataContext).OpenHome, RelativeSource={RelativeSource AncestorType=Window}}" />
             </StackPanel>
         </StackPanel>
     </Grid>

@@ -20,7 +20,7 @@ Licensed under the MIT License. See LICENSE file for details.
                        Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.5" />
         </StackPanel>
         <TextBlock x:Name="DialogMessage" TextWrapping="Wrap" MaxWidth="400" Margin="0,10,0,0" Classes="H3"
-                   Text="Error Dialog Message" />
+                   Text="Error Dialog Message" TextAlignment="Left" />
         <Button HorizontalAlignment="Right" Content="{services:LocalizationService Key='CLOSE'}"
                 Cursor="Hand" x:Name="CloseButton" Margin="0,40,0,0" />
     </StackPanel>

@@ -60,18 +60,20 @@ Licensed under the MIT License. See LICENSE file for details.
                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectConversation}"
                                 Text="{Binding Title}"
                                 SubText="{Binding Model}"
-                                Margin="0,0,0,14"/>
+                                Margin="0,0,0,14" />
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
             </ScrollViewer>
 
             <StackPanel Grid.Row="2" Margin="10" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
-                <Button Classes="svgButton" Cursor="Hand" Command="{Binding Path=((vm:MainViewModel)DataContext).OpenSettings, RelativeSource={RelativeSource AncestorType=Window}}">
+                <Button Classes="svgButton" Cursor="Hand"
+                        Command="{Binding Path=((vm:MainViewModel)DataContext).OpenSettings, RelativeSource={RelativeSource AncestorType=Window}}">
                     <controls:DynamicSvg
                         Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
                 </Button>
-                <Button Classes="svgButton" Command="{Binding Path=((vm:MainViewModel)DataContext).OpenModelManager, RelativeSource={RelativeSource AncestorType=Window}}"
+                <Button Classes="svgButton"
+                        Command="{Binding Path=((vm:MainViewModel)DataContext).OpenModelManager, RelativeSource={RelativeSource AncestorType=Window}}"
                         Cursor="Hand">
                     <controls:DynamicSvg
                         Path="/Assets/Svg/model-manager.svg" Width="28"
@@ -90,67 +92,54 @@ Licensed under the MIT License. See LICENSE file for details.
                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
         </Button>
 
-        <Grid Grid.Row="0" Grid.Column="3" ColumnDefinitions="*,Auto,*">
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <ComboBox
-                    Width="175"
+        <!-- A mínusz marginos kivonások (és a jobb oldali pluszos) a sidebar és a gridsplitter méreteit vonják ki, 
+        hogy középre igazítva legyen a ComboBox és a figyelmeztető szövegek -->
+        
+        <!-- ehelyett majd jobb megoldások kellenek, de majd asszem custom controllal vagy ilyesmivel megcsinálom -->
+
+        <Grid Grid.Row="0" Grid.Column="3" ColumnDefinitions="Auto,Auto,Auto" Margin="-52,0,0,0"
+              HorizontalAlignment="Center">
+            <ComboBox
+                Width="175"
+                VerticalAlignment="Center"
+                Margin="0,20,0,10"
+                ItemsSource="{Binding AvailableModels}"
+                SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
+                IsEnabled="False" />
+            <Button Grid.Column="2"
                     VerticalAlignment="Center"
-                    Margin="0,20,0,10"
-                    ItemsSource="{Binding AvailableModels}"
-                    SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
-                    IsEnabled="False" />
-                <Button
-                    VerticalAlignment="Center"
-                    Padding="8"
+                    Padding="6"
                     IsVisible="{Binding IsNotDownloadedVisible}"
                     IsEnabled="{Binding !IsDownloading}"
-                    Background="{DynamicResource SecondaryContainer}"
+                    Background="{DynamicResource Primary}"
                     Command="{Binding DownloadModel}"
-                    Margin="10,10,0,0">
-                    <controls:DynamicSvg Path="/Assets/Svg/download.svg"
-                                         FillColor="{DynamicResource OnSecondaryContainer}"
-                                         Width="20" />
-                </Button>
-            </StackPanel>
+                    Margin="14,10,0,0"
+                    Cursor="Hand">
+                <controls:DynamicSvg Path="/Assets/Svg/download.svg"
+                                     StrokeColor="{DynamicResource OnPrimary}"
+                                     Width="20" />
+            </Button>
         </Grid>
 
-        <StackPanel Grid.Column="3" Grid.Row="1" Orientation="Vertical" Margin="25,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <controls:DynamicSvg Path="/Assets/Svg/error.svg"
-                                     FillColor="#808080"
-                                     Width="18"
-                                     Margin="0,0,5,5" />
+        <StackPanel Grid.Column="3" Grid.Row="1" Orientation="Vertical" Margin="-52,0,0,0">
+            <TextBlock Text="{Binding LanguageLimitationWarning}"
+                       Foreground="#808080"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap" />
 
+            <TextBlock Text="{Binding ResourceLimitWarning}" Margin="30,6,48,0"
+                       Foreground="{DynamicResource Error}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding IsWarningVisible}"/>
 
-                <TextBlock Text="{Binding LanguageLimitationWarning}"
-                           Foreground="#808080"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap" />
-            </StackPanel>
-
-            <StackPanel IsVisible="{Binding IsWarningVisible}" Orientation="Horizontal" HorizontalAlignment="Center">
-                <controls:DynamicSvg Path="/Assets/Svg/error.svg"
-                                     FillColor="#FFD700"
-                                     Width="18"
-                                     Margin="0,0,5,5" />
-                <TextBlock Text="{Binding ResourceLimitWarning}"
-                           Foreground="#FFD700"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap" />
-            </StackPanel>
-            <StackPanel IsVisible="{Binding IsNotDownloadedVisible}" Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <controls:DynamicSvg Path="/Assets/Svg/error.svg"
-                                     FillColor="{DynamicResource Error}"
-                                     Width="18"
-                                     Margin="0,0,5,5" />
-                <TextBlock Text="{Binding NotDownloadedWarning}"
-                           Foreground="{DynamicResource Error}"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap" />
-            </StackPanel>
+            <TextBlock Text="{Binding NotDownloadedWarning}" Margin="0,6,0, 0"
+                       Foreground="{DynamicResource Error}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding IsNotDownloadedVisible}"/>
         </StackPanel>
-        <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="3" RowDefinitions="*,Auto" Margin="25,0,25,0">
+        <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="3" RowDefinitions="*,Auto" Margin="18,0">
             <StackPanel Grid.Row="0"
                         IsVisible="{Binding IsDownloading}"
                         Orientation="Vertical"
@@ -170,7 +159,8 @@ Licensed under the MIT License. See LICENSE file for details.
                     Height="10"
                     Width="250"
                     Value="{Binding DownloadProgress}"
-                    IsIndeterminate="{Binding IsMaxPercent}" />
+                    IsIndeterminate="{Binding IsMaxPercent}"
+                    Foreground="{DynamicResource Primary}" />
                 <TextBlock
                     Margin="0,5,0,0"
                     HorizontalAlignment="Center"
@@ -189,8 +179,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
             <Grid Grid.Row="0" HorizontalAlignment="Stretch"
                   Margin="0, 15, 0, 0">
-                <ScrollViewer ScrollChanged="ScrollViewer_OnScrollChanged"
-                              Padding="10,0,10,0" x:Name="ConversationScrollViewer">
+                <ScrollViewer ScrollChanged="ScrollViewer_OnScrollChanged" x:Name="ConversationScrollViewer">
                     <ItemsControl ItemsSource="{Binding SelectedConversation.Messages}">
                         <ItemsControl.DataTemplates>
                             <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
@@ -234,7 +223,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
             <TextBox Grid.Row="1"
                      Watermark="{localization:LocalizationService Key='SEND_MESSAGE'}"
-                     Margin="0,30,0,16"
+                     Margin="0,30,0,20"
                      Padding="20, 10"
                      IsEnabled="{Binding IsDownloaded}"
                      Text="{Binding NewMessageText, Mode=TwoWay}">

@@ -226,12 +226,12 @@ public partial class HomeViewModel : PageViewModel
         
         LoadSettings();
 
+        // TODO: ezt majd lecserélni úgy hogy a db-ből jöjjön
         var conversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
         )
         {
-            // TODO: ezt majd lecserélni úgy hogy a db-ből jöjjön
             ConversationId = Guid.NewGuid()
         };
 

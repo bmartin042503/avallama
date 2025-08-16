@@ -18,14 +18,14 @@ using ShimSkiaSharp;
 namespace avallama.Controls;
 
 // TODO:
-// Paused svg renderelése
 // felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
+// code cleaning + proper documentation
 
 public class ModelBlock : Control
 {
     // StyledProperty - belekerül az Avalonia styles rendszerébe így például írhatunk rá stílusokat stb.
     // DirectProperty - nem kerül bele, megadott egyszerű értékeknek, jobb teljesítmény (kell getter, setter)
-    
+
     // azért Title a property neve, mert a 'Name' már le van foglalva és szerintem összekavarodna
     // de ez a Model nevét tartalmazza amúgy
     public static readonly StyledProperty<string?> TitleProperty =
@@ -38,11 +38,20 @@ public class ModelBlock : Control
             (o, v) => o.DownloadStatus = v
         );
 
-    public static readonly DirectProperty<ModelBlock, double?> DownloadProgressProperty =
-        AvaloniaProperty.RegisterDirect<ModelBlock, double?>(
-            nameof(DownloadProgress),
-            o => o.DownloadProgress,
-            (o, v) => o.DownloadProgress = v
+    public static readonly DirectProperty<ModelBlock, long> DownloadedBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelBlock, long>(
+            nameof(DownloadedBytes),
+            o => o.DownloadedBytes,
+            (o, v) => o.DownloadedBytes = v,
+            unsetValue: 0
+        );
+
+    public static readonly DirectProperty<ModelBlock, long> SizeInBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelBlock, long>(
+            nameof(SizeInBytes),
+            o => o.SizeInBytes,
+            (o, v) => o.SizeInBytes = v,
+            unsetValue: 0
         );
 
     public static readonly DirectProperty<ModelBlock, string?> SelectedNameProperty =
@@ -52,7 +61,7 @@ public class ModelBlock : Control
             (o, v) => o.SelectedName = v,
             unsetValue: string.Empty
         );
-    
+
     public static readonly StyledProperty<ICommand> CommandProperty =
         AvaloniaProperty.Register<ModelInfoBlock, ICommand>(nameof(Command));
 
@@ -66,17 +75,27 @@ public class ModelBlock : Control
     }
 
     private ModelDownloadStatus _downloadStatus;
+
     public ModelDownloadStatus DownloadStatus
     {
         get => _downloadStatus;
         set => SetAndRaise(DownloadStatusProperty, ref _downloadStatus, value);
     }
 
-    private double? _downloadProgress;
-    public double? DownloadProgress
+    private long _downloadedBytes;
+
+    public long DownloadedBytes
     {
-        get => _downloadProgress;
-        set => SetAndRaise(DownloadProgressProperty, ref _downloadProgress, value);
+        get => _downloadedBytes;
+        set => SetAndRaise(DownloadedBytesProperty, ref _downloadedBytes, value);
+    }
+
+    private long _sizeInBytes;
+
+    public long SizeInBytes
+    {
+        get => _sizeInBytes;
+        set => SetAndRaise(SizeInBytesProperty, ref _sizeInBytes, value);
     }
 
     private string? _selectedName;
@@ -86,7 +105,7 @@ public class ModelBlock : Control
         get => _selectedName;
         set => SetAndRaise(SelectedNameProperty, ref _selectedName, value);
     }
-    
+
     public ICommand Command
     {
         get => GetValue(CommandProperty);
@@ -99,23 +118,27 @@ public class ModelBlock : Control
         set => SetValue(CommandParameterProperty, value);
     }
 
-    private static readonly Thickness BasePadding = new(10,8);
+    private static readonly Thickness BasePadding = new(10, 8);
     private static readonly CornerRadius BaseCornerRadius = new(6);
     private const double TitleFontSize = 14;
     private const double DownloadTextFontSize = 14;
+    private const double SvgSpacing = 8;
 
     private TextLayout? _titleTextLayout;
     private TextLayout? _downloadTextLayout;
-    
+
     // ebben lesz az svg
     private AvaloniaPicture? _svg;
     private SKPicture? _downloadedSkPicture;
     private SKPicture? _spinnerSkPicture;
-    private SKPicture? _pauseSkPicture; // TODO: implementálni
+    private SKPicture? _pauseSkPicture;
 
     private readonly RotateTransform _rotateTransform = new();
     private double _currentRotationAngle;
     private DispatcherTimer? _rotationTimer;
+
+    // rajta van-e a kurzor a Controlon
+    private bool _isPointerOver;
 
     // forgatási animáció a spinnernek ha a model letöltés alatt van
     private void StartRotatingAnimation(double rotationPosition)
@@ -134,15 +157,15 @@ public class ModelBlock : Control
             _currentRotationAngle += 7.5;
             if (_currentRotationAngle >= 360)
                 _currentRotationAngle = 0;
-            
+
             // beállítjuk az új értéket + azt is hogy a forgatás az svg középső pontjától menjen
             _rotateTransform.Angle = _currentRotationAngle;
             _rotateTransform.CenterY = rotationPosition;
             _rotateTransform.CenterX = rotationPosition;
-            
+
             InvalidateVisual();
         };
-        
+
         _rotationTimer.Start();
     }
 
@@ -156,19 +179,29 @@ public class ModelBlock : Control
     {
         // Háttér renderelése
         RenderBackground(context);
-        
+
         // Szöveg renderelése
         RenderText(context);
-        
+
         // DownloadStatus renderelése
         RenderStatus(context);
     }
 
     private void RenderBackground(DrawingContext context)
     {
-        var background = Title == SelectedName
-            ? ColorProvider.GetColor(AppColor.Primary)
-            : ColorProvider.GetColor(AppColor.SecondaryContainer);
+        IBrush background;
+        
+        if (Title == SelectedName)
+        {
+            background = ColorProvider.GetColor(AppColor.Primary);
+        }
+        else
+        {
+            background = _isPointerOver
+                ? ColorProvider.GetColor(AppColor.SecondaryContainer)
+                : ColorProvider.GetColor(AppColor.SurfaceContainerHighest);
+        }
+        
         context.DrawRectangle(background, null,
             new RoundedRect(
                 new Rect(Bounds.Size),
@@ -180,7 +213,7 @@ public class ModelBlock : Control
     private void RenderText(DrawingContext context)
     {
         _titleTextLayout?.Draw(
-            context, 
+            context,
             new Point(BasePadding.Left, BasePadding.Top)
         );
     }
@@ -188,14 +221,23 @@ public class ModelBlock : Control
     private void RenderStatus(DrawingContext context)
     {
         if (_titleTextLayout is null) return;
-        
-        if (DownloadStatus != ModelDownloadStatus.Downloading &&
-            DownloadStatus != ModelDownloadStatus.Downloaded) return;
 
-        var color = Title == SelectedName
-            ? ColorProvider.GetColor(AppColor.OnPrimary)
-            : ColorProvider.GetColor(AppColor.OnSecondaryContainer);
-        
+        if (DownloadStatus != ModelDownloadStatus.Downloading &&
+            DownloadStatus != ModelDownloadStatus.Downloaded && DownloadStatus != ModelDownloadStatus.Paused) return;
+
+        IBrush color;
+
+        if (Title == SelectedName)
+        {
+            color = ColorProvider.GetColor(AppColor.OnPrimary);
+        }
+        else
+        {
+            color = _isPointerOver
+                ? ColorProvider.GetColor(AppColor.OnSecondaryContainer)
+                : ColorProvider.GetColor(AppColor.OnSurface);
+        }
+
         switch (DownloadStatus)
         {
             case ModelDownloadStatus.Downloaded:
@@ -203,19 +245,24 @@ public class ModelBlock : Control
                     RenderHelper.DownloadSvgPath,
                     strokeColor: color
                 );
-                
-                // svg függőleges középre igazítás
-                // annyival skálázzuk fel amennyiszer belefér a Title magasságába és így középen lesz
-                // ezért elegendő az Y pozíción csak egy BasePadding.Top értékkel letolni
+
+                // annyival skálázzuk fel amennyiszer belefér a Title magasságába
                 var downloadSvgScale = _titleTextLayout.Height / _downloadedSkPicture!.CullRect.Height;
+                var downloadSvgAspectRatio = _downloadedSkPicture.CullRect.Width / _downloadedSkPicture.CullRect.Height;
+                var downloadSvgWidth = _downloadedSkPicture.CullRect.Height * downloadSvgScale * downloadSvgAspectRatio;
+
+                // svg függőleges középre igazítás
+                var centeredDownloadSvgPosY = (BasePadding.Top + _titleTextLayout.Height + BasePadding.Bottom
+                                               - _downloadedSkPicture.CullRect.Height * downloadSvgScale) / 2;
+
                 // svg kezdő pozíciója
                 var downloadSvgTranslate = Matrix.CreateTranslation(
-                    Bounds.Width - BasePadding.Right - _downloadedSkPicture.CullRect.Width * downloadSvgScale,
-                    BasePadding.Top
+                    Bounds.Width - BasePadding.Right - downloadSvgWidth,
+                    centeredDownloadSvgPosY
                 );
-                
+
                 context.PushTransform(Matrix.CreateScale(downloadSvgScale, downloadSvgScale) * downloadSvgTranslate);
-                
+
                 _svg = AvaloniaPicture.Record(_downloadedSkPicture);
                 _svg.Draw(context);
                 break;
@@ -224,46 +271,80 @@ public class ModelBlock : Control
                     RenderHelper.SpinnerSvgPath,
                     fillColor: color
                 );
-                
-                // hasonlóképp mint a downloadSvg-nél
+
                 var spinnerSvgScale = _titleTextLayout.Height / _spinnerSkPicture!.CullRect.Height;
+                var spinnerSvgAspectRatio = _spinnerSkPicture.CullRect.Width / _spinnerSkPicture.CullRect.Height;
+                var spinnerSvgWidth = _spinnerSkPicture.CullRect.Height * spinnerSvgScale * spinnerSvgAspectRatio;
+
+                var centeredSpinnerSvgPosY = (BasePadding.Top + _titleTextLayout.Height + BasePadding.Bottom
+                                              - _spinnerSkPicture.CullRect.Height * spinnerSvgScale) / 2;
+
                 var spinnerSvgTranslate = Matrix.CreateTranslation(
-                    Bounds.Width - BasePadding.Right - _spinnerSkPicture.CullRect.Width * spinnerSvgScale,
-                    BasePadding.Top
+                    Bounds.Width - BasePadding.Right - spinnerSvgWidth,
+                    centeredSpinnerSvgPosY
                 );
-                
-                // svg és download text közti üres hely
-                const double spacing = 14;
-                
+
                 _downloadTextLayout?.Draw(
-                    context, 
+                    context,
                     new Point(
-                        Bounds.Width - BasePadding.Right - _spinnerSkPicture.CullRect.Width - _downloadTextLayout.Width - spacing,
+                        Bounds.Width - BasePadding.Right - spinnerSvgWidth - _downloadTextLayout.Width - SvgSpacing,
                         BasePadding.Top
                     )
                 );
-                
+
                 context.PushTransform(Matrix.CreateScale(spinnerSvgScale, spinnerSvgScale) * spinnerSvgTranslate);
-                
+
                 // forgatás hozzáadása
                 // ennek itt kell lennie, mert ha ez után hozzáadunk még egy transform-ot akkor világgá repül xD
                 StartRotatingAnimation(_spinnerSkPicture.CullRect.Height / 2);
                 context.PushTransform(_rotateTransform.Value);
-                
+
                 _svg = AvaloniaPicture.Record(_spinnerSkPicture);
+                _svg.Draw(context);
+                break;
+            case ModelDownloadStatus.Paused:
+                _pauseSkPicture ??= RenderHelper.LoadSvg(
+                    RenderHelper.PauseSvgPath,
+                    fillColor: color
+                );
+
+                // minimum 1.15-ös skálázás ugyanis a pause svg elég nagy és hiába egységes az összes svg property, rosszul néz ki
+                var pauseSvgScale = Math.Min(_titleTextLayout.Height / _pauseSkPicture!.CullRect.Height, 1.15);
+                var pauseSvgAspectRatio = _pauseSkPicture.CullRect.Width / _pauseSkPicture.CullRect.Height;
+                var pauseSvgWidth = _pauseSkPicture.CullRect.Height * pauseSvgScale * pauseSvgAspectRatio;
+
+                var centeredPauseSvgPosY = (BasePadding.Top + _titleTextLayout.Height + BasePadding.Bottom
+                                            - _pauseSkPicture.CullRect.Height * pauseSvgScale) / 2;
+
+                var pauseSvgTranslate = Matrix.CreateTranslation(
+                    Bounds.Width - BasePadding.Right - pauseSvgWidth,
+                    centeredPauseSvgPosY
+                );
+
+                _downloadTextLayout?.Draw(
+                    context,
+                    new Point(
+                        Bounds.Width - BasePadding.Right - pauseSvgWidth - _downloadTextLayout.Width - SvgSpacing,
+                        BasePadding.Top
+                    )
+                );
+
+                context.PushTransform(Matrix.CreateScale(pauseSvgScale, pauseSvgScale) * pauseSvgTranslate);
+
+                _svg = AvaloniaPicture.Record(_pauseSkPicture);
                 _svg.Draw(context);
                 break;
         }
     }
-    
+
     private TextLayout? CreateTextLayout()
     {
         if (string.IsNullOrEmpty(Title)) return null;
-        
+
         var textColor = Title == SelectedName
             ? ColorProvider.GetColor(AppColor.OnPrimary)
             : ColorProvider.GetColor(AppColor.OnSecondaryContainer);
-        
+
         return new TextLayout(
             Title,
             new Typeface(RenderHelper.ManropeFont),
@@ -276,16 +357,16 @@ public class ModelBlock : Control
         );
     }
 
-    private TextLayout? CreateDownloadTextLayout()
+    private TextLayout CreateDownloadTextLayout()
     {
-        if (DownloadStatus != ModelDownloadStatus.Downloading) return null;
-        
+        var downloadProgress = (double)DownloadedBytes / SizeInBytes;
+
         var textColor = Title == SelectedName
             ? ColorProvider.GetColor(AppColor.OnPrimary)
             : ColorProvider.GetColor(AppColor.OnSecondaryContainer);
 
         return new TextLayout(
-            DownloadProgress?.ToString("P1") ?? "0%", // P2 = 0.00%-os megjelenítés
+            downloadProgress.ToString("P1"), // P1 = 0.0%-os megjelenítés
             new Typeface(RenderHelper.ManropeFont),
             DownloadTextFontSize,
             textColor,
@@ -298,6 +379,18 @@ public class ModelBlock : Control
     {
         // kurzor átállítása, nem kell ellenőrizni hogy hol a kurzor, mert a PointerEventArgs alapból a Controlon belül van
         Cursor = new Cursor(StandardCursorType.Hand);
+        _isPointerOver = true;
+        InvalidateControl();
+        CreateTextLayouts();
+        InvalidateVisual();
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        _isPointerOver = false;
+        InvalidateControl();
+        CreateTextLayouts();
+        InvalidateVisual();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -309,7 +402,8 @@ public class ModelBlock : Control
         }
     }
 
-    protected override void OnMeasureInvalidated()
+    // invalidálja a Control összes elemét
+    private void InvalidateControl()
     {
         _titleTextLayout?.Dispose();
         _titleTextLayout = null;
@@ -319,15 +413,25 @@ public class ModelBlock : Control
         _svg = null;
         _spinnerSkPicture = null;
         _downloadedSkPicture = null;
-        
-        base.OnMeasureInvalidated();
+        _pauseSkPicture = null;
     }
-    
-    protected override Size MeasureOverride(Size availableSize)
+
+    private void CreateTextLayouts()
     {
         _titleTextLayout ??= CreateTextLayout();
         _downloadTextLayout ??= CreateDownloadTextLayout();
+    }
 
+    protected override void OnMeasureInvalidated()
+    {
+        InvalidateControl();
+        base.OnMeasureInvalidated();
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        CreateTextLayouts();
+        
         return new Size(
             width: availableSize.Width,
             height: BasePadding.Top + BasePadding.Bottom + (_titleTextLayout?.Height ?? 0.0)
@@ -340,14 +444,13 @@ public class ModelBlock : Control
 
         switch (change.Property.Name)
         {
-            case nameof(DownloadProgress):
-            case nameof(DownloadStatus):
-                if (DownloadStatus != ModelDownloadStatus.Downloading) StopRotationAnimation();
-                InvalidateVisual();
-                break;
             case nameof(Title):
             case nameof(SelectedName):
+            case nameof(DownloadStatus):
+            case nameof(DownloadedBytes):
+            case nameof(SizeInBytes):
             case nameof(Bounds):
+                if (DownloadStatus != ModelDownloadStatus.Downloading) StopRotationAnimation();
                 InvalidateVisual();
                 InvalidateMeasure();
                 break;

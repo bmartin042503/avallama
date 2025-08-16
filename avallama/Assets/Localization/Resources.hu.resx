@@ -71,7 +71,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ismeretlen hiba történt</value>
     </data>
     <data name="MULTIPLE_INSTANCES_ERROR" xml:space="preserve">
-        <value>Több Ollama példány fut. Kérjük zárja be az összeset, majd indítsa újra az alkalmazást.</value>
+        <value>Több Ollama példány fut. Kérlek zárd be az összeset, majd indítsd újra az alkalmazást.</value>
     </data>
     <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
         <value>Az Ollama nincs telepítve</value>
@@ -116,7 +116,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Felhasznált technológiák:</value>
     </data>
     <data name="LICENSE" xml:space="preserve">
-        <value>MIT licensz, részletekért tekintse meg a LICENSE fájlt</value>
+        <value>MIT licensz, részletekért tekintsd meg a LICENSE fájlt</value>
     </data>
     <data name="GITHUB_BUTTON" xml:space="preserve">
         <value>GitHub</value>
@@ -157,9 +157,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOAD_OLLAMA" xml:space="preserve">
         <value>Ollama letöltése ({0})</value>
     </data>
-    <data name="AVALLAMA_STARTING" xml:space="preserve">
-        <value>Avallama indítása..</value>
-    </data>
     <data name="SKIP_GUIDE" xml:space="preserve">
         <value>Útmutató kihagyása</value>
     </data>
@@ -192,9 +189,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
         <value>Elérhető az Ollamatól ({0})</value>
-    </data>
-    <data name="DOWNLOADING" xml:space="preserve">
-        <value>Letöltés.. {0}</value>
     </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
@@ -248,13 +242,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ollama API Port</value>
     </data>
     <data name="API_PORT_SETTING_DESC" xml:space="preserve">
-        <value>Elérhető port-ja az Ollama host számítógépnek (alapértelmezetten 11434)</value>
+        <value>Elérhető portja az Ollama host számítógépnek (alapértelmezetten 11434)</value>
     </data>
     <data name="INVALID_HOST_ERR" xml:space="preserve">
-        <value>Az Ollama API Host nem valid, adjon meg egy valid host címet. (IPv4 cím, vagy localhost)</value>
+        <value>Érvénytelen Ollama API host, kérlek adj meg egy érvényes host címet. (IPv4 cím vagy "localhost")</value>
     </data>
     <data name="INVALID_PORT_ERR" xml:space="preserve">
-        <value>Az Ollama API Post nem valid, adjon meg a valid portot. (1 - 65535)</value>
+        <value>Érvénytelen Ollama API port! A portnak 1 és 65535 között kell lennie.</value>
     </data>
     <data name="HOST_CONNECTION_ERR" xml:space="preserve">
         <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
@@ -355,10 +349,19 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DELETE" xml:space="preserve">
         <value>Törlés</value>
     </data>
-    <data name="DOWNLOADING_MEDIUM_INFO" xml:space="preserve">
-        <value>Letöltés {0} ({1}/{2})</value>
+    <data name="DOWNLOADING" xml:space="preserve">
+        <value>Letöltés</value>
     </data>
-    <data name="DOWNLOADING_LONG_INFO" xml:space="preserve">
-        <value>Letöltés.. {0} ({1}/{2} - {3})</value>
+    <data name="PAUSED" xml:space="preserve">
+        <value>Szüneteltetve</value>
+    </data>
+    <data name="MULTIPLE_DOWNLOADS_WARNING" xml:space="preserve">
+        <value>Egy modell letöltése már folyamatban van. Kérlek szakítsd meg a letöltést, mielőtt újabbat indítanál.\n\nDolgozunk rajta, hogy a jövőben több letöltés is elérhető legyen egyszerre.</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_TITLE" xml:space="preserve">
+        <value>Törlés megerősítése</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
+        <value>Biztos, hogy törölni szeretnéd a(z) {0} modellt?</value>
     </data>
 </root>

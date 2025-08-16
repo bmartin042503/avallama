@@ -16,29 +16,29 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
              Background="{DynamicResource Surface}">
-    
+
     <UserControl.Resources>
-        <converters:SortingOptionConverter x:Key="SortingOptionConverter"/>
+        <converters:SortingOptionConverter x:Key="SortingOptionConverter" />
     </UserControl.Resources>
 
     <!-- ha az első oszlopot autora állítod akkor exceptiont kapsz, valszeg mert még nem tudja jól megmérni magát a modelblock control arra az esetre -->
     <Grid Margin="22" RowDefinitions="Auto,*,Auto">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="225" MaxWidth="400"/>
-            <ColumnDefinition Width="22"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" MinWidth="225" MaxWidth="400" />
+            <ColumnDefinition Width="22" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        
+
         <StackPanel x:Name="PageTitle" Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6"
                     HorizontalAlignment="Left" Margin="0,0,0,20">
             <TextBlock
                 Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
-                Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center"/>
+                Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center" />
             <Button Command="{Binding ShowInfo}" Classes="svgButton">
                 <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
-                                     Width="20" VerticalAlignment="Center"/>
+                                     Width="20" VerticalAlignment="Center" />
             </Button>
         </StackPanel>
 
@@ -73,7 +73,7 @@ Licensed under the MIT License. See LICENSE file for details.
                           SelectedItem="{Binding Path=SelectedSortingOption, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource SortingOptionConverter}}"/>
+                            <TextBlock Text="{Binding Converter={StaticResource SortingOptionConverter}}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -100,7 +100,8 @@ Licensed under the MIT License. See LICENSE file for details.
                                 Margin="0,12,0,0"
                                 Title="{Binding Name}"
                                 DownloadStatus="{Binding DownloadStatus}"
-                                DownloadProgress="{Binding DownloadProgress}"
+                                SizeInBytes="{Binding Size}"
+                                DownloadedBytes="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadedBytes}"
                                 SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
                                 CommandParameter="{Binding Name}" />
@@ -109,13 +110,14 @@ Licensed under the MIT License. See LICENSE file for details.
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
-        
+
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
-                      Margin="4,0,4,0"/>
-        
+                      Margin="4,0,4,0" />
+
         <!-- valszeg itt lehetne az is hogy csak simán átadom az egész példányt bindingra, de egyelőre most külön vettem a propertyket -->
         <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
         <controls:ModelInfoBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                                 IsVisible="{Binding HasModelsToDisplay}"
                                  Title="{Binding SelectedModel.Name}"
                                  Quantization="{Binding SelectedModel.Quantization}"
                                  Parameters="{Binding SelectedModel.Parameters}"
@@ -123,18 +125,18 @@ Licensed under the MIT License. See LICENSE file for details.
                                  DetailItemsSource="{Binding SelectedModel.Details}"
                                  SizeInBytes="{Binding SelectedModel.Size}"
                                  DownloadStatus="{Binding SelectedModel.DownloadStatus}"
-                                 DownloadProgress="{Binding SelectedModel.DownloadProgress}"
+                                 DownloadSpeed="{Binding DownloadSpeed}"
+                                 DownloadedBytes="{Binding DownloadedBytes}"
                                  RunsSlow="{Binding SelectedModel.RunsSlow}"
-                                 Command="{Binding ModelAction}"
-                                 CommandParameter="{Binding SelectedModel}"/>
-        
+                                 Command="{Binding ModelAction}" />
+
         <TextBlock Grid.Row="2" Grid.Column="0"
                    Margin="0,22,0,0"
                    IsVisible="{Binding HasDownloadedModels}"
                    Text="{Binding DownloadedModelsInfo}"
                    Classes="H3" VerticalAlignment="Center" HorizontalAlignment="Left" Opacity="0.6"
-                   Foreground="{DynamicResource OnSurfaceVariant}"/>
-        
+                   Foreground="{DynamicResource OnSurfaceVariant}" />
+
         <Button Grid.Column="3" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                 Margin="0,22,0,0"
                 Content="{services:LocalizationService Key='BACK'}"

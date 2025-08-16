@@ -235,6 +235,9 @@ public class GeneralBlock : Control
     private int _selectionEnd;
     private string _selectedText = string.Empty;
 
+    // rajta van-e a kurzor a Controlon
+    private bool _isPointerOver;
+
     public GeneralBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
@@ -256,14 +259,17 @@ public class GeneralBlock : Control
     private void RenderBackground(DrawingContext context)
     {
         // Ha van háttér megadva akkor lerendereljük a CornerRadius alapján (ami lehet 0 is)
-        IBrush? background;
-        if (Id != null && SelectedId != null && Id == SelectedId)
+        var background = Background;
+        if (Id != null && SelectedId != null)
         {
-            background = ColorProvider.GetColor(AppColor.PrimaryContainer);
-        }
-        else
-        {
-            background = Background;
+            if (Id == SelectedId)
+            {
+                background = ColorProvider.GetColor(AppColor.PrimaryContainer);
+            }
+            else if (Id != SelectedId && _isPointerOver)
+            {
+                background = ColorProvider.GetColor(AppColor.SecondaryContainer);
+            }
         }
         
         if (background == null) return;
@@ -323,14 +329,17 @@ public class GeneralBlock : Control
             FontFamily ?? FontFamily.Default
         );
 
-        IBrush? textColor;
+        var textColor = TextColor;
         if (Id != null && SelectedId != null && Id == SelectedId)
         {
-            textColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
-        }
-        else
-        {
-            textColor = TextColor;
+            if (Id == SelectedId)
+            {
+                textColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
+            }
+            else if (Id != SelectedId && _isPointerOver)
+            {
+                textColor = ColorProvider.GetColor(AppColor.OnSecondaryContainer);
+            }
         }
 
         // real-time generálásnál képes több ezres nagyságban létrehozni és felszabadítani TextLayout elemeket
@@ -356,14 +365,17 @@ public class GeneralBlock : Control
     {
         if (!string.IsNullOrEmpty(SubText))
         {
-            IBrush? subTextColor;
-            if (Id != null && SelectedId != null && Id == SelectedId)
+            var subTextColor = SubTextColor;
+            if (Id != null && SelectedId != null)
             {
-                subTextColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
-            }
-            else
-            {
-                subTextColor = SubTextColor;
+                if (Id == SelectedId)
+                {
+                    subTextColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
+                }
+                else if (Id != SelectedId && _isPointerOver)
+                {
+                    subTextColor = ColorProvider.GetColor(AppColor.OnSecondaryContainer);
+                }
             }
             
             return new TextLayout(
@@ -627,7 +639,20 @@ public class GeneralBlock : Control
         else if (Clickable)
         {
             Cursor = new Cursor(StandardCursorType.Hand);
+            _isPointerOver = true;
+            InvalidateTextLayouts();
+            CreateTextLayouts();
+            InvalidateVisual();
         }
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        if (!Clickable) return;
+        _isPointerOver = false;
+        InvalidateTextLayouts();
+        CreateTextLayouts();
+        InvalidateVisual();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

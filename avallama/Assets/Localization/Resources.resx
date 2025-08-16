@@ -164,9 +164,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOAD_OLLAMA" xml:space="preserve">
         <value>Download Ollama ({0})</value>
     </data>
-    <data name="AVALLAMA_STARTING" xml:space="preserve">
-        <value>Starting Avallama..</value>
-    </data>
     <data name="SKIP_GUIDE" xml:space="preserve">
         <value>Skip guide</value>
     </data>
@@ -199,9 +196,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
         <value>Available from Ollama ({0})</value>
-    </data>
-    <data name="DOWNLOADING" xml:space="preserve">
-        <value>Downloading.. {0}</value>
     </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>Parameters: {0}B</value>
@@ -258,7 +252,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Exposed port of the Ollama host machine (default is 11434)</value>
     </data>
     <data name="INVALID_HOST_ERR" xml:space="preserve">
-        <value>Ollama API Host is invalid, please enter a valid host address. (IPv4 address, or localhost)</value>
+        <value>Ollama API Host is invalid, please enter a valid host address. (IPv4 address or "localhost")</value>
     </data>
     <data name="INVALID_PORT_ERR" xml:space="preserve">
         <value>Ollama API Port is invalid, please enter a valid port. (1 - 65535)</value>
@@ -362,10 +356,19 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DELETE" xml:space="preserve">
         <value>Delete</value>
     </data>
-    <data name="DOWNLOADING_MEDIUM_INFO" xml:space="preserve">
-        <value>Downloading.. {0} ({1}/{2})</value>
+    <data name="DOWNLOADING" xml:space="preserve">
+        <value>Downloading</value>
     </data>
-    <data name="DOWNLOADING_LONG_INFO" xml:space="preserve">
-        <value>Downloading.. {0} ({1}/{2} - {3})</value>
+    <data name="PAUSED" xml:space="preserve">
+        <value>Paused</value>
+    </data>
+    <data name="MULTIPLE_DOWNLOADS_WARNING" xml:space="preserve">
+        <value>A download is already in progress. Please cancel the current download before starting a new one.\n\nWe're working on supporting multiple downloads in the future.</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_TITLE" xml:space="preserve">
+        <value>Confirm deletion</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
+        <value>Are you sure you want to delete {0}?</value>
     </data>
 </root>

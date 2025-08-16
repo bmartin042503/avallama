@@ -195,7 +195,7 @@ public class DialogService(
         var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InformationView");
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)! as InformationView;
-        control!.DialogMessage.Text = informationMessage;
+        control!.DialogMessage.Text = informationMessage.Replace(@"\n", Environment.NewLine);
         dialogWindow.Content = control;
         dialogWindow.DataContext = new DialogViewModel
         {
@@ -218,7 +218,7 @@ public class DialogService(
         var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ErrorView");
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)! as ErrorView;
-        control!.DialogMessage.Text = errorMessage;
+        control!.DialogMessage.Text = errorMessage.Replace(@"\n", Environment.NewLine);
         control.CloseButton.Click += (_, _) =>
         {
             CloseDialog(ApplicationDialog.Error);
@@ -303,7 +303,7 @@ public class DialogService(
         else
         {
             control.NegativeButton.Content = LocalizationService.GetString("CLOSE");
-            control.NegativeButton.Classes.Add("lessSecondaryButton");
+            control.NegativeButton.Classes.Add("secondaryButton");
             control.NegativeButton.Click += (_, _) =>
             {
                 CloseDialog(ApplicationDialog.Action);
@@ -397,11 +397,11 @@ public class DialogService(
         // ez a class a stylesban már definiálva van
         if (highlight == ConfirmationType.Positive)
         {
-            control.NegativeButton.Classes.Add("lessSecondaryButton");
+            control.NegativeButton.Classes.Add("secondaryButton");
         }
         else if (highlight == ConfirmationType.Negative)
         {
-            control.PositiveButton.Classes.Add("lessSecondaryButton");
+            control.PositiveButton.Classes.Add("secondaryButton");
         }
 
         control.PositiveButton.Click += (_, _) =>

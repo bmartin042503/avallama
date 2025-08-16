@@ -12,30 +12,31 @@ Licensed under the MIT License. See LICENSE file for details.
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="15" Background="{DynamicResource Surface}">
-                    <Button Classes="small" Content="Small Button"/>
-                    <Button Content="Default Button"/>
-                    <Button Classes="large" Content="Large Button"/>
-                    <Button Classes="secondaryButton" Content="Secondary Button"/>
+                    <Button Classes="small" Content="Small Button" />
+                    <Button Content="Default Button" />
+                    <Button Classes="large" Content="Large Button" />
+                    <Button Classes="secondaryButton" Content="Secondary Button" />
                     <!-- lessSecondaryButton: olyan gombok amik olyanok mint a secondary csak még inkább elbújnak a primary elől -->
-                    <Button Classes="lessSecondaryButton" Content="Less Secondary Button"/>
-                    <Button Content="Disabled Button" IsEnabled="False"/>
+                    <Button Classes="lessSecondaryButton" Content="Less Secondary Button" />
+                    <Button Content="Disabled Button" IsEnabled="False" />
                     <Button Classes="windowManager hide">
                         <controls:DynamicSvg Path="/Assets/Svg/hide.svg"
-                             Width="12"/>
+                                             Width="12" />
                     </Button>
                     <Button Classes="windowManager minmax">
                         <controls:DynamicSvg Path="/Assets/Svg/maximize.svg"
-                                             Width="12"/>
+                                             Width="12" />
                     </Button>
                     <Button Classes="windowManager close">
                         <controls:DynamicSvg Path="/Assets/Svg/close.svg"
-                                             Width="12"/>
+                                             Width="12" />
                     </Button>
                     <Button Classes="avallamaWhite" Content="Icon Button" />
                     <Button Classes="svgButton">
-                        <controls:DynamicSvg Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}"/>
+                        <controls:DynamicSvg Path="/Assets/Svg/sidebar.svg" Width="20"
+                                             FillColor="{DynamicResource Primary}" />
                     </Button>
-                    <Button Classes="errorButton" Content="Close"/>
+                    <Button Classes="errorButton" Content="Close" />
                 </StackPanel>
             </Border>
         </ThemeVariantScope>
@@ -43,15 +44,15 @@ Licensed under the MIT License. See LICENSE file for details.
 
     <!-- Alapértelmezett gombok -->
     <Style Selector="Button">
-        <Setter Property="Background" Value="{DynamicResource Primary}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
-        <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Padding" Value="20, 8"/>
-        <Setter Property="FontFamily" Value="{StaticResource Manrope}"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Background" Value="{DynamicResource Primary}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Padding" Value="20, 8" />
+        <Setter Property="FontFamily" Value="{StaticResource Manrope}" />
+        <Setter Property="FontWeight" Value="Bold" />
     </Style>
-    
+
     <!-- button háttér animációja, ezt egyelőre kivettem mert lehet hogy inkább csak ront a megjelenésen
     <Style Selector="Button /template/ ContentPresenter">
         <Setter Property="Transitions">
@@ -61,87 +62,89 @@ Licensed under the MIT License. See LICENSE file for details.
         </Setter>
     </Style>
     -->
-    
+
     <Style Selector="Button:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryContainer}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}" />
     </Style>
-    
+
     <!-- Kicsi gomb -->
     <Style Selector="Button.small">
-        <Setter Property="CornerRadius" Value="18"/>
-        <Setter Property="FontSize" Value="10"/>
-        <Setter Property="Padding" Value="20, 4"/>
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="Padding" Value="20, 4" />
     </Style>
-    
+
     <!-- Nagy gombok -->
     <Style Selector="Button.large">
-        <Setter Property="CornerRadius" Value="30"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="32.5, 8.5"/>
+        <Setter Property="CornerRadius" Value="30" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="32.5, 8.5" />
     </Style>
-    
+
     <!-- Ablakkezelő gombok -->
     <Style Selector="Button.windowManager">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="CornerRadius" Value="6"/>
-        <Setter Property="Padding" Value="12"/>
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="12" />
     </Style>
-    
+
     <!-- DynamicSvg beállítás
     Hide, Maximize, Minimize: FillColor
     Close: StrokeColor
      -->
-    
+
     <Style Selector="Button.windowManager /template/ ContentPresenter">
-        <Setter Property="Transitions"><Transitions/></Setter>
+        <Setter Property="Transitions">
+            <Transitions />
+        </Setter>
     </Style>
-    
+
     <Style Selector="Button.windowManager.hide controls|DynamicSvg">
-        <Setter Property="FillColor" Value="{DynamicResource Primary}"/>
+        <Setter Property="FillColor" Value="{DynamicResource Primary}" />
     </Style>
-    
+
     <Style Selector="Button.windowManager.minmax controls|DynamicSvg">
-        <Setter Property="FillColor" Value="{DynamicResource Primary}"/>
+        <Setter Property="FillColor" Value="{DynamicResource Primary}" />
     </Style>
-    
+
     <Style Selector="Button.windowManager.close controls|DynamicSvg">
-        <Setter Property="StrokeColor" Value="{DynamicResource Primary}"/>
+        <Setter Property="StrokeColor" Value="{DynamicResource Primary}" />
     </Style>
-    
+
     <Style Selector="Button.windowManager.hide:pointerover controls|DynamicSvg">
-        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}" />
     </Style>
-    
+
     <Style Selector="Button.windowManager.minmax:pointerover controls|DynamicSvg">
-        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="FillColor" Value="{DynamicResource OnPrimary}" />
     </Style>
-    
+
     <Style Selector="Button.windowManager.close:pointerover controls|DynamicSvg">
-        <Setter Property="StrokeColor" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="StrokeColor" Value="{DynamicResource OnPrimary}" />
     </Style>
-    
+
     <Style Selector="Button.windowManager:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Background" Value="{DynamicResource Primary}" />
     </Style>
-    
+
     <Style Selector="Button.windowManager.close:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource Error}"/>
+        <Setter Property="Background" Value="{DynamicResource Error}" />
     </Style>
 
     <Style Selector="Button.svgButton">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
     </Style>
-    
+
     <Style Selector="Button.svgButton:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="Transparent" />
     </Style>
-    
+
     <!-- thank you bmartin -->
     <Style Selector="Button.avallamaWhite">
-        <Setter Property="MinWidth" Value="45"/>
+        <Setter Property="MinWidth" Value="45" />
         <Setter Property="Background" Value="{DynamicResource Primary}" />
         <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
         <!--
@@ -166,13 +169,13 @@ Licensed under the MIT License. See LICENSE file for details.
                             <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
                                                  Width="10"
                                                  FillColor="{TemplateBinding Foreground}"
-                                                 HorizontalAlignment="Center"/>
+                                                 HorizontalAlignment="Center" />
                             <TextBlock x:Name="ButtonTextContent"
                                        Text="{TemplateBinding Content}"
                                        Foreground="{TemplateBinding Foreground}"
                                        FontSize="10"
                                        Background="{TemplateBinding Background}"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center" />
                         </StackPanel>
                     </Border>
                 </ControlTemplate>
@@ -185,36 +188,33 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Background" Value="{DynamicResource PrimaryContainer}" />
     </Style>
 
-
-
-    
     <Style Selector="Button.secondaryButton">
-        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+        <Setter Property="Background" Value="{DynamicResource Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}" />
     </Style>
-    
+
     <Style Selector="Button.secondaryButton:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SecondaryContainer}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainer}"/>
+        <Setter Property="Background" Value="{DynamicResource SecondaryContainer}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainer}" />
     </Style>
-    
+
     <Style Selector="Button.lessSecondaryButton">
-        <Setter Property="Background" Value="{DynamicResource SecondaryContainer}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainer}"/>
+        <Setter Property="Background" Value="{DynamicResource SecondaryContainer}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainer}" />
     </Style>
-    
+
     <Style Selector="Button.lessSecondaryButton:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}"/>
+        <Setter Property="Background" Value="{DynamicResource Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnSecondary}" />
     </Style>
-    
+
     <Style Selector="Button.errorButton">
-        <Setter Property="Background" Value="{DynamicResource ErrorContainer}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnErrorContainer}"/>
+        <Setter Property="Background" Value="{DynamicResource ErrorContainer}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnErrorContainer}" />
     </Style>
-    
+
     <Style Selector="Button.errorButton:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource Error}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnError}"/>
+        <Setter Property="Background" Value="{DynamicResource Error}" />
+        <Setter Property="Foreground" Value="{DynamicResource OnError}" />
     </Style>
 </Styles>

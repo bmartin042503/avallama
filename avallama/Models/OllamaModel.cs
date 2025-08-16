@@ -30,7 +30,8 @@ public enum ModelDownloadAction
     Start,
     Pause,
     Resume,
-    Cancel
+    Cancel,
+    Delete
 }
 
 public partial class OllamaModel : ObservableObject

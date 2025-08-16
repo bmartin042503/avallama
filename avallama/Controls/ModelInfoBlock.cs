@@ -20,17 +20,15 @@ using ShimSkiaSharp;
 
 namespace avallama.Controls;
 
-// TODO Hibák:
+// TODO - Hibák:
 // - Legkisebb lehetséges modelinformation container esetén a "learn more" szöveg nagyon közel kerül a details elemekhez
-// és ha a kurzort rávisszük a szövegre majd le róla akkor a modelinformation container elkezd lefele menni
+// és ha a kurzort rávisszük a learn more szövegre majd le róla akkor a modelinformation container elkezd lefele menni
 
-// TODO Javítás/Implementálás:
-// - Letöltési szöveg ami reszponzív, tehát pl. rövidebb elem szélesség esetén rövidebb szöveg (pl. "Letöltés 23.5%")
-// ha pedig több hely van akkor több információt is jelenítene meg
-// - Szünetelés és letöltés törlése gomb, modelaction típus létrehozása hogy a commandban el lehessen küldeni mit is csinált pontosan a felhasználó
-// - BorderThickness a kijelzőméret alapján, hogy a lehető legjobb megjelenése legyen
-// - szövegkijelölés, vmi új felhasználható típusban
+// TODO - Javítás/Implementálás:
+// - felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
+// - code cleaning + proper documentation
 // - scroll funkcionalitás modelinformationre
+// - szövegkijelölés, vmi új felhasználható típusban
 
 public class ModelInfoBlock : Control
 {
@@ -38,12 +36,14 @@ public class ModelInfoBlock : Control
     // DirectProperty - nem kerül bele, megadott egyszerű értékeknek, jobb teljesítmény (kell getter, setter)
 
     // interaktálható elemek
-    private enum ActionItem
+    private enum HoverTarget
     {
         None,
         LinkText,
         DownloadButton,
-        ToggleDownloadButton, // letöltés szünetelése vagy folytatása
+        DeleteButton,
+        ResumeDownloadButton,
+        PauseDownloadButton,
         CancelDownloadButton
     }
 
@@ -78,11 +78,12 @@ public class ModelInfoBlock : Control
             (o, v) => o.DetailItemsSource = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, long?> SizeInBytesProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, long?>(
+    public static readonly DirectProperty<ModelInfoBlock, long> SizeInBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelInfoBlock, long>(
             nameof(SizeInBytes),
             o => o.SizeInBytes,
-            (o, v) => o.SizeInBytes = v
+            (o, v) => o.SizeInBytes = v,
+            unsetValue: 0
         );
 
     public static readonly DirectProperty<ModelInfoBlock, ModelDownloadStatus> DownloadStatusProperty =
@@ -92,11 +93,20 @@ public class ModelInfoBlock : Control
             (o, v) => o.DownloadStatus = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, double?> DownloadProgressProperty =
+    // Mbps
+    public static readonly DirectProperty<ModelInfoBlock, double?> DownloadSpeedProperty =
         AvaloniaProperty.RegisterDirect<ModelInfoBlock, double?>(
-            nameof(DownloadProgress),
-            o => o.DownloadProgress,
-            (o, v) => o.DownloadProgress = v
+            nameof(DownloadSpeed),
+            o => o.DownloadSpeed,
+            (o, v) => o.DownloadSpeed = v
+        );
+
+    public static readonly DirectProperty<ModelInfoBlock, long> DownloadedBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelInfoBlock, long>(
+            nameof(DownloadedBytes),
+            o => o.DownloadedBytes,
+            (o, v) => o.DownloadedBytes = v,
+            unsetValue: 0
         );
 
     public static readonly DirectProperty<ModelInfoBlock, bool?> RunsSlowProperty =
@@ -108,10 +118,6 @@ public class ModelInfoBlock : Control
 
     public static readonly StyledProperty<ICommand> CommandProperty =
         AvaloniaProperty.Register<ModelInfoBlock, ICommand>(nameof(Command));
-
-    public static readonly StyledProperty<object?> CommandParameterProperty =
-        AvaloniaProperty.Register<ModelInfoBlock, object?>(nameof(CommandParameter));
-
 
     public string? Title
     {
@@ -151,9 +157,9 @@ public class ModelInfoBlock : Control
         set => SetAndRaise(DetailItemsSourceProperty, ref _detailItemsSource, value);
     }
 
-    private long? _sizeInBytes;
+    private long _sizeInBytes;
 
-    public long? SizeInBytes
+    public long SizeInBytes
     {
         get => _sizeInBytes;
         set => SetAndRaise(SizeInBytesProperty, ref _sizeInBytes, value);
@@ -167,12 +173,20 @@ public class ModelInfoBlock : Control
         set => SetAndRaise(DownloadStatusProperty, ref _downloadStatus, value);
     }
 
-    private double? _downloadProgress;
+    private double? _downloadSpeed;
 
-    public double? DownloadProgress
+    public double? DownloadSpeed
     {
-        get => _downloadProgress;
-        set => SetAndRaise(DownloadProgressProperty, ref _downloadProgress, value);
+        get => _downloadSpeed;
+        set => SetAndRaise(DownloadSpeedProperty, ref _downloadSpeed, value);
+    }
+
+    private long _downloadedBytes;
+
+    public long DownloadedBytes
+    {
+        get => _downloadedBytes;
+        set => SetAndRaise(DownloadedBytesProperty, ref _downloadedBytes, value);
     }
 
     private bool? _runsSlow;
@@ -189,12 +203,6 @@ public class ModelInfoBlock : Control
         set => SetValue(CommandProperty, value);
     }
 
-    public object? CommandParameter
-    {
-        get => GetValue(CommandParameterProperty);
-        set => SetValue(CommandParameterProperty, value);
-    }
-
     private const double TitleFontSize = 26;
     private const double WarningFontSize = 14;
     private const double LabelFontSize = 12;
@@ -204,6 +212,8 @@ public class ModelInfoBlock : Control
     private const double BorderThickness = 0.25;
     private const double LabelSpacing = 8.0;
     private const double SvgHeight = 12.0;
+    private const double SvgSpacing = 8.0;
+    private const double DownloadingInfoSpacing = 16.0;
 
     private static readonly Thickness BasePadding = new(16);
     private static readonly Thickness LabelPadding = new(10, 5);
@@ -242,10 +252,10 @@ public class ModelInfoBlock : Control
     private Point _linkTextLayoutStartPoint = new(0, 0);
     private Point _leftActionSvgStartPoint = new(0, 0);
     private Point _rightActionSvgStartPoint = new(0, 0);
-    private Point _downloadButtonStartPoint = new(0, 0);
+    private Point _actionButtonStartPoint = new(0, 0);
 
-    // az az elem amin a kurzor rajta van és interaktálható (ez vagy a learn more szöveg vagy a letöltés kezelő gomb)
-    private ActionItem _activeHoveredItem = ActionItem.None;
+    // az az elem amin a kurzor rajta van és interaktálható (ez vagy a learn more szöveg vagy a letöltést kezelő gombok)
+    private HoverTarget _activeHoverTarget = HoverTarget.None;
 
     private const string OllamaLibraryUrl = @"https://ollama.com/library/";
 
@@ -509,32 +519,127 @@ public class ModelInfoBlock : Control
 
     private void RenderWarningState(DrawingContext context)
     {
-        var warningTextPosX = Bounds.Width - BasePadding.Right - (_statusTextLayout?.Width ?? 0.0);
-        var warningTextPosY = Bounds.Height - BasePadding.Bottom - (_statusTextLayout?.Height ?? 0.0);
+        // a méret szöveghez igazítva
+        var warningTextPosX = Bounds.Width - BasePadding.Right - (_statusTextLayout?.Width ?? 0.0) - LabelPadding.Right;
+        var warningTextPosY =
+            Bounds.Height - BasePadding.Bottom - (_sizeTextLayout?.Height ?? 0.0) - LabelPadding.Bottom;
 
         _statusTextLayout?.Draw(context, new Point(warningTextPosX, warningTextPosY));
     }
 
-    private void RenderDownloadingState(DrawingContext context)
+    private void RenderToggleDownloadState(
+        DrawingContext context,
+        SKPicture rightSkPicture,
+        SKPicture leftSkPicture
+    )
     {
-        const double svgSpacing = 8.0;
-        const double textSpacing = 16.0;
-
-        var cancelSvgFill = _activeHoveredItem == ActionItem.CancelDownloadButton
-            ? AppColor.OnErrorContainer
-            : AppColor.OnError;
-        
-        var cancelRectBackground = _activeHoveredItem == ActionItem.CancelDownloadButton
+        // ez itt lehet, mivel a jobb oldali svg mindig a cancelbutton lesz de ha más is lenne akkor ezt ki kell szervezni
+        var rightSvgRectBackground = _activeHoverTarget == HoverTarget.CancelDownloadButton
             ? AppColor.ErrorContainer
             : AppColor.Error;
 
-        var pauseSvgFill = _activeHoveredItem == ActionItem.ToggleDownloadButton
+        var leftSvgRectBackground =
+            _activeHoverTarget is HoverTarget.PauseDownloadButton or HoverTarget.ResumeDownloadButton
+                ? AppColor.PrimaryContainer
+                : AppColor.Primary;
+
+        // svg méretei, arányai, kiszámított skálázás úgy, hogy egy méretben legyenek a megadott SvgHeight szerint
+        var rightSvgAspectRatio = _cancelSkPicture?.CullRect.Width / _cancelSkPicture?.CullRect.Height ?? 1.0;
+        var leftSvgAspectRatio = leftSkPicture.CullRect.Width / leftSkPicture.CullRect.Height;
+
+        var rightSvgWidth = SvgHeight * rightSvgAspectRatio;
+        var leftSvgWidth = SvgHeight * leftSvgAspectRatio;
+
+        var rightSvgScale = SvgHeight / rightSkPicture.CullRect.Height;
+        var leftSvgScale = SvgHeight / leftSkPicture.CullRect.Height;
+
+        // pozíciót tároló változók amiket módosítunk annyiban hogy hozzáadjuk a már renderelt elemek méreteit + paddingot, spacinget
+        var posX = Bounds.Width - BasePadding.Right - SvgButtonPadding.Right - rightSvgWidth;
+        var posY = Bounds.Height - BasePadding.Bottom - SvgButtonPadding.Bottom - SvgHeight;
+
+        var rightSvgTranslate = Matrix.CreateTranslation(posX, posY);
+
+        var rightRectPosX = posX - SvgButtonPadding.Left;
+        var rightRectPosY = posY - SvgButtonPadding.Top;
+
+        _rightActionSvgStartPoint = new Point(rightRectPosX, rightRectPosY);
+
+        // rightSvg hátterének renderelése
+        context.DrawRectangle(
+            ColorProvider.GetColor(rightSvgRectBackground),
+            null,
+            new RoundedRect(
+                new Rect(
+                    new Point(rightRectPosX, rightRectPosY),
+                    new Size(
+                        width: SvgButtonPadding.Left + rightSvgWidth + SvgButtonPadding.Right,
+                        height: SvgButtonPadding.Top + SvgHeight + SvgButtonPadding.Bottom
+                    )
+                ),
+                SvgButtonCornerRadius
+            )
+        );
+
+        posX -= SvgButtonPadding.Left + SvgButtonPadding.Right + SvgSpacing + leftSvgWidth;
+
+        var leftRectPosX = posX - SvgButtonPadding.Left;
+        var leftRectPosY = posY - SvgButtonPadding.Top;
+
+        _leftActionSvgStartPoint = new Point(leftRectPosX, leftRectPosY);
+
+        // pauseSvg hátterének renderelése
+        context.DrawRectangle(
+            ColorProvider.GetColor(leftSvgRectBackground),
+            null,
+            new RoundedRect(
+                new Rect(
+                    new Point(leftRectPosX, leftRectPosY),
+                    new Size(
+                        width: SvgButtonPadding.Left + leftSvgWidth + SvgButtonPadding.Right,
+                        height: SvgButtonPadding.Top + SvgHeight + SvgButtonPadding.Bottom
+                    )
+                ),
+                SvgButtonCornerRadius
+            )
+        );
+
+        var leftSvgTranslate = Matrix.CreateTranslation(posX, posY);
+
+        if (_cancelSkPicture != null) _rightActionSvg = AvaloniaPicture.Record(rightSkPicture);
+        if (_pauseSkPicture != null || _resumeSkPicture != null) _leftActionSvg = AvaloniaPicture.Record(leftSkPicture);
+
+        // DrawingContexten megadjuk PushTransform-al hogy hol legyenek az svg-k, de miután kirajzoltuk az egyiket
+        // disposeoljuk a pushedStatet, mert különben a következő svg kb. duplán alkalmazná az első eltolást és nem jelenne meg
+        var pushedState =
+            context.PushTransform(Matrix.CreateScale(rightSvgScale, rightSvgScale) * rightSvgTranslate);
+        _rightActionSvg?.Draw(context);
+        pushedState.Dispose();
+
+        pushedState = context.PushTransform(Matrix.CreateScale(leftSvgScale, leftSvgScale) * leftSvgTranslate);
+        _leftActionSvg?.Draw(context);
+        pushedState.Dispose();
+
+        posX -= SvgButtonPadding.Left + DownloadingInfoSpacing + (_statusTextLayout?.Width ?? 0.0);
+
+        _statusTextLayout?.Draw(
+            context,
+            new Point(
+                posX,
+                Bounds.Height - BasePadding.Bottom - (SvgHeight + SvgButtonPadding.Top + SvgButtonPadding.Bottom
+                                                      - (_statusTextLayout?.Height ?? 0.0) / 2)
+            )
+        );
+    }
+
+    private void RenderDownloadingState(DrawingContext context)
+    {
+        var cancelSvgFill = _activeHoverTarget == HoverTarget.CancelDownloadButton
+            ? AppColor.OnErrorContainer
+            : AppColor.OnError;
+
+        var pauseSvgFill = _activeHoverTarget == HoverTarget.PauseDownloadButton
             ? AppColor.OnPrimaryContainer
             : AppColor.OnPrimary;
-        
-        var pauseRectBackground = _activeHoveredItem == ActionItem.ToggleDownloadButton
-            ? AppColor.PrimaryContainer
-            : AppColor.Primary;
 
         // svg-k betöltése
         _cancelSkPicture ??= RenderHelper.LoadSvg(
@@ -548,101 +653,92 @@ public class ModelInfoBlock : Control
             ColorProvider.GetColor(pauseSvgFill)
         );
 
-        // svg méretei, arányai, kiszámított skálázás úgy, hogy egy méretben legyenek a megadott SvgHeight szerint
-        var cancelSvgAspectRatio = _cancelSkPicture?.CullRect.Width / _cancelSkPicture?.CullRect.Height ?? 1.0;
-        var pauseSvgAspectRatio = _pauseSkPicture?.CullRect.Width / _pauseSkPicture?.CullRect.Height ?? 1.0;
-
-        var cancelSvgWidth = SvgHeight * cancelSvgAspectRatio;
-        var pauseSvgWidth = SvgHeight * pauseSvgAspectRatio;
-
-        var cancelSvgScale = SvgHeight / _cancelSkPicture?.CullRect.Height ?? 1.0;
-        var pauseSvgScale = SvgHeight / _pauseSkPicture?.CullRect.Height ?? 1.0;
-
-        // pozíciót tároló változók amiket módosítunk annyiban hogy hozzáadjuk a már renderelt elemek méreteit + paddingot, spacinget
-        var posX = Bounds.Width - BasePadding.Right - SvgButtonPadding.Right - cancelSvgWidth;
-        var posY = Bounds.Height - BasePadding.Bottom - SvgButtonPadding.Bottom - SvgHeight;
-
-        var cancelSvgTranslate = Matrix.CreateTranslation(posX, posY);
-
-        var cancelRectPosX = posX - SvgButtonPadding.Left;
-        var cancelRectPosY = posY - SvgButtonPadding.Top;
-
-        _rightActionSvgStartPoint = new Point(cancelRectPosX, cancelRectPosY);
-
-        // cancelSvg hátterének renderelése
-        context.DrawRectangle(
-            ColorProvider.GetColor(cancelRectBackground),
-            null,
-            new RoundedRect(
-                new Rect(
-                    new Point(cancelRectPosX, cancelRectPosY),
-                    new Size(
-                        width: SvgButtonPadding.Left + cancelSvgWidth + SvgButtonPadding.Right,
-                        height: SvgButtonPadding.Top + SvgHeight + SvgButtonPadding.Bottom
-                    )
-                ),
-                SvgButtonCornerRadius
-            )
+        if (_cancelSkPicture == null || _pauseSkPicture == null) return;
+        RenderToggleDownloadState(
+            context,
+            rightSkPicture: _cancelSkPicture,
+            leftSkPicture: _pauseSkPicture
         );
-
-        posX -= SvgButtonPadding.Left + SvgButtonPadding.Right + svgSpacing + pauseSvgWidth;
-
-        var pauseRectPosX = posX - SvgButtonPadding.Left;
-        var pauseRectPosY = posY - SvgButtonPadding.Top;
-
-        _leftActionSvgStartPoint = new Point(pauseRectPosX, pauseRectPosY);
-
-        // pauseSvg hátterének renderelése
-        context.DrawRectangle(
-            ColorProvider.GetColor(pauseRectBackground),
-            null,
-            new RoundedRect(
-                new Rect(
-                    new Point(pauseRectPosX, pauseRectPosY),
-                    new Size(
-                        width: SvgButtonPadding.Left + pauseSvgWidth + SvgButtonPadding.Right,
-                        height: SvgButtonPadding.Top + SvgHeight + SvgButtonPadding.Bottom
-                    )
-                ),
-                SvgButtonCornerRadius
-            )
-        );
-
-        var pauseSvgTranslate = Matrix.CreateTranslation(posX, posY);
-
-        if (_cancelSkPicture != null) _rightActionSvg = AvaloniaPicture.Record(_cancelSkPicture);
-        if (_pauseSkPicture != null) _leftActionSvg = AvaloniaPicture.Record(_pauseSkPicture);
-
-        // DrawingContexten megadjuk PushTransform-al hogy hol legyenek az svg-k, de miután kirajzoltuk az egyiket
-        // disposeoljuk a pushedStatet, mert különben a következő svg kb. duplán alkalmazná az első eltolást és nem jelenne meg
-        var pushedState =
-            context.PushTransform(Matrix.CreateScale(cancelSvgScale, cancelSvgScale) * cancelSvgTranslate);
-        _rightActionSvg?.Draw(context);
-        pushedState.Dispose();
-
-        pushedState = context.PushTransform(Matrix.CreateScale(pauseSvgScale, pauseSvgScale) * pauseSvgTranslate);
-        _leftActionSvg?.Draw(context);
-        pushedState.Dispose();
-
-        posX -= SvgButtonPadding.Left + textSpacing + (_statusTextLayout?.Width ?? 0.0);
-
-        _statusTextLayout?.Draw(context,
-            new Point(posX,
-                Bounds.Height - BasePadding.Bottom - (_statusTextLayout?.Height ?? 0.0) - SvgButtonPadding.Bottom +
-                SvgHeight / 6)); // azért 6-al osztjuk, mert így fog középre igazodni az svghez függőlegesen
     }
 
-    // TODO: implementálni
     private void RenderPausedState(DrawingContext context)
     {
+        var cancelSvgFill = _activeHoverTarget == HoverTarget.CancelDownloadButton
+            ? AppColor.OnErrorContainer
+            : AppColor.OnError;
+
+        var resumeSvgFill = _activeHoverTarget == HoverTarget.ResumeDownloadButton
+            ? AppColor.OnPrimaryContainer
+            : AppColor.OnPrimary;
+
+        // svg-k betöltése
+        _cancelSkPicture ??= RenderHelper.LoadSvg(
+            RenderHelper.CloseSvgPath,
+            strokeColor: ColorProvider.GetColor(cancelSvgFill),
+            strokeWidth: 5.0
+        );
+
+        _resumeSkPicture ??= RenderHelper.LoadSvg(
+            RenderHelper.ResumeSvgPath,
+            fillColor: ColorProvider.GetColor(resumeSvgFill),
+            strokeColor: ColorProvider.GetColor(resumeSvgFill),
+            strokeWidth: 1.75
+        );
+
+        if (_cancelSkPicture == null || _resumeSkPicture == null) return;
+        RenderToggleDownloadState(
+            context,
+            rightSkPicture: _cancelSkPicture,
+            leftSkPicture: _resumeSkPicture
+        );
+    }
+
+    private void RenderActionButton(
+        DrawingContext context,
+        AppColor rectBackground
+    )
+    {
+        var rectPosX = Bounds.Width - BasePadding.Right - ButtonPadding.Right - (_statusTextLayout?.Width ?? 0.0)
+                       - ButtonPadding.Left;
+        var rectPosY = Bounds.Height - BasePadding.Bottom - ButtonPadding.Bottom - (_statusTextLayout?.Height ?? 0.0)
+                       - ButtonPadding.Top;
+
+        _actionButtonStartPoint = new Point(rectPosX, rectPosY);
+
+        context.DrawRectangle(
+            ColorProvider.GetColor(rectBackground),
+            null,
+            new RoundedRect(
+                new Rect(
+                    new Point(rectPosX, rectPosY),
+                    new Size(
+                        width: ButtonPadding.Left + (_statusTextLayout?.Width ?? 0.0) + ButtonPadding.Right,
+                        height: ButtonPadding.Top + (_statusTextLayout?.Height ?? 0.0) + ButtonPadding.Bottom
+                    )
+                ),
+                ButtonCornerRadius
+            )
+        );
+
+        _statusTextLayout?.Draw(context, new Point(rectPosX + ButtonPadding.Right, rectPosY + ButtonPadding.Top));
     }
 
     private void RenderDownloadedState(DrawingContext context)
     {
+        var rectBackground = _activeHoverTarget == HoverTarget.DeleteButton
+            ? AppColor.ErrorContainer
+            : AppColor.Error;
+
+        RenderActionButton(context, rectBackground);
     }
 
     private void RenderReadyState(DrawingContext context)
     {
+        var rectBackground = _activeHoverTarget == HoverTarget.DownloadButton
+            ? AppColor.PrimaryContainer
+            : AppColor.Primary;
+
+        RenderActionButton(context, rectBackground);
     }
 
     // Model címéhez tartozó textlayout létrehozása
@@ -710,10 +806,10 @@ public class ModelInfoBlock : Control
 
     private TextLayout? CreateSizeTextLayout()
     {
-        if (!SizeInBytes.HasValue) return null;
+        if (SizeInBytes <= 0) return null;
 
         var formattedSize = string.Format(LocalizationService.GetString("MODEL_SIZE"),
-            RenderHelper.GetSizeInGb(SizeInBytes.Value));
+            RenderHelper.GetSizeInGb(SizeInBytes));
 
         return new TextLayout(
             formattedSize,
@@ -737,7 +833,7 @@ public class ModelInfoBlock : Control
 
     private TextLayout CreateLinkTextLayout()
     {
-        var textColor = _activeHoveredItem == ActionItem.LinkText ? AppColor.Primary : AppColor.OnSurface;
+        var textColor = _activeHoverTarget == HoverTarget.LinkText ? AppColor.Primary : AppColor.OnSurface;
 
         return new TextLayout(
             LocalizationService.GetString("LEARN_MORE"),
@@ -760,6 +856,49 @@ public class ModelInfoBlock : Control
         );
     }
 
+    private string GetResponsiveDownloadInfo()
+    {
+        if (DownloadStatus is ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused)
+        {
+            var downloadProgress = (double)DownloadedBytes / SizeInBytes;
+            if (downloadProgress <= 0) return string.Format(LocalizationService.GetString("DOWNLOADING"), "0%");
+
+            var leftSkPicture = DownloadStatus == ModelDownloadStatus.Downloading
+                ? _pauseSkPicture
+                : _resumeSkPicture;
+
+            var leftSvgAspectRatio = leftSkPicture?.CullRect.Width / leftSkPicture?.CullRect.Height ?? 1.0;
+            var leftSvgWidth = SvgHeight * leftSvgAspectRatio;
+
+            var cancelSvgAspectRatio = _cancelSkPicture?.CullRect.Width / _cancelSkPicture?.CullRect.Height ?? 1.0;
+            var cancelSvgWidth = SvgHeight * cancelSvgAspectRatio;
+
+            var availableWidth = Bounds.Width - BasePadding.Left - LabelPadding.Left - (_sizeTextLayout?.Width ?? 0) -
+                                 LabelPadding.Right - BasePadding.Right - SvgButtonPadding.Right * 2 -
+                                 SvgButtonPadding.Left * 2 - SvgSpacing -
+                                 DownloadingInfoSpacing * 2 - leftSvgWidth - cancelSvgWidth;
+
+            // a statusTextLayoutban lévő egy karakter hossza
+            // ezt sajna így kell beégetetten megadni, mert ugye ez a metódus adja vissza a statusTextLayoutnak a szöveget
+            // ez azért kell hogy a szöveget reszponzívan le tudja vágni és ki legyen használva a teljes hely
+            const double characterVisualLength = 6.024;
+
+            var downloadInfoText = DownloadStatus == ModelDownloadStatus.Downloading
+                ? LocalizationService.GetString("DOWNLOADING")
+                : LocalizationService.GetString("PAUSED");
+
+            downloadInfoText +=
+                $".. {downloadProgress:P1} ({RenderHelper.GetSizeInGb(DownloadedBytes)}/{RenderHelper.GetSizeInGb(SizeInBytes)}) - {DownloadSpeed} Mbps";
+
+            // visszaadjuk a downloadInfoTextet és csak annyit belőle amennyire elegendő hely van
+            return downloadInfoText.Length * characterVisualLength > availableWidth
+                ? downloadInfoText[..Math.Clamp((int)(availableWidth / characterVisualLength), 0, downloadInfoText.Length - 1)]
+                : downloadInfoText;
+        }
+
+        return string.Empty;
+    }
+
     private TextLayout CreateStatusTextLayout()
     {
         var statusText = DownloadStatus switch
@@ -767,14 +906,7 @@ public class ModelInfoBlock : Control
             ModelDownloadStatus.NotEnoughSpace => LocalizationService.GetString("NOT_ENOUGH_SPACE_DOWNLOAD"),
             ModelDownloadStatus.NoConnection => LocalizationService.GetString("NO_CONNECTION_DOWNLOAD"),
             ModelDownloadStatus.Ready => LocalizationService.GetString("DOWNLOAD"),
-            ModelDownloadStatus.Downloading => string.Format(
-                LocalizationService.GetString("DOWNLOADING"),
-                DownloadProgress?.ToString("P1") ?? "0%"
-            ),
-            ModelDownloadStatus.Paused => string.Format(
-                LocalizationService.GetString("RESUME_DOWNLOAD"),
-                DownloadProgress?.ToString("P1") ?? "0%"
-            ),
+            ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused => GetResponsiveDownloadInfo(),
             ModelDownloadStatus.Downloaded => LocalizationService.GetString("DELETE"),
             _ => string.Empty
         };
@@ -788,12 +920,12 @@ public class ModelInfoBlock : Control
 
             ModelDownloadStatus.Ready
                 =>
-                _activeHoveredItem == ActionItem.DownloadButton
+                _activeHoverTarget == HoverTarget.DownloadButton
                     ? AppColor.OnPrimaryContainer
                     : AppColor.OnPrimary,
 
             ModelDownloadStatus.Downloaded =>
-                _activeHoveredItem == ActionItem.DownloadButton
+                _activeHoverTarget == HoverTarget.DeleteButton
                     ? AppColor.OnErrorContainer
                     : AppColor.OnError,
 
@@ -812,7 +944,7 @@ public class ModelInfoBlock : Control
         );
     }
 
-    // controlhoz tartozó elemek felszabadítása
+    // controlhoz tartozó összes elem felszabadítása
     private void InvalidateControl()
     {
         _warningTextLayout?.Dispose();
@@ -912,9 +1044,9 @@ public class ModelInfoBlock : Control
             case nameof(Parameters):
             case nameof(Format):
             case nameof(DetailItemsSource):
+            case nameof(DownloadedBytes):
             case nameof(SizeInBytes):
             case nameof(DownloadStatus):
-            case nameof(DownloadProgress):
             case nameof(RunsSlow):
                 InvalidateControl();
                 InvalidateVisual();
@@ -934,7 +1066,7 @@ public class ModelInfoBlock : Control
         _statusTextLayout?.Dispose();
         _statusTextLayout = null;
         _statusTextLayout = CreateStatusTextLayout();
-        
+
         _leftActionSvg?.Dispose();
         _leftActionSvg = null;
         _rightActionSvg?.Dispose();
@@ -947,6 +1079,8 @@ public class ModelInfoBlock : Control
         _renderPosX = 0;
         _renderPosY = 0;
 
+        _labelsHeight = 0;
+
         InvalidateVisual();
     }
 
@@ -958,48 +1092,53 @@ public class ModelInfoBlock : Control
                position.Y <= _linkTextLayoutStartPoint.Y + (_linkTextLayout?.Height ?? 0.0);
     }
 
-    private bool IsPointerOverDownloadButton(Point position)
+    private bool IsPointerOverActionButton(Point position)
     {
-        return position.X >= _downloadButtonStartPoint.X &&
-               position.X <= _downloadButtonStartPoint.X + (_statusTextLayout?.Width ?? 0.0) + ButtonPadding.Left +
+        return position.X >= _actionButtonStartPoint.X &&
+               position.X <= _actionButtonStartPoint.X + (_statusTextLayout?.Width ?? 0.0) + ButtonPadding.Left +
                ButtonPadding.Right &&
-               position.Y >= _downloadButtonStartPoint.Y &&
-               position.Y <= _downloadButtonStartPoint.Y + (_statusTextLayout?.Height ?? 0.0) + ButtonPadding.Top +
+               position.Y >= _actionButtonStartPoint.Y &&
+               position.Y <= _actionButtonStartPoint.Y + (_statusTextLayout?.Height ?? 0.0) + ButtonPadding.Top +
                ButtonPadding.Bottom;
     }
 
     private bool IsPointerOverLeftActionButton(Point position)
     {
-        var svgWidth = DownloadStatus == ModelDownloadStatus.Downloading
-            ? _pauseSkPicture?.CullRect.Width
-            : _resumeSkPicture?.CullRect.Width;
-        var svgHeight = DownloadStatus == ModelDownloadStatus.Downloading
-            ? _pauseSkPicture?.CullRect.Height
-            : _resumeSkPicture?.CullRect.Height;
+        var activeSkPicture = DownloadStatus == ModelDownloadStatus.Downloading
+            ? _pauseSkPicture
+            : _resumeSkPicture;
+
+        var svgAspectRatio = activeSkPicture?.CullRect.Width / activeSkPicture?.CullRect.Height ?? 1.0;
+        var svgWidth = SvgHeight * svgAspectRatio;
 
         return position.X >= _leftActionSvgStartPoint.X &&
                position.X <= _leftActionSvgStartPoint.X + svgWidth + SvgButtonPadding.Left +
                SvgButtonPadding.Right &&
                position.Y >= _leftActionSvgStartPoint.Y &&
-               position.Y <= _leftActionSvgStartPoint.Y + svgHeight + SvgButtonPadding.Top +
-               SvgButtonPadding.Bottom;
-    }
-    
-    private bool IsPointerOverRightActionButton(Point position)
-    {
-        return position.X >= _rightActionSvgStartPoint.X &&
-               position.X <= _rightActionSvgStartPoint.X + (_cancelSkPicture?.CullRect.Width ?? 0.0) + SvgButtonPadding.Left +
-               SvgButtonPadding.Right &&
-               position.Y >= _rightActionSvgStartPoint.Y &&
-               position.Y <= _rightActionSvgStartPoint.Y + (_cancelSkPicture?.CullRect.Height ?? 0.0) + SvgButtonPadding.Top +
+               position.Y <= _leftActionSvgStartPoint.Y + SvgHeight + SvgButtonPadding.Top +
                SvgButtonPadding.Bottom;
     }
 
-    private void SetHoveredItem(ActionItem newItem)
+    private bool IsPointerOverRightActionButton(Point position)
     {
-        if (_activeHoveredItem == newItem) return;
-        _activeHoveredItem = newItem;
-        Cursor = new Cursor(newItem == ActionItem.None
+        var svgAspectRatio = _cancelSkPicture?.CullRect.Width / _cancelSkPicture?.CullRect.Height ?? 1.0;
+        var svgWidth = SvgHeight * svgAspectRatio;
+
+        return position.X >= _rightActionSvgStartPoint.X &&
+               position.X <= _rightActionSvgStartPoint.X + svgWidth +
+               SvgButtonPadding.Left +
+               SvgButtonPadding.Right &&
+               position.Y >= _rightActionSvgStartPoint.Y &&
+               position.Y <= _rightActionSvgStartPoint.Y + SvgHeight +
+               SvgButtonPadding.Top +
+               SvgButtonPadding.Bottom;
+    }
+
+    private void SetHoveredItem(HoverTarget newItem)
+    {
+        if (_activeHoverTarget == newItem) return;
+        _activeHoverTarget = newItem;
+        Cursor = new Cursor(newItem == HoverTarget.None
             ? StandardCursorType.Arrow
             : StandardCursorType.Hand);
         InvalidateHoveredItems();
@@ -1012,55 +1151,81 @@ public class ModelInfoBlock : Control
         if (_linkTextLayout != null && _linkTextLayoutStartPoint != default &&
             IsPointerOverLinkText(pos))
         {
-            SetHoveredItem(ActionItem.LinkText);
+            SetHoveredItem(HoverTarget.LinkText);
             return;
         }
 
-        if (_statusTextLayout != null && _downloadButtonStartPoint != default &&
-            DownloadStatus is not (ModelDownloadStatus.NoConnection or ModelDownloadStatus.NotEnoughSpace) &&
-            IsPointerOverDownloadButton(pos))
+        if (_statusTextLayout != null && _actionButtonStartPoint != default &&
+            DownloadStatus is ModelDownloadStatus.Ready or ModelDownloadStatus.Downloaded &&
+            IsPointerOverActionButton(pos))
         {
-            SetHoveredItem(ActionItem.DownloadButton);
+            if (DownloadStatus is ModelDownloadStatus.Ready)
+            {
+                SetHoveredItem(HoverTarget.DownloadButton);
+            }
+            else if (DownloadStatus is ModelDownloadStatus.Downloaded)
+            {
+                SetHoveredItem(HoverTarget.DeleteButton);
+            }
+
             return;
         }
 
-        if (_leftActionSvgStartPoint != default &&
-            DownloadStatus is ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused &&
-            IsPointerOverLeftActionButton(pos))
+        if (_leftActionSvgStartPoint != default && IsPointerOverLeftActionButton(pos))
         {
-            SetHoveredItem(ActionItem.ToggleDownloadButton);
+            if (DownloadStatus is ModelDownloadStatus.Downloading)
+            {
+                SetHoveredItem(HoverTarget.PauseDownloadButton);
+            }
+            else if (DownloadStatus is ModelDownloadStatus.Paused)
+            {
+                SetHoveredItem(HoverTarget.ResumeDownloadButton);
+            }
+
             return;
         }
-        
+
         if (_rightActionSvgStartPoint != default &&
             DownloadStatus is ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused &&
             IsPointerOverRightActionButton(pos))
         {
-            SetHoveredItem(ActionItem.CancelDownloadButton);
+            SetHoveredItem(HoverTarget.CancelDownloadButton);
             return;
         }
 
-        SetHoveredItem(ActionItem.None);
+        SetHoveredItem(HoverTarget.None);
     }
 
     // ha a learn more szövegre vagy az action buttonra (letöltési műveletek) kattintott akkor azt itt kezeli le
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (_activeHoveredItem == ActionItem.LinkText)
+        switch (_activeHoverTarget)
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = OllamaLibraryUrl + Title,
-                UseShellExecute = true
-            });
-        }
-        // TODO: különböző hoveredItemekre különböző ModelDownloadAction átadása mint CommandParameter
-        else if (_activeHoveredItem == ActionItem.DownloadButton)
-        {
-            if (Command.CanExecute(CommandParameter))
-            {
-                Command.Execute(CommandParameter);
-            }
+            case HoverTarget.LinkText:
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = OllamaLibraryUrl + Title,
+                    UseShellExecute = true
+                });
+                break;
+            case HoverTarget.DownloadButton:
+                if (Command.CanExecute(ModelDownloadAction.Start)) Command.Execute(ModelDownloadAction.Start);
+                break;
+            case HoverTarget.PauseDownloadButton:
+                if (Command.CanExecute(ModelDownloadAction.Pause)) Command.Execute(ModelDownloadAction.Pause);
+                SetHoveredItem(HoverTarget.ResumeDownloadButton);
+                break;
+            case HoverTarget.ResumeDownloadButton:
+                if (Command.CanExecute(ModelDownloadAction.Resume)) Command.Execute(ModelDownloadAction.Resume);
+                SetHoveredItem(HoverTarget.PauseDownloadButton);
+                break;
+            case HoverTarget.CancelDownloadButton:
+                if (Command.CanExecute(ModelDownloadAction.Cancel)) Command.Execute(ModelDownloadAction.Cancel);
+                break;
+            case HoverTarget.DeleteButton:
+                if (Command.CanExecute(ModelDownloadAction.Delete)) Command.Execute(ModelDownloadAction.Delete);
+                SetHoveredItem(HoverTarget.DownloadButton);
+                break;
         }
     }
 }
