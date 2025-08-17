@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace avallama.Services
+namespace avallama.Utilities
 {
     public class NetworkSpeedCalculator
     {
-        private long _lastCompleted = 0;
+        private long _lastCompleted;
         private DateTime _lastUpdateTime = DateTime.MinValue;
-        private readonly Queue<double> _speedReadings = new Queue<double>();
+        private readonly Queue<double> _speedReadings = new();
         private readonly TimeSpan _timeWindow = TimeSpan.FromMilliseconds(100);
 
         public double CalculateSpeed(long completed)

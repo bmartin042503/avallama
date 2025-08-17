@@ -3,11 +3,11 @@
 
 namespace avallama.Constants;
 
-public enum ApplicationDialog
+public enum SortingOption
 {
-    Information,
-    Error,
-    Confirmation,
-    Input,
-    Action
+    Downloaded,
+    ParametersDescending,
+    ParametersAscending,
+    SizeDescending,
+    SizeAscending
 }

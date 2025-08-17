@@ -3,11 +3,12 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 
 namespace avallama.Converters;
 
-public class ResponsiveMessageBlockSizeConverter : IValueConverter
+public class MessageBlockSizeConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
@@ -21,6 +22,6 @@ public class ResponsiveMessageBlockSizeConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return new BindingNotification(new NotSupportedException("Message Block size value cannot be converted back."));
     }
 }

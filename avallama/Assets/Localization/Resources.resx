@@ -164,9 +164,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOAD_OLLAMA" xml:space="preserve">
         <value>Download Ollama ({0})</value>
     </data>
-    <data name="AVALLAMA_STARTING" xml:space="preserve">
-        <value>Starting Avallama..</value>
-    </data>
     <data name="SKIP_GUIDE" xml:space="preserve">
         <value>Skip guide</value>
     </data>
@@ -197,23 +194,17 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_MANAGER" xml:space="preserve">
         <value>Model manager</value>
     </data>
-    <data name="DOWNLOADED_MODELS" xml:space="preserve">
-        <value>Downloaded ({0})</value>
-    </data>
     <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
         <value>Available from Ollama ({0})</value>
-    </data>
-    <data name="DOWNLOADING" xml:space="preserve">
-        <value>Downloading.. {0}%</value>
     </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>Parameters: {0}B</value>
     </data>
     <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Quantization: {0}</value>
+        <value>Quantization: {0} bits</value>
     </data>
-    <data name="NOT_ENOUGH_SPACE" xml:space="preserve">
-        <value>Not enough space</value>
+    <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
+        <value>Not enough space to download</value>
     </data>
     <data name="SEARCH_FOR_MODELS" xml:space="preserve">
         <value>Search for models..</value>
@@ -226,9 +217,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="RUNS_GREAT" xml:space="preserve">
         <value>Runs great</value>
-    </data>
-    <data name="MODEL_MANAGER_NOT_AVAILABLE" xml:space="preserve">
-        <value>Model manager will be available in a future version</value>
     </data>
     <data name="START" xml:space="preserve">
         <value>Start</value>
@@ -264,7 +252,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Exposed port of the Ollama host machine (default is 11434)</value>
     </data>
     <data name="INVALID_HOST_ERR" xml:space="preserve">
-        <value>Ollama API Host is invalid, please enter a valid host address. (IPv4 address, or localhost)</value>
+        <value>Ollama API Host is invalid, please enter a valid host address. (IPv4 address or "localhost")</value>
     </data>
     <data name="INVALID_PORT_ERR" xml:space="preserve">
         <value>Ollama API Port is invalid, please enter a valid port. (1 - 65535)</value>
@@ -304,5 +292,83 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="NO_MODELS_FOUND" xml:space="preserve">
         <value>No models found</value>
+    </data>
+    <data name="NO_CONNECTION_DOWNLOAD" xml:space="preserve">
+        <value>No connection to download</value>
+    </data>
+    <data name="LEARN_MORE" xml:space="preserve">
+        <value>Learn more</value>
+    </data>
+    <data name="GENERAL_ARCHITECTURE" xml:space="preserve">
+        <value>General architecture</value>
+    </data>
+    <data name="BLOCK_COUNT" xml:space="preserve">
+        <value>Block count</value>
+    </data>
+    <data name="CONTEXT_LENGTH" xml:space="preserve">
+        <value>Context length</value>
+    </data>
+    <data name="EMBEDDING_LENGTH" xml:space="preserve">
+        <value>Embedding length</value>
+    </data>
+    <data name="TOKEN_SEC_FORMAT" xml:space="preserve">
+        <value>{0} tokens/sec</value>
+    </data>
+    <data name="MIGHT_RUN_SLOW" xml:space="preserve">
+        <value>Might run slow on your system</value>
+    </data>
+    <data name="DOWNLOADED_MODELS_INFO" xml:space="preserve">
+        <value>{0} downloaded models ({1} GB)</value>
+    </data>
+    <data name="GENERATION_SPEED" xml:space="preserve">
+        <value>Generation speed</value>
+    </data>
+    <data name="SORT_BY" xml:space="preserve">
+        <value>Sort by:</value>
+    </data>
+    <data name="MODEL_SIZE" xml:space="preserve">
+        <value>Size: {0}</value>
+    </data>
+    <data name="SORT_SIZE_DESCENDING" xml:space="preserve">
+        <value>Size (descending)</value>
+    </data>
+    <data name="SORT_SIZE_ASCENDING" xml:space="preserve">
+        <value>Size (ascending)</value>
+    </data>
+    <data name="SORT_PARAMETERS_DESCENDING" xml:space="preserve">
+        <value>Parameters (descending)</value>
+    </data>
+    <data name="SORT_PARAMETERS_ASCENDING" xml:space="preserve">
+        <value>Parameters (ascending)</value>
+    </data>
+    <data name="SORT_DOWNLOADED" xml:space="preserve">
+        <value>Downloaded</value>
+    </data>
+    <data name="MODEL_INFORMATION" xml:space="preserve">
+        <value>Model information</value>
+    </data>
+    <data name="BACK" xml:space="preserve">
+        <value>Back</value>
+    </data>
+    <data name="RESUME_DOWNLOAD" xml:space="preserve">
+        <value>Resume download ({0})</value>
+    </data>
+    <data name="DELETE" xml:space="preserve">
+        <value>Delete</value>
+    </data>
+    <data name="DOWNLOADING" xml:space="preserve">
+        <value>Downloading</value>
+    </data>
+    <data name="PAUSED" xml:space="preserve">
+        <value>Paused</value>
+    </data>
+    <data name="MULTIPLE_DOWNLOADS_WARNING" xml:space="preserve">
+        <value>A download is already in progress. Please cancel the current download before starting a new one.\n\nWe're working on supporting multiple downloads in the future.</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_TITLE" xml:space="preserve">
+        <value>Confirm deletion</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
+        <value>Are you sure you want to delete {0}?</value>
     </data>
 </root>

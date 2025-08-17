@@ -1,4 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
@@ -41,7 +46,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Views\Dialogs\SettingsView.axaml.cs">
+      <Compile Update="Views\ModelManagerView.axaml.cs">
+        <DependentUpon>ModelManagerView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\SettingsView.axaml.cs">
         <DependentUpon>SettingsView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>

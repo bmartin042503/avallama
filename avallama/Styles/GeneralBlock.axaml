@@ -11,22 +11,22 @@ Licensed under the MIT License. See LICENSE file for details.
         <ThemeVariantScope RequestedThemeVariant="Dark">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="10">
-                    <controls:MessageBlock
+                    <controls:GeneralBlock
                         Classes="userMessage"
                         Text="User Message"/>
                 
-                    <controls:MessageBlock 
+                    <controls:GeneralBlock 
                         Classes="generatedMessage"
                         Text="Generated Message"
                         SubText="SubText"/>
                     
-                    <controls:MessageBlock
+                    <controls:GeneralBlock
                         Classes="conversationElement"
                         Text="Conversation Title"
                         Width="300"
                         SubText="llama3.2"/>
                     
-                    <controls:MessageBlock
+                    <controls:GeneralBlock
                         Classes="conversationElement currentConversation"
                         Text="Current Conversation Title"
                         Width="300"
@@ -36,16 +36,18 @@ Licensed under the MIT License. See LICENSE file for details.
         </ThemeVariantScope>
     </Design.PreviewWith>
     
-    <Style Selector="controls|MessageBlock">
+    <Style Selector="controls|GeneralBlock">
+        <Setter Property="Clickable" Value="False"/>
         <Setter Property="TextAlignment" Value="Left"/>
         <Setter Property="TextFontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="20"/>
         <Setter Property="Padding" Value="15,8"/>
         <Setter Property="Margin" Value="0,0,0,20"/>
         <Setter Property="LineHeight" Value="22"/>
+        <Setter Property="FontFamily" Value="{StaticResource Manrope}"/>
     </Style>
     
-    <Style Selector="controls|MessageBlock.userMessage">
+    <Style Selector="controls|GeneralBlock.userMessage">
         <Setter Property="Selectable" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimary}"/>
@@ -53,7 +55,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="SelectionColor" Value="{DynamicResource OnPrimary}"/>
     </Style>
     
-    <Style Selector="controls|MessageBlock.generatedMessage">
+    <Style Selector="controls|GeneralBlock.generatedMessage">
         <Setter Property="Selectable" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurfaceVariant}"/>
@@ -65,8 +67,9 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Spacing" Value="5"/>
     </Style>
     
-    <Style Selector="controls|MessageBlock.conversationElement">
+    <Style Selector="controls|GeneralBlock.conversationElement">
         <Setter Property="Selectable" Value="False"/>
+        <Setter Property="Clickable" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurface}"/>
         <Setter Property="TextFontSize" Value="16"/>
@@ -76,7 +79,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="CornerRadius" Value="10"/>
     </Style>
     
-    <Style Selector="controls|MessageBlock.currentConversation">
+    <Style Selector="controls|GeneralBlock.currentConversation">
         <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimaryContainer}"/>
         <Setter Property="SubTextColor" Value="{DynamicResource OnPrimaryContainer}"/>

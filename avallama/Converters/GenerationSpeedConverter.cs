@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using avallama.Services;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 
 namespace avallama.Converters;
@@ -21,6 +22,6 @@ public class GenerationSpeedConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return new BindingNotification(new NotSupportedException("Generation speed size value cannot be converted back."));
     }
 }

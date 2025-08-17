@@ -3,6 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using avallama.Constants;
+using avallama.Utilities;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -21,56 +24,80 @@ namespace avallama.Controls;
 /// <summary>
 /// Szövegdoboz állítható háttérrel, két szöveggel, személyre szabott propertykkel
 /// </summary>
-public class MessageBlock : Control
+public class GeneralBlock : Control
 {
     // AXAML Styled Propertyk
     public static readonly StyledProperty<string?> TextProperty =
-        AvaloniaProperty.Register<MessageBlock, string?>("Text");
+        AvaloniaProperty.Register<GeneralBlock, string?>(nameof(Text));
 
     public static readonly StyledProperty<IBrush?> TextColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("TextColor");
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(TextColor));
 
     public static readonly StyledProperty<string?> SubTextProperty =
-        AvaloniaProperty.Register<MessageBlock, string?>("SubText");
+        AvaloniaProperty.Register<GeneralBlock, string?>(nameof(SubText));
 
     public static readonly StyledProperty<IBrush?> SubTextColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("SubTextColor");
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(SubTextColor));
 
     public static readonly StyledProperty<Thickness?> PaddingProperty =
-        AvaloniaProperty.Register<MessageBlock, Thickness?>("Padding");
+        AvaloniaProperty.Register<GeneralBlock, Thickness?>(nameof(Padding));
 
     public static readonly StyledProperty<CornerRadius?> CornerRadiusProperty =
-        AvaloniaProperty.Register<MessageBlock, CornerRadius?>("CornerRadius");
+        AvaloniaProperty.Register<GeneralBlock, CornerRadius?>(nameof(CornerRadius));
 
     public static readonly StyledProperty<double?> TextFontSizeProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("TextFontSize");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(TextFontSize));
 
     public static readonly StyledProperty<double?> SubTextFontSizeProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("SubTextFontSize");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(SubTextFontSize));
 
     public static readonly StyledProperty<TextAlignment?> TextAlignmentProperty =
-        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("TextAlignment");
+        AvaloniaProperty.Register<GeneralBlock, TextAlignment?>(nameof(TextAlignment));
 
     public static readonly StyledProperty<TextAlignment?> SubTextAlignmentProperty =
-        AvaloniaProperty.Register<MessageBlock, TextAlignment?>("SubTextAlignment");
+        AvaloniaProperty.Register<GeneralBlock, TextAlignment?>(nameof(SubTextAlignment));
 
     public static readonly StyledProperty<FontFamily?> FontFamilyProperty =
-        AvaloniaProperty.Register<MessageBlock, FontFamily?>("FontFamily");
+        AvaloniaProperty.Register<GeneralBlock, FontFamily?>(nameof(FontFamily));
 
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("Background");
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(Background));
 
     public static readonly StyledProperty<double?> SpacingProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("Spacing");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(Spacing));
 
     public static readonly StyledProperty<double?> LineHeightProperty =
-        AvaloniaProperty.Register<MessageBlock, double?>("LineHeight");
+        AvaloniaProperty.Register<GeneralBlock, double?>(nameof(LineHeight));
 
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
-        AvaloniaProperty.Register<MessageBlock, IBrush?>("SelectionColor");
-    
+        AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(SelectionColor));
+
     public static readonly StyledProperty<bool> SelectableProperty =
-        AvaloniaProperty.Register<MessageBlock, bool>("Selectable");
+        AvaloniaProperty.Register<GeneralBlock, bool>(nameof(Selectable));
+
+    public static readonly StyledProperty<bool> ClickableProperty =
+        AvaloniaProperty.Register<GeneralBlock, bool>(nameof(Clickable));
+
+    public static readonly StyledProperty<ICommand?> CommandProperty =
+        AvaloniaProperty.Register<GeneralBlock, ICommand?>(nameof(Command));
+
+    // saját ID
+    public static readonly DirectProperty<GeneralBlock, Guid?> IdProperty =
+        AvaloniaProperty.RegisterDirect<GeneralBlock, Guid?>(
+            nameof(Id),
+            o => o.Id,
+            (o, v) => o.Id = v,
+            unsetValue: Guid.Empty
+        );
+
+    // a jelenleg kiválasztott ID, ez összehasonlításhoz kell, hogy más stílust lehessen beállítani ha a kiválasztott control a jelenlegi
+    public static readonly DirectProperty<GeneralBlock, Guid?> SelectedIdProperty =
+        AvaloniaProperty.RegisterDirect<GeneralBlock, Guid?>(
+            nameof(SelectedId),
+            o => o.SelectedId,
+            (o, v) => o.SelectedId = v,
+            unsetValue: Guid.Empty
+        );
 
     public string? Text
     {
@@ -162,10 +189,38 @@ public class MessageBlock : Control
         set => SetValue(SelectionColorProperty, value);
     }
 
+    public ICommand? Command
+    {
+        get => GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
+
     public bool Selectable
     {
         get => GetValue(SelectableProperty);
         set => SetValue(SelectableProperty, value);
+    }
+
+    public bool Clickable
+    {
+        get => GetValue(ClickableProperty);
+        set => SetValue(ClickableProperty, value);
+    }
+
+    private Guid? _id;
+
+    public Guid? Id
+    {
+        get => _id;
+        set => SetAndRaise(IdProperty, ref _id, value);
+    }
+
+    private Guid? _selectedId;
+
+    public Guid? SelectedId
+    {
+        get => _selectedId;
+        set => SetAndRaise(SelectedIdProperty, ref _selectedId, value);
     }
 
     private TextLayout? _textLayout;
@@ -180,9 +235,10 @@ public class MessageBlock : Control
     private int _selectionEnd;
     private string _selectedText = string.Empty;
 
-    // private int _newTextLayoutCount = 0;
+    // rajta van-e a kurzor a Controlon
+    private bool _isPointerOver;
 
-    public MessageBlock()
+    public GeneralBlock()
     {
         // focusable mert azt akarjuk hogy el lehessen kapni benne a fókuszt és el is lehessen veszíteni
         Focusable = true;
@@ -203,10 +259,22 @@ public class MessageBlock : Control
     private void RenderBackground(DrawingContext context)
     {
         // Ha van háttér megadva akkor lerendereljük a CornerRadius alapján (ami lehet 0 is)
-        var bg = Background;
-        if (bg == null) return;
+        var background = Background;
+        if (Id != null && SelectedId != null)
+        {
+            if (Id == SelectedId)
+            {
+                background = ColorProvider.GetColor(AppColor.PrimaryContainer);
+            }
+            else if (Id != SelectedId && _isPointerOver)
+            {
+                background = ColorProvider.GetColor(AppColor.SecondaryContainer);
+            }
+        }
+        
+        if (background == null) return;
         var cornerRadius = CornerRadius ?? new CornerRadius(0, 0, 0, 0);
-        context.DrawRectangle(bg, null,
+        context.DrawRectangle(background, null,
             new RoundedRect(
                 new Rect(Bounds.Size),
                 cornerRadius.TopLeft,
@@ -260,14 +328,27 @@ public class MessageBlock : Control
         var typeface = new Typeface(
             FontFamily ?? FontFamily.Default
         );
-        
+
+        var textColor = TextColor;
+        if (Id != null && SelectedId != null && Id == SelectedId)
+        {
+            if (Id == SelectedId)
+            {
+                textColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
+            }
+            else if (Id != SelectedId && _isPointerOver)
+            {
+                textColor = ColorProvider.GetColor(AppColor.OnSecondaryContainer);
+            }
+        }
+
         // real-time generálásnál képes több ezres nagyságban létrehozni és felszabadítani TextLayout elemeket
         return new TextLayout(
             Text,
             typeface,
             null,
             TextFontSize ?? 12,
-            TextColor ?? Brushes.Black,
+            textColor,
             TextAlignment ?? Avalonia.Media.TextAlignment.Left,
             TextWrapping.Wrap,
             TextTrimming.None,
@@ -284,11 +365,24 @@ public class MessageBlock : Control
     {
         if (!string.IsNullOrEmpty(SubText))
         {
+            var subTextColor = SubTextColor;
+            if (Id != null && SelectedId != null)
+            {
+                if (Id == SelectedId)
+                {
+                    subTextColor = ColorProvider.GetColor(AppColor.OnPrimaryContainer);
+                }
+                else if (Id != SelectedId && _isPointerOver)
+                {
+                    subTextColor = ColorProvider.GetColor(AppColor.OnSecondaryContainer);
+                }
+            }
+            
             return new TextLayout(
                 SubText,
                 new Typeface(FontFamily ?? FontFamily.Default),
                 SubTextFontSize ?? 8,
-                SubTextColor ?? Brushes.Black,
+                subTextColor,
                 SubTextAlignment ?? Avalonia.Media.TextAlignment.Right,
                 TextWrapping.Wrap,
                 null,
@@ -302,13 +396,24 @@ public class MessageBlock : Control
         return null;
     }
 
-    protected override void OnMeasureInvalidated()
+    private void InvalidateTextLayouts()
     {
-        // felszabadítja a textLayoutokat
         _textLayout?.Dispose();
         _textLayout = null;
         _subTextLayout?.Dispose();
         _subTextLayout = null;
+    }
+
+    private void CreateTextLayouts()
+    {
+        _textLayout = CreateTextLayout();
+        _subTextLayout = CreateSubTextLayout();
+    }
+
+    protected override void OnMeasureInvalidated()
+    {
+        // felszabadítja a textLayoutokat
+        InvalidateTextLayouts();
         base.OnMeasureInvalidated();
     }
 
@@ -489,7 +594,11 @@ public class MessageBlock : Control
             case nameof(Background):
             case nameof(SelectionColor):
             case nameof(CornerRadius):
+            case nameof(Id):
+            case nameof(SelectedId):
             {
+                InvalidateTextLayouts();
+                CreateTextLayouts();
                 InvalidateVisual();
                 break;
             }
@@ -505,48 +614,80 @@ public class MessageBlock : Control
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        if (_textLayout == null || Text == null || !Selectable) return;
+        if (_textLayout == null || Text == null) return;
 
-        var pointerPosition = e.GetPosition(this);
-
-        var isPointerOverText = IsPointerOverText(pointerPosition);
-        if (isPointerOverText)
+        if (Selectable)
         {
-            Cursor = new Cursor(StandardCursorType.Ibeam);
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            var pointerPosition = e.GetPosition(this);
+
+            var isPointerOverText = IsPointerOverText(pointerPosition);
+            if (isPointerOverText)
             {
-                var textIndex = TextIndexFromPointer(e.GetPosition(this));
-                _selectionEnd = textIndex;
-                InvalidateVisual();
+                Cursor = new Cursor(StandardCursorType.Ibeam);
+                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+                {
+                    var textIndex = TextIndexFromPointer(e.GetPosition(this));
+                    _selectionEnd = textIndex;
+                    InvalidateVisual();
+                }
+            }
+            else
+            {
+                Cursor = new Cursor(StandardCursorType.Arrow);
             }
         }
-        else
+        else if (Clickable)
         {
-            Cursor = new Cursor(StandardCursorType.Arrow);
+            Cursor = new Cursor(StandardCursorType.Hand);
+            _isPointerOver = true;
+            InvalidateTextLayouts();
+            CreateTextLayouts();
+            InvalidateVisual();
         }
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        if (!Clickable) return;
+        _isPointerOver = false;
+        InvalidateTextLayouts();
+        CreateTextLayouts();
+        InvalidateVisual();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (_textLayout == null || Text == null || !Selectable) return;
-        var textIndex = TextIndexFromPointer(e.GetPosition(this));
-        _selectionStart = textIndex;
+        if (_textLayout == null || Text == null) return;
 
-        switch (e.ClickCount)
+        if (Selectable)
         {
-            case 1:
-                if (_selectedText.Length > 0)
-                {
-                    ClearSelection();
-                }
+            var textIndex = TextIndexFromPointer(e.GetPosition(this));
+            _selectionStart = textIndex;
 
-                break;
-            case 2:
-                SelectWordByIndex(textIndex);
-                break;
-            case >= 3:
-                SelectParagraphByIndex(textIndex);
-                break;
+            switch (e.ClickCount)
+            {
+                case 1:
+                    if (_selectedText.Length > 0)
+                    {
+                        ClearSelection();
+                    }
+
+                    break;
+                case 2:
+                    SelectWordByIndex(textIndex);
+                    break;
+                case >= 3:
+                    SelectParagraphByIndex(textIndex);
+                    break;
+            }
+        }
+        else if (Clickable)
+        {
+            if (Id is null) return;
+            if (Command is not null && Command.CanExecute(Id))
+            {
+                Command.Execute(Id);
+            }
         }
     }
 
@@ -716,14 +857,14 @@ public class MessageBlock : Control
     protected override void OnGotFocus(GotFocusEventArgs e)
     {
         base.OnGotFocus(e);
-        if(!Selectable) return;
+        if (!Selectable) return;
         UpdateSelectedText();
     }
 
     protected override void OnLostFocus(RoutedEventArgs e)
     {
         base.OnLostFocus(e);
-        if(!Selectable) return;
+        if (!Selectable) return;
         if (ContextFlyout is not { IsOpen: true } &&
             ContextMenu is not { IsOpen: true })
         {
@@ -741,16 +882,16 @@ public class MessageBlock : Control
 
     private async Task OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if(!Selectable) return;
-        
+        if (!Selectable) return;
+
         // macOS billentyűk
         // Meta - nyomva tartott Command
         // LWin - lenyomott bal oldali Command
         // RWin - lenyomott jobb oldali Command
-        
+
         // CTRL+A - összes szöveg kijelölése
-        if (e.Key == Key.A && (e.KeyModifiers.HasFlag(KeyModifiers.Control) 
-            || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
+        if (e.Key == Key.A && (e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                               || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         {
             SelectAllText();
             e.Handled = true;
@@ -758,7 +899,7 @@ public class MessageBlock : Control
 
         // CTRL+C - szöveg kimásolása vágólapra
         if (e.Key == Key.C && (e.KeyModifiers.HasFlag(KeyModifiers.Control)
-            || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
+                               || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         {
             UpdateSelectedText();
             await CopyToClipboardAsync(_selectedText);

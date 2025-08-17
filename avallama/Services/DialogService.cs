@@ -61,7 +61,11 @@ public interface IDialogService
         ApplicationDialog dialog,
         bool resizable,
         double width,
-        double height
+        double height,
+        double minWidth,
+        double minHeight,
+        double maxWidth,
+        double maxHeight
     );
 
     void ShowInfoDialog(string informationMessage);
@@ -114,6 +118,10 @@ public class DialogService(
     /// <param name="resizable">A dialog átméretezhetősége (opcionális)</param>
     /// <param name="width">A dialog ablakának szélessége (opcionális)</param>
     /// <param name="height">A dialog ablakának magassága (opcionális)</param>
+    /// <param name="minWidth">A dialog ablakának minimális szélessége (ha átméretezhető)</param>
+    /// <param name="minHeight">A dialog ablakának minimális magassága (ha átméretezhető)</param>
+    /// <param name="maxWidth">A dialog ablakának maximális szélessége (ha átméretezhető)</param>
+    /// <param name="maxHeight">A dialog ablakának maximális magassága (ha átméretezhető)</param>
     /// <exception cref="InvalidOperationException">
     /// Ha a dialog típusa nem megfelelő (pl. Information, Error, Confirmation, Input), kivételt dob.
     /// </exception>
@@ -121,7 +129,11 @@ public class DialogService(
         ApplicationDialog dialog,
         bool resizable = false,
         double width = double.NaN,
-        double height = double.NaN
+        double height = double.NaN,
+        double minWidth = double.NaN,
+        double minHeight = double.NaN,
+        double maxWidth = double.NaN,
+        double maxHeight = double.NaN
     )
     {
         if (dialog is ApplicationDialog.Information
@@ -162,6 +174,14 @@ public class DialogService(
             dialogWindow.Width = width;
         }
 
+        if (resizable)
+        {
+            if (!double.IsNaN(minWidth)) dialogWindow.MinWidth = minWidth;
+            if (!double.IsNaN(minHeight)) dialogWindow.MinHeight = minHeight;
+            if (!double.IsNaN(maxWidth)) dialogWindow.MaxWidth = maxWidth;
+            if (!double.IsNaN(maxHeight)) dialogWindow.MaxHeight = maxHeight;
+        }
+        dialogWindow.InvalidateMeasure();
         ShowDialogWindow(dialogWindow);
     }
 
@@ -175,7 +195,7 @@ public class DialogService(
         var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InformationView");
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)! as InformationView;
-        control!.DialogMessage.Text = informationMessage;
+        control!.DialogMessage.Text = informationMessage.Replace(@"\n", Environment.NewLine);
         dialogWindow.Content = control;
         dialogWindow.DataContext = new DialogViewModel
         {
@@ -198,7 +218,7 @@ public class DialogService(
         var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ErrorView");
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)! as ErrorView;
-        control!.DialogMessage.Text = errorMessage;
+        control!.DialogMessage.Text = errorMessage.Replace(@"\n", Environment.NewLine);
         control.CloseButton.Click += (_, _) =>
         {
             CloseDialog(ApplicationDialog.Error);
@@ -283,7 +303,7 @@ public class DialogService(
         else
         {
             control.NegativeButton.Content = LocalizationService.GetString("CLOSE");
-            control.NegativeButton.Classes.Add("lessSecondaryButton");
+            control.NegativeButton.Classes.Add("secondaryButton");
             control.NegativeButton.Click += (_, _) =>
             {
                 CloseDialog(ApplicationDialog.Action);
@@ -377,11 +397,11 @@ public class DialogService(
         // ez a class a stylesban már definiálva van
         if (highlight == ConfirmationType.Positive)
         {
-            control.NegativeButton.Classes.Add("lessSecondaryButton");
+            control.NegativeButton.Classes.Add("secondaryButton");
         }
         else if (highlight == ConfirmationType.Negative)
         {
-            control.PositiveButton.Classes.Add("lessSecondaryButton");
+            control.PositiveButton.Classes.Add("secondaryButton");
         }
 
         control.PositiveButton.Click += (_, _) =>

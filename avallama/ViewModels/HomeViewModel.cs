@@ -15,8 +15,11 @@ using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace avallama.ViewModels;
+
+public class ReloadSettingsMessage() : ValueChangedMessage<bool>(true);
 
 public partial class HomeViewModel : PageViewModel
 {
@@ -67,7 +70,12 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private string _downloadSpeed = string.Empty;
     [ObservableProperty] private string _downloadAmount = string.Empty;
     [ObservableProperty] private Conversation _selectedConversation;
-
+    
+    // TODO:
+    // Van egy bug amit kicsit nehezen lehet reprodukálni, de épp a 3. üzenetem írtam, generálta volna az új beszélgetés címet az ollama
+    // majd átkattintottam gyors egy másik beszélgetésbe és annak a címébe vitte bele az új címet, hozzáfűzte
+    // és az előző beszélgetés címe eltűnt, nem is tudtam belekattintani, ezt meg lehet csinálni többször, átviszi a generálást máshova
+    // ezt majd vhogy javítani
     [RelayCommand]
     private async Task SendMessage()
     {
@@ -84,31 +92,29 @@ public partial class HomeViewModel : PageViewModel
     }
 
     [RelayCommand]
-    public void OpenSettings()
-    {
-        _dialogService.ShowDialog(ApplicationDialog.Settings);
-    }
-
-    [RelayCommand]
-    public void OpenModelManager()
-    {
-        _dialogService.ShowDialog(
-            ApplicationDialog.ModelManager,
-            true,
-            800
-        );
-    }
-
-    [RelayCommand]
     public async Task CreateNewConversation()
     {
         var newConversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
-        );
+        )
+        {
+            ConversationId = await _databaseService.CreateConversation()
+        };
         Conversations.Push(newConversation);
         SelectedConversation = newConversation;
-        SelectedConversation.ConversationId = await _databaseService.CreateConversation();
+    }
+
+    [RelayCommand]
+    public void SelectConversation(object parameter)
+    {
+        if (parameter is Guid guid)
+        {
+            if (guid == SelectedConversation.ConversationId) return;
+            var selectedConversation = Conversations.FirstOrDefault(x => x.ConversationId == guid);
+            if (selectedConversation == null) return;
+            SelectedConversation = selectedConversation;
+        }
     }
 
     private async Task AddGeneratedMessage()
@@ -117,7 +123,7 @@ public partial class HomeViewModel : PageViewModel
         SelectedConversation.AddMessage(generatedMessage);
         var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
         messageHistory.RemoveAt(messageHistory.Count - 1);
-
+        
         await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
         {
             if (chunk.Message != null) generatedMessage.Content += chunk.Message.Content;
@@ -216,14 +222,18 @@ public partial class HomeViewModel : PageViewModel
         _databaseService = databaseService;
         _messenger = messenger;
         
-        _databaseService = databaseService;
+        _messenger.Register<ReloadSettingsMessage>(this, (_, _) => { LoadSettings(); });
         
         LoadSettings();
 
+        // TODO: ezt majd lecserélni úgy hogy a db-ből jöjjön
         var conversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
-        );
+        )
+        {
+            ConversationId = Guid.NewGuid()
+        };
 
         _conversations = [conversation];
         SelectedConversation = conversation;
@@ -242,10 +252,7 @@ public partial class HomeViewModel : PageViewModel
         //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         await CheckModelDownload();
     }
-
-    // első inicializálásnál és beállítások mentésénél ez meghívódik, hogy pl. ne kelljen restartolni az appot
-    // ha a felhasználó átváltja a görgetési beállítást, és újra betöltenie azt
-    // TODO: messengerrel kell valszeg megoldani hogy settingsviewmodel értesítse homeviewmodelt
+    
     private void LoadSettings()
     {
         ScrollSetting = _configurationService.ReadSetting(ConfigurationKey.ScrollToBottom);

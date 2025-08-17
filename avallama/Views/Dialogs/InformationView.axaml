@@ -13,7 +13,7 @@ Licensed under the MIT License. See LICENSE file for details.
              Background="{DynamicResource Surface}">
     <StackPanel Orientation="Vertical" Margin="20">
         <TextBlock x:Name="DialogMessage" Classes="H3" Text="Information Dialog Message" TextWrapping="Wrap"
-                   MaxWidth="400" Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.8" />
+                   MaxWidth="400" Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.8" TextAlignment="Left"/>
         <Button HorizontalAlignment="Right" Content="{services:LocalizationService Key='CLOSE'}"
                 Click="CloseButton_Click" Cursor="Hand" Margin="0,40,0,0" />
     </StackPanel>

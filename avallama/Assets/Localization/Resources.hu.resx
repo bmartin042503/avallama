@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Vágjunk bele</value>
     </data>
     <data name="GREETING_SUBTEXT" xml:space="preserve">
-        <value>Futtass bármilyen LLM modelt lokálisan</value>
+        <value>Futtass bármilyen LLM modellt lokálisan</value>
     </data>
     <data name="GREETING_TEXT" xml:space="preserve">
         <value>Avallama</value>
@@ -38,13 +38,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>token/mp</value>
     </data>
     <data name="ONLY_SUPPORTED_MODEL" xml:space="preserve">
-        <value>Jelenleg csak a(z) {0} model támogatott</value>
+        <value>Jelenleg csak a(z) {0} modell támogatott</value>
     </data>
     <data name="SEND_MESSAGE" xml:space="preserve">
         <value>Küldj üzenetet..</value>
     </data>
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
-        <value>Ez a model nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
+        <value>Ez a modell nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
     </data>
     <data name="VERSION" xml:space="preserve">
         <value>v0.2.0</value>
@@ -71,7 +71,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ismeretlen hiba történt</value>
     </data>
     <data name="MULTIPLE_INSTANCES_ERROR" xml:space="preserve">
-        <value>Több Ollama példány fut. Kérjük zárja be az összeset, majd indítsa újra az alkalmazást.</value>
+        <value>Több Ollama példány fut. Zárd be az összeset, majd indítsd újra az alkalmazást.</value>
     </data>
     <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
         <value>Az Ollama nincs telepítve</value>
@@ -80,7 +80,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Generálás folyamatban...</value>
     </data>
     <data name="NOT_DOWNLOADED_WARNING" xml:space="preserve">
-        <value>A model nincs letöltve</value>
+        <value>A modell nincs letöltve</value>
     </data>
     <data name="LOADING_MODELS" xml:space="preserve">
         <value>Modellek betöltése...</value>
@@ -89,7 +89,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Letöltés indítása...</value>
     </data>
     <data name="VERIFYING_DOWNLOAD" xml:space="preserve">
-        <value>Letöltés ellenörzése...</value>
+        <value>Letöltés ellenőrzése...</value>
     </data>
     <data name="NEW_CONVERSATION" xml:space="preserve">
         <value>Új csevegés</value>
@@ -116,7 +116,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Felhasznált technológiák:</value>
     </data>
     <data name="LICENSE" xml:space="preserve">
-        <value>MIT licensz, részletekért tekintse meg a LICENSE fájlt</value>
+        <value>MIT licensz, részletekért tekintsd meg a LICENSE fájlt</value>
     </data>
     <data name="GITHUB_BUTTON" xml:space="preserve">
         <value>GitHub</value>
@@ -157,9 +157,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOAD_OLLAMA" xml:space="preserve">
         <value>Ollama letöltése ({0})</value>
     </data>
-    <data name="AVALLAMA_STARTING" xml:space="preserve">
-        <value>Avallama indítása..</value>
-    </data>
     <data name="SKIP_GUIDE" xml:space="preserve">
         <value>Útmutató kihagyása</value>
     </data>
@@ -176,7 +173,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Minden adat lokálisan van tárolva, biztonságban</value>
     </data>
     <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
-        <value>Tölts le különböző AI modeleket</value>
+        <value>Tölts le különböző AI modelleket</value>
     </data>
     <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
         <value>Egyszerű, és személyreszabható</value>
@@ -188,25 +185,19 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Köszönjük, hogy kipróbálod az avallamát!</value>
     </data>
     <data name="MODEL_MANAGER" xml:space="preserve">
-        <value>Modelkezelő</value>
-    </data>
-    <data name="DOWNLOADED_MODELS" xml:space="preserve">
-        <value>Letöltve ({0})</value>
+        <value>Modellkezelő</value>
     </data>
     <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
         <value>Elérhető az Ollamatól ({0})</value>
-    </data>
-    <data name="DOWNLOADING" xml:space="preserve">
-        <value>Letöltés.. {0}%</value>
     </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
     </data>
     <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Kvantálás: {0}</value>
+        <value>Kvantálás: {0} bit</value>
     </data>
-    <data name="NOT_ENOUGH_SPACE" xml:space="preserve">
-        <value>Nincs elég hely</value>
+    <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
+        <value>Nincs elég hely a letöltéshez</value>
     </data>
     <data name="SEARCH_FOR_MODELS" xml:space="preserve">
         <value>Modellek keresése..</value>
@@ -219,9 +210,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="RUNS_GREAT" xml:space="preserve">
         <value>Nagyszerűen fut</value>
-    </data>
-    <data name="MODEL_MANAGER_NOT_AVAILABLE" xml:space="preserve">
-        <value>A modelkezelő egy későbbi verzióban lesz elérhető</value>
     </data>
     <data name="START" xml:space="preserve">
         <value>Kezdés</value>
@@ -254,13 +242,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ollama API Port</value>
     </data>
     <data name="API_PORT_SETTING_DESC" xml:space="preserve">
-        <value>Elérhető port-ja az Ollama host számítógépnek (alapértelmezetten 11434)</value>
+        <value>Elérhető portja az Ollama host számítógépnek (alapértelmezetten 11434)</value>
     </data>
     <data name="INVALID_HOST_ERR" xml:space="preserve">
-        <value>Az Ollama API Host nem valid, adjon meg egy valid host címet. (IPv4 cím, vagy localhost)</value>
+        <value>Érvénytelen Ollama API host, kérlek adj meg egy érvényes host címet. (IPv4 cím vagy "localhost")</value>
     </data>
     <data name="INVALID_PORT_ERR" xml:space="preserve">
-        <value>Az Ollama API Post nem valid, adjon meg a valid portot. (1 - 65535)</value>
+        <value>Érvénytelen Ollama API port! A portnak 1 és 65535 között kell lennie.</value>
     </data>
     <data name="HOST_CONNECTION_ERR" xml:space="preserve">
         <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
@@ -297,5 +285,83 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="NO_MODELS_FOUND" xml:space="preserve">
         <value>Nincs megjeleníthető modell</value>
+    </data>
+    <data name="NO_CONNECTION_DOWNLOAD" xml:space="preserve">
+        <value>Nincs kapcsolat a letöltéshez</value>
+    </data>
+    <data name="LEARN_MORE" xml:space="preserve">
+        <value>További információ</value>
+    </data>
+    <data name="CONTEXT_LENGTH" xml:space="preserve">
+        <value>Kontextus hossza</value>
+    </data>
+    <data name="EMBEDDING_LENGTH" xml:space="preserve">
+        <value>Beágyazási hossz</value>
+    </data>
+    <data name="GENERAL_ARCHITECTURE" xml:space="preserve">
+        <value>Általános architektúra</value>
+    </data>
+    <data name="BLOCK_COUNT" xml:space="preserve">
+        <value>Blokkok száma</value>
+    </data>
+    <data name="TOKEN_SEC_FORMAT" xml:space="preserve">
+        <value>{0} token/mp</value>
+    </data>
+    <data name="MIGHT_RUN_SLOW" xml:space="preserve">
+        <value>Lassan futhat a rendszereden</value>
+    </data>
+    <data name="DOWNLOADED_MODELS_INFO" xml:space="preserve">
+        <value>{0} letöltött modell ({1} GB)</value>
+    </data>
+    <data name="GENERATION_SPEED" xml:space="preserve">
+        <value>Generálás sebessége</value>
+    </data>
+    <data name="SORT_BY" xml:space="preserve">
+        <value>Rendezés:</value>
+    </data>
+    <data name="MODEL_SIZE" xml:space="preserve">
+        <value>Méret: {0}</value>
+    </data>
+    <data name="SORT_SIZE_DESCENDING" xml:space="preserve">
+        <value>Méret (csökkenő)</value>
+    </data>
+    <data name="SORT_SIZE_ASCENDING" xml:space="preserve">
+        <value>Méret (növekvő)</value>
+    </data>
+    <data name="SORT_PARAMETERS_DESCENDING" xml:space="preserve">
+        <value>Paraméter (csökkenő)</value>
+    </data>
+    <data name="SORT_PARAMETERS_ASCENDING" xml:space="preserve">
+        <value>Paraméter (növekvő)</value>
+    </data>
+    <data name="SORT_DOWNLOADED" xml:space="preserve">
+        <value>Letöltött</value>
+    </data>
+    <data name="MODEL_INFORMATION" xml:space="preserve">
+        <value>Modell részletei</value>
+    </data>
+    <data name="BACK" xml:space="preserve">
+        <value>Vissza</value>
+    </data>
+    <data name="RESUME_DOWNLOAD" xml:space="preserve">
+        <value>Letöltés folytatása ({0})</value>
+    </data>
+    <data name="DELETE" xml:space="preserve">
+        <value>Törlés</value>
+    </data>
+    <data name="DOWNLOADING" xml:space="preserve">
+        <value>Letöltés</value>
+    </data>
+    <data name="PAUSED" xml:space="preserve">
+        <value>Szüneteltetve</value>
+    </data>
+    <data name="MULTIPLE_DOWNLOADS_WARNING" xml:space="preserve">
+        <value>Egy modell letöltése már folyamatban van. Kérlek szakítsd meg a letöltést, mielőtt újabbat indítanál.\n\nDolgozunk rajta, hogy a jövőben több letöltés is elérhető legyen egyszerre.</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_TITLE" xml:space="preserve">
+        <value>Törlés megerősítése</value>
+    </data>
+    <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
+        <value>Biztos, hogy törölni szeretnéd a(z) {0} modellt?</value>
     </data>
 </root>
