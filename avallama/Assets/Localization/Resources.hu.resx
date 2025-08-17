@@ -71,7 +71,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ismeretlen hiba történt</value>
     </data>
     <data name="MULTIPLE_INSTANCES_ERROR" xml:space="preserve">
-        <value>Több Ollama példány fut. Kérlek zárd be az összeset, majd indítsd újra az alkalmazást.</value>
+        <value>Több Ollama példány fut. Zárd be az összeset, majd indítsd újra az alkalmazást.</value>
     </data>
     <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
         <value>Az Ollama nincs telepítve</value>

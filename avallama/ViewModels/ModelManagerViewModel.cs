@@ -167,7 +167,7 @@ public partial class ModelManagerViewModel : PageViewModel
         );
 
         HasModelsToDisplay = Models.Count != 0;
-        if (string.IsNullOrEmpty(SelectedModelName)) SelectedModelName = Models[0].Name;
+        if (HasModelsToDisplay && string.IsNullOrEmpty(SelectedModelName)) SelectedModelName = Models[0].Name;
     }
 
     // ez akkor hívódik meg ha a felhasználó valamelyik letöltéssel kapcsolatos interaktálható gombra kattint
@@ -256,13 +256,18 @@ public partial class ModelManagerViewModel : PageViewModel
                         DownloadedBytes = _downloadingModel.Size;
                     }
                 }
+
                 _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
                 _downloadingModel = null;
                 DownloadedBytes = 0;
                 SortModels();
             }, _downloadCancellationTokenSource.Token);
         }
-        catch (OperationCanceledException) {}
+        catch (OperationCanceledException)
+        {
+            // ez akkor fut le ha a felhasználó szünetelteti a letöltést vagy visszavonja azt
+            // TODO: letöltés visszavonása/szüneteltetése api-n keresztül, a _downloadingModel.DownloadStatus alapján
+        }
         finally
         {
             _downloadCancellationTokenSource.Dispose();

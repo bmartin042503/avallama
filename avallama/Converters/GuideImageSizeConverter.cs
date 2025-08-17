@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 
 namespace avallama.Converters;
@@ -18,6 +19,6 @@ public class GuideImageSizeConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return new BindingNotification(new NotSupportedException("Guide image size value cannot be converted back."));
     }
 }
