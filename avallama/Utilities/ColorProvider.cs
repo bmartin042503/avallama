@@ -33,7 +33,14 @@ public static class ColorProvider
             Application.Current?.ActualThemeVariant ?? ThemeVariant.Default,
             out color
         );
+
+        // ha Color típusban van megadva SolidColorBrush helyett AppColors.axaml-ben akkor eszerint adja vissza
+        if (color is Color extractedColor)
+        {
+            return new ImmutableSolidColorBrush(extractedColor);
+        }
         
         return color as ImmutableSolidColorBrush ?? defaultColorBrush;
+            
     }
 }

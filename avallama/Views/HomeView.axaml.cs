@@ -10,13 +10,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace avallama.Views;
 
-// TODO: scroll-to-bottom gomb animálása esetleg + Messenger osztállyal vagy vmi mással megoldani hogy
-// a SettingsViewModel küldjön értesítést HomeViewModelnek a beállítások újratöltésére
-// mert most újra kell tölteni az appot ha átállítjuk a beállításban
-// + confirmation Dialog resulttal (igen/nem) pl. hogy újraindítja-e az alkalmazást a beállítások érvényesítéséhez
 public partial class HomeView : UserControl
 {
     public HomeView()
@@ -109,6 +106,16 @@ public partial class HomeView : UserControl
             {
                 ScrollToBottomBtn.IsVisible = true;
                 ScrollToBottomBtnShadow.IsVisible = true;
+                ScrollToBottomBtnShadow.BoxShadow = new BoxShadows
+                (
+                    new BoxShadow
+                    {
+                        OffsetY = 3,
+                        Blur = 20,
+                        Color = new Color(120, 0, 0, 0),
+                        Spread = 5
+                    }
+                );
             }
             // felgörgetés valamennyit VAGY teljesen legörgetés az aljára ÉS felhasználói görgetés tehát nem üzenet generálás mozdítja a scrollbart
             else if (e.OffsetDelta.Y < 0 || scrollViewer?.Offset.Y + scrollViewer?.Viewport.Height >=

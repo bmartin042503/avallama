@@ -1,13 +1,16 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using avallama.ViewModels;
 using avallama.Views;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
@@ -19,12 +22,14 @@ public interface IAppService
     Task CheckOllamaStart();
     void InitializeMainWindow();
     void Shutdown();
+    void Restart();
 }
 
 // segéd osztály az alkalmazással kapcsolatos műveletek (indítás, leállítás) személyre szabásához
-public class ShutdownMessage() : ValueChangedMessage<bool>(true);
-
 public class CheckOllamaStartMessage() : ValueChangedMessage<bool>(true);
+public class ShutdownApplicationMessage() : ValueChangedMessage<bool>(true);
+public class RestartApplicationMessage() : ValueChangedMessage<bool>(true);
+
 public class AppService : IAppService
 {
     private bool _isMainWindowInitialized;
@@ -42,7 +47,8 @@ public class AppService : IAppService
         _dialogService = dialogService;
         _mainViewModel = mainViewModel;
         _configurationService = configurationService;
-        messenger.Register<ShutdownMessage>(this, (_, _) => { Shutdown(); });
+        messenger.Register<ShutdownApplicationMessage>(this, (_, _) => { Shutdown(); });
+        messenger.Register<RestartApplicationMessage>(this, (_, _) => { Restart(); });
         messenger.Register<CheckOllamaStartMessage>(this, (_, _) =>
         {
             // TODO: ezt majd meg kell nézni, hogy mennyire optimális így, okozhat-e hibát
@@ -105,6 +111,16 @@ public class AppService : IAppService
     {
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
         desktop.Shutdown();
+    }
+
+    public void Restart()
+    {
+        // TODO: leellenőrzni, hogy helyesen bezár-e az alkalmazás, nincs-e olyan erőforrás amit nem szabadított fel stb.
+        var currentAppPath = Process.GetCurrentProcess().MainModule?.FileName;
+        if (string.IsNullOrEmpty(currentAppPath)) return;
+        Process.GetCurrentProcess().CloseMainWindow();
+        Process.Start(currentAppPath);
+        Environment.Exit(0);
     }
 
     public void InitializeMainWindow()

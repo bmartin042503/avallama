@@ -5,6 +5,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- A színkódok a SolidColorBrush és a Color tag-ben adhatóak meg A Color tag képes átlátszóságra is. (#00000000) -->
     <ResourceDictionary.ThemeDictionaries>
         <!-- Seed: #623079 -->
         <!-- Világos téma színei -->

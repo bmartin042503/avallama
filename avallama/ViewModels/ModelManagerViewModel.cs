@@ -35,6 +35,7 @@ public partial class ModelManagerViewModel : PageViewModel
     [ObservableProperty] private bool _hasModelsToDisplay;
     [ObservableProperty] private string _selectedModelName = string.Empty;
     [ObservableProperty] private OllamaModel? _selectedModel;
+    [ObservableProperty] private bool _isModelInfoBlockVisible;
 
     // a jelenleg letöltés alatt álló modell letöltési sebessége Mbps-ben
     [ObservableProperty] private double _downloadSpeed;
@@ -87,22 +88,23 @@ public partial class ModelManagerViewModel : PageViewModel
         SelectedSortingOption = SortingOption.Downloaded;
 
         LoadModelsData();
-        FilterModels();
         SortModels();
-
-        if (Models.Count > 0)
-        {
-            SelectedModel = Models[0];
-        }
+        FilterModels();
     }
 
     private void LoadModelsData()
     {
         // TODO: valós adatok lekérése
-        _modelsData = new ObservableCollection<OllamaModel>();
+        _modelsData = DummyModelsService.GetDummyOllamaModels();
 
         var ollamaModels = _modelsData as OllamaModel[] ?? _modelsData.ToArray();
-        if (ollamaModels.Length == 0) return;
+        if (ollamaModels.Length == 0)
+        {
+            IsModelInfoBlockVisible = false;
+            return;
+        }
+
+        IsModelInfoBlockVisible = true;
 
         var downloadedModelsCount = ollamaModels.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
 
@@ -167,7 +169,11 @@ public partial class ModelManagerViewModel : PageViewModel
         );
 
         HasModelsToDisplay = Models.Count != 0;
-        if (HasModelsToDisplay && string.IsNullOrEmpty(SelectedModelName)) SelectedModelName = Models[0].Name;
+        if (HasModelsToDisplay && string.IsNullOrEmpty(SelectedModelName))
+        {
+            SelectedModelName = Models[0].Name;
+            SelectedModel = Models[0];
+        }
     }
 
     // ez akkor hívódik meg ha a felhasználó valamelyik letöltéssel kapcsolatos interaktálható gombra kattint
@@ -246,7 +252,9 @@ public partial class ModelManagerViewModel : PageViewModel
                 _downloadingModel = SelectedModel;
                 while (DownloadedBytes != _downloadingModel.Size)
                 {
+                    // ez ellenőrzi hogy meg lett-e hívva a cancel a letöltésre, és ha igen kivételt dob
                     _downloadCancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    
                     await Task.Delay(random.Next(200, 350));
                     var randomDownloadedBytes = random.Next(131072000, 209715200); // 125 MB - 200 MB
                     DownloadedBytes += randomDownloadedBytes;
@@ -290,6 +298,7 @@ public partial class ModelManagerViewModel : PageViewModel
     [RelayCommand]
     public void ShowInfo()
     {
+        // TODO: tájékoztató a modelmanager működéséről, modellek információiról stb.
         _dialogService.ShowInfoDialog("ModelManager info here");
     }
 }

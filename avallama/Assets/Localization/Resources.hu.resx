@@ -145,7 +145,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DARK_THEME" xml:space="preserve">
         <value>Sötét</value>
     </data>
-    <data name="RESTART_NEEDED" xml:space="preserve">
+    <data name="RESTART_NEEDED_DIALOG_TITLE" xml:space="preserve">
         <value>A változtatások érvényesítéséhez újra kell indítani az alkalmazást</value>
     </data>
     <data name="SETTINGS_SAVED" xml:space="preserve">
@@ -363,5 +363,14 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
         <value>Biztos, hogy törölni szeretnéd a(z) {0} modellt?</value>
+    </data>
+    <data name="RESTART_NEEDED_DIALOG_DESC" xml:space="preserve">
+        <value>Szeretnéd újraindítani most?</value>
+    </data>
+    <data name="RESTART_NOW" xml:space="preserve">
+        <value>Újraindítás most</value>
+    </data>
+    <data name="LATER" xml:space="preserve">
+        <value>Később</value>
     </data>
 </root>

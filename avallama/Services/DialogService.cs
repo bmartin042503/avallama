@@ -224,7 +224,7 @@ public class DialogService(
             CloseDialog(ApplicationDialog.Error);
             if (shutdownApp)
             {
-                messenger.Send(new ShutdownMessage());
+                messenger.Send(new ShutdownApplicationMessage());
             }
         };
 

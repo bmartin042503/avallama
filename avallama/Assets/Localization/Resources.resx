@@ -152,7 +152,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DARK_THEME" xml:space="preserve">
         <value>Dark</value>
     </data>
-    <data name="RESTART_NEEDED" xml:space="preserve">
+    <data name="RESTART_NEEDED_DIALOG_TITLE" xml:space="preserve">
         <value>Changes will take effect after restarting the application</value>
     </data>
     <data name="SETTINGS_SAVED" xml:space="preserve">
@@ -370,5 +370,14 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
         <value>Are you sure you want to delete {0}?</value>
+    </data>
+    <data name="RESTART_NEEDED_DIALOG_DESC" xml:space="preserve">
+        <value>Would you like to restart it now?</value>
+    </data>
+    <data name="RESTART_NOW" xml:space="preserve">
+        <value>Restart now</value>
+    </data>
+    <data name="LATER" xml:space="preserve">
+        <value>Later</value>
     </data>
 </root>

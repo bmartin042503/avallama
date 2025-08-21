@@ -300,9 +300,9 @@ public partial class HomeViewModel : PageViewModel
                         // üzenet az AppServicenek hogy zárja be az appot
                         // ez azért kell mert különben ciklikus függőség alakulna ki, AppService visszatérne saját magához dependency regisztrálásnál
                         // már persze ha AppService dependencyvel oldanánk meg
-                        _messenger.Send(new ShutdownMessage());
+                        _messenger.Send(new ShutdownApplicationMessage());
                     },
-                    closeAction: () => { _messenger.Send(new ShutdownMessage()); },
+                    closeAction: () => { _messenger.Send(new ShutdownApplicationMessage()); },
                     description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC")
                 );
                 break;

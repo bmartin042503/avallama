@@ -4,8 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Services;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
@@ -26,7 +28,7 @@ public partial class SettingsViewModel : PageViewModel
     private int _apiPort = 11434;
     private bool _changesTextVisibility;
     private bool _restartNeeded;
-
+    
     // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et
     public bool RestartNeeded
     {
@@ -34,6 +36,26 @@ public partial class SettingsViewModel : PageViewModel
         set
         {
             _restartNeeded = value;
+            if (value)
+            {
+                Task.Run(async () =>
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        var dialogResult = await _dialogService.ShowConfirmationDialog(
+                            title: LocalizationService.GetString("RESTART_NEEDED_DIALOG_TITLE"),
+                            positiveButtonText: LocalizationService.GetString("RESTART_NOW"),
+                            negativeButtonText: LocalizationService.GetString("LATER"),
+                            description: LocalizationService.GetString("RESTART_NEEDED_DIALOG_DESC")
+                        );
+
+                        if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
+                        {
+                            _messenger.Send(new RestartApplicationMessage());
+                        }
+                    });
+                });
+            }
             OnPropertyChanged();
         }
     }
@@ -44,7 +66,6 @@ public partial class SettingsViewModel : PageViewModel
         set
         {
             _selectedLanguageIndex = value;
-            RestartNeeded = _defaultLanguageIndex != value;
             OnPropertyChanged();
         }
     }
@@ -188,6 +209,7 @@ public partial class SettingsViewModel : PageViewModel
         _configurationService.SaveSetting(ConfigurationKey.ApiHost, ApiHost);
         _configurationService.SaveSetting(ConfigurationKey.ApiPort, ApiPort.ToString());
         _messenger.Send(new ReloadSettingsMessage());
+        RestartNeeded = _defaultLanguageIndex != _selectedLanguageIndex;;
     }
 
     [RelayCommand]

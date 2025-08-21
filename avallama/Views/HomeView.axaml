@@ -207,7 +207,6 @@ Licensed under the MIT License. See LICENSE file for details.
                 <Border Width="40" Height="40" x:Name="ScrollToBottomBtnShadow"
                         Background="Transparent"
                         CornerRadius="24"
-                        BoxShadow="0 3 20 3 Gray"
                         IsVisible="False"
                         HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-3" />
 

@@ -535,8 +535,8 @@ public class ModelInfoBlock : Control
     {
         // ez itt lehet, mivel a jobb oldali svg mindig a cancelbutton lesz de ha más is lenne akkor ezt ki kell szervezni
         var rightSvgRectBackground = _activeHoverTarget == HoverTarget.CancelDownloadButton
-            ? AppColor.ErrorContainer
-            : AppColor.Error;
+            ? AppColor.PrimaryContainer
+            : AppColor.Primary;
 
         var leftSvgRectBackground =
             _activeHoverTarget is HoverTarget.PauseDownloadButton or HoverTarget.ResumeDownloadButton
