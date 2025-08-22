@@ -25,7 +25,7 @@ public partial class SettingsViewModel : PageViewModel
     private int _selectedScrollIndex;
     private int _defaultLanguageIndex;
     private string _apiHost = "localhost";
-    private int _apiPort = 11434;
+    private string _apiPort = OllamaService.DefaultApiPort.ToString();
     private bool _changesTextVisibility;
     private bool _restartNeeded;
     
@@ -51,7 +51,7 @@ public partial class SettingsViewModel : PageViewModel
 
                         if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
                         {
-                            _messenger.Send(new RestartApplicationMessage());
+                            _messenger.Send(new ApplicationMessage.Restart());
                         }
                     });
                 });
@@ -110,7 +110,7 @@ public partial class SettingsViewModel : PageViewModel
         }
     }
 
-    public int ApiPort
+    public string ApiPort
     {
         get => _apiPort;
         set
@@ -160,8 +160,8 @@ public partial class SettingsViewModel : PageViewModel
         
         var hostSetting = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         ApiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
-        var portString = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
-        ApiPort = int.TryParse(portString, out var parsedPort) ? parsedPort : 11434;
+        var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
+        ApiPort = string.IsNullOrEmpty(portSetting) ? OllamaService.DefaultApiPort.ToString() : portSetting;
     }
 
     private void SaveSettings()
@@ -199,15 +199,15 @@ public partial class SettingsViewModel : PageViewModel
             return;
         }
         
-        if (!IsValidPort(ApiPort.ToString()))
+        if (!IsValidPort(ApiPort))
         {
             _dialogService.ShowErrorDialog(LocalizationService.GetString("INVALID_PORT_ERR"));
-            ApiPort = int.Parse(_configurationService.ReadSetting(ConfigurationKey.ApiPort));
+            ApiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
             return;
         }
         
         _configurationService.SaveSetting(ConfigurationKey.ApiHost, ApiHost);
-        _configurationService.SaveSetting(ConfigurationKey.ApiPort, ApiPort.ToString());
+        _configurationService.SaveSetting(ConfigurationKey.ApiPort, ApiPort);
         _messenger.Send(new ReloadSettingsMessage());
         RestartNeeded = _defaultLanguageIndex != _selectedLanguageIndex;;
     }
@@ -228,13 +228,13 @@ public partial class SettingsViewModel : PageViewModel
         SaveSettings();
     }
     
-    private bool IsValidHost(string host)
+    private static bool IsValidHost(string host)
     {
         return host == "localhost" || IPAddress.TryParse(host, out _);
     }
 
-    private bool IsValidPort(string port)
+    private static bool IsValidPort(string port)
     {
-        return int.TryParse(port, out var result) && result > 0 && result < 65536;
+        return int.TryParse(port, out var result) && result is > 0 and < 65536;
     }
 }

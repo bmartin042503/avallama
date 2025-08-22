@@ -39,7 +39,7 @@ public partial class ModelManagerViewModel : PageViewModel
 
     // a jelenleg letöltés alatt álló modell letöltési sebessége Mbps-ben
     [ObservableProperty] private double _downloadSpeed;
-    
+
     [ObservableProperty] private long _downloadedBytes;
 
     private SortingOption _selectedSortingOption;
@@ -47,10 +47,15 @@ public partial class ModelManagerViewModel : PageViewModel
     // ez tudja észlelni ha egy task cancellelve van, kell egy tokenSource és annak a tokenjét beállítani a taskra
     // aztán kivételt dobva fogja megszakítani a taskot
     private CancellationTokenSource _downloadCancellationTokenSource = new();
-    
+
     // a jelenleg letöltés alatt álló modell
     private OllamaModel? _downloadingModel;
 
+    // TODO: kisebb hiba kijavítása
+    // valamiért a ParametersDescending értéket állítja be a Downloaded után, aztán visszaállítja Downloaded-re
+    // fogalmam sincs hogy mi állítja át arra egy pillanatra de emiatt nem lehet a legelső Modelsben lévő elemet kiválasztani, hogy
+    // indításnál a legelső elem legyen felül és ez legyen kiválasztva
+    
     public SortingOption SelectedSortingOption
     {
         get => _selectedSortingOption;
@@ -82,20 +87,21 @@ public partial class ModelManagerViewModel : PageViewModel
     public ModelManagerViewModel(DialogService dialogService)
     {
         Page = ApplicationPage.ModelManager;
-
         _dialogService = dialogService;
-
-        SelectedSortingOption = SortingOption.Downloaded;
-
+        
         LoadModelsData();
-        SortModels();
-        FilterModels();
+        
+        // SelectedSortingOption = SortingOption.Downloaded;
+
+        if ((!HasModelsToDisplay || !string.IsNullOrEmpty(SelectedModelName)) && SelectedModel != null) return;
+        SelectedModelName = Models[0].Name;
+        SelectedModel = Models[0];
     }
 
     private void LoadModelsData()
     {
         // TODO: valós adatok lekérése
-        _modelsData = DummyModelsService.GetDummyOllamaModels();
+        _modelsData = new ObservableCollection<OllamaModel>();
 
         var ollamaModels = _modelsData as OllamaModel[] ?? _modelsData.ToArray();
         if (ollamaModels.Length == 0)
@@ -104,6 +110,9 @@ public partial class ModelManagerViewModel : PageViewModel
             return;
         }
 
+        Models = new ObservableCollection<OllamaModel>(ollamaModels);
+        HasModelsToDisplay = Models.Count != 0;
+
         IsModelInfoBlockVisible = true;
 
         var downloadedModelsCount = ollamaModels.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
@@ -111,42 +120,56 @@ public partial class ModelManagerViewModel : PageViewModel
         HasModelsToDisplay = true;
         HasDownloadedModels = downloadedModelsCount > 0;
 
-        if (HasDownloadedModels)
-        {
-            var downloadedSizeSum = ollamaModels
-                .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                .Sum(m => m.Size);
+        if (!HasDownloadedModels) return;
 
-            var totalSizeInGb = downloadedSizeSum / 1_073_741_824.0;
+        var downloadedSizeSum = ollamaModels
+            .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+            .Sum(m => m.Size);
 
-            DownloadedModelsInfo =
-                string.Format(
-                    LocalizationService.GetString("DOWNLOADED_MODELS_INFO"),
-                    downloadedModelsCount,
-                    totalSizeInGb
-                );
-        }
+        var totalSizeInGb = downloadedSizeSum / 1_073_741_824.0;
+
+        DownloadedModelsInfo =
+            string.Format(
+                LocalizationService.GetString("DOWNLOADED_MODELS_INFO"),
+                downloadedModelsCount,
+                totalSizeInGb
+            );
     }
 
     // A rendezés beállítása alapján rendezi a modelleket
     private void SortModels()
     {
-        var sortedModels = SelectedSortingOption switch
+        if (Models.Count == 0) return;
+
+        IEnumerable<OllamaModel> sortedModels;
+        
+        switch (SelectedSortingOption)
         {
-            SortingOption.Downloaded => Models
-                .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                .Concat(Models.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded)),
-
-            SortingOption.ParametersAscending => Models.OrderBy(m => m.Parameters),
-
-            SortingOption.ParametersDescending => Models.OrderByDescending(m => m.Parameters),
-
-            SortingOption.SizeAscending => Models.OrderBy(m => m.Size),
-
-            SortingOption.SizeDescending => Models.OrderByDescending(m => m.Size),
-
-            _ => Models
-        };
+            // ha nincs letöltött státuszban lévő model akkor visszaadja a simát
+            // ha pedig van akkor külön veszi a letöltött modelleket a Models-ből majd összevonja egy olyan Models-el (amiből ki vannak véve a Downloaded elemek)
+            // így előre kerülnek a letöltött státuszban lévők
+            case SortingOption.Downloaded:
+                sortedModels = Models.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                    ? Models.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                        .Concat(Models.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded))
+                    : Models;
+                break;
+            case SortingOption.ParametersAscending:
+                sortedModels = Models.OrderBy(m => m.Parameters);
+                break;
+            case SortingOption.ParametersDescending:
+                sortedModels = Models.OrderByDescending(m => m.Parameters);
+                break;
+            case SortingOption.SizeAscending:
+                sortedModels = Models.OrderBy(m => m.Size);
+                break;
+            case SortingOption.SizeDescending:
+                sortedModels = Models.OrderByDescending(m => m.Size);
+                break;
+            default:
+                sortedModels = Models;
+                break;
+        }
 
         Models = new ObservableCollection<OllamaModel>(sortedModels);
     }
@@ -169,11 +192,6 @@ public partial class ModelManagerViewModel : PageViewModel
         );
 
         HasModelsToDisplay = Models.Count != 0;
-        if (HasModelsToDisplay && string.IsNullOrEmpty(SelectedModelName))
-        {
-            SelectedModelName = Models[0].Name;
-            SelectedModel = Models[0];
-        }
     }
 
     // ez akkor hívódik meg ha a felhasználó valamelyik letöltéssel kapcsolatos interaktálható gombra kattint
@@ -191,6 +209,7 @@ public partial class ModelManagerViewModel : PageViewModel
                         _dialogService.ShowInfoDialog(LocalizationService.GetString("MULTIPLE_DOWNLOADS_WARNING"));
                         return;
                     }
+
                     SelectedModel.DownloadStatus = ModelDownloadStatus.Downloading;
                     await DownloadSelectedModelAsync();
                     break;
@@ -204,11 +223,13 @@ public partial class ModelManagerViewModel : PageViewModel
                         _dialogService.ShowInfoDialog(LocalizationService.GetString("MULTIPLE_DOWNLOADS_WARNING"));
                         return;
                     }
+
                     if (SelectedModel.DownloadStatus == ModelDownloadStatus.Paused)
                     {
                         SelectedModel.DownloadStatus = ModelDownloadStatus.Downloading;
                         await DownloadSelectedModelAsync();
                     }
+
                     break;
                 case ModelDownloadAction.Cancel:
                     SelectedModel.DownloadStatus = ModelDownloadStatus.Ready;
@@ -219,7 +240,8 @@ public partial class ModelManagerViewModel : PageViewModel
                 case ModelDownloadAction.Delete:
                     var dialogResult = await _dialogService.ShowConfirmationDialog(
                         title: LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
-                        description: string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"), SelectedModel.Name),
+                        description: string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"),
+                            SelectedModel.Name),
                         positiveButtonText: LocalizationService.GetString("DELETE"),
                         negativeButtonText: LocalizationService.GetString("CANCEL"),
                         highlight: ConfirmationType.Positive
@@ -231,6 +253,7 @@ public partial class ModelManagerViewModel : PageViewModel
                         DownloadedBytes = 0;
                         SortModels();
                     }
+
                     break;
             }
         }
@@ -254,7 +277,7 @@ public partial class ModelManagerViewModel : PageViewModel
                 {
                     // ez ellenőrzi hogy meg lett-e hívva a cancel a letöltésre, és ha igen kivételt dob
                     _downloadCancellationTokenSource.Token.ThrowIfCancellationRequested();
-                    
+
                     await Task.Delay(random.Next(200, 350));
                     var randomDownloadedBytes = random.Next(131072000, 209715200); // 125 MB - 200 MB
                     DownloadedBytes += randomDownloadedBytes;

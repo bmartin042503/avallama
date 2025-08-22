@@ -82,7 +82,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     <TextBlock Text="{services:LocalizationService Key='API_PORT_SETTING'}"
                                FontSize="18" Foreground="{DynamicResource OnSurface}" />
                     <TextBlock Text="{services:LocalizationService Key='API_PORT_SETTING_DESC'}"
-                               Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
+                               Margin="0,2,0,0" Foreground="{DynamicResource Outline}"/>
                 </StackPanel>
                 <TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Width="160"
                          HorizontalAlignment="Right"

@@ -9,7 +9,6 @@ namespace avallama.Services;
 
 public static class ConfigurationKey
 {
-    public const string StartOllamaFrom = "start-ollama-from";
     public const string FirstTime = "first-time";
     public const string Language = "language";
     public const string ColorScheme = "color-scheme";

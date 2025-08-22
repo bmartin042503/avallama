@@ -12,12 +12,12 @@ Licensed under the MIT License. See LICENSE file for details.
              x:Class="avallama.Views.Dialogs.InputView"
              Background="{DynamicResource Surface}">
     <StackPanel Orientation="Vertical" Margin="20">
-        <TextBlock x:Name="DialogTitle" TextWrapping="Wrap" MaxWidth="400" Margin="0,10,0,0" Classes="H2"
+        <TextBlock x:Name="DialogTitle" TextWrapping="Wrap" MaxWidth="400" Classes="H2"
                    Text="Input dialog title" HorizontalAlignment="Left" />
         <TextBlock x:Name="DialogDescription" TextWrapping="Wrap" MaxWidth="400" Margin="0,10,0,0" Classes="H3"
                    Text="Input dialog description" Foreground="{DynamicResource Outline}" HorizontalAlignment="Left" />
         <TextBlock x:Name="ErrorMessage" Foreground="{DynamicResource Error}" FontWeight="Bold"
-                   Text="Form validation error text" Margin="0,26,0,0" MaxWidth="300" TextWrapping="Wrap" />
+                   Text="Form validation error text" Margin="0,10,0,0" MaxWidth="300" TextWrapping="Wrap" />
         <StackPanel Orientation="Vertical" x:Name="InputFieldsStackPanel" Margin="0,14, 0, 32" Spacing="20">
             <TextBox Classes="settingTextBox" Watermark="Input Text" />
         </StackPanel>

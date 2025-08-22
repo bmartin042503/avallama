@@ -28,6 +28,8 @@ public class OllamaService
     private string? _serviceMessage;
     private string OllamaPath { get; set; }
 
+    public const int DefaultApiPort = 11434;
+
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
     // ebben az esetben void visszatérésű ami ServiceStatus-t és string? típust vár
     public delegate void ServiceStatusChangedHandler(ServiceStatus status, string? message);

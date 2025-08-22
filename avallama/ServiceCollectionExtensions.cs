@@ -27,6 +27,8 @@ public static class ServiceCollectionExtensions
         // gyenge referenciás messenger, ami azt jelenti hogy nem kell manuálisan törölni őket
         collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
         
+        collection.AddSingleton<IApplicationService, ApplicationService>();
+        
         collection.AddTransient<DatabaseInitService>();
         collection.AddSingleton<DatabaseService>();
 
@@ -44,8 +46,6 @@ public static class ServiceCollectionExtensions
 
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<DialogViewModelFactory>();
-        
-        collection.AddSingleton<IAppService, AppService>();
 
         // PageFactoryba injektálandó delegate dependency
         // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint

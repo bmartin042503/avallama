@@ -12,6 +12,7 @@ using Avalonia.Markup.Xaml;
 using avallama.Services;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +38,7 @@ public partial class App : Application
 
         // ServiceProvider ami biztosítja a létrehozott dependencyket
         var services = collection.BuildServiceProvider();
-
+        var appService = services.GetRequiredService<IApplicationService>();
         _ollamaService = services.GetRequiredService<OllamaService>();
         _dialogService = services.GetRequiredService<DialogService>();
         _databaseInitService = services.GetRequiredService<DatabaseInitService>();
@@ -74,22 +75,7 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-
-            var launcher = services.GetRequiredService<IAppService>();
-            launcher.InitializeMainWindow();
-
-            // igaz hogy configurationben már meg van adva hogy localhost és ha az nem az, akkor lehet tudni hogy remote
-            // de kell egy másik configuration key arra is, hogy már megválaszolta-e ezt a kérdést, így nem dobja fel megint
-            var startOllamaFrom = configurationService.ReadSetting(ConfigurationKey.StartOllamaFrom);
-
-            var firstTime = configurationService.ReadSetting(ConfigurationKey.FirstTime);
-
-            // ez csak akkor fut le ha már a felhasználó végigment a greeting screenen de valami miatt még nem válaszolt a kérdésre
-            // technikailag új felhasználóknak soha nem futna le ez, but who knows
-            if (string.IsNullOrEmpty(startOllamaFrom) && firstTime == "false")
-            {
-                _ = launcher.CheckOllamaStart();
-            }
+            appService.InitializeMainWindow();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -100,7 +86,7 @@ public partial class App : Application
         // külön szálon, aszinkron fut le elvileg
         // nem valószínű hogy elkapna valaha is bármilyen kivételt de biztos ami biztos
         // gondoltam mivel elég alapvető service, nem lenne helyes egy soros _ = _ollamaService?.Start()-al letudni xd
-        _ = Task.Run(async () =>
+        Task.Run(async () =>
         {
             try
             {

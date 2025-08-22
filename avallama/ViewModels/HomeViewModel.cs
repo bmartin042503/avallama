@@ -239,7 +239,7 @@ public partial class HomeViewModel : PageViewModel
         SelectedConversation = conversation;
         _availableModels = ["llama3.2", LocalizationService.GetString("LOADING_MODELS")];
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
-        _ = OllamaInit();
+        Task.Run(OllamaInit);
     }
 
     private async Task OllamaInit()
@@ -300,9 +300,9 @@ public partial class HomeViewModel : PageViewModel
                         // üzenet az AppServicenek hogy zárja be az appot
                         // ez azért kell mert különben ciklikus függőség alakulna ki, AppService visszatérne saját magához dependency regisztrálásnál
                         // már persze ha AppService dependencyvel oldanánk meg
-                        _messenger.Send(new ShutdownApplicationMessage());
+                        _messenger.Send(new ApplicationMessage.Shutdown());
                     },
-                    closeAction: () => { _messenger.Send(new ShutdownApplicationMessage()); },
+                    closeAction: () => { _messenger.Send(new ApplicationMessage.Shutdown()); },
                     description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC")
                 );
                 break;
