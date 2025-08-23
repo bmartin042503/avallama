@@ -12,7 +12,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="15" Background="{DynamicResource Surface}">
-                    <Button Classes="small" Content="Small Button" />
+                    <Button Classes="small" Content="Small Button"/>
                     <Button Content="Default Button" />
                     <Button Classes="large" Content="Large Button" />
                     <Button Classes="secondaryButton" Content="Secondary Button" />
@@ -70,14 +70,14 @@ Licensed under the MIT License. See LICENSE file for details.
 
     <!-- Kicsi gomb -->
     <Style Selector="Button.small">
-        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="CornerRadius" Value="6" />
         <Setter Property="FontSize" Value="10" />
         <Setter Property="Padding" Value="20, 4" />
     </Style>
 
     <!-- Nagy gombok -->
     <Style Selector="Button.large">
-        <Setter Property="CornerRadius" Value="30" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Padding" Value="32.5, 8.5" />
     </Style>

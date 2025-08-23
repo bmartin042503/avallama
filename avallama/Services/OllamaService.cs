@@ -31,7 +31,6 @@ public class OllamaService
     public const int DefaultApiPort = 11434;
 
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
-    // ebben az esetben void visszatérésű ami ServiceStatus-t és string? típust vár
     public delegate void ServiceStatusChangedHandler(ServiceStatus status, string? message);
 
     // az event létrehozása, ami ugye az előzőleg létrehozott delegate típusú, tehát a megfelelő szignatúrájú metódusok
@@ -93,7 +92,7 @@ public class OllamaService
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            // mac-en is ugyanaz a path
+            // mac-en és linuxon ugyanaz a path
             OllamaPath = @"/usr/local/bin/ollama";
         }
 
@@ -107,6 +106,7 @@ public class OllamaService
                 );
                 return;
             case >= 2:
+                // TODO: ehelyett ténylegesen kezelje automatikusan a processeket és ne kelljen újraindítani manuálisan
                 OnServiceStatusChanged(
                     ServiceStatus.Failed,
                     LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR")

@@ -32,7 +32,6 @@ public class DynamicSvg : Avalonia.Svg.Svg
 
     public static readonly StyledProperty<IBrush?> StrokeColorProperty =
         AvaloniaProperty.Register<DynamicSvg, IBrush?>("StrokeColor");
-
     public DynamicSvg(IServiceProvider provider) : base(provider)
     {
         // TODO: dinamikus színbeállítás

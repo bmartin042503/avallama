@@ -19,8 +19,6 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace avallama.ViewModels;
 
-public class ReloadSettingsMessage() : ValueChangedMessage<bool>(true);
-
 public partial class HomeViewModel : PageViewModel
 {
     private const string OllamaDownloadUrl = @"https://ollama.com/download/";
@@ -155,7 +153,7 @@ public partial class HomeViewModel : PageViewModel
 
     private async Task GetModelInfo(string modelName)
     {
-        //ezt majd jobban kéne
+        // ezt majd jobban kéne
         AvailableModels[AvailableModels.IndexOf(modelName)] =
             modelName + await _ollamaService.GetModelParamNum(modelName);
         CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName; 
@@ -222,7 +220,7 @@ public partial class HomeViewModel : PageViewModel
         _databaseService = databaseService;
         _messenger = messenger;
         
-        _messenger.Register<ReloadSettingsMessage>(this, (_, _) => { LoadSettings(); });
+        _messenger.Register<ApplicationMessage.ReloadSettings>(this, (_, _) => { LoadSettings(); });
         
         LoadSettings();
 
@@ -249,7 +247,7 @@ public partial class HomeViewModel : PageViewModel
         
         await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2");
         
-        //ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
+        // ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         await CheckModelDownload();
     }
     

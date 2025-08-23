@@ -208,7 +208,7 @@ public partial class SettingsViewModel : PageViewModel
         
         _configurationService.SaveSetting(ConfigurationKey.ApiHost, ApiHost);
         _configurationService.SaveSetting(ConfigurationKey.ApiPort, ApiPort);
-        _messenger.Send(new ReloadSettingsMessage());
+        _messenger.Send(new ApplicationMessage.ReloadSettings());
         RestartNeeded = _defaultLanguageIndex != _selectedLanguageIndex;;
     }
 

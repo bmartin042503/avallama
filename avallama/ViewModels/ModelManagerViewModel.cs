@@ -91,11 +91,13 @@ public partial class ModelManagerViewModel : PageViewModel
         
         LoadModelsData();
         
-        // SelectedSortingOption = SortingOption.Downloaded;
+        SelectedSortingOption = SortingOption.Downloaded;
 
-        if ((!HasModelsToDisplay || !string.IsNullOrEmpty(SelectedModelName)) && SelectedModel != null) return;
-        SelectedModelName = Models[0].Name;
-        SelectedModel = Models[0];
+        if (HasModelsToDisplay && (string.IsNullOrEmpty(SelectedModelName) || SelectedModel == null))
+        {
+            SelectedModelName = Models[0].Name;
+            SelectedModel = Models[0];
+        }
     }
 
     private void LoadModelsData()
@@ -111,13 +113,12 @@ public partial class ModelManagerViewModel : PageViewModel
         }
 
         Models = new ObservableCollection<OllamaModel>(ollamaModels);
-        HasModelsToDisplay = Models.Count != 0;
+        HasModelsToDisplay = Models.Count > 0;
 
         IsModelInfoBlockVisible = true;
 
         var downloadedModelsCount = ollamaModels.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
-
-        HasModelsToDisplay = true;
+        
         HasDownloadedModels = downloadedModelsCount > 0;
 
         if (!HasDownloadedModels) return;
@@ -191,7 +192,7 @@ public partial class ModelManagerViewModel : PageViewModel
                 .Where(m => !hasSearch || m.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
         );
 
-        HasModelsToDisplay = Models.Count != 0;
+        HasModelsToDisplay = Models.Count > 0;
     }
 
     // ez akkor hívódik meg ha a felhasználó valamelyik letöltéssel kapcsolatos interaktálható gombra kattint

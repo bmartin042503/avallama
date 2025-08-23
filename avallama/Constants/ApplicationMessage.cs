@@ -13,4 +13,7 @@ public static class ApplicationMessage
     
     // kérés az alkalmazás újraindítására
     public class Restart() : ValueChangedMessage<bool>(true);
+    
+    // kérés a beállítások újratöltésére
+    public class ReloadSettings() : ValueChangedMessage<bool>(true);
 }

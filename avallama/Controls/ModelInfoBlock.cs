@@ -20,10 +20,6 @@ using ShimSkiaSharp;
 
 namespace avallama.Controls;
 
-// TODO - Hibák:
-// - Legkisebb lehetséges modelinformation container esetén a "learn more" szöveg nagyon közel kerül a details elemekhez
-// és ha a kurzort rávisszük a learn more szövegre majd le róla akkor a modelinformation container elkezd lefele menni
-
 // TODO - Javítás/Implementálás:
 // - felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
 // - code cleaning + proper documentation
@@ -203,6 +199,7 @@ public class ModelInfoBlock : Control
         set => SetValue(CommandProperty, value);
     }
 
+    // TODO: kiszervezni stílusokba
     private const double TitleFontSize = 26;
     private const double WarningFontSize = 14;
     private const double LabelFontSize = 12;
@@ -869,6 +866,7 @@ public class ModelInfoBlock : Control
             ? _pauseSkPicture
             : _resumeSkPicture;
 
+        // svg-k méretei, azért kellenek, hogy fel tudjuk mérni az elérhető szélességet a szövegnek
         var leftSvgAspectRatio = leftSkPicture?.CullRect.Width / leftSkPicture?.CullRect.Height ?? 1.0;
         var leftSvgWidth = SvgHeight * leftSvgAspectRatio;
 
