@@ -42,6 +42,7 @@ public partial class HomeViewModel : PageViewModel
     public string ScrollSetting = string.Empty;
 
     private ObservableStack<Conversation> _conversations;
+
     public ObservableStack<Conversation> Conversations
     {
         get => _conversations;
@@ -57,7 +58,7 @@ public partial class HomeViewModel : PageViewModel
     }
 
     [ObservableProperty] private string _newMessageText = string.Empty;
-    [ObservableProperty] private bool _isWarningVisible;
+    [ObservableProperty] private bool _isResourceWarningVisible;
     [ObservableProperty] private bool _isNotDownloadedVisible;
     [ObservableProperty] private bool _isDownloaded;
     [ObservableProperty] private string _currentlySelectedModel;
@@ -68,7 +69,12 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private string _downloadSpeed = string.Empty;
     [ObservableProperty] private string _downloadAmount = string.Empty;
     [ObservableProperty] private Conversation _selectedConversation;
-    
+    [ObservableProperty] private string _remoteConnectionText = string.Empty;
+    [ObservableProperty] private bool _isRemoteConnectionTextVisible;
+    [ObservableProperty] private bool _isRetryPanelVisible;
+    [ObservableProperty] private bool _isRetryButtonVisible;
+    [ObservableProperty] private string _retryInfoText = string.Empty;
+
     // TODO:
     // Van egy bug amit kicsit nehezen lehet reprodukálni, de épp a 3. üzenetem írtam, generálta volna az új beszélgetés címet az ollama
     // majd átkattintottam gyors egy másik beszélgetésbe és annak a címébe vitte bele az új címet, hozzáfűzte
@@ -115,13 +121,19 @@ public partial class HomeViewModel : PageViewModel
         }
     }
 
+    [RelayCommand]
+    public async Task RetryOllamaConnection()
+    {
+        await _ollamaService.Retry();
+    }
+
     private async Task AddGeneratedMessage()
     {
         var generatedMessage = new GeneratedMessage("", 0.0);
         SelectedConversation.AddMessage(generatedMessage);
         var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
         messageHistory.RemoveAt(messageHistory.Count - 1);
-        
+
         await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
         {
             if (chunk.Message != null) generatedMessage.Content += chunk.Message.Content;
@@ -131,7 +143,7 @@ public partial class HomeViewModel : PageViewModel
                 double tokensPerSecond =
                     chunk.EvalCount.GetValueOrDefault() / (double)chunk.EvalDuration * Math.Pow(10, 9);
                 generatedMessage.GenerationSpeed = tokensPerSecond;
-                IsWarningVisible = tokensPerSecond < 20;
+                IsResourceWarningVisible = tokensPerSecond < 20;
             }
         }
     }
@@ -156,7 +168,7 @@ public partial class HomeViewModel : PageViewModel
         // ezt majd jobban kéne
         AvailableModels[AvailableModels.IndexOf(modelName)] =
             modelName + await _ollamaService.GetModelParamNum(modelName);
-        CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName; 
+        CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName;
     }
 
     private async Task CheckModelDownload()
@@ -219,9 +231,9 @@ public partial class HomeViewModel : PageViewModel
         _configurationService = configurationService;
         _databaseService = databaseService;
         _messenger = messenger;
-        
+
         _messenger.Register<ApplicationMessage.ReloadSettings>(this, (_, _) => { LoadSettings(); });
-        
+
         LoadSettings();
 
         // TODO: ezt majd lecserélni úgy hogy a db-ből jöjjön
@@ -244,13 +256,13 @@ public partial class HomeViewModel : PageViewModel
     {
         // megvárja amíg kapcsolódik az ollama szerverhez, ez gondolom azért kell, mert hamarabb futna le ez a metódus mint hogy a szerver elindul (?)
         await _ollamaServerStarted.Task;
-        
+
         await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2");
-        
+
         // ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         await CheckModelDownload();
     }
-    
+
     private void LoadSettings()
     {
         ScrollSetting = _configurationService.ReadSetting(ConfigurationKey.ScrollToBottom);
@@ -285,7 +297,21 @@ public partial class HomeViewModel : PageViewModel
         switch (status)
         {
             case ServiceStatus.Running:
-                _ollamaServerStarted.SetResult(true);
+                var apiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
+                var apiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
+                if (apiHost != "localhost" && apiHost != "127.0.0.1")
+                {
+                    RemoteConnectionText = string.Format(LocalizationService.GetString("REMOTE_CONNECTION"),
+                        apiHost + ":" + apiPort);
+                    IsRemoteConnectionTextVisible = true;
+                }
+                else
+                {
+                    IsRemoteConnectionTextVisible = false;
+                }
+
+                if (_ollamaServerStarted.Task.Status != TaskStatus.RanToCompletion) _ollamaServerStarted.SetResult(true);
+                IsRetryPanelVisible = false;
                 break;
             case ServiceStatus.NotInstalled:
                 _dialogService.ShowActionDialog(
@@ -296,19 +322,31 @@ public partial class HomeViewModel : PageViewModel
                         RedirectToOllamaDownload();
 
                         // üzenet az AppServicenek hogy zárja be az appot
-                        // ez azért kell mert különben ciklikus függőség alakulna ki, AppService visszatérne saját magához dependency regisztrálásnál
-                        // már persze ha AppService dependencyvel oldanánk meg
                         _messenger.Send(new ApplicationMessage.Shutdown());
                     },
                     closeAction: () => { _messenger.Send(new ApplicationMessage.Shutdown()); },
                     description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC")
                 );
                 break;
+            case ServiceStatus.Retrying:
+                RetryInfoText = LocalizationService.GetString("CONNECTING");
+                IsRetryPanelVisible = true;
+                IsRetryButtonVisible = false;
+                break;
             default:
-                _dialogService.ShowErrorDialog(
-                    message ?? LocalizationService.GetString("OLLAMA_FAILED"),
-                    true
-                );
+                /* azon esetek amikor Failed státuszt kap vissza az OllamaServicetől:
+                 
+                 Multiple Instances - (MULTIPLE_INSTANCES_ERROR)
+                 Egyéb kivétel - (OLLAMA_FAILED, kivétel üzenete)
+                 Ha a szerver nem elérhető 10 késleltetős ellenőrzés után sem (OLLAMA_CONNECTION_ERROR)
+                 Üzenet generálásnál HttpRequestException kivételre (OLLAMA_CONNECTION_ERROR)
+                 Modell letöltésénél HttpRequestException kivételre (OLLAMA_CONNECTION_ERROR)
+                 
+                 */
+                RetryInfoText = message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR");
+                IsRemoteConnectionTextVisible = false;
+                IsRetryPanelVisible = true;
+                IsRetryButtonVisible = true;
                 break;
         }
     }

@@ -20,7 +20,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <UserControl.Resources>
         <converters:SortingOptionConverter x:Key="SortingOptionConverter" />
     </UserControl.Resources>
-    
+
     <Grid Margin="22" RowDefinitions="Auto,*,Auto">
 
         <Grid.ColumnDefinitions>
@@ -65,7 +65,6 @@ Licensed under the MIT License. See LICENSE file for details.
                            Foreground="{DynamicResource OnSurface}"
                            FontWeight="Bold" />
                 <ComboBox Grid.Column="1" Margin="8,0,0,0"
-                          SelectedIndex="1"
                           HorizontalAlignment="Stretch"
                           Classes="sorting"
                           ItemsSource="{Binding SortingOptions}"
@@ -112,7 +111,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
                       Margin="4,0,4,0" />
-        
+
         <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
         <controls:ModelInfoBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
                                  IsVisible="{Binding IsModelInfoBlockVisible}"

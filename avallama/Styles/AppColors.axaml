@@ -27,6 +27,8 @@ Licensed under the MIT License. See LICENSE file for details.
             <SolidColorBrush x:Key="OnError">#FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="ErrorContainer">#FFDAD6</SolidColorBrush>
             <SolidColorBrush x:Key="OnErrorContainer">#93000A</SolidColorBrush>
+            <SolidColorBrush x:Key="Success">#1FA13D</SolidColorBrush>
+            <SolidColorBrush x:Key="OnSuccess">#FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="Background">#FFF7FB</SolidColorBrush>
             <SolidColorBrush x:Key="OnBackground">#1E1A1F</SolidColorBrush>
             <SolidColorBrush x:Key="Surface">#FFF7FB</SolidColorBrush>
@@ -79,6 +81,8 @@ Licensed under the MIT License. See LICENSE file for details.
             <SolidColorBrush x:Key="OnError">#690005</SolidColorBrush>
             <SolidColorBrush x:Key="ErrorContainer">#93000A</SolidColorBrush>
             <SolidColorBrush x:Key="OnErrorContainer">#FFDAD6</SolidColorBrush>
+            <SolidColorBrush x:Key="Success">#1FA13D</SolidColorBrush>
+            <SolidColorBrush x:Key="OnSuccess">#FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="Background">#161217</SolidColorBrush>
             <SolidColorBrush x:Key="OnBackground">#E9E0E7</SolidColorBrush>
             <SolidColorBrush x:Key="Surface">#161217</SolidColorBrush>

@@ -9,7 +9,7 @@ using avallama.Services;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace avallama;
+namespace avallama.Extensions;
 
 public static class ServiceCollectionExtensions
 {
@@ -22,20 +22,19 @@ public static class ServiceCollectionExtensions
         // ciklikus függőségre vigyázni kell, mert megeshet hogy nem dob kivételt, nem hoz létre semmit de mégis fut az alkalmazás
         // és nehezen lehet debuggolni, pl. AppService -> MainViewModel -> PageFactory -> Func<...> -> HomeViewModel -> AppService
         
-        // TODO: ezeket majd talán jobban "interfészesíteni" hogy tesztelésnél könnyebb legyen idk
+        // TODO: ezeket majd talán jobban "interfészesíteni" hogy tesztelésnél könnyebb legyen
         
         // gyenge referenciás messenger, ami azt jelenti hogy nem kell manuálisan törölni őket
         collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
         
         collection.AddSingleton<IApplicationService, ApplicationService>();
+        collection.AddSingleton<ConfigurationService>();
         
         collection.AddTransient<DatabaseInitService>();
         collection.AddSingleton<DatabaseService>();
 
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<DialogService>();
-        collection.AddSingleton<LocalizationService>();
-        collection.AddSingleton<ConfigurationService>();
         
         collection.AddSingleton<MainViewModel>();
         collection.AddSingleton<HomeViewModel>();

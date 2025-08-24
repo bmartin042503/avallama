@@ -50,11 +50,6 @@ public partial class ModelManagerViewModel : PageViewModel
 
     // a jelenleg letöltés alatt álló modell
     private OllamaModel? _downloadingModel;
-
-    // TODO: kisebb hiba kijavítása
-    // valamiért a ParametersDescending értéket állítja be a Downloaded után, aztán visszaállítja Downloaded-re
-    // fogalmam sincs hogy mi állítja át arra egy pillanatra de emiatt nem lehet a legelső Modelsben lévő elemet kiválasztani, hogy
-    // indításnál a legelső elem legyen felül és ez legyen kiválasztva
     
     public SortingOption SelectedSortingOption
     {

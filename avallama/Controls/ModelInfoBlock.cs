@@ -218,7 +218,7 @@ public class ModelInfoBlock : Control
     private static readonly Thickness LabelPadding = new(10, 5);
     private static readonly Thickness ContainerPadding = new(12);
     private static readonly Thickness ButtonPadding = new(20, 8);
-    private static readonly Thickness SvgButtonPadding = new(10, 8);
+    private static readonly Thickness SvgButtonPadding = new(10);
     private static readonly CornerRadius BaseCornerRadius = new(10);
     private static readonly CornerRadius ContainerCornerRadius = new(8);
     private static readonly CornerRadius LabelCornerRadius = new(4);

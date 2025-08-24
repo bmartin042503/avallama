@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 namespace avallama.Constants;
 
 // üzenetek/kérések, amiket az alkalmazás az MVVM rétegein belül küldhetnek egymásnak
+// ezek nélkül több helyen ciklikus függőség alakulna ki ha csak a dependencykre hagyatkoznánk
+
 public static class ApplicationMessage
 {
     // kérés, hogy az app jelenítse meg az ollama indítási confirmation dialogot

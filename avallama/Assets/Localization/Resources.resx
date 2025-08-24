@@ -56,9 +56,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="VERSION" xml:space="preserve">
         <value>v0.2.0</value>
     </data>
-    <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
-        <value>Currently only one conversation is supported at a time</value>
-    </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Ollama has been successfully started</value>
     </data>
@@ -70,9 +67,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="OLLAMA_ALREADY_RUNNING" xml:space="preserve">
         <value>Ollama is already running</value>
-    </data>
-    <data name="SERVER_CONN_FAILED" xml:space="preserve">
-        <value>Failed to establish connection with Ollama's local server</value>
     </data>
     <data name="UNKNOWN_ERROR" xml:space="preserve">
         <value>An unknown error occured</value>
@@ -194,9 +188,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_MANAGER" xml:space="preserve">
         <value>Model manager</value>
     </data>
-    <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
-        <value>Available from Ollama ({0})</value>
-    </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>Parameters: {0}B</value>
     </data>
@@ -243,7 +234,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ollama API Host</value>
     </data>
     <data name="API_HOST_SETTING_DESC" xml:space="preserve">
-        <value>IP Address of Ollama host machine (default is localhost)</value>
+        <value>IP address of Ollama host machine (default is localhost)</value>
     </data>
     <data name="API_PORT_SETTING" xml:space="preserve">
         <value>Ollama API Port</value>
@@ -252,12 +243,12 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Exposed port of the Ollama host machine (default is 11434)</value>
     </data>
     <data name="INVALID_HOST_ERR" xml:space="preserve">
-        <value>Ollama API Host is invalid, please enter a valid host address. (IPv4 address or "localhost")</value>
+        <value>Ollama API host is invalid, please enter a valid address. (IPv4 or "localhost")</value>
     </data>
     <data name="INVALID_PORT_ERR" xml:space="preserve">
-        <value>Ollama API Port is invalid, please enter a valid port. (1 - 65535)</value>
+        <value>Ollama API port is invalid, please enter a valid port. (1 - 65535)</value>
     </data>
-    <data name="HOST_CONNECTION_ERR" xml:space="preserve">
+    <data name="OLLAMA_CONNECTION_ERROR" xml:space="preserve">
         <value>Could not establish connection with the Ollama host machine. The host settings may not be configured correctly.</value>
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
@@ -379,5 +370,14 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="LATER" xml:space="preserve">
         <value>Later</value>
+    </data>
+    <data name="REMOTE_CONNECTION" xml:space="preserve">
+        <value>Remote connection: {0}</value>
+    </data>
+    <data name="RETRY" xml:space="preserve">
+        <value>Retry</value>
+    </data>
+    <data name="CONNECTING" xml:space="preserve">
+        <value>Connecting..</value>
     </data>
 </root>

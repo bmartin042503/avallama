@@ -15,12 +15,25 @@ using avallama.Constants;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
+using avallama.Extensions;
 using avallama.Models;
 using Avalonia.Threading;
 
 namespace avallama.Services;
 
-public class OllamaService
+internal interface IOllamaService
+{
+    Task Start();
+    void Stop();
+    Task Retry();
+    Task<bool> IsModelDownloaded();
+    Task<string> GetModelParamNum(string modelName);
+    IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
+    IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory);
+}
+
+public class OllamaService : IOllamaService
 {
     private Process? _ollamaProcess;
 
@@ -59,6 +72,9 @@ public class OllamaService
     private string? _apiPort = "11434";
     private readonly ConfigurationService _configurationService;
     private readonly DialogService _dialogService;
+    
+    // maximális időtartam ameddig a különböző kérésekre vár az alkalmazás
+    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5); 
 
     private string ApiBaseUrl => $"http://{_apiHost}:{_apiPort}";
 
@@ -126,14 +142,11 @@ public class OllamaService
         {
             _ollamaProcess = Process.Start(startInfo);
         }
-        // ez az az exception amikor nem tud a megadott pathre ollama processt indítani
-        // ha nincs ollama telepítve akkor először ezt az exceptiont kapja el
         catch (Win32Exception)
         {
-            OnServiceStatusChanged(
-                ServiceStatus.NotInstalled,
-                LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
-            );
+            // ez az az exception amikor nem tud a megadott pathre ollama processt indítani
+            // ha nincs ollama telepítve akkor először ezt az exceptiont kapja el
+            OnServiceStatusChanged(ServiceStatus.NotInstalled);
         }
         catch (Exception ex)
         {
@@ -148,10 +161,7 @@ public class OllamaService
         // máshogy nem lehet null (szerintem)
         if (_ollamaProcess == null)
         {
-            OnServiceStatusChanged(
-                ServiceStatus.NotInstalled,
-                LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
-            );
+            OnServiceStatusChanged(ServiceStatus.NotInstalled);
             return;
         }
 
@@ -165,37 +175,9 @@ public class OllamaService
         }
         else
         {
-            // 10 alkalommal késleltetéssel ellenőrzi a szerver elérhetőségét
-            // ez azért kell mert macen pl. hamarabb ellenőrzi az ollama szervert mint hogy az elindulna
-            // és emiatt instant errort ad vissza annak ellenére hogy később elindul a 11434-es porton a szerver
-
-            const uint maxServerCheck = 10;
-            uint serverCheck = 0;
-            var serverAvailable = false;
-            while (!serverAvailable && serverCheck != maxServerCheck)
-            {
-                serverAvailable = await IsOllamaServerRunning();
-                serverCheck++;
-                if (!serverAvailable)
-                {
-                    await Task.Delay(500);
-                    continue;
-                }
-
-                OnServiceStatusChanged(
-                    ServiceStatus.Running,
-                    LocalizationService.GetString("OLLAMA_STARTED")
-                );
-                return;
-            }
-
-            if (!serverAvailable)
-            {
-                OnServiceStatusChanged(
-                    ServiceStatus.Failed,
-                    LocalizationService.GetString("SERVER_CONN_FAILED")
-                );
-            }
+            // újrapróbálkozik a kapcsolatra
+            // macOS-en erre mindenképp szükség van, mert később indulhat el a szerver mint az ellenőrzés
+            await Retry();
         }
     }
 
@@ -211,7 +193,8 @@ public class OllamaService
         try
         {
             using var client = new HttpClient();
-            var response = await client.GetAsync($@"{ApiBaseUrl}/api/version");
+            // 1 másodperces timeout-al, ez azért kevesebb mert Retry() folyamatosan hívja meg, és ez a sima 5mps timeouttal 25mp lenne
+            var response = await client.GetAsync($@"{ApiBaseUrl}/api/version").WithTimeout(TimeSpan.FromSeconds(1));
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch
@@ -220,12 +203,47 @@ public class OllamaService
         }
     }
 
-    public static void Stop()
+    public void Stop()
     {
         var ollamaProcessList = Process.GetProcessesByName("ollama");
         foreach (var process in ollamaProcessList)
         {
             KillProcess(process);
+        }
+    }
+
+    public async Task Retry()
+    {
+        // Retrying event küldése (HomeViewModelnek, hogy megjelenítse a státuszt a UI-on)
+        OnServiceStatusChanged(ServiceStatus.Retrying);
+        
+        // 5x ellenőrzi, hogy elérhető-e az ollama szerver a megadott api hostra és portra
+        const uint maxServerCheck = 5;
+        uint serverCheck = 0;
+        var serverAvailable = false;
+        while (!serverAvailable && serverCheck != maxServerCheck)
+        {
+            serverAvailable = await IsOllamaServerRunning();
+            serverCheck++;
+            if (!serverAvailable)
+            {
+                await Task.Delay(500);
+                continue;
+            }
+
+            OnServiceStatusChanged(
+                ServiceStatus.Running,
+                LocalizationService.GetString("OLLAMA_STARTED")
+            );
+            return;
+        }
+
+        if (!serverAvailable)
+        {
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
         }
     }
 
@@ -240,20 +258,23 @@ public class OllamaService
     {
         LoadSettings();
         var url = $@"{ApiBaseUrl}/api/tags";
+        
         try
         {
             using var client = new HttpClient();
-            var response = await client.GetAsync(url);
+            var response = await client.GetAsync(url).WithTimeout(_timeout);
             var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
             return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" ||
                                                        m?["name"]?.ToString() == "llama3.2")
                    ?? false;
         }
-        catch (HttpRequestException e)
+        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
         {
-            Console.WriteLine(e.Message);
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
         }
-
         return false;
     }
 
@@ -270,11 +291,23 @@ public class OllamaService
         var jsonPayload = JsonSerializer.Serialize(payload);
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        using var client = new HttpClient();
-        var response = await client.PostAsync(url, content);
-        var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-        return (json?["details"]?["parameter_size"] == null ? "" : ":") +
-               json?["details"]?["parameter_size"]?.ToString().ToLower();
+        try
+        {
+            using var client = new HttpClient();
+            var response = await client.PostAsync(url, content).WithTimeout(_timeout);
+            var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
+            return (json?["details"]?["parameter_size"] == null ? "" : ":") +
+                   json?["details"]?["parameter_size"]?.ToString().ToLower();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
+        {
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
+        }
+
+        return string.Empty;
     }
 
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
@@ -296,11 +329,20 @@ public class OllamaService
         HttpResponseMessage response;
         try
         {
-            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                // sikeres üzenetküldésnél szintén elküldi hogy fut az ollama
+                // hogy ha esetleg megváltozna a host akkor annak megfelelően jelenítse meg a HomeViewModel
+                OnServiceStatusChanged(ServiceStatus.Running);
+            }
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
         {
-            _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
             yield break;
         }
 
@@ -353,11 +395,21 @@ public class OllamaService
         HttpResponseMessage response;
         try
         {
-            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                // OK válasznál szintén elküldi hogy fut az ollama
+                // hogy ha esetleg megváltozna a host akkor annak megfelelően jelenítse meg a HomeViewModel
+                OnServiceStatusChanged(ServiceStatus.Running);
+            }
+            
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
         {
-            _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
             yield break;
         }
 
