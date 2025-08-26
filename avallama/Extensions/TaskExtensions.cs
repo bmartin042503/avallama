@@ -1,3 +1,6 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +22,7 @@ public static class TaskExtensions
         
         // visszaadja azt a taskot amelyik hamarabb fejeződött be a kettő Task közül
         // a "task" érték itt az, amelyikre meghívtuk ezt a metódust
-        // a másik Task pedig Timeout.Infinite értékig fut, de ez mindenkép lefog állni timeout időtartam után
+        // a másik Task pedig Timeout.Infinite értékig fut, de ez mindenképp le fog állni timeout időtartam után
         // a leállításról a cancellationToken gondoskodik
         var completedTask = await Task.WhenAny(task, Task.Delay(Timeout.Infinite, cancellationToken));
 

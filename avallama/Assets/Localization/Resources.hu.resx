@@ -140,7 +140,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Sötét</value>
     </data>
     <data name="RESTART_NEEDED_DIALOG_TITLE" xml:space="preserve">
-        <value>A változtatások érvényesítéséhez újra kell indítani az alkalmazást</value>
+        <value>Néhány változtatás érvényesítéséhez újra kell indítani az alkalmazást</value>
     </data>
     <data name="SETTINGS_SAVED" xml:space="preserve">
         <value>Változtatások mentve</value>
@@ -160,16 +160,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SKIP" xml:space="preserve">
         <value>Kihagyás</value>
     </data>
-    <data name="GUIDE_1_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
         <value>Indíts új beszélgetést egyetlen kattintással</value>
     </data>
-    <data name="GUIDE_1_SUB_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
         <value>Minden adat lokálisan van tárolva, biztonságban</value>
     </data>
-    <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
         <value>Tölts le különböző AI modelleket</value>
     </data>
-    <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
         <value>Egyszerű, és személyreszabható</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
@@ -372,5 +372,29 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="CONNECTING" xml:space="preserve">
         <value>Csatlakozás..</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING" xml:space="preserve">
+        <value>Tájékoztató információk megjelenítése</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING_DESC" xml:space="preserve">
+        <value>Információk megjelenítése a modellről és az alkalmazás állapotáról a beszélgetés tetején.</value>
+    </data>
+    <data name="RESET_TO_DEFAULT" xml:space="preserve">
+        <value>Alapértelmezettre állítás</value>
+    </data>
+    <data name="ON" xml:space="preserve">
+        <value>Be</value>
+    </data>
+    <data name="OFF" xml:space="preserve">
+        <value>Ki</value>
+    </data>
+    <data name="ON" xml:space="preserve">
+        <value>Be</value>
+    </data>
+    <data name="SYSTEM" xml:space="preserve">
+        <value>Rendszer</value>
+    </data>
+    <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
+        <value>Hiba történt ennek az üzenetnek a generálása során.</value>
     </data>
 </root>

@@ -147,7 +147,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Dark</value>
     </data>
     <data name="RESTART_NEEDED_DIALOG_TITLE" xml:space="preserve">
-        <value>Changes will take effect after restarting the application</value>
+        <value>Some changes will take effect after restarting the application</value>
     </data>
     <data name="SETTINGS_SAVED" xml:space="preserve">
         <value>Changes are saved</value>
@@ -167,16 +167,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SKIP" xml:space="preserve">
         <value>Skip</value>
     </data>
-    <data name="GUIDE_1_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
         <value>Start a new conversation with just one click</value>
     </data>
-    <data name="GUIDE_1_SUB_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
         <value>Your data is stored locally, fully private and secure</value>
     </data>
-    <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
         <value>Explore and use different AI models</value>
     </data>
-    <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
         <value>Quick and easy access to all settings</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
@@ -379,5 +379,29 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="CONNECTING" xml:space="preserve">
         <value>Connecting..</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING" xml:space="preserve">
+        <value>Show informational messages</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING_DESC" xml:space="preserve">
+        <value>Display informational messages about the model and the app's status on the top of the conversation.</value>
+    </data>
+    <data name="RESET_TO_DEFAULT" xml:space="preserve">
+        <value>Reset to default</value>
+    </data>
+    <data name="ON" xml:space="preserve">
+        <value>On</value>
+    </data>
+    <data name="OFF" xml:space="preserve">
+        <value>Off</value>
+    </data>
+    <data name="ON" xml:space="preserve">
+        <value />
+    </data>
+    <data name="SYSTEM" xml:space="preserve">
+        <value>System</value>
+    </data>
+    <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
+        <value>An error occurred while generating this message.</value>
     </data>
 </root>

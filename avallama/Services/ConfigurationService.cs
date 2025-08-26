@@ -15,6 +15,7 @@ public static class ConfigurationKey
     public const string ScrollToBottom = "scroll-to-bottom";
     public const string ApiHost = "api-host";
     public const string ApiPort = "api-port";
+    public const string ShowInformationalMessages = "show-informational-messages";
 }
 
 public interface IConfigurationService
@@ -59,7 +60,12 @@ public class ConfigurationService : IConfigurationService
             if (Avalonia.Application.Current is not App app) return;
             if (key == "color-scheme")
             {
-                app.RequestedThemeVariant = value == "light" ? ThemeVariant.Light : ThemeVariant.Dark;
+                app.RequestedThemeVariant = value switch
+                {
+                    "light" => ThemeVariant.Light,
+                    "dark" => ThemeVariant.Dark,
+                    _ => ThemeVariant.Default
+                };
             }
         }
         catch (ConfigurationErrorsException e)

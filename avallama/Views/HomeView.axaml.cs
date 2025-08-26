@@ -68,7 +68,7 @@ public partial class HomeView : UserControl
             }
             else
             {
-                SideBarButton.Margin = new Thickness(10, 20, 0, 0);
+                SideBarButton.Margin = new Thickness(10, 26, 0, 0);
             }
         }
     }

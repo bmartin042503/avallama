@@ -130,7 +130,8 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <!-- Tájékoztató szövegek -->
         <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Orientation="Vertical" Margin="18,10,18,0"
-                    HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="6">
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="6"
+                    IsVisible="{Binding ShowInformationalMessages}">
 
             <!-- Azért van ennyi Grid, mert ezzel lehet megoldani, hogy a bennük lévő TextBlock ne legyen levágva,
             hanem ...-al trimmelje le a végét (CharacterEllipsis), pontosabban *-al megadva az oszlop szélességét
@@ -250,7 +251,24 @@ Licensed under the MIT License. See LICENSE file for details.
                     <ItemsControl ItemsSource="{Binding SelectedConversation.Messages}">
                         <ItemsControl.DataTemplates>
 
-                            <!-- Először a specifikusabb GeneratedMessage, hogy ne rakja a GeneratedMessaget sima Messagebe -->
+                            <!-- A Message különböző típusait kell előre venni, hogy ne rakja az összeset egyből sima Message elemnek -->
+                            <DataTemplate DataType="models:FailedMessage">
+                                <Border Background="{DynamicResource SurfaceContainerHighest}"
+                                        CornerRadius="20" Padding="15,8" HorizontalAlignment="Left"
+                                        MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource MessageBlockSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Left">
+                                        <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
+                                                             FillColor="{DynamicResource Error}"
+                                                             Width="16" />
+
+                                        <TextBlock Grid.Column="1" Text="{Binding Content}"
+                                                   Foreground="{DynamicResource Error}"
+                                                   FontSize="14" TextAlignment="Left"
+                                                   TextWrapping="Wrap" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+
                             <DataTemplate DataType="models:GeneratedMessage">
                                 <controls:GeneralBlock
                                     Classes="generatedMessage"

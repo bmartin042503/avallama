@@ -15,7 +15,6 @@ using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace avallama.ViewModels;
 
@@ -74,6 +73,7 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private bool _isRetryPanelVisible;
     [ObservableProperty] private bool _isRetryButtonVisible;
     [ObservableProperty] private string _retryInfoText = string.Empty;
+    [ObservableProperty] private bool _showInformationalMessages;
 
     // TODO:
     // Van egy bug amit kicsit nehezen lehet reprodukálni, de épp a 3. üzenetem írtam, generálta volna az új beszélgetés címet az ollama
@@ -86,13 +86,8 @@ public partial class HomeViewModel : PageViewModel
         if (NewMessageText.Length == 0) return;
         NewMessageText = NewMessageText.Trim();
         SelectedConversation.AddMessage(new Message(NewMessageText));
-        SelectedConversation.MessageCountToRegenerateTitle++;
         NewMessageText = string.Empty;
         await AddGeneratedMessage();
-        if (SelectedConversation.MessageCountToRegenerateTitle == 3)
-        {
-            await RegenerateConversationTitle();
-        }
     }
 
     [RelayCommand]
@@ -133,6 +128,9 @@ public partial class HomeViewModel : PageViewModel
         SelectedConversation.AddMessage(generatedMessage);
         var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
         messageHistory.RemoveAt(messageHistory.Count - 1);
+        
+        // hibás (nem generált) üzenetek kitörlése
+        messageHistory.RemoveAll(message => message is FailedMessage);
 
         await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
         {
@@ -144,23 +142,31 @@ public partial class HomeViewModel : PageViewModel
                     chunk.EvalCount.GetValueOrDefault() / (double)chunk.EvalDuration * Math.Pow(10, 9);
                 generatedMessage.GenerationSpeed = tokensPerSecond;
                 IsResourceWarningVisible = tokensPerSecond < 20;
+                SelectedConversation.MessageCountToRegenerateTitle++;
+                if (SelectedConversation.MessageCountToRegenerateTitle == 3)
+                {
+                    await RegenerateConversationTitle();
+                }
             }
         }
     }
 
     private async Task RegenerateConversationTitle()
     {
-        SelectedConversation.Title = string.Empty;
-        const string request =
-            "Generate only a single short title for this conversation with no use of quotation marks.";
-        var tmpMessage = new Message(request);
-        var messageHistory = new List<Message>(SelectedConversation.Messages.ToList()) { tmpMessage };
-        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
+        if (await _ollamaService.IsOllamaServerRunning())
         {
-            if (chunk.Message != null) SelectedConversation.Title += chunk.Message.Content;
-        }
+            SelectedConversation.Title = string.Empty;
+            const string request =
+                "Generate only a single short title for this conversation with no use of quotation marks.";
+            var tmpMessage = new Message(request);
+            var messageHistory = new List<Message>(SelectedConversation.Messages.ToList()) { tmpMessage };
+            await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
+            {
+                if (chunk.Message != null) SelectedConversation.Title += chunk.Message.Content;
+            }
 
-        SelectedConversation.MessageCountToRegenerateTitle = 0;
+            SelectedConversation.MessageCountToRegenerateTitle = 0;
+        }
     }
 
     private async Task GetModelInfo(string modelName)
@@ -227,7 +233,6 @@ public partial class HomeViewModel : PageViewModel
 
         _dialogService = dialogService;
         _ollamaService = ollamaService;
-        _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
         _configurationService = configurationService;
         _databaseService = databaseService;
         _messenger = messenger;
@@ -250,6 +255,11 @@ public partial class HomeViewModel : PageViewModel
         _availableModels = ["llama3.2", LocalizationService.GetString("LOADING_MODELS")];
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
         Task.Run(OllamaInit);
+        _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
+        if (_ollamaService.CurrentServiceStatus != null)
+        {
+            OllamaServiceStatusChanged(_ollamaService.CurrentServiceStatus, _ollamaService.CurrentServiceMessage);
+        }
     }
 
     private async Task OllamaInit()
@@ -266,6 +276,8 @@ public partial class HomeViewModel : PageViewModel
     private void LoadSettings()
     {
         ScrollSetting = _configurationService.ReadSetting(ConfigurationKey.ScrollToBottom);
+        ShowInformationalMessages =
+            _configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages) == "True";
     }
 
     private void RedirectToOllamaDownload()
@@ -291,7 +303,7 @@ public partial class HomeViewModel : PageViewModel
         });
     }
 
-    private void OllamaServiceStatusChanged(ServiceStatus status, string? message)
+    private void OllamaServiceStatusChanged(ServiceStatus? status, string? message)
     {
         // TODO: logolni is majd
         switch (status)
@@ -299,7 +311,9 @@ public partial class HomeViewModel : PageViewModel
             case ServiceStatus.Running:
                 var apiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
                 var apiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
-                if (apiHost != "localhost" && apiHost != "127.0.0.1")
+
+                // "távoli kapcsolat" szöveg megjelenítése ha az alkalmazás nem lokális ollamára csatlakozik
+                if (!string.IsNullOrEmpty(apiHost) && apiHost != "localhost" && apiHost != "127.0.0.1")
                 {
                     RemoteConnectionText = string.Format(LocalizationService.GetString("REMOTE_CONNECTION"),
                         apiHost + ":" + apiPort);
@@ -310,7 +324,8 @@ public partial class HomeViewModel : PageViewModel
                     IsRemoteConnectionTextVisible = false;
                 }
 
-                if (_ollamaServerStarted.Task.Status != TaskStatus.RanToCompletion) _ollamaServerStarted.SetResult(true);
+                if (_ollamaServerStarted.Task.Status != TaskStatus.RanToCompletion)
+                    _ollamaServerStarted.SetResult(true);
                 IsRetryPanelVisible = false;
                 break;
             case ServiceStatus.NotInstalled:
@@ -334,15 +349,18 @@ public partial class HomeViewModel : PageViewModel
                 IsRetryButtonVisible = false;
                 break;
             default:
-                /* azon esetek amikor Failed státuszt kap vissza az OllamaServicetől:
-                 
-                 Multiple Instances - (MULTIPLE_INSTANCES_ERROR)
-                 Egyéb kivétel - (OLLAMA_FAILED, kivétel üzenete)
-                 Ha a szerver nem elérhető 10 késleltetős ellenőrzés után sem (OLLAMA_CONNECTION_ERROR)
-                 Üzenet generálásnál HttpRequestException kivételre (OLLAMA_CONNECTION_ERROR)
-                 Modell letöltésénél HttpRequestException kivételre (OLLAMA_CONNECTION_ERROR)
-                 
-                 */
+                // ServiceStatus.Failed
+                
+                // ha az utolsó egy "generálásnak" szánt üzenet, akkor azt lecseréljük FailedMessagere
+                if (SelectedConversation.Messages.Count > 0)
+                {
+                    if (SelectedConversation.Messages.Last() is GeneratedMessage generatedMessage)
+                    {
+                        SelectedConversation.Messages.Remove(generatedMessage);
+                        SelectedConversation.Messages.Add(new FailedMessage());
+                    }
+                }
+                
                 RetryInfoText = message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR");
                 IsRemoteConnectionTextVisible = false;
                 IsRetryPanelVisible = true;

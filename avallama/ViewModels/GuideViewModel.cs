@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using avallama.Constants;
+using avallama.Models;
 using avallama.Services;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -13,36 +15,23 @@ namespace avallama.ViewModels;
 
 public partial class GuideViewModel : PageViewModel
 {
-    [ObservableProperty] private string _currentMainText = string.Empty;
-    [ObservableProperty] private string _currentSubText = string.Empty;
-    [ObservableProperty] private Bitmap? _currentImageSource;
+    [ObservableProperty] private string _currentTitle = string.Empty;
+    [ObservableProperty] private string? _currentDescription;
+    [ObservableProperty] private Bitmap? _currentImage;
     [ObservableProperty] private bool _isNextButtonEnabled = true;
     [ObservableProperty] private bool _isImageVisible = true;
     [ObservableProperty] private string _skipButtonText = LocalizationService.GetString("SKIP");
 
     private int _guideIndex;
 
-    private readonly List<string> _guideMainTexts = [];
-    private readonly List<string> _guideImageSources = [];
-    // private readonly List<string> _guideMainSubTexts = [];
+    private readonly IList<GuideItem> _guideItems;
 
     public GuideViewModel()
     {
-        GuideResourcesInit();
-        CurrentMainText = _guideMainTexts[0];
-        CurrentSubText = LocalizationService.GetString("COMING_SOON");
-        CurrentImageSource = LoadGuideImage(_guideImageSources[0]);
-    }
-
-    private void GuideResourcesInit()
-    {
-        _guideMainTexts.Add(LocalizationService.GetString("GUIDE_1_MAIN_TEXT"));
-        _guideMainTexts.Add(LocalizationService.GetString("GUIDE_2_MAIN_TEXT"));
-        _guideMainTexts.Add(LocalizationService.GetString("GUIDE_3_MAIN_TEXT"));
-        
-        _guideImageSources.Add("avares://avallama/Assets/Images/home.png");
-        _guideImageSources.Add("avares://avallama/Assets/Images/home.png");
-        _guideImageSources.Add("avares://avallama/Assets/Images/settings.png");
+        _guideItems = GuideItems.GetGuideItems();
+        CurrentTitle = _guideItems[0].Title;
+        CurrentDescription = _guideItems[0].Description;
+        CurrentImage = LoadGuideImage(_guideItems[0].ImageSource);
     }
 
     private static Bitmap LoadGuideImage(string imageSource)
@@ -54,17 +43,17 @@ public partial class GuideViewModel : PageViewModel
     [RelayCommand]
     public void Next()
     {
-        if (_guideIndex == 2)
+        if (_guideIndex == _guideItems.Count - 1)
         {
-            CurrentMainText = LocalizationService.GetString("THANK_YOU");
-            CurrentSubText = string.Empty;
+            CurrentTitle = LocalizationService.GetString("THANK_YOU");
+            CurrentDescription = string.Empty;
             IsImageVisible = false;
             IsNextButtonEnabled = false;
             SkipButtonText = LocalizationService.GetString("START");
             return;
         }
         _guideIndex++;
-        CurrentMainText = _guideMainTexts[_guideIndex];
-        CurrentImageSource = LoadGuideImage(_guideImageSources[_guideIndex]);
+        CurrentTitle = _guideItems[_guideIndex].Title;
+        CurrentImage = LoadGuideImage(_guideItems[_guideIndex].ImageSource);
     }
 }

@@ -36,15 +36,15 @@ internal interface IOllamaService
 public class OllamaService : IOllamaService
 {
     private Process? _ollamaProcess;
-
-    private ServiceStatus? _serviceStatus;
-    private string? _serviceMessage;
+    public ServiceStatus? CurrentServiceStatus { get; private set; }
+    public string? CurrentServiceMessage { get; private set; }
     private string OllamaPath { get; set; }
 
     public const int DefaultApiPort = 11434;
+    public const string DefaultApiHost = "localhost";
 
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
-    public delegate void ServiceStatusChangedHandler(ServiceStatus status, string? message);
+    public delegate void ServiceStatusChangedHandler(ServiceStatus? status, string? message);
 
     // az event létrehozása, ami ugye az előzőleg létrehozott delegate típusú, tehát a megfelelő szignatúrájú metódusok
     // tudnak feliratkozni rá
@@ -52,29 +52,17 @@ public class OllamaService : IOllamaService
 
     // ez most rinyál hogy jajj de jobb lenne a ServiceStatusChanged név a privátnak is, de muszáj hogy legyen privát
     // különben nem lennének kezelhetőek az add és remove accessorok
-    private event ServiceStatusChangedHandler? _serviceStatusChanged;
+    public event ServiceStatusChangedHandler? ServiceStatusChanged;
 
-    public event ServiceStatusChangedHandler? ServiceStatusChanged
-    {
-        // add és remove - akkor hívódnak meg ha feliratkoznak az eventre vagy leiratkoznak róla
-        add
-        {
-            _serviceStatusChanged += value;
-            if (_serviceStatus != null)
-            {
-                value?.Invoke(_serviceStatus.Value, _serviceMessage);
-            }
-        }
-        remove => _serviceStatusChanged -= value;
-    }
-
-    private string? _apiHost = "localhost";
-    private string? _apiPort = "11434";
+    private string? _apiHost = DefaultApiHost;
+    private string? _apiPort = DefaultApiPort.ToString();
     private readonly ConfigurationService _configurationService;
     private readonly DialogService _dialogService;
     
     // maximális időtartam ameddig a különböző kérésekre vár az alkalmazás
-    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5); 
+    // ez azért 15 mp, mert lassabb gépeknél több idő lehet mire legelső üzenet generálásnál megjön a kérés
+    // ezt majd később lehet korrigálni kell
+    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(15); 
 
     private string ApiBaseUrl => $"http://{_apiHost}:{_apiPort}";
 
@@ -187,14 +175,13 @@ public class OllamaService : IOllamaService
         return (uint)ollamaProcesses.Length;
     }
 
-    private async Task<bool> IsOllamaServerRunning()
+    public async Task<bool> IsOllamaServerRunning()
     {
         LoadSettings();
         try
         {
             using var client = new HttpClient();
-            // 1 másodperces timeout-al, ez azért kevesebb mert Retry() folyamatosan hívja meg, és ez a sima 5mps timeouttal 25mp lenne
-            var response = await client.GetAsync($@"{ApiBaseUrl}/api/version").WithTimeout(TimeSpan.FromSeconds(1));
+            var response = await client.GetAsync($@"{ApiBaseUrl}/api/version").WithTimeout(_timeout);
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch
@@ -227,7 +214,7 @@ public class OllamaService : IOllamaService
             serverCheck++;
             if (!serverAvailable)
             {
-                await Task.Delay(500);
+                await Task.Delay(250);
                 continue;
             }
 
@@ -441,20 +428,20 @@ public class OllamaService : IOllamaService
 
     // meghívjuk az eventet, ami azt jelenti hogy a feliratkozott metódusok is meghívódnak
     // erre egy metódus iratkozott fel, HomeViewModelben
-    private void OnServiceStatusChanged(ServiceStatus status, string? message = null)
+    private void OnServiceStatusChanged(ServiceStatus? status, string? message = null)
     {
-        _serviceStatus = status;
-        _serviceMessage = message;
+        CurrentServiceStatus = status;
+        CurrentServiceMessage = message;
 
         // ezt azért adtam hozzá mert tesztelés során 'NSWindow should only be instantiated on the main thread!' kivételt dobott
         // macOS specific error i guess de azért legyen mindenképp UI szálon ha UI hívások vannak
         if (Dispatcher.UIThread.CheckAccess())
         {
-            _serviceStatusChanged?.Invoke(status, message);
+            ServiceStatusChanged?.Invoke(status, message);
         }
         else
         {
-            Dispatcher.UIThread.Post(() => { _serviceStatusChanged?.Invoke(status, message); });
+            Dispatcher.UIThread.Post(() => { ServiceStatusChanged?.Invoke(status, message); });
         }
     }
 }

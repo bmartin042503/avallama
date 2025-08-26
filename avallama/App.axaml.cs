@@ -50,6 +50,14 @@ public partial class App : Application
         var colorScheme = configurationService.ReadSetting(ConfigurationKey.ColorScheme);
         var language = configurationService.ReadSetting(ConfigurationKey.Language);
         
+        var showInformationalMessages = configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages);
+        
+        // új felhasználóknak alapértelmezetten bekapcsoljuk a tájékoztató üzeneteket
+        if (string.IsNullOrWhiteSpace(showInformationalMessages))
+        {
+            configurationService.SaveSetting(ConfigurationKey.ShowInformationalMessages, true.ToString());
+        }
+        
         var cultureInfo = language switch
         {
             "hungarian" => CultureInfo.GetCultureInfo("hu-HU"),

@@ -127,6 +127,7 @@ public class ApplicationService : IApplicationService
         var processPath = Environment.ProcessPath;
         var processId = Environment.ProcessId;
         
+        // ez egyelőre most a helper könyvtárban keresi a processt, tehát devnél ez a bin/Debug/net9.0/helper lenne
         var helperPath = Path.Combine(AppContext.BaseDirectory, "helper", "avallama.helper");
         
         var psi = new ProcessStartInfo

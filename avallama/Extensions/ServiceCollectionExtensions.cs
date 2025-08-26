@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<MainViewModel>();
         collection.AddSingleton<HomeViewModel>();
         collection.AddTransient<GreetingViewModel>();
-        collection.AddSingleton<SettingsViewModel>();
+        collection.AddTransient<SettingsViewModel>();
         collection.AddSingleton<ModelManagerViewModel>();
         collection.AddTransient<GuideViewModel>();
 
