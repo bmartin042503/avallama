@@ -391,8 +391,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="ON" xml:space="preserve">
         <value>Be</value>
     </data>
-    <data name="SYSTEM" xml:space="preserve">
-        <value>Rendszer</value>
+    <data name="SYSTEM_COLOR_SCHEME" xml:space="preserve">
+        <value>Rendszer szerinti</value>
     </data>
     <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
         <value>Hiba történt ennek az üzenetnek a generálása során.</value>

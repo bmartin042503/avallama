@@ -47,7 +47,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     <ComboBox Grid.Row="1" Grid.Column="1"
                               SelectedIndex="{Binding Mode=TwoWay, Path=SelectedThemeIndex}"
                               VerticalAlignment="Center" Width="160" HorizontalAlignment="Right">
-                        <ComboBoxItem Content="{services:LocalizationService Key='SYSTEM'}" />
+                        <ComboBoxItem Content="{services:LocalizationService Key='SYSTEM_COLOR_SCHEME'}" />
                         <ComboBoxItem Content="{services:LocalizationService Key='LIGHT_THEME'}" />
                         <ComboBoxItem Content="{services:LocalizationService Key='DARK_THEME'}" />
                     </ComboBox>

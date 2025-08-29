@@ -41,23 +41,20 @@ public partial class SettingsViewModel : PageViewModel
             if (value)
             {
                 // restart dialog megjelenítése aszinkron UI szálon
-                Task.Run(async () =>
+                Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        var dialogResult = await _dialogService.ShowConfirmationDialog(
-                            title: LocalizationService.GetString("RESTART_NEEDED_DIALOG_TITLE"),
-                            positiveButtonText: LocalizationService.GetString("RESTART_NOW"),
-                            negativeButtonText: LocalizationService.GetString("LATER"),
-                            description: LocalizationService.GetString("RESTART_NEEDED_DIALOG_DESC")
-                        );
+                    var dialogResult = await _dialogService.ShowConfirmationDialog(
+                        title: LocalizationService.GetString("RESTART_NEEDED_DIALOG_TITLE"),
+                        positiveButtonText: LocalizationService.GetString("RESTART_NOW"),
+                        negativeButtonText: LocalizationService.GetString("LATER"),
+                        description: LocalizationService.GetString("RESTART_NEEDED_DIALOG_DESC")
+                    );
 
-                        if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
-                        {
-                            // kérés az alkalmazás újraindítására
-                            _messenger.Send(new ApplicationMessage.Restart());
-                        }
-                    });
+                    if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
+                    {
+                        // kérés az alkalmazás újraindítására
+                        _messenger.Send(new ApplicationMessage.Restart());
+                    }
                 });
             }
 

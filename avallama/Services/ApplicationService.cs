@@ -130,6 +130,16 @@ public class ApplicationService : IApplicationService
         // ez egyelőre most a helper könyvtárban keresi a processt, tehát devnél ez a bin/Debug/net9.0/helper lenne
         var helperPath = Path.Combine(AppContext.BaseDirectory, "helper", "avallama.helper");
         
+        if (!File.Exists(helperPath))
+        {
+            throw new FileNotFoundException($"Helper executable not found at path: {helperPath}");
+        }
+        var attributes = File.GetAttributes(helperPath);
+        if ((attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+        {
+            throw new InvalidOperationException($"Helper executable at path {helperPath} is a symbolic link, which is not allowed.");
+        }
+        
         var psi = new ProcessStartInfo
         {
             FileName = helperPath,

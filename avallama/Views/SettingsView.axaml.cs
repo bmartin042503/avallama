@@ -12,7 +12,7 @@ namespace avallama.Views;
 
 public partial class SettingsView : UserControl
 {
-    private int? _selectedThemeIndex;
+    private int _selectedThemeIndex;
     
     public SettingsView()
     {
@@ -45,13 +45,13 @@ public partial class SettingsView : UserControl
         applicationLifetime.MainWindow!.FindControl<ContentControl>("PageContent")!.DataContext = tmpDataContext;
     }
 
-    private int? GetThemeIndex()
+    private int GetThemeIndex()
     {
         if (DataContext is SettingsViewModel vm)
         {
             return vm.SelectedThemeIndex;
         }
 
-        return null;
+        return 0;
     }
 }

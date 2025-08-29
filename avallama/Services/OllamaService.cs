@@ -15,7 +15,6 @@ using avallama.Constants;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading;
 using avallama.Extensions;
 using avallama.Models;
 using Avalonia.Threading;
@@ -35,13 +34,14 @@ internal interface IOllamaService
 
 public class OllamaService : IOllamaService
 {
+    public const int DefaultApiPort = 11434;
+    public const string DefaultApiHost = "localhost";
+    
     private Process? _ollamaProcess;
     public ServiceStatus? CurrentServiceStatus { get; private set; }
     public string? CurrentServiceMessage { get; private set; }
     private string OllamaPath { get; set; }
-
-    public const int DefaultApiPort = 11434;
-    public const string DefaultApiHost = "localhost";
+    private HttpClient _httpClient;
 
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
     public delegate void ServiceStatusChangedHandler(ServiceStatus? status, string? message);
@@ -71,6 +71,7 @@ public class OllamaService : IOllamaService
         OllamaPath = "";
         _configurationService = configurationService;
         _dialogService = dialogService;
+        _httpClient = new HttpClient();
         LoadSettings();
     }
 
@@ -83,6 +84,14 @@ public class OllamaService : IOllamaService
 
         var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
+        
+        // BaseAddress beállítása, így az összes kérés alapértelmezetten efelé a cím felé fog menni
+        var newBaseUri = new Uri($"http://{hostSetting}:{portSetting}");
+        if (_httpClient.BaseAddress == null || _httpClient.BaseAddress != newBaseUri)
+        {
+            _httpClient.Dispose();
+            _httpClient = new HttpClient { BaseAddress = newBaseUri };
+        }
     }
 
     public async Task Start()
@@ -180,8 +189,7 @@ public class OllamaService : IOllamaService
         LoadSettings();
         try
         {
-            using var client = new HttpClient();
-            var response = await client.GetAsync($@"{ApiBaseUrl}/api/version").WithTimeout(_timeout);
+            var response = await _httpClient.GetAsync("/api/version").WithTimeout(_timeout);
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch
@@ -197,41 +205,40 @@ public class OllamaService : IOllamaService
         {
             KillProcess(process);
         }
+        _httpClient.Dispose();
     }
-
+    
     public async Task Retry()
     {
         // Retrying event küldése (HomeViewModelnek, hogy megjelenítse a státuszt a UI-on)
         OnServiceStatusChanged(ServiceStatus.Retrying);
-        
-        // 5x ellenőrzi, hogy elérhető-e az ollama szerver a megadott api hostra és portra
-        const uint maxServerCheck = 5;
-        uint serverCheck = 0;
-        var serverAvailable = false;
-        while (!serverAvailable && serverCheck != maxServerCheck)
+
+        var maxTotalWait = TimeSpan.FromSeconds(30); // max teljes idő, ameddig újrapróbálja
+        var delay = TimeSpan.FromMilliseconds(200); // kezdő késleltetés
+        var maxDelay = TimeSpan.FromSeconds(5); // max késleltetés
+        var stopwatch = Stopwatch.StartNew();
+
+        while (stopwatch.Elapsed < maxTotalWait)
         {
-            serverAvailable = await IsOllamaServerRunning();
-            serverCheck++;
-            if (!serverAvailable)
+            if (await IsOllamaServerRunning())
             {
-                await Task.Delay(250);
-                continue;
+                OnServiceStatusChanged(
+                    ServiceStatus.Running,
+                    LocalizationService.GetString("OLLAMA_STARTED")
+                );
+                return;
             }
 
-            OnServiceStatusChanged(
-                ServiceStatus.Running,
-                LocalizationService.GetString("OLLAMA_STARTED")
-            );
-            return;
+            await Task.Delay(delay);
+
+            // növeli a késleltetést minden alkalommal, de úgy hogy ne menjen a max fölé
+            delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, maxDelay.TotalMilliseconds));
         }
 
-        if (!serverAvailable)
-        {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
-            );
-        }
+        OnServiceStatusChanged(
+            ServiceStatus.Failed,
+            LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+        );
     }
 
     private static void KillProcess(Process? process)
@@ -244,16 +251,19 @@ public class OllamaService : IOllamaService
     public async Task<bool> IsModelDownloaded()
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/tags";
         
         try
         {
-            using var client = new HttpClient();
-            var response = await client.GetAsync(url).WithTimeout(_timeout);
-            var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
+            var response = await _httpClient.GetAsync("/api/tags").WithTimeout(_timeout);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(responseContent);
             return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" ||
                                                        m?["name"]?.ToString() == "llama3.2")
                    ?? false;
+        }
+        catch (JsonException ex)
+        {
+            _dialogService.ShowErrorDialog(ex.Message);
         }
         catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
         {
@@ -268,7 +278,6 @@ public class OllamaService : IOllamaService
     public async Task<string> GetModelParamNum(string modelName)
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/show";
 
         var payload = new
         {
@@ -280,11 +289,15 @@ public class OllamaService : IOllamaService
 
         try
         {
-            using var client = new HttpClient();
-            var response = await client.PostAsync(url, content).WithTimeout(_timeout);
-            var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
+            var response = await _httpClient.PostAsync("/api/show", content).WithTimeout(_timeout);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(responseContent);
             return (json?["details"]?["parameter_size"] == null ? "" : ":") +
                    json?["details"]?["parameter_size"]?.ToString().ToLower();
+        }
+        catch (JsonException ex)
+        {
+            _dialogService.ShowErrorDialog(ex.Message);
         }
         catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
         {
@@ -300,23 +313,21 @@ public class OllamaService : IOllamaService
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/chat";
 
         var chatRequest = new ChatRequest(messageHistory);
         var jsonPayload = chatRequest.ToJson();
 
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/chat")
         {
             Content = content
         };
-
-        using var client = new HttpClient();
+        
         HttpResponseMessage response;
         try
         {
-            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 // sikeres üzenetküldésnél szintén elküldi hogy fut az ollama
@@ -361,7 +372,6 @@ public class OllamaService : IOllamaService
     public async IAsyncEnumerable<DownloadResponse> PullModel(string modelName)
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/pull";
 
         var payload = new
         {
@@ -373,16 +383,15 @@ public class OllamaService : IOllamaService
 
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/pull")
         {
             Content = content
         };
-
-        using var client = new HttpClient();
+        
         HttpResponseMessage response;
         try
         {
-            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 // OK válasznál szintén elküldi hogy fut az ollama

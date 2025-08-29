@@ -58,7 +58,7 @@ public class ConfigurationService : IConfigurationService
             configFile.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
             if (Avalonia.Application.Current is not App app) return;
-            if (key == "color-scheme")
+            if (key == ConfigurationKey.ColorScheme)
             {
                 app.RequestedThemeVariant = value switch
                 {

@@ -398,8 +398,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="ON" xml:space="preserve">
         <value />
     </data>
-    <data name="SYSTEM" xml:space="preserve">
-        <value>System</value>
+    <data name="SYSTEM_COLOR_SCHEME" xml:space="preserve">
+        <value>System default</value>
     </data>
     <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
         <value>An error occurred while generating this message.</value>
