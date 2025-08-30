@@ -32,7 +32,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     </StackPanel>
                     <ComboBox Grid.Row="0" Grid.Column="1"
                               SelectedIndex="{Binding Mode=TwoWay, Path=SelectedLanguageIndex}"
-                              VerticalAlignment="Center" Width="160" HorizontalAlignment="Right">
+                              VerticalAlignment="Center" Width="200" HorizontalAlignment="Right">
                         <ComboBoxItem>Magyar</ComboBoxItem>
                         <ComboBoxItem>English</ComboBoxItem>
                     </ComboBox>
@@ -46,7 +46,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     </StackPanel>
                     <ComboBox Grid.Row="1" Grid.Column="1"
                               SelectedIndex="{Binding Mode=TwoWay, Path=SelectedThemeIndex}"
-                              VerticalAlignment="Center" Width="160" HorizontalAlignment="Right">
+                              VerticalAlignment="Center" Width="200" HorizontalAlignment="Right">
                         <ComboBoxItem Content="{services:LocalizationService Key='SYSTEM_COLOR_SCHEME'}" />
                         <ComboBoxItem Content="{services:LocalizationService Key='LIGHT_THEME'}" />
                         <ComboBoxItem Content="{services:LocalizationService Key='DARK_THEME'}" />
@@ -61,7 +61,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     </StackPanel>
                     <ComboBox Grid.Row="2" Grid.Column="1"
                               SelectedIndex="{Binding Mode=TwoWay, Path=SelectedScrollIndex}"
-                              VerticalAlignment="Center" Width="160" HorizontalAlignment="Right">
+                              VerticalAlignment="Center" Width="200" HorizontalAlignment="Right">
                         <ComboBoxItem>
                             <services:LocalizationService Key="SCROLL_AUTOMATIC" />
                         </ComboBoxItem>
@@ -80,7 +80,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <TextBlock Text="{services:LocalizationService Key='API_HOST_SETTING_DESC'}"
                                    Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
                     </StackPanel>
-                    <TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Width="160"
+                    <TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Width="200"
                              HorizontalAlignment="Right"
                              Text="{Binding ApiHost}" Classes="settingTextBox" MaxLines="1">
                     </TextBox>
@@ -91,7 +91,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <TextBlock Text="{services:LocalizationService Key='API_PORT_SETTING_DESC'}"
                                    Margin="0,2,0,0" Foreground="{DynamicResource Outline}" />
                     </StackPanel>
-                    <TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Width="160"
+                    <TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Width="200"
                              HorizontalAlignment="Right"
                              Text="{Binding ApiPort}" Classes="settingTextBox" MaxLines="1">
                     </TextBox>

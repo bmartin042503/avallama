@@ -356,7 +356,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Biztos, hogy törölni szeretnéd a(z) {0} modellt?</value>
     </data>
     <data name="RESTART_NEEDED_DIALOG_DESC" xml:space="preserve">
-        <value>Szeretnéd újraindítani most?</value>
+        <value>Szeretnéd újraindítani az alkalmazást most?</value>
     </data>
     <data name="RESTART_NOW" xml:space="preserve">
         <value>Újraindítás most</value>
@@ -388,11 +388,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="OFF" xml:space="preserve">
         <value>Ki</value>
     </data>
-    <data name="ON" xml:space="preserve">
-        <value>Be</value>
-    </data>
     <data name="SYSTEM_COLOR_SCHEME" xml:space="preserve">
-        <value>Rendszer szerinti</value>
+        <value>Alapértelmezett (rendszer)</value>
     </data>
     <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
         <value>Hiba történt ennek az üzenetnek a generálása során.</value>

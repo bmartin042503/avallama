@@ -15,7 +15,6 @@ using avallama.Constants;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using avallama.Extensions;
 using avallama.Models;
 using Avalonia.Threading;
 
@@ -91,6 +90,7 @@ public class OllamaService : IOllamaService
         {
             _httpClient.Dispose();
             _httpClient = new HttpClient { BaseAddress = newBaseUri };
+            _httpClient.Timeout = _timeout;
         }
     }
 
@@ -189,7 +189,7 @@ public class OllamaService : IOllamaService
         LoadSettings();
         try
         {
-            var response = await _httpClient.GetAsync("/api/version").WithTimeout(_timeout);
+            var response = await _httpClient.GetAsync("/api/version");
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch
@@ -254,7 +254,7 @@ public class OllamaService : IOllamaService
         
         try
         {
-            var response = await _httpClient.GetAsync("/api/tags").WithTimeout(_timeout);
+            var response = await _httpClient.GetAsync("/api/tags");
             var responseContent = await response.Content.ReadAsStringAsync();
             var json = JsonNode.Parse(responseContent);
             return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" ||
@@ -265,7 +265,7 @@ public class OllamaService : IOllamaService
         {
             _dialogService.ShowErrorDialog(ex.Message);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
             OnServiceStatusChanged(
                 ServiceStatus.Failed,
@@ -289,7 +289,7 @@ public class OllamaService : IOllamaService
 
         try
         {
-            var response = await _httpClient.PostAsync("/api/show", content).WithTimeout(_timeout);
+            var response = await _httpClient.PostAsync("/api/show", content);
             var responseContent = await response.Content.ReadAsStringAsync();
             var json = JsonNode.Parse(responseContent);
             return (json?["details"]?["parameter_size"] == null ? "" : ":") +
@@ -299,7 +299,7 @@ public class OllamaService : IOllamaService
         {
             _dialogService.ShowErrorDialog(ex.Message);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
             OnServiceStatusChanged(
                 ServiceStatus.Failed,
@@ -327,7 +327,7 @@ public class OllamaService : IOllamaService
         HttpResponseMessage response;
         try
         {
-            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 // sikeres üzenetküldésnél szintén elküldi hogy fut az ollama
@@ -335,7 +335,7 @@ public class OllamaService : IOllamaService
                 OnServiceStatusChanged(ServiceStatus.Running);
             }
         }
-        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
             OnServiceStatusChanged(
                 ServiceStatus.Failed,
@@ -391,7 +391,7 @@ public class OllamaService : IOllamaService
         HttpResponseMessage response;
         try
         {
-            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout(_timeout);
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 // OK válasznál szintén elküldi hogy fut az ollama
@@ -400,7 +400,7 @@ public class OllamaService : IOllamaService
             }
             
         }
-        catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
             OnServiceStatusChanged(
                 ServiceStatus.Failed,

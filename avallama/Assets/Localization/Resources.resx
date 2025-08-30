@@ -363,7 +363,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Are you sure you want to delete {0}?</value>
     </data>
     <data name="RESTART_NEEDED_DIALOG_DESC" xml:space="preserve">
-        <value>Would you like to restart it now?</value>
+        <value>Would you like to restart the application now?</value>
     </data>
     <data name="RESTART_NOW" xml:space="preserve">
         <value>Restart now</value>
@@ -395,11 +395,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="OFF" xml:space="preserve">
         <value>Off</value>
     </data>
-    <data name="ON" xml:space="preserve">
-        <value />
-    </data>
     <data name="SYSTEM_COLOR_SCHEME" xml:space="preserve">
-        <value>System default</value>
+        <value>Default (system)</value>
     </data>
     <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
         <value>An error occurred while generating this message.</value>
