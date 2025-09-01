@@ -56,9 +56,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="VERSION" xml:space="preserve">
         <value>v0.2.0</value>
     </data>
-    <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
-        <value>Currently only one conversation is supported at a time</value>
-    </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Ollama has been successfully started</value>
     </data>
@@ -70,9 +67,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="OLLAMA_ALREADY_RUNNING" xml:space="preserve">
         <value>Ollama is already running</value>
-    </data>
-    <data name="SERVER_CONN_FAILED" xml:space="preserve">
-        <value>Failed to establish connection with Ollama's local server</value>
     </data>
     <data name="UNKNOWN_ERROR" xml:space="preserve">
         <value>An unknown error occured</value>
@@ -152,8 +146,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DARK_THEME" xml:space="preserve">
         <value>Dark</value>
     </data>
-    <data name="RESTART_NEEDED" xml:space="preserve">
-        <value>Changes will take effect after restarting the application</value>
+    <data name="RESTART_NEEDED_DIALOG_TITLE" xml:space="preserve">
+        <value>Some changes will take effect after restarting the application</value>
     </data>
     <data name="SETTINGS_SAVED" xml:space="preserve">
         <value>Changes are saved</value>
@@ -173,16 +167,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SKIP" xml:space="preserve">
         <value>Skip</value>
     </data>
-    <data name="GUIDE_1_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
         <value>Start a new conversation with just one click</value>
     </data>
-    <data name="GUIDE_1_SUB_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
         <value>Your data is stored locally, fully private and secure</value>
     </data>
-    <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
         <value>Explore and use different AI models</value>
     </data>
-    <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
         <value>Quick and easy access to all settings</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
@@ -193,9 +187,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="MODEL_MANAGER" xml:space="preserve">
         <value>Model manager</value>
-    </data>
-    <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
-        <value>Available from Ollama ({0})</value>
     </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>Parameters: {0}B</value>
@@ -243,7 +234,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ollama API Host</value>
     </data>
     <data name="API_HOST_SETTING_DESC" xml:space="preserve">
-        <value>IP Address of Ollama host machine (default is localhost)</value>
+        <value>IP address of Ollama host machine (default is localhost)</value>
     </data>
     <data name="API_PORT_SETTING" xml:space="preserve">
         <value>Ollama API Port</value>
@@ -252,12 +243,12 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Exposed port of the Ollama host machine (default is 11434)</value>
     </data>
     <data name="INVALID_HOST_ERR" xml:space="preserve">
-        <value>Ollama API Host is invalid, please enter a valid host address. (IPv4 address or "localhost")</value>
+        <value>Ollama API host is invalid, please enter a valid address. (IPv4 or "localhost")</value>
     </data>
     <data name="INVALID_PORT_ERR" xml:space="preserve">
-        <value>Ollama API Port is invalid, please enter a valid port. (1 - 65535)</value>
+        <value>Ollama API port is invalid, please enter a valid port. (1 - 65535)</value>
     </data>
-    <data name="HOST_CONNECTION_ERR" xml:space="preserve">
+    <data name="OLLAMA_CONNECTION_ERROR" xml:space="preserve">
         <value>Could not establish connection with the Ollama host machine. The host settings may not be configured correctly.</value>
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
@@ -370,5 +361,44 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
         <value>Are you sure you want to delete {0}?</value>
+    </data>
+    <data name="RESTART_NEEDED_DIALOG_DESC" xml:space="preserve">
+        <value>Would you like to restart the application now?</value>
+    </data>
+    <data name="RESTART_NOW" xml:space="preserve">
+        <value>Restart now</value>
+    </data>
+    <data name="LATER" xml:space="preserve">
+        <value>Later</value>
+    </data>
+    <data name="REMOTE_CONNECTION" xml:space="preserve">
+        <value>Remote connection: {0}</value>
+    </data>
+    <data name="RETRY" xml:space="preserve">
+        <value>Retry</value>
+    </data>
+    <data name="CONNECTING" xml:space="preserve">
+        <value>Connecting..</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING" xml:space="preserve">
+        <value>Show informational messages</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING_DESC" xml:space="preserve">
+        <value>Display informational messages about the model and the app's status on the top of the conversation.</value>
+    </data>
+    <data name="RESET_TO_DEFAULT" xml:space="preserve">
+        <value>Reset to default</value>
+    </data>
+    <data name="ON" xml:space="preserve">
+        <value>On</value>
+    </data>
+    <data name="OFF" xml:space="preserve">
+        <value>Off</value>
+    </data>
+    <data name="SYSTEM_COLOR_SCHEME" xml:space="preserve">
+        <value>Default (system)</value>
+    </data>
+    <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
+        <value>An error occurred while generating this message.</value>
     </data>
 </root>

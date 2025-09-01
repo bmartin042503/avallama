@@ -30,7 +30,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <StyleInclude Source="Styles/ComboBox.axaml" />
         <StyleInclude Source="Styles/ModelBlock.axaml" />
         <StyleInclude Source="Styles/General.axaml" />
-
+        <StyleInclude Source="Styles/ToggleSwitch.axaml" />
         <FluentTheme />
     </Application.Styles>
 

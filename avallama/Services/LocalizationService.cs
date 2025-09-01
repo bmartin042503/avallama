@@ -26,7 +26,7 @@ public class LocalizationService : MarkupExtension
         }
     }
 
-    public void ChangeLanguage(CultureInfo cultureInfo)
+    public static void ChangeLanguage(CultureInfo cultureInfo)
     {
         _resourceCulture = cultureInfo;
     }

@@ -20,17 +20,30 @@ using Avalonia.Threading;
 
 namespace avallama.Services;
 
-public class OllamaService
+internal interface IOllamaService
 {
-    private Process? _ollamaProcess;
+    Task Start();
+    void Stop();
+    Task Retry();
+    Task<bool> IsModelDownloaded();
+    Task<string> GetModelParamNum(string modelName);
+    IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
+    IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory);
+}
 
-    private ServiceStatus? _serviceStatus;
-    private string? _serviceMessage;
+public class OllamaService : IOllamaService
+{
+    public const int DefaultApiPort = 11434;
+    public const string DefaultApiHost = "localhost";
+    
+    private Process? _ollamaProcess;
+    public ServiceStatus? CurrentServiceStatus { get; private set; }
+    public string? CurrentServiceMessage { get; private set; }
     private string OllamaPath { get; set; }
+    private HttpClient _httpClient;
 
     // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
-    // ebben az esetben void visszatérésű ami ServiceStatus-t és string? típust vár
-    public delegate void ServiceStatusChangedHandler(ServiceStatus status, string? message);
+    public delegate void ServiceStatusChangedHandler(ServiceStatus? status, string? message);
 
     // az event létrehozása, ami ugye az előzőleg létrehozott delegate típusú, tehát a megfelelő szignatúrájú metódusok
     // tudnak feliratkozni rá
@@ -38,26 +51,17 @@ public class OllamaService
 
     // ez most rinyál hogy jajj de jobb lenne a ServiceStatusChanged név a privátnak is, de muszáj hogy legyen privát
     // különben nem lennének kezelhetőek az add és remove accessorok
-    private event ServiceStatusChangedHandler? _serviceStatusChanged;
+    public event ServiceStatusChangedHandler? ServiceStatusChanged;
 
-    public event ServiceStatusChangedHandler? ServiceStatusChanged
-    {
-        // add és remove - akkor hívódnak meg ha feliratkoznak az eventre vagy leiratkoznak róla
-        add
-        {
-            _serviceStatusChanged += value;
-            if (_serviceStatus != null)
-            {
-                value?.Invoke(_serviceStatus.Value, _serviceMessage);
-            }
-        }
-        remove => _serviceStatusChanged -= value;
-    }
-
-    private string? _apiHost = "localhost";
-    private string? _apiPort = "11434";
+    private string? _apiHost = DefaultApiHost;
+    private string? _apiPort = DefaultApiPort.ToString();
     private readonly ConfigurationService _configurationService;
     private readonly DialogService _dialogService;
+    
+    // maximális időtartam ameddig a különböző kérésekre vár az alkalmazás
+    // ez azért 15 mp, mert lassabb gépeknél több idő lehet mire legelső üzenet generálásnál megjön a kérés
+    // ezt majd később lehet korrigálni kell
+    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(15); 
 
     private string ApiBaseUrl => $"http://{_apiHost}:{_apiPort}";
 
@@ -66,6 +70,7 @@ public class OllamaService
         OllamaPath = "";
         _configurationService = configurationService;
         _dialogService = dialogService;
+        _httpClient = new HttpClient();
         LoadSettings();
     }
 
@@ -78,6 +83,15 @@ public class OllamaService
 
         var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
+        
+        // BaseAddress beállítása, így az összes kérés alapértelmezetten efelé a cím felé fog menni
+        var newBaseUri = new Uri($"http://{hostSetting}:{portSetting}");
+        if (_httpClient.BaseAddress == null || _httpClient.BaseAddress != newBaseUri)
+        {
+            _httpClient.Dispose();
+            _httpClient = new HttpClient { BaseAddress = newBaseUri };
+            _httpClient.Timeout = _timeout;
+        }
     }
 
     public async Task Start()
@@ -91,7 +105,7 @@ public class OllamaService
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            // mac-en is ugyanaz a path
+            // mac-en és linuxon ugyanaz a path
             OllamaPath = @"/usr/local/bin/ollama";
         }
 
@@ -105,6 +119,7 @@ public class OllamaService
                 );
                 return;
             case >= 2:
+                // TODO: ehelyett ténylegesen kezelje automatikusan a processeket és ne kelljen újraindítani manuálisan
                 OnServiceStatusChanged(
                     ServiceStatus.Failed,
                     LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR")
@@ -124,14 +139,11 @@ public class OllamaService
         {
             _ollamaProcess = Process.Start(startInfo);
         }
-        // ez az az exception amikor nem tud a megadott pathre ollama processt indítani
-        // ha nincs ollama telepítve akkor először ezt az exceptiont kapja el
         catch (Win32Exception)
         {
-            OnServiceStatusChanged(
-                ServiceStatus.NotInstalled,
-                LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
-            );
+            // ez az az exception amikor nem tud a megadott pathre ollama processt indítani
+            // ha nincs ollama telepítve akkor először ezt az exceptiont kapja el
+            OnServiceStatusChanged(ServiceStatus.NotInstalled);
         }
         catch (Exception ex)
         {
@@ -146,10 +158,7 @@ public class OllamaService
         // máshogy nem lehet null (szerintem)
         if (_ollamaProcess == null)
         {
-            OnServiceStatusChanged(
-                ServiceStatus.NotInstalled,
-                LocalizationService.GetString("OLLAMA_NOT_INSTALLED")
-            );
+            OnServiceStatusChanged(ServiceStatus.NotInstalled);
             return;
         }
 
@@ -163,37 +172,9 @@ public class OllamaService
         }
         else
         {
-            // 10 alkalommal késleltetéssel ellenőrzi a szerver elérhetőségét
-            // ez azért kell mert macen pl. hamarabb ellenőrzi az ollama szervert mint hogy az elindulna
-            // és emiatt instant errort ad vissza annak ellenére hogy később elindul a 11434-es porton a szerver
-
-            const uint maxServerCheck = 10;
-            uint serverCheck = 0;
-            var serverAvailable = false;
-            while (!serverAvailable && serverCheck != maxServerCheck)
-            {
-                serverAvailable = await IsOllamaServerRunning();
-                serverCheck++;
-                if (!serverAvailable)
-                {
-                    await Task.Delay(500);
-                    continue;
-                }
-
-                OnServiceStatusChanged(
-                    ServiceStatus.Running,
-                    LocalizationService.GetString("OLLAMA_STARTED")
-                );
-                return;
-            }
-
-            if (!serverAvailable)
-            {
-                OnServiceStatusChanged(
-                    ServiceStatus.Failed,
-                    LocalizationService.GetString("SERVER_CONN_FAILED")
-                );
-            }
+            // újrapróbálkozik a kapcsolatra
+            // macOS-en erre mindenképp szükség van, mert később indulhat el a szerver mint az ellenőrzés
+            await Retry();
         }
     }
 
@@ -203,13 +184,12 @@ public class OllamaService
         return (uint)ollamaProcesses.Length;
     }
 
-    private async Task<bool> IsOllamaServerRunning()
+    public async Task<bool> IsOllamaServerRunning()
     {
         LoadSettings();
         try
         {
-            using var client = new HttpClient();
-            var response = await client.GetAsync($@"{ApiBaseUrl}/api/version");
+            var response = await _httpClient.GetAsync("/api/version");
             return response.StatusCode == HttpStatusCode.OK;
         }
         catch
@@ -218,13 +198,47 @@ public class OllamaService
         }
     }
 
-    public static void Stop()
+    public void Stop()
     {
         var ollamaProcessList = Process.GetProcessesByName("ollama");
         foreach (var process in ollamaProcessList)
         {
             KillProcess(process);
         }
+        _httpClient.Dispose();
+    }
+    
+    public async Task Retry()
+    {
+        // Retrying event küldése (HomeViewModelnek, hogy megjelenítse a státuszt a UI-on)
+        OnServiceStatusChanged(ServiceStatus.Retrying);
+
+        var maxTotalWait = TimeSpan.FromSeconds(30); // max teljes idő, ameddig újrapróbálja
+        var delay = TimeSpan.FromMilliseconds(200); // kezdő késleltetés
+        var maxDelay = TimeSpan.FromSeconds(5); // max késleltetés
+        var stopwatch = Stopwatch.StartNew();
+
+        while (stopwatch.Elapsed < maxTotalWait)
+        {
+            if (await IsOllamaServerRunning())
+            {
+                OnServiceStatusChanged(
+                    ServiceStatus.Running,
+                    LocalizationService.GetString("OLLAMA_STARTED")
+                );
+                return;
+            }
+
+            await Task.Delay(delay);
+
+            // növeli a késleltetést minden alkalommal, de úgy hogy ne menjen a max fölé
+            delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, maxDelay.TotalMilliseconds));
+        }
+
+        OnServiceStatusChanged(
+            ServiceStatus.Failed,
+            LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+        );
     }
 
     private static void KillProcess(Process? process)
@@ -237,28 +251,33 @@ public class OllamaService
     public async Task<bool> IsModelDownloaded()
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/tags";
+        
         try
         {
-            using var client = new HttpClient();
-            var response = await client.GetAsync(url);
-            var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
+            var response = await _httpClient.GetAsync("/api/tags");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(responseContent);
             return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" ||
                                                        m?["name"]?.ToString() == "llama3.2")
                    ?? false;
         }
-        catch (HttpRequestException e)
+        catch (JsonException ex)
         {
-            Console.WriteLine(e.Message);
+            _dialogService.ShowErrorDialog(ex.Message);
         }
-
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
+        }
         return false;
     }
 
     public async Task<string> GetModelParamNum(string modelName)
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/show";
 
         var payload = new
         {
@@ -268,37 +287,60 @@ public class OllamaService
         var jsonPayload = JsonSerializer.Serialize(payload);
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        using var client = new HttpClient();
-        var response = await client.PostAsync(url, content);
-        var json = JsonNode.Parse(response.Content.ReadAsStringAsync().Result);
-        return (json?["details"]?["parameter_size"] == null ? "" : ":") +
-               json?["details"]?["parameter_size"]?.ToString().ToLower();
+        try
+        {
+            var response = await _httpClient.PostAsync("/api/show", content);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(responseContent);
+            return (json?["details"]?["parameter_size"] == null ? "" : ":") +
+                   json?["details"]?["parameter_size"]?.ToString().ToLower();
+        }
+        catch (JsonException ex)
+        {
+            _dialogService.ShowErrorDialog(ex.Message);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
+        }
+
+        return string.Empty;
     }
 
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/chat";
 
         var chatRequest = new ChatRequest(messageHistory);
         var jsonPayload = chatRequest.ToJson();
 
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/chat")
         {
             Content = content
         };
-
-        using var client = new HttpClient();
+        
         HttpResponseMessage response;
         try
         {
-            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                // sikeres üzenetküldésnél szintén elküldi hogy fut az ollama
+                // hogy ha esetleg megváltozna a host akkor annak megfelelően jelenítse meg a HomeViewModel
+                OnServiceStatusChanged(ServiceStatus.Running);
+            }
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
             yield break;
         }
 
@@ -330,7 +372,6 @@ public class OllamaService
     public async IAsyncEnumerable<DownloadResponse> PullModel(string modelName)
     {
         LoadSettings();
-        var url = $@"{ApiBaseUrl}/api/pull";
 
         var payload = new
         {
@@ -342,20 +383,29 @@ public class OllamaService
 
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/pull")
         {
             Content = content
         };
-
-        using var client = new HttpClient();
+        
         HttpResponseMessage response;
         try
         {
-            response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                // OK válasznál szintén elküldi hogy fut az ollama
+                // hogy ha esetleg megváltozna a host akkor annak megfelelően jelenítse meg a HomeViewModel
+                OnServiceStatusChanged(ServiceStatus.Running);
+            }
+            
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            _dialogService.ShowErrorDialog(LocalizationService.GetString("HOST_CONNECTION_ERR"));
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
             yield break;
         }
 
@@ -387,20 +437,20 @@ public class OllamaService
 
     // meghívjuk az eventet, ami azt jelenti hogy a feliratkozott metódusok is meghívódnak
     // erre egy metódus iratkozott fel, HomeViewModelben
-    private void OnServiceStatusChanged(ServiceStatus status, string? message = null)
+    private void OnServiceStatusChanged(ServiceStatus? status, string? message = null)
     {
-        _serviceStatus = status;
-        _serviceMessage = message;
+        CurrentServiceStatus = status;
+        CurrentServiceMessage = message;
 
         // ezt azért adtam hozzá mert tesztelés során 'NSWindow should only be instantiated on the main thread!' kivételt dobott
         // macOS specific error i guess de azért legyen mindenképp UI szálon ha UI hívások vannak
         if (Dispatcher.UIThread.CheckAccess())
         {
-            _serviceStatusChanged?.Invoke(status, message);
+            ServiceStatusChanged?.Invoke(status, message);
         }
         else
         {
-            Dispatcher.UIThread.Post(() => { _serviceStatusChanged?.Invoke(status, message); });
+            Dispatcher.UIThread.Post(() => { ServiceStatusChanged?.Invoke(status, message); });
         }
     }
 }

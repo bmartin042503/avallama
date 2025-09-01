@@ -21,7 +21,6 @@ Licensed under the MIT License. See LICENSE file for details.
         <converters:SortingOptionConverter x:Key="SortingOptionConverter" />
     </UserControl.Resources>
 
-    <!-- ha az első oszlopot autora állítod akkor exceptiont kapsz, valszeg mert még nem tudja jól megmérni magát a modelblock control arra az esetre -->
     <Grid Margin="22" RowDefinitions="Auto,*,Auto">
 
         <Grid.ColumnDefinitions>
@@ -66,7 +65,6 @@ Licensed under the MIT License. See LICENSE file for details.
                            Foreground="{DynamicResource OnSurface}"
                            FontWeight="Bold" />
                 <ComboBox Grid.Column="1" Margin="8,0,0,0"
-                          SelectedIndex="1"
                           HorizontalAlignment="Stretch"
                           Classes="sorting"
                           ItemsSource="{Binding SortingOptions}"
@@ -114,10 +112,9 @@ Licensed under the MIT License. See LICENSE file for details.
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
                       Margin="4,0,4,0" />
 
-        <!-- valszeg itt lehetne az is hogy csak simán átadom az egész példányt bindingra, de egyelőre most külön vettem a propertyket -->
         <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
         <controls:ModelInfoBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
-                                 IsVisible="{Binding HasModelsToDisplay}"
+                                 IsVisible="{Binding IsModelInfoBlockVisible}"
                                  Title="{Binding SelectedModel.Name}"
                                  Quantization="{Binding SelectedModel.Quantization}"
                                  Parameters="{Binding SelectedModel.Parameters}"

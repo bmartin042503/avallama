@@ -9,13 +9,13 @@ namespace avallama.Services;
 
 public static class ConfigurationKey
 {
-    public const string StartOllamaFrom = "start-ollama-from";
     public const string FirstTime = "first-time";
     public const string Language = "language";
     public const string ColorScheme = "color-scheme";
     public const string ScrollToBottom = "scroll-to-bottom";
     public const string ApiHost = "api-host";
     public const string ApiPort = "api-port";
+    public const string ShowInformationalMessages = "show-informational-messages";
 }
 
 public interface IConfigurationService
@@ -58,9 +58,14 @@ public class ConfigurationService : IConfigurationService
             configFile.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
             if (Avalonia.Application.Current is not App app) return;
-            if (key == "color-scheme")
+            if (key == ConfigurationKey.ColorScheme)
             {
-                app.RequestedThemeVariant = value == "light" ? ThemeVariant.Light : ThemeVariant.Dark;
+                app.RequestedThemeVariant = value switch
+                {
+                    "light" => ThemeVariant.Light,
+                    "dark" => ThemeVariant.Dark,
+                    _ => ThemeVariant.Default
+                };
             }
         }
         catch (ConfigurationErrorsException e)

@@ -118,6 +118,7 @@ public class ModelBlock : Control
         set => SetValue(CommandParameterProperty, value);
     }
 
+    // TODO: kiszervezni stílusokba
     private static readonly Thickness BasePadding = new(10, 8);
     private static readonly CornerRadius BaseCornerRadius = new(6);
     private const double TitleFontSize = 14;

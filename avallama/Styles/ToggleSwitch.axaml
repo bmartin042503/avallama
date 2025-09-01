@@ -1,0 +1,41 @@
+<!-- 
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="clr-namespace:avallama.Services">
+    <Design.PreviewWith>
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Padding="20">
+                <ToggleSwitch />
+            </Border>
+        </ThemeVariantScope>
+    </Design.PreviewWith>
+
+    <Style Selector="ToggleSwitch">
+        <Setter Property="Foreground" Value="{DynamicResource OnSurface}" />
+        <Setter Property="OffContent" Value="{services:LocalizationService Key='OFF'}"/>
+        <Setter Property="OnContent" Value="{services:LocalizationService Key='ON'}"/>
+        <Setter Property="FlowDirection" Value="RightToLeft"/>
+        
+        <!-- Checked stílusok -->
+        <Style Selector="^:checked  /template/ Border#SwitchKnobBounds">
+            <Setter Property="Background" Value="{DynamicResource Primary}" />
+        </Style>
+        
+        <Style Selector="^:checked /template/ Ellipse#SwitchKnobOn">
+            <Setter Property="Fill" Value="{DynamicResource OnPrimary}" />
+        </Style>
+        
+        <!-- Unchecked stílusok -->
+        <Style Selector="^:unchecked /template/ Border#OuterBorder">
+            <Setter Property="BorderBrush" Value="{DynamicResource OnSurface}" />
+        </Style>
+        
+        <Style Selector="^:unchecked /template/ Ellipse#SwitchKnobOff">
+            <Setter Property="Fill" Value="{DynamicResource OnSurface}" />
+        </Style>
+    </Style>
+</Styles>

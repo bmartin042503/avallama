@@ -17,8 +17,6 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.Services;
 
-// TODO: Windows 10 UI fix
-
 public enum ConfirmationType
 {
     Positive,
@@ -41,7 +39,7 @@ public class InputField(
     // a validatorban megadhatjuk, hogy mikor van egy érték helyesen megadva (pl. value => value.Contains("@")) ha emailre néznénk
     public Func<string, bool>? Validator { get; set; } = validator;
 
-    // ez pedig egy error üzenet ami akkor fog megjelenni ha a validálás nem járt sikerrel
+    // error üzenet ami akkor fog megjelenni ha a validálás nem járt sikerrel
     public string ValidationErrorMessage { get; set; } = validationErrorMessage;
 
     public bool IsValid => Validator == null || Validator(InputValue);
@@ -224,7 +222,7 @@ public class DialogService(
             CloseDialog(ApplicationDialog.Error);
             if (shutdownApp)
             {
-                messenger.Send(new ShutdownMessage());
+                messenger.Send(new ApplicationMessage.Shutdown());
             }
         };
 
@@ -435,10 +433,8 @@ public class DialogService(
         return result;
     }
 
-    // esetleg később kibővíteni hogy lehessen jelszavas megjelenítés, max karakterhossz megadás stb. ha lenne rá igény
-
     /// <summary>
-    /// Megjelenít egy TextBox mezőt tartalmazó dialogot a felhasználónak, amely lehetővé teszi több szöveg megadását beviteli mezőkön keresztül, mint <see cref="InputField"/> típus.
+    /// Megjelenít TextBox mező(ke)t tartalmazó dialogot a felhasználónak, amely lehetővé teszi több szöveg megadását beviteli mezőkön keresztül, mint <see cref="InputField"/> típus.
     /// A dialog két gombot tartalmaz: mentés és bezárás. A felhasználó válasza alapján visszatér egy <see cref="DialogResult"/>-tel.
     /// </summary>
     /// <param name="title">A dialog címe.</param>
@@ -626,9 +622,10 @@ public class DialogService(
     {
         var parent = _dialogStack.Count > 0
             ? _dialogStack.Peek()
-            : Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            : Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow
                 : null;
+        
         _dialogStack.Push(dialogWindow);
         dialogWindow.Closing += (_, _) =>
         {

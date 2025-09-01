@@ -21,13 +21,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Border Margin="20" CornerRadius="8" ClipToBounds="True"
                     IsVisible="{Binding IsImageVisible}">
-                <Image Source="{Binding CurrentImageSource}"
+                <Image Source="{Binding CurrentImage}"
                        IsVisible="{Binding IsImageVisible}"
                        MaxHeight="{Binding Path=Bounds.Height, Converter={StaticResource GuideImageSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
             </Border>
-            <TextBlock Text="{Binding CurrentMainText}" HorizontalAlignment="Center"
+            <TextBlock Text="{Binding CurrentTitle}" HorizontalAlignment="Center"
                        FontSize="20" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding CurrentSubText}" HorizontalAlignment="Center"
+            <TextBlock Text="{Binding CurrentDescription}" HorizontalAlignment="Center"
                        Classes="subText" Opacity="0.5" />
             <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
                         Margin="0,20,0,30" Classes="subText">

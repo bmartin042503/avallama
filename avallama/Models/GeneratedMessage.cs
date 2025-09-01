@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
+using avallama.Services;
 
 namespace avallama.Models;
 
@@ -19,3 +20,5 @@ public class GeneratedMessage : Message
         GenerationSpeed = generationSpeed;
     }
 }
+
+public class FailedMessage() : Message(LocalizationService.GetString("MESSAGE_GENERATION_FAILED"));

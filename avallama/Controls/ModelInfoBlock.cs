@@ -20,10 +20,6 @@ using ShimSkiaSharp;
 
 namespace avallama.Controls;
 
-// TODO - Hibák:
-// - Legkisebb lehetséges modelinformation container esetén a "learn more" szöveg nagyon közel kerül a details elemekhez
-// és ha a kurzort rávisszük a learn more szövegre majd le róla akkor a modelinformation container elkezd lefele menni
-
 // TODO - Javítás/Implementálás:
 // - felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
 // - code cleaning + proper documentation
@@ -203,6 +199,7 @@ public class ModelInfoBlock : Control
         set => SetValue(CommandProperty, value);
     }
 
+    // TODO: kiszervezni stílusokba
     private const double TitleFontSize = 26;
     private const double WarningFontSize = 14;
     private const double LabelFontSize = 12;
@@ -215,11 +212,13 @@ public class ModelInfoBlock : Control
     private const double SvgSpacing = 8.0;
     private const double DownloadingInfoSpacing = 16.0;
 
+    private double _downloadingTextCharacterWidth = double.NaN;
+
     private static readonly Thickness BasePadding = new(16);
     private static readonly Thickness LabelPadding = new(10, 5);
     private static readonly Thickness ContainerPadding = new(12);
     private static readonly Thickness ButtonPadding = new(20, 8);
-    private static readonly Thickness SvgButtonPadding = new(10, 8);
+    private static readonly Thickness SvgButtonPadding = new(10);
     private static readonly CornerRadius BaseCornerRadius = new(10);
     private static readonly CornerRadius ContainerCornerRadius = new(8);
     private static readonly CornerRadius LabelCornerRadius = new(4);
@@ -535,8 +534,8 @@ public class ModelInfoBlock : Control
     {
         // ez itt lehet, mivel a jobb oldali svg mindig a cancelbutton lesz de ha más is lenne akkor ezt ki kell szervezni
         var rightSvgRectBackground = _activeHoverTarget == HoverTarget.CancelDownloadButton
-            ? AppColor.ErrorContainer
-            : AppColor.Error;
+            ? AppColor.PrimaryContainer
+            : AppColor.Primary;
 
         var leftSvgRectBackground =
             _activeHoverTarget is HoverTarget.PauseDownloadButton or HoverTarget.ResumeDownloadButton
@@ -634,8 +633,8 @@ public class ModelInfoBlock : Control
     private void RenderDownloadingState(DrawingContext context)
     {
         var cancelSvgFill = _activeHoverTarget == HoverTarget.CancelDownloadButton
-            ? AppColor.OnErrorContainer
-            : AppColor.OnError;
+            ? AppColor.OnPrimaryContainer
+            : AppColor.OnPrimary;
 
         var pauseSvgFill = _activeHoverTarget == HoverTarget.PauseDownloadButton
             ? AppColor.OnPrimaryContainer
@@ -664,8 +663,8 @@ public class ModelInfoBlock : Control
     private void RenderPausedState(DrawingContext context)
     {
         var cancelSvgFill = _activeHoverTarget == HoverTarget.CancelDownloadButton
-            ? AppColor.OnErrorContainer
-            : AppColor.OnError;
+            ? AppColor.OnPrimaryContainer
+            : AppColor.OnPrimary;
 
         var resumeSvgFill = _activeHoverTarget == HoverTarget.ResumeDownloadButton
             ? AppColor.OnPrimaryContainer
@@ -856,47 +855,65 @@ public class ModelInfoBlock : Control
         );
     }
 
-    private string GetResponsiveDownloadInfo()
+    private string GetDownloadInfo()
     {
-        if (DownloadStatus is ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused)
+        if (DownloadStatus is not (ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused)) return string.Empty;
+
+        var downloadProgress = (double)DownloadedBytes / SizeInBytes;
+        if (downloadProgress <= 0) return string.Format(LocalizationService.GetString("DOWNLOADING"), "0%");
+
+        var leftSkPicture = DownloadStatus == ModelDownloadStatus.Downloading
+            ? _pauseSkPicture
+            : _resumeSkPicture;
+
+        // svg-k méretei, azért kellenek, hogy fel tudjuk mérni az elérhető szélességet a szövegnek
+        var leftSvgAspectRatio = leftSkPicture?.CullRect.Width / leftSkPicture?.CullRect.Height ?? 1.0;
+        var leftSvgWidth = SvgHeight * leftSvgAspectRatio;
+
+        var cancelSvgAspectRatio = _cancelSkPicture?.CullRect.Width / _cancelSkPicture?.CullRect.Height ?? 1.0;
+        var cancelSvgWidth = SvgHeight * cancelSvgAspectRatio;
+
+        // szöveg számára elérhető szélesség
+        var availableWidth = Bounds.Width - BasePadding.Left - LabelPadding.Left - (_sizeTextLayout?.Width ?? 0) -
+                             LabelPadding.Right - BasePadding.Right - SvgButtonPadding.Right * 2 -
+                             SvgButtonPadding.Left * 2 - SvgSpacing -
+                             DownloadingInfoSpacing * 2 - leftSvgWidth - cancelSvgWidth;
+
+        var downloadInfoText = DownloadStatus == ModelDownloadStatus.Downloading
+            ? LocalizationService.GetString("DOWNLOADING")
+            : LocalizationService.GetString("PAUSED");
+
+        // alap letöltési szöveg, amiben benne van a százalék, ehhez adogatunk hozzá további szövegeket a szélességtől függően
+        downloadInfoText += $".. {downloadProgress:P1}";
+
+        // ha még nem volt beállítva a karakterhossz (mert még nem volt lerenderelve a text), akkor visszaadjuk az alap letöltési szöveget
+        if (double.IsNaN(_downloadingTextCharacterWidth)) return downloadInfoText;
+
+        // (letöltött byteok/teljes méret) szöveg
+        var downloadedBytesInfo =
+            $" ({RenderHelper.GetSizeInGb(DownloadedBytes)}/{RenderHelper.GetSizeInGb(SizeInBytes)})";
+
+        // letöltés sebessége szöveg
+        var downloadSpeedInfo = $" - {DownloadSpeed} Mbps";
+
+        // ha az elérhető szélesség nagyobb vagy egyenlő mint 200 és belefér a downloadedBytes infó szöveg akkor hozzáadjuk az alap szöveghez
+        if (availableWidth >= 200 &&
+            availableWidth >= (downloadInfoText.Length + downloadedBytesInfo.Length) * _downloadingTextCharacterWidth +
+            DownloadingInfoSpacing)
         {
-            var downloadProgress = (double)DownloadedBytes / SizeInBytes;
-            if (downloadProgress <= 0) return string.Format(LocalizationService.GetString("DOWNLOADING"), "0%");
-
-            var leftSkPicture = DownloadStatus == ModelDownloadStatus.Downloading
-                ? _pauseSkPicture
-                : _resumeSkPicture;
-
-            var leftSvgAspectRatio = leftSkPicture?.CullRect.Width / leftSkPicture?.CullRect.Height ?? 1.0;
-            var leftSvgWidth = SvgHeight * leftSvgAspectRatio;
-
-            var cancelSvgAspectRatio = _cancelSkPicture?.CullRect.Width / _cancelSkPicture?.CullRect.Height ?? 1.0;
-            var cancelSvgWidth = SvgHeight * cancelSvgAspectRatio;
-
-            var availableWidth = Bounds.Width - BasePadding.Left - LabelPadding.Left - (_sizeTextLayout?.Width ?? 0) -
-                                 LabelPadding.Right - BasePadding.Right - SvgButtonPadding.Right * 2 -
-                                 SvgButtonPadding.Left * 2 - SvgSpacing -
-                                 DownloadingInfoSpacing * 2 - leftSvgWidth - cancelSvgWidth;
-
-            // a statusTextLayoutban lévő egy karakter hossza
-            // ezt sajna így kell beégetetten megadni, mert ugye ez a metódus adja vissza a statusTextLayoutnak a szöveget
-            // ez azért kell hogy a szöveget reszponzívan le tudja vágni és ki legyen használva a teljes hely
-            const double characterVisualLength = 6.024;
-
-            var downloadInfoText = DownloadStatus == ModelDownloadStatus.Downloading
-                ? LocalizationService.GetString("DOWNLOADING")
-                : LocalizationService.GetString("PAUSED");
-
-            downloadInfoText +=
-                $".. {downloadProgress:P1} ({RenderHelper.GetSizeInGb(DownloadedBytes)}/{RenderHelper.GetSizeInGb(SizeInBytes)}) - {DownloadSpeed} Mbps";
-
-            // visszaadjuk a downloadInfoTextet és csak annyit belőle amennyire elegendő hely van
-            return downloadInfoText.Length * characterVisualLength > availableWidth
-                ? downloadInfoText[..Math.Clamp((int)(availableWidth / characterVisualLength), 0, downloadInfoText.Length - 1)]
-                : downloadInfoText;
+            downloadInfoText += downloadedBytesInfo;
         }
 
-        return string.Empty;
+        // ha az elérhető szélesség nagyobb vagy egyenlő mint 300 és az eddigi downloadInfoText alapján (ehhez már hozzá van adva a bytes infó) belefér még a sebesség is
+        // akkor hozzáadjuk azt is
+        if (availableWidth >= 300 && availableWidth >=
+            (downloadInfoText.Length + downloadSpeedInfo.Length) * _downloadingTextCharacterWidth +
+            DownloadingInfoSpacing)
+        {
+            downloadInfoText += downloadSpeedInfo;
+        }
+
+        return downloadInfoText;
     }
 
     private TextLayout CreateStatusTextLayout()
@@ -906,7 +923,7 @@ public class ModelInfoBlock : Control
             ModelDownloadStatus.NotEnoughSpace => LocalizationService.GetString("NOT_ENOUGH_SPACE_DOWNLOAD"),
             ModelDownloadStatus.NoConnection => LocalizationService.GetString("NO_CONNECTION_DOWNLOAD"),
             ModelDownloadStatus.Ready => LocalizationService.GetString("DOWNLOAD"),
-            ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused => GetResponsiveDownloadInfo(),
+            ModelDownloadStatus.Downloading or ModelDownloadStatus.Paused => GetDownloadInfo(),
             ModelDownloadStatus.Downloaded => LocalizationService.GetString("DELETE"),
             _ => string.Empty
         };
@@ -932,7 +949,7 @@ public class ModelInfoBlock : Control
             _ => AppColor.OnSurface
         };
 
-        return new TextLayout(
+        var statusTextLayout = new TextLayout(
             statusText,
             new Typeface(RenderHelper.ManropeFont, weight: FontWeight.Bold),
             null,
@@ -942,6 +959,9 @@ public class ModelInfoBlock : Control
                 DownloadStatus is ModelDownloadStatus.NotEnoughSpace or ModelDownloadStatus.NoConnection ? 0.6 : 1.0
             )
         );
+
+        _downloadingTextCharacterWidth = statusTextLayout.Width / statusTextLayout.TextLines[0].Length;
+        return statusTextLayout;
     }
 
     // controlhoz tartozó összes elem felszabadítása
@@ -1196,7 +1216,7 @@ public class ModelInfoBlock : Control
         SetHoveredItem(HoverTarget.None);
     }
 
-    // ha a learn more szövegre vagy az action buttonra (letöltési műveletek) kattintott akkor azt itt kezeli le
+    // ha a learn more szövegre vagy az action buttonra (letöltési műveletek) kattintott a felhasználó akkor azt itt kezeli le
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         switch (_activeHoverTarget)

@@ -49,9 +49,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="VERSION" xml:space="preserve">
         <value>v0.2.0</value>
     </data>
-    <data name="CONVERSATIONS_NOT_AVAILABLE" xml:space="preserve">
-        <value>Jelenleg egyszerre csak egy beszélgetés támogatott</value>
-    </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Az Ollama sikeresen elindult</value>
     </data>
@@ -63,9 +60,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="OLLAMA_ALREADY_RUNNING" xml:space="preserve">
         <value>Az Ollama már fut</value>
-    </data>
-    <data name="SERVER_CONN_FAILED" xml:space="preserve">
-        <value>Nem sikerült kapcsolatot létesíteni az Ollama lokális szerverével</value>
     </data>
     <data name="UNKNOWN_ERROR" xml:space="preserve">
         <value>Ismeretlen hiba történt</value>
@@ -145,8 +139,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DARK_THEME" xml:space="preserve">
         <value>Sötét</value>
     </data>
-    <data name="RESTART_NEEDED" xml:space="preserve">
-        <value>A változtatások érvényesítéséhez újra kell indítani az alkalmazást</value>
+    <data name="RESTART_NEEDED_DIALOG_TITLE" xml:space="preserve">
+        <value>Néhány változtatás érvényesítéséhez újra kell indítani az alkalmazást</value>
     </data>
     <data name="SETTINGS_SAVED" xml:space="preserve">
         <value>Változtatások mentve</value>
@@ -166,16 +160,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SKIP" xml:space="preserve">
         <value>Kihagyás</value>
     </data>
-    <data name="GUIDE_1_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
         <value>Indíts új beszélgetést egyetlen kattintással</value>
     </data>
-    <data name="GUIDE_1_SUB_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
         <value>Minden adat lokálisan van tárolva, biztonságban</value>
     </data>
-    <data name="GUIDE_2_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
         <value>Tölts le különböző AI modelleket</value>
     </data>
-    <data name="GUIDE_3_MAIN_TEXT" xml:space="preserve">
+    <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
         <value>Egyszerű, és személyreszabható</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
@@ -186,9 +180,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="MODEL_MANAGER" xml:space="preserve">
         <value>Modellkezelő</value>
-    </data>
-    <data name="AVAILABLE_FROM_OLLAMA" xml:space="preserve">
-        <value>Elérhető az Ollamatól ({0})</value>
     </data>
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
@@ -236,7 +227,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ollama API Host</value>
     </data>
     <data name="API_HOST_SETTING_DESC" xml:space="preserve">
-        <value>IP címe az Ollama host számítógépnek (alapértelmezetten localhost)</value>
+        <value>Ollama host számítógép IP címe (alapértelmezetten localhost)</value>
     </data>
     <data name="API_PORT_SETTING" xml:space="preserve">
         <value>Ollama API Port</value>
@@ -245,12 +236,12 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Elérhető portja az Ollama host számítógépnek (alapértelmezetten 11434)</value>
     </data>
     <data name="INVALID_HOST_ERR" xml:space="preserve">
-        <value>Érvénytelen Ollama API host, kérlek adj meg egy érvényes host címet. (IPv4 cím vagy "localhost")</value>
+        <value>Érvénytelen Ollama API host, kérlek adj meg egy érvényes címet. (IPv4 vagy "localhost")</value>
     </data>
     <data name="INVALID_PORT_ERR" xml:space="preserve">
         <value>Érvénytelen Ollama API port! A portnak 1 és 65535 között kell lennie.</value>
     </data>
-    <data name="HOST_CONNECTION_ERR" xml:space="preserve">
+    <data name="OLLAMA_CONNECTION_ERROR" xml:space="preserve">
         <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
@@ -363,5 +354,44 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
         <value>Biztos, hogy törölni szeretnéd a(z) {0} modellt?</value>
+    </data>
+    <data name="RESTART_NEEDED_DIALOG_DESC" xml:space="preserve">
+        <value>Szeretnéd újraindítani az alkalmazást most?</value>
+    </data>
+    <data name="RESTART_NOW" xml:space="preserve">
+        <value>Újraindítás most</value>
+    </data>
+    <data name="LATER" xml:space="preserve">
+        <value>Később</value>
+    </data>
+    <data name="REMOTE_CONNECTION" xml:space="preserve">
+        <value>Távoli kapcsolat: {0}</value>
+    </data>
+    <data name="RETRY" xml:space="preserve">
+        <value>Újra</value>
+    </data>
+    <data name="CONNECTING" xml:space="preserve">
+        <value>Csatlakozás..</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING" xml:space="preserve">
+        <value>Tájékoztató információk megjelenítése</value>
+    </data>
+    <data name="SHOW_INFORMATIONAL_SETTING_DESC" xml:space="preserve">
+        <value>Információk megjelenítése a modellről és az alkalmazás állapotáról a beszélgetés tetején.</value>
+    </data>
+    <data name="RESET_TO_DEFAULT" xml:space="preserve">
+        <value>Alapértelmezettre állítás</value>
+    </data>
+    <data name="ON" xml:space="preserve">
+        <value>Be</value>
+    </data>
+    <data name="OFF" xml:space="preserve">
+        <value>Ki</value>
+    </data>
+    <data name="SYSTEM_COLOR_SCHEME" xml:space="preserve">
+        <value>Alapértelmezett (rendszer)</value>
+    </data>
+    <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
+        <value>Hiba történt ennek az üzenetnek a generálása során.</value>
     </data>
 </root>

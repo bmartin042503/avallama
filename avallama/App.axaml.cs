@@ -7,7 +7,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using avallama.Extensions;
 using Avalonia.Markup.Xaml;
 using avallama.Services;
 using Avalonia.Controls;
@@ -28,7 +30,7 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
     }
-
+    
     public override void OnFrameworkInitializationCompleted()
     {
         // Az összes dependency létrehozása és eltárolása egy ServiceCollectionben
@@ -37,35 +39,48 @@ public partial class App : Application
 
         // ServiceProvider ami biztosítja a létrehozott dependencyket
         var services = collection.BuildServiceProvider();
-
+        
+        // nem lehet semmilyen dependency lekérés a ConfigurationService előtt
+        // különben nem lesznek jól megjelenítve a lokalizált szövegek, színek
+        // a lokalizáció a rendszer nyelve alapján állítódik be, ezt kell felülírni a ConfigurationService-el
+        
+        // nyelv és színséma lekérdezése, beállítása
+        var configurationService = services.GetRequiredService<ConfigurationService>();
+        
+        var colorScheme = configurationService.ReadSetting(ConfigurationKey.ColorScheme);
+        var language = configurationService.ReadSetting(ConfigurationKey.Language);
+        
+        var showInformationalMessages = configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages);
+        
+        // új felhasználóknak alapértelmezetten bekapcsoljuk a tájékoztató üzeneteket
+        if (string.IsNullOrWhiteSpace(showInformationalMessages))
+        {
+            configurationService.SaveSetting(ConfigurationKey.ShowInformationalMessages, true.ToString());
+        }
+        
+        var cultureInfo = language switch
+        {
+            "hungarian" => CultureInfo.GetCultureInfo("hu-HU"),
+            _ => CultureInfo.InvariantCulture
+        };
+        
+        RequestedThemeVariant = colorScheme switch
+        {
+            "dark" => ThemeVariant.Dark,
+            "light" => ThemeVariant.Light,
+            _ => ThemeVariant.Default
+        };
+            
+        LocalizationService.ChangeLanguage(cultureInfo);
+        
+        var appService = services.GetRequiredService<IApplicationService>();
         _ollamaService = services.GetRequiredService<OllamaService>();
         _dialogService = services.GetRequiredService<DialogService>();
         _databaseInitService = services.GetRequiredService<DatabaseInitService>();
         SharedDbConnection = Task.Run(() => _databaseInitService.GetOpenConnectionAsync()).GetAwaiter().GetResult();
-
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var configurationService = services.GetRequiredService<ConfigurationService>();
-
-            var colorScheme = configurationService.ReadSetting(ConfigurationKey.ColorScheme);
-            var language = configurationService.ReadSetting(ConfigurationKey.Language);
-
-            RequestedThemeVariant = colorScheme switch
-            {
-                "dark" => ThemeVariant.Dark,
-                "light" => ThemeVariant.Light,
-                _ => ThemeVariant.Default
-            };
-
-            var cultureInfo = language switch
-            {
-                "hungarian" => CultureInfo.GetCultureInfo("hu-HU"),
-                _ => CultureInfo.InvariantCulture
-            };
-
-            var localizationService = services.GetRequiredService<LocalizationService>();
-            localizationService.ChangeLanguage(cultureInfo);
-
             //feliratkozunk az OnStartup-ra és az OnExitre
             desktop.Startup += OnStartup;
             desktop.Exit += OnExit;
@@ -74,22 +89,7 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-
-            var launcher = services.GetRequiredService<IAppService>();
-            launcher.InitializeMainWindow();
-
-            // igaz hogy configurationben már meg van adva hogy localhost és ha az nem az, akkor lehet tudni hogy remote
-            // de kell egy másik configuration key arra is, hogy már megválaszolta-e ezt a kérdést, így nem dobja fel megint
-            var startOllamaFrom = configurationService.ReadSetting(ConfigurationKey.StartOllamaFrom);
-
-            var firstTime = configurationService.ReadSetting(ConfigurationKey.FirstTime);
-
-            // ez csak akkor fut le ha már a felhasználó végigment a greeting screenen de valami miatt még nem válaszolt a kérdésre
-            // technikailag új felhasználóknak soha nem futna le ez, but who knows
-            if (string.IsNullOrEmpty(startOllamaFrom) && firstTime == "false")
-            {
-                _ = launcher.CheckOllamaStart();
-            }
+            appService.InitializeMainWindow();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -99,8 +99,7 @@ public partial class App : Application
     {
         // külön szálon, aszinkron fut le elvileg
         // nem valószínű hogy elkapna valaha is bármilyen kivételt de biztos ami biztos
-        // gondoltam mivel elég alapvető service, nem lenne helyes egy soros _ = _ollamaService?.Start()-al letudni xd
-        _ = Task.Run(async () =>
+        Task.Run(async () =>
         {
             try
             {
@@ -116,7 +115,7 @@ public partial class App : Application
 
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
-        OllamaService.Stop();
+        _ollamaService?.Stop();
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
@@ -131,7 +130,7 @@ public partial class App : Application
             BindingPlugins.DataValidators.Remove(plugin);
         }
     }
-
+    
     private void About_OnClick(object? sender, EventArgs e)
     {
         // ezt később majd vmi fancy dialogra

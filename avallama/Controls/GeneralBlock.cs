@@ -69,6 +69,12 @@ public class GeneralBlock : Control
     public static readonly StyledProperty<double?> LineHeightProperty =
         AvaloniaProperty.Register<GeneralBlock, double?>(nameof(LineHeight));
 
+    public static readonly StyledProperty<int?> MaxLinesProperty =
+        AvaloniaProperty.Register<GeneralBlock, int?>(nameof(MaxLines));
+
+    public static readonly StyledProperty<TextTrimming?> TextTrimmingProperty =
+        AvaloniaProperty.Register<GeneralBlock, TextTrimming?>(nameof(TextTrimming));
+
     public static readonly StyledProperty<IBrush?> SelectionColorProperty =
         AvaloniaProperty.Register<GeneralBlock, IBrush?>(nameof(SelectionColor));
 
@@ -183,6 +189,18 @@ public class GeneralBlock : Control
         set => SetValue(LineHeightProperty, value);
     }
 
+    public int? MaxLines
+    {
+        get => GetValue(MaxLinesProperty);
+        set => SetValue(MaxLinesProperty, value);
+    }
+
+    public TextTrimming? TextTrimming
+    {
+        get => GetValue(TextTrimmingProperty);
+        set => SetValue(TextTrimmingProperty, value);
+    }
+
     public IBrush? SelectionColor
     {
         get => GetValue(SelectionColorProperty);
@@ -271,7 +289,7 @@ public class GeneralBlock : Control
                 background = ColorProvider.GetColor(AppColor.SecondaryContainer);
             }
         }
-        
+
         if (background == null) return;
         var cornerRadius = CornerRadius ?? new CornerRadius(0, 0, 0, 0);
         context.DrawRectangle(background, null,
@@ -351,12 +369,13 @@ public class GeneralBlock : Control
             textColor,
             TextAlignment ?? Avalonia.Media.TextAlignment.Left,
             TextWrapping.Wrap,
-            TextTrimming.None,
+            textTrimming: TextTrimming,
             null,
             FlowDirection.LeftToRight,
             _constraint.Width,
             _constraint.Height,
-            LineHeight ?? double.NaN
+            LineHeight ?? double.NaN,
+            maxLines: MaxLines ?? 0
         );
     }
 
@@ -377,7 +396,7 @@ public class GeneralBlock : Control
                     subTextColor = ColorProvider.GetColor(AppColor.OnSecondaryContainer);
                 }
             }
-            
+
             return new TextLayout(
                 SubText,
                 new Typeface(FontFamily ?? FontFamily.Default),
@@ -583,6 +602,8 @@ public class GeneralBlock : Control
             case nameof(Spacing):
             case nameof(Padding):
             case nameof(LineHeight):
+            case nameof(MaxLines):
+            case nameof(TextTrimming):
             {
                 InvalidateMeasure();
                 break;
@@ -640,6 +661,14 @@ public class GeneralBlock : Control
         {
             Cursor = new Cursor(StandardCursorType.Hand);
             _isPointerOver = true;
+
+            // tooltip megjelenítése ha a szöveg le van vágva
+            if (_textLayout.TextLines[0].HasCollapsed)
+            {
+                var titleToolTip = new ToolTip { Content = Text };
+                ToolTip.SetTip(this, titleToolTip);
+            }
+
             InvalidateTextLayouts();
             CreateTextLayouts();
             InvalidateVisual();
@@ -650,6 +679,7 @@ public class GeneralBlock : Control
     {
         if (!Clickable) return;
         _isPointerOver = false;
+        ToolTip.SetTip(this, null);
         InvalidateTextLayouts();
         CreateTextLayouts();
         InvalidateVisual();
