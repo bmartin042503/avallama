@@ -401,4 +401,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
         <value>An error occurred while generating this message.</value>
     </data>
+    <data name="DATABASE_ERROR_OCCURRED" xml:space="preserve">
+        <value>A database error has occurred: </value>
+    </data>
 </root>

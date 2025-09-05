@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
@@ -40,13 +41,14 @@ public partial class HomeViewModel : PageViewModel
 
     public string ScrollSetting = string.Empty;
 
-    private ObservableStack<Conversation> _conversations;
+    private ObservableStack<Conversation> _conversations = null!;
 
     public ObservableStack<Conversation> Conversations
     {
         get => _conversations;
         set => SetProperty(ref _conversations, value);
     }
+    private readonly ConditionalWeakTable<Conversation, ConversationState> _conversationStates = new();
 
     private ObservableCollection<string> _availableModels;
 
@@ -67,7 +69,7 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private bool _isMaxPercent;
     [ObservableProperty] private string _downloadSpeed = string.Empty;
     [ObservableProperty] private string _downloadAmount = string.Empty;
-    [ObservableProperty] private Conversation _selectedConversation;
+    [ObservableProperty] private Conversation _selectedConversation = null!;
     [ObservableProperty] private string _remoteConnectionText = string.Empty;
     [ObservableProperty] private bool _isRemoteConnectionTextVisible;
     [ObservableProperty] private bool _isRetryPanelVisible;
@@ -85,8 +87,15 @@ public partial class HomeViewModel : PageViewModel
     {
         if (NewMessageText.Length == 0) return;
         NewMessageText = NewMessageText.Trim();
-        SelectedConversation.AddMessage(new Message(NewMessageText));
+        var message = new Message(NewMessageText);
+        SelectedConversation.AddMessage(message);
+        await _databaseService.InsertMessage(SelectedConversation.ConversationId, message, null, null);
         NewMessageText = string.Empty;
+        if (Conversations.IndexOf(SelectedConversation) != 0)
+        {
+            Conversations.Remove(SelectedConversation);
+            Conversations.Push(SelectedConversation);
+        }
         await AddGeneratedMessage();
     }
 
@@ -96,24 +105,29 @@ public partial class HomeViewModel : PageViewModel
         var newConversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
-        )
-        {
-            ConversationId = await _databaseService.CreateConversation()
-        };
+        );
+        newConversation.ConversationId = await _databaseService.CreateConversation(newConversation);
         Conversations.Push(newConversation);
         SelectedConversation = newConversation;
     }
 
     [RelayCommand]
-    public void SelectConversation(object parameter)
+    public async Task SelectConversation(object parameter)
     {
-        if (parameter is Guid guid)
-        {
-            if (guid == SelectedConversation.ConversationId) return;
-            var selectedConversation = Conversations.FirstOrDefault(x => x.ConversationId == guid);
-            if (selectedConversation == null) return;
-            SelectedConversation = selectedConversation;
-        }
+        if (parameter is not Guid guid) return;
+        
+        if (guid == SelectedConversation.ConversationId) return;
+
+        var selectedConversation = Conversations.FirstOrDefault(x => x.ConversationId == guid);
+        if (selectedConversation == null) return;
+
+        SelectedConversation = selectedConversation;
+        
+        var state = GetState(SelectedConversation);
+        if (state.MessagesLoaded) return;
+        
+        SelectedConversation.Messages = await _databaseService.GetMessagesForConversation(SelectedConversation);
+        state.MessagesLoaded = true;
     }
 
     [RelayCommand]
@@ -149,6 +163,7 @@ public partial class HomeViewModel : PageViewModel
                 }
             }
         }
+        await _databaseService.InsertMessage(SelectedConversation.ConversationId, generatedMessage, CurrentlySelectedModel, generatedMessage.GenerationSpeed);
     }
 
     private async Task RegenerateConversationTitle()
@@ -166,6 +181,7 @@ public partial class HomeViewModel : PageViewModel
             }
 
             SelectedConversation.MessageCountToRegenerateTitle = 0;
+            await _databaseService.UpdateConversationTitle(SelectedConversation);
         }
     }
 
@@ -241,19 +257,11 @@ public partial class HomeViewModel : PageViewModel
 
         LoadSettings();
 
-        // TODO: ezt majd lecserélni úgy hogy a db-ből jöjjön
-        var conversation = new Conversation(
-            LocalizationService.GetString("NEW_CONVERSATION"),
-            "llama3.2"
-        )
-        {
-            ConversationId = Guid.NewGuid()
-        };
-
-        _conversations = [conversation];
-        SelectedConversation = conversation;
+        _ = InitializeConversations();
+        
         _availableModels = ["llama3.2", LocalizationService.GetString("LOADING_MODELS")];
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
+        
         Task.Run(OllamaInit);
         _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
         if (_ollamaService.CurrentServiceStatus != null)
@@ -368,4 +376,30 @@ public partial class HomeViewModel : PageViewModel
                 break;
         }
     }
+
+    private async Task InitializeConversations()
+    {
+        _conversations = await _databaseService.GetConversations();
+        if (_conversations.Count <= 0)
+        {
+            await CreateNewConversation();
+            return;
+        }
+
+        SelectedConversation = _conversations.FirstOrDefault()!;
+        SelectedConversation.Messages = await _databaseService.GetMessagesForConversation(SelectedConversation);
+        GetState(SelectedConversation).MessagesLoaded = true;
+    }
+
+    private ConversationState GetState(Conversation conversation)
+    {
+        return _conversationStates.GetOrCreateValue(conversation);
+    }
+}
+
+// Helper class to save the state of a conversation object, so that DB queries only happen when selecting a conversation
+// that has not yet been selected, since once messages are loaded, they are available in memory in the viewmodel
+internal class ConversationState
+{
+    public bool MessagesLoaded { get; set; }
 }

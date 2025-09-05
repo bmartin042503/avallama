@@ -85,7 +85,7 @@ public class OllamaService : IOllamaService
         _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
         
         // BaseAddress beállítása, így az összes kérés alapértelmezetten efelé a cím felé fog menni
-        var newBaseUri = new Uri($"http://{hostSetting}:{portSetting}");
+        var newBaseUri = new Uri($"http://{_apiHost}:{_apiPort}");
         if (_httpClient.BaseAddress == null || _httpClient.BaseAddress != newBaseUri)
         {
             _httpClient.Dispose();
