@@ -394,4 +394,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MESSAGE_GENERATION_FAILED" xml:space="preserve">
         <value>Hiba történt ennek az üzenetnek a generálása során.</value>
     </data>
+    <data name="DATABASE_ERROR_OCCURRED" xml:space="preserve">
+        <value>Hiba történt az adatbázis művelet során: </value>
+    </data>
 </root>

@@ -53,10 +53,10 @@ public class Conversation : ObservableObject
         MessageCountToRegenerateTitle = 0;
     }
 
-    public Conversation(string title, string model, IList<Message> messages)
+    public Conversation(Guid guid, string title, IList<Message> messages)
     {
+        ConversationId = guid;
         Title = title;
-        Model = model;
         Messages = new ObservableCollection<Message>(messages);
         MessageCountToRegenerateTitle = 0;
     }
