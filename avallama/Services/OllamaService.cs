@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -15,7 +16,9 @@ using avallama.Constants;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using avallama.Dtos;
 using avallama.Models;
+using avallama.Utilities;
 using Avalonia.Threading;
 
 namespace avallama.Services;
@@ -28,14 +31,14 @@ internal interface IOllamaService
     Task<bool> IsModelDownloaded();
     Task<string> GetModelParamNum(string modelName);
     IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
-    IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory);
+    IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName);
 }
 
 public class OllamaService : IOllamaService
 {
     public const int DefaultApiPort = 11434;
     public const string DefaultApiHost = "localhost";
-    
+
     private Process? _ollamaProcess;
     public ServiceStatus? CurrentServiceStatus { get; private set; }
     public string? CurrentServiceMessage { get; private set; }
@@ -57,11 +60,11 @@ public class OllamaService : IOllamaService
     private string? _apiPort = DefaultApiPort.ToString();
     private readonly ConfigurationService _configurationService;
     private readonly DialogService _dialogService;
-    
+
     // maximális időtartam ameddig a különböző kérésekre vár az alkalmazás
     // ez azért 15 mp, mert lassabb gépeknél több idő lehet mire legelső üzenet generálásnál megjön a kérés
     // ezt majd később lehet korrigálni kell
-    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(15); 
+    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(15);
 
     private string ApiBaseUrl => $"http://{_apiHost}:{_apiPort}";
 
@@ -83,7 +86,7 @@ public class OllamaService : IOllamaService
 
         var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
-        
+
         // BaseAddress beállítása, így az összes kérés alapértelmezetten efelé a cím felé fog menni
         var newBaseUri = new Uri($"http://{_apiHost}:{_apiPort}");
         if (_httpClient.BaseAddress == null || _httpClient.BaseAddress != newBaseUri)
@@ -207,7 +210,7 @@ public class OllamaService : IOllamaService
         }
         _httpClient.Dispose();
     }
-    
+
     public async Task Retry()
     {
         // Retrying event küldése (HomeViewModelnek, hogy megjelenítse a státuszt a UI-on)
@@ -251,7 +254,7 @@ public class OllamaService : IOllamaService
     public async Task<bool> IsModelDownloaded()
     {
         LoadSettings();
-        
+
         try
         {
             var response = await _httpClient.GetAsync("/api/tags");
@@ -310,11 +313,11 @@ public class OllamaService : IOllamaService
         return string.Empty;
     }
 
-    public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory)
+    public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName)
     {
         LoadSettings();
 
-        var chatRequest = new ChatRequest(messageHistory);
+        var chatRequest = new ChatRequest(messageHistory, modelName);
         var jsonPayload = chatRequest.ToJson();
 
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
@@ -323,7 +326,7 @@ public class OllamaService : IOllamaService
         {
             Content = content
         };
-        
+
         HttpResponseMessage response;
         try
         {
@@ -387,7 +390,7 @@ public class OllamaService : IOllamaService
         {
             Content = content
         };
-        
+
         HttpResponseMessage response;
         try
         {
@@ -398,7 +401,7 @@ public class OllamaService : IOllamaService
                 // hogy ha esetleg megváltozna a host akkor annak megfelelően jelenítse meg a HomeViewModel
                 OnServiceStatusChanged(ServiceStatus.Running);
             }
-            
+
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -433,6 +436,111 @@ public class OllamaService : IOllamaService
                 }
             }
         }
+    }
+
+    public async Task<List<OllamaModel>> ListLibraryModelsAsOllamaModelsAsync()
+    {
+        var libraryInfos = await new LibraryScraper(_httpClient).ListModelsFromLibraryAsync();
+
+        var result = new List<OllamaModel>();
+
+        foreach (var li in libraryInfos)
+        {
+            var model = new OllamaModel
+            {
+                Name = li.Name,
+                Format = string.Empty,
+                Details = null,
+                Size = 0,
+                DownloadStatus = ModelDownloadStatus.Ready,
+                RunsSlow = false
+            };
+            result.Add(model);
+        }
+
+        return result;
+    }
+
+
+    public async Task<bool> DeleteModel(string modelName)
+    {
+        LoadSettings();
+
+        var payload = new
+        {
+            model = modelName
+        };
+
+         var jsonPayload = JsonSerializer.Serialize(payload);
+
+         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+         var request = new HttpRequestMessage(HttpMethod.Delete, "/api/delete")
+         {
+             Content = content
+         };
+
+         var response =  await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+         return response.StatusCode == HttpStatusCode.OK;
+    }
+
+    public async Task<ObservableCollection<OllamaModel>> ListDownloaded()
+    {
+        LoadSettings();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/tags");
+        var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        var json = await response.Content.ReadAsStringAsync();
+
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var result = JsonSerializer.Deserialize<OllamaTagsResponse>(json, options);
+
+        if (result?.Models == null)
+            return new ObservableCollection<OllamaModel>();
+
+        return new ObservableCollection<OllamaModel>(
+            result.Models.Select(m =>
+            {
+                // parse parameter size ("3.2B" → 3.2, etc.)
+                double? parameters = null;
+                if (!string.IsNullOrWhiteSpace(m.Details?.Parameter_Size))
+                {
+                    var cleaned = m.Details.Parameter_Size.TrimEnd('B', 'M', 'K');
+                    if (double.TryParse(cleaned, out var parsed))
+                        parameters = parsed;
+                }
+
+                // quantization ("Q4_K_M" → 4)
+                int? quant = null;
+                if (!string.IsNullOrWhiteSpace(m.Details?.Quantization_Level))
+                {
+                    var digits = new string(m.Details.Quantization_Level.TakeWhile(char.IsDigit).ToArray());
+                    if (int.TryParse(digits, out var q))
+                        quant = q;
+                }
+
+                var detailsDict = new Dictionary<string, string>();
+                if (m.Details != null)
+                {
+                    detailsDict["Format"] = m.Details.Format ?? "";
+                    detailsDict["Family"] = m.Details.Family ?? "";
+                    detailsDict["Quantization"] = m.Details.Quantization_Level ?? "";
+                    detailsDict["Parameter Size"] = m.Details.Parameter_Size ?? "";
+                }
+
+                return new OllamaModel(
+                    name: m.Name!,
+                    quantization: quant ?? 0,
+                    parameters: parameters ?? double.NaN,
+                    format: m.Details?.Format ?? string.Empty,
+                    details: detailsDict,
+                    size: (long)m.Size!,
+                    downloadStatus: ModelDownloadStatus.Downloaded, // safe default
+                    runsSlow: false
+                );
+            })
+        );
     }
 
     // meghívjuk az eventet, ami azt jelenti hogy a feliratkozott metódusok is meghívódnak

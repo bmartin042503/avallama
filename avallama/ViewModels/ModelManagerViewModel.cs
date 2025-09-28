@@ -20,6 +20,7 @@ namespace avallama.ViewModels;
 public partial class ModelManagerViewModel : PageViewModel
 {
     private readonly DialogService _dialogService;
+    private readonly OllamaService _ollamaService;
 
     // ide lesz betöltve az összes model adat
     private IEnumerable<OllamaModel> _modelsData = [];
@@ -50,7 +51,7 @@ public partial class ModelManagerViewModel : PageViewModel
 
     // a jelenleg letöltés alatt álló modell
     private OllamaModel? _downloadingModel;
-    
+
     public SortingOption SelectedSortingOption
     {
         get => _selectedSortingOption;
@@ -79,13 +80,14 @@ public partial class ModelManagerViewModel : PageViewModel
         }
     }
 
-    public ModelManagerViewModel(DialogService dialogService)
+    public ModelManagerViewModel(DialogService dialogService, OllamaService ollamaService)
     {
         Page = ApplicationPage.ModelManager;
         _dialogService = dialogService;
-        
-        LoadModelsData();
-        
+        _ollamaService = ollamaService;
+
+        _ = LoadModelsData();
+
         SelectedSortingOption = SortingOption.Downloaded;
 
         if (HasModelsToDisplay && (string.IsNullOrEmpty(SelectedModelName) || SelectedModel == null))
@@ -95,10 +97,10 @@ public partial class ModelManagerViewModel : PageViewModel
         }
     }
 
-    private void LoadModelsData()
+    private async Task LoadModelsData()
     {
-        // TODO: valós adatok lekérése
-        _modelsData = new ObservableCollection<OllamaModel>();
+        _modelsData = await _ollamaService.ListDownloaded();
+        _modelsData = _modelsData.Concat(await _ollamaService.ListLibraryModelsAsOllamaModelsAsync());
 
         var ollamaModels = _modelsData as OllamaModel[] ?? _modelsData.ToArray();
         if (ollamaModels.Length == 0)
@@ -113,7 +115,7 @@ public partial class ModelManagerViewModel : PageViewModel
         IsModelInfoBlockVisible = true;
 
         var downloadedModelsCount = ollamaModels.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
-        
+
         HasDownloadedModels = downloadedModelsCount > 0;
 
         if (!HasDownloadedModels) return;
@@ -138,7 +140,7 @@ public partial class ModelManagerViewModel : PageViewModel
         if (Models.Count == 0) return;
 
         IEnumerable<OllamaModel> sortedModels;
-        
+
         switch (SelectedSortingOption)
         {
             // ha nincs letöltött státuszban lévő model akkor visszaadja a simát
@@ -246,6 +248,10 @@ public partial class ModelManagerViewModel : PageViewModel
                     if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
                     {
                         SelectedModel.DownloadStatus = ModelDownloadStatus.Ready;
+                        if (!await _ollamaService.DeleteModel(SelectedModel.Name))
+                        {
+                            _dialogService.ShowErrorDialog(LocalizationService.GetString("ERROR_DELETING_MODEL"));
+                        }
                         DownloadedBytes = 0;
                         SortModels();
                     }
@@ -255,12 +261,10 @@ public partial class ModelManagerViewModel : PageViewModel
         }
     }
 
-    // TODO: valósra átírni
+    // TODO: Fix UI inconsistencies with download
     private async Task DownloadSelectedModelAsync()
     {
         if (SelectedModel == null) return;
-
-        var random = new Random();
 
         _downloadCancellationTokenSource = new CancellationTokenSource();
 
@@ -269,25 +273,33 @@ public partial class ModelManagerViewModel : PageViewModel
             await Task.Run(async () =>
             {
                 _downloadingModel = SelectedModel;
-                while (DownloadedBytes != _downloadingModel.Size)
+                while (_downloadingModel != null && DownloadedBytes != _downloadingModel.Size)
                 {
                     // ez ellenőrzi hogy meg lett-e hívva a cancel a letöltésre, és ha igen kivételt dob
                     _downloadCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-                    await Task.Delay(random.Next(200, 350));
-                    var randomDownloadedBytes = random.Next(131072000, 209715200); // 125 MB - 200 MB
-                    DownloadedBytes += randomDownloadedBytes;
-                    DownloadSpeed = Math.Round((double)(randomDownloadedBytes * 8) / 1_000_000, 2);
-                    if (DownloadedBytes > _downloadingModel.Size)
+                    await foreach (var chunk in _ollamaService.PullModel(_downloadingModel.Name))
                     {
-                        DownloadedBytes = _downloadingModel.Size;
+                        if (chunk.Total.HasValue && chunk.Completed.HasValue)
+                        {
+                            DownloadedBytes = chunk.Completed.Value;
+                        }
+                        DownloadSpeed = Math.Round((double)(DownloadedBytes * 8) / 1_000_000, 2);
+                        if (_downloadingModel != null && DownloadedBytes > _downloadingModel.Size)
+                        {
+                            DownloadedBytes = _downloadingModel.Size;
+                        }
+
+                        if (chunk.Status == "success")
+                        {
+                            if (_downloadingModel != null)
+                                _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                            _downloadingModel = null;
+                            DownloadedBytes = 0;
+                            SortModels();
+                        }
                     }
                 }
-
-                _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
-                _downloadingModel = null;
-                DownloadedBytes = 0;
-                SortModels();
             }, _downloadCancellationTokenSource.Token);
         }
         catch (OperationCanceledException)

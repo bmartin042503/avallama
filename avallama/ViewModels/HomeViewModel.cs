@@ -76,6 +76,7 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private bool _isRetryButtonVisible;
     [ObservableProperty] private string _retryInfoText = string.Empty;
     [ObservableProperty] private bool _showInformationalMessages;
+    [ObservableProperty] private bool _isModelsLoaded = true;
 
     // TODO:
     // Van egy bug amit kicsit nehezen lehet reprodukálni, de épp a 3. üzenetem írtam, generálta volna az új beszélgetés címet az ollama
@@ -146,7 +147,7 @@ public partial class HomeViewModel : PageViewModel
         // hibás (nem generált) üzenetek kitörlése
         messageHistory.RemoveAll(message => message is FailedMessage);
 
-        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
+        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, CurrentlySelectedModel))
         {
             if (chunk.Message != null) generatedMessage.Content += chunk.Message.Content;
 
@@ -175,7 +176,7 @@ public partial class HomeViewModel : PageViewModel
                 "Generate only a single short title for this conversation with no use of quotation marks.";
             var tmpMessage = new Message(request);
             var messageHistory = new List<Message>(SelectedConversation.Messages.ToList()) { tmpMessage };
-            await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory))
+            await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, CurrentlySelectedModel))
             {
                 if (chunk.Message != null) SelectedConversation.Title += chunk.Message.Content;
             }
@@ -185,55 +186,10 @@ public partial class HomeViewModel : PageViewModel
         }
     }
 
-    private async Task GetModelInfo(string modelName)
-    {
-        // ezt majd jobban kéne
-        AvailableModels[AvailableModels.IndexOf(modelName)] =
-            modelName + await _ollamaService.GetModelParamNum(modelName);
-        CurrentlySelectedModel = AvailableModels.FirstOrDefault() ?? modelName;
-    }
-
     private async Task CheckModelDownload()
     {
         IsDownloaded = await _ollamaService.IsModelDownloaded();
         IsNotDownloadedVisible = !IsDownloaded;
-    }
-
-    public async Task DownloadModel()
-    {
-        IsDownloading = true;
-        DownloadStatus = LocalizationService.GetString("STARTING_DOWNLOAD");
-
-        var speedCalculator = new NetworkSpeedCalculator();
-
-        await foreach (var chunk in _ollamaService.PullModel("llama3.2"))
-        {
-            if (chunk.Total.HasValue && chunk.Completed.HasValue)
-            {
-                DownloadProgress = (double)chunk.Completed.Value / chunk.Total.Value * 100;
-                var speed = speedCalculator.CalculateSpeed(chunk.Completed.Value);
-                if (speed > 0)
-                {
-                    double bytesRemaining = chunk.Total.Value - chunk.Completed.Value;
-                    var minutes = (int)(bytesRemaining / (speed * 1_000_000 / 8) / 60);
-                    var seconds = (int)(bytesRemaining / (speed * 1_000_000 / 8) % 60);
-                    DownloadSpeed = Math.Round(speed, 2) + " Mbps - " + $"{minutes:D2}:{seconds:D2}";
-                }
-
-                DownloadAmount =
-                    $"{Math.Round((chunk.Completed.Value < 1_000_000_000 ? chunk.Completed.Value / 1_000_000m : chunk.Completed.Value / 1_000_000_000m), 2)} " +
-                    $"{(chunk.Completed.Value < 1_000_000_000 ? "MB" : "GB")} / {Math.Round(chunk.Total.Value / 1_000_000_000m, 2)} GB";
-            }
-
-            if (chunk.Status != null) DownloadStatus = chunk.Status + " - " + Math.Round(DownloadProgress) + "%";
-            if ((int)Math.Round(DownloadProgress) == 100) IsMaxPercent = true;
-            if (chunk.Status != null && chunk.Status == "success")
-                DownloadStatus = LocalizationService.GetString("VERIFYING_DOWNLOAD");
-        }
-
-        await CheckModelDownload();
-        IsDownloading = false;
-        await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2").WaitAsync(TimeSpan.FromMilliseconds(100));
     }
 
     public HomeViewModel(
@@ -252,6 +208,8 @@ public partial class HomeViewModel : PageViewModel
         _configurationService = configurationService;
         _databaseService = databaseService;
         _messenger = messenger;
+        _availableModels = [];
+        _currentlySelectedModel = "";
 
         _messenger.Register<ApplicationMessage.ReloadSettings>(this, (_, _) => { LoadSettings(); });
 
@@ -259,23 +217,20 @@ public partial class HomeViewModel : PageViewModel
 
         _ = InitializeConversations();
         
-        _availableModels = ["llama3.2", LocalizationService.GetString("LOADING_MODELS")];
-        CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
-        
         Task.Run(OllamaInit);
         _ollamaService.ServiceStatusChanged += OllamaServiceStatusChanged;
         if (_ollamaService.CurrentServiceStatus != null)
         {
             OllamaServiceStatusChanged(_ollamaService.CurrentServiceStatus, _ollamaService.CurrentServiceMessage);
         }
+        
+        _ = InitializeModels();
     }
 
     private async Task OllamaInit()
     {
         // megvárja amíg kapcsolódik az ollama szerverhez, ez gondolom azért kell, mert hamarabb futna le ez a metódus mint hogy a szerver elindul (?)
         await _ollamaServerStarted.Task;
-
-        await GetModelInfo(AvailableModels.FirstOrDefault() ?? "llama3.2");
 
         // ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
         await CheckModelDownload();
@@ -394,6 +349,21 @@ public partial class HomeViewModel : PageViewModel
     private ConversationState GetState(Conversation conversation)
     {
         return _conversationStates.GetOrCreateValue(conversation);
+    }
+
+    private async Task InitializeModels()
+    {
+        IsModelsLoaded = false;
+        AvailableModels.Add(LocalizationService.GetString("LOADING_MODELS"));
+        CurrentlySelectedModel = AvailableModels[0];
+        var downloadedModels = await _ollamaService.ListDownloaded();
+        foreach (var model in downloadedModels)
+        {
+            AvailableModels.Add(model.Name);
+        }
+        AvailableModels.RemoveAt(0);
+        CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
+        IsModelsLoaded = true;
     }
 }
 

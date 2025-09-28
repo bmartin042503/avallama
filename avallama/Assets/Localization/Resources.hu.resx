@@ -397,4 +397,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DATABASE_ERROR_OCCURRED" xml:space="preserve">
         <value>Hiba történt az adatbázis művelet során: </value>
     </data>
+    <data name="ERROR_DELETING_MODEL" xml:space="preserve">
+        <value>Hiba történt a modell törlése során.</value>
+    </data>
 </root>
