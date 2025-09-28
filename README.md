@@ -3,6 +3,15 @@
 </p>
 <h1 align="center">Avallama</h1>
 
+<p align="center">
+  <a href="https://github.com/eyeonspringfield/avallama/actions/workflows/pr.yml">
+    <img alt="Build" src="https://github.com/eyeonspringfield/avallama/actions/workflows/pr.yml/badge.svg?branch=main">
+  </a>
+  <a href="https://codecov.io/gh/eyeonspringfield/avallama">
+    <img alt="Coverage" src="https://codecov.io/gh/eyeonspringfield/avallama/branch/main/graph/badge.svg">
+  </a>
+</p>
+
 
 <p align="center">A cross-platform local AI desktop app powered by Ollama</p>
 

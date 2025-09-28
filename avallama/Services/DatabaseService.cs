@@ -165,7 +165,6 @@ public class DatabaseService : IDatabaseService
         var idsParam = string.Join(",", enumerable.Select((_, i) => $"@id{i}"));
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
-
                                    SELECT conversation_id, model_name
                                    FROM messages
                                    WHERE conversation_id IN ({idsParam})

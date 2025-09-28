@@ -112,20 +112,7 @@ Licensed under the MIT License. See LICENSE file for details.
                       VerticalAlignment="Center"
                       ItemsSource="{Binding AvailableModels}"
                       SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
-                      IsEnabled="False" />
-
-            <!-- Letöltés gomb -->
-            <Button VerticalAlignment="Center"
-                    Padding="6"
-                    IsVisible="{Binding IsNotDownloadedVisible}"
-                    IsEnabled="{Binding !IsDownloading}"
-                    Background="{DynamicResource Primary}"
-                    Command="{Binding DownloadModel}"
-                    Cursor="Hand">
-                <controls:DynamicSvg Path="/Assets/Svg/download.svg"
-                                     StrokeColor="{DynamicResource OnPrimary}"
-                                     Width="20" />
-            </Button>
+                      IsEnabled="{Binding IsModelsLoaded}" />
         </StackPanel>
 
         <!-- Tájékoztató szövegek -->

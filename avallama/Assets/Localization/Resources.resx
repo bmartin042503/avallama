@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -8,7 +8,7 @@ Licensed under the MIT License. See LICENSE file for details.
 <root>
     <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
         <xsd:element name="root" msdata:IsDataSet="true">
-            
+
         </xsd:element>
     </xsd:schema>
     <resheader name="resmimetype">
@@ -403,5 +403,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="DATABASE_ERROR_OCCURRED" xml:space="preserve">
         <value>A database error has occurred: </value>
+    </data>
+    <data name="ERROR_DELETING_MODEL" xml:space="preserve">
+        <value>Error occurred deleting model.</value>
     </data>
 </root>

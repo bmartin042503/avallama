@@ -9,16 +9,16 @@ namespace avallama.Models;
 
 public class ChatRequest
 {
-    //igazabol itt lehetne dinamikusan beallitani a modellt majd
     [JsonPropertyName("model")]
-    public string Model { get; set; } = "llama3.2";
+    public string Model { get; set; }
 
     [JsonPropertyName("messages")]
     public List<ChatMessage> Messages { get; set; }
 
-    public ChatRequest(List<Message> messages)
+    public ChatRequest(List<Message> messages, string model)
     {
         Messages = ConvertToChatMessages(messages);
+        Model = model;
     }
 
     private static List<ChatMessage> ConvertToChatMessages(List<Message> messages)

@@ -1,0 +1,38 @@
+codecov:
+  require_ci_to_pass: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "0..100"
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+        informational: true
+    patch:
+      default:
+        target: 60%
+        threshold: 1%
+        informational: true
+
+ignore:
+  - "**/bin/**"
+  - "**/obj/**"
+  - "avallama/Assets/**"
+  - "nativelibs/**"
+  - "**/*.g.cs"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+
+github_checks:
+  annotations: true
+
+flags:
+  windows: {}
+  ubuntu: {}
+  macos: {}
