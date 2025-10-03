@@ -23,7 +23,10 @@ using Avalonia.Threading;
 
 namespace avallama.Services;
 
-internal interface IOllamaService
+// egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
+public delegate void ServiceStatusChangedHandler(ServiceStatus? status, string? message);
+
+public interface IOllamaService
 {
     Task Start();
     void Stop();
@@ -32,6 +35,13 @@ internal interface IOllamaService
     Task<string> GetModelParamNum(string modelName);
     IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
     IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName);
+    Task<bool> IsOllamaServerRunning();
+    Task<List<OllamaModel>> ListLibraryModelsAsOllamaModelsAsync();
+    Task<bool> DeleteModel(string modelName);
+    Task<ObservableCollection<OllamaModel>> ListDownloaded();
+    ServiceStatus? CurrentServiceStatus { get; }
+    string? CurrentServiceMessage { get; }
+    event ServiceStatusChangedHandler? ServiceStatusChanged;
 }
 
 public class OllamaService : IOllamaService
@@ -44,9 +54,6 @@ public class OllamaService : IOllamaService
     public string? CurrentServiceMessage { get; private set; }
     private string OllamaPath { get; set; }
     private HttpClient _httpClient;
-
-    // egy delegate ahol megadjuk hogy milyen metódus definícióval kell rendelkezniük a feliratkozó metódusoknak
-    public delegate void ServiceStatusChangedHandler(ServiceStatus? status, string? message);
 
     // az event létrehozása, ami ugye az előzőleg létrehozott delegate típusú, tehát a megfelelő szignatúrájú metódusok
     // tudnak feliratkozni rá
