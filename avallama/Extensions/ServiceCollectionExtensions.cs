@@ -6,6 +6,7 @@ using avallama.Constants;
 using avallama.ViewModels;
 using avallama.Factories;
 using avallama.Services;
+using avallama.Utilities;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,6 +27,8 @@ public static class ServiceCollectionExtensions
 
         // gyenge referenciás messenger, ami azt jelenti hogy nem kell manuálisan törölni őket
         collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+
+        collection.AddSingleton<IAvaloniaDispatcher, AvaloniaDispatcher>();
 
         // Temporary registration of both interfaces and concrete implementations until refactoring is done
         collection.AddSingleton<ApplicationService>();
