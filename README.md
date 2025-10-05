@@ -43,7 +43,7 @@ We are currently not accepting outside contributions, however we encourage users
 
 #### Debian/Ubuntu (x64)
 1. Download the latest .deb package from the [releases](https://github.com/4foureyes/avallama/releases) page.
-2. Open a terminal and navigate to the directory where the file was downloaded, for example: 
+2. Open a terminal and navigate to the directory where the file was downloaded, for example:
 ```bash
 cd ~/Downloads
 ```
@@ -64,11 +64,24 @@ sudo apt remove avallama
 
 This installation method has not been verified and may run unexpectedly.
 
-1. Download the latest PKGBUILD and .tar.gz files from the [releases](https://github.com/4foureyes/avallama/releases) page.
+1. Download the latest .pkg.tar.zst from the Releases tab
 2. Open a terminal and navigate to the directory where the files were downloaded.
 3. Install the package using the following command:
 ```bash
-makepkg -si
+sudo pacman -U avallama-0.2.0-1-x86_64.pkg.tar.zst
+```
+*Replace `avallama-0.2.0-1-x86_64.pkg.tar.zst` with the correct filename of the latest package*
+
+
+To uninstall run:
+
+```bash
+sudo pacman -R avallama
+```
+
+To uninstall and remove config files
+```bash
+sudo pacman -Rns avallama
 ```
 
 ### Windows (x64)

@@ -6,6 +6,14 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+permissions:
+  contents: read
+
 jobs:
   build-windows:
     name: Windows Installer (.exe)
@@ -42,7 +50,7 @@ jobs:
           name: AvallamaSetup.exe
           path: scripts\AvallamaSetup.exe
 
-  build-linux:
+  build-debian:
     name: Debian Package (.deb)
     runs-on: ubuntu-latest
 
@@ -68,13 +76,13 @@ jobs:
           name: linux-packages
           path: |
             avallama_${{ env.VERSION }}_amd64.deb
-  
+
   build-arch:
     name: Arch Package (.pkg.tar.zst)
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
-    
+
     steps:
       - name: Install base build tools and .NET
         run: |
@@ -84,27 +92,32 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Dotnet workload restore
+        run: dotnet workload restore ./avallama/avallama.csproj
+
       - name: Set version var
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Run Arch packaging script
         run: |
-          chmod +x scripts/package-arch.sh
-          ./scripts/package-arch.sh "${{ env.VERSION }}"
+          useradd -m builder
+          mkdir -p /tmp/build
+          cp -r avallama /tmp/build/
+          cp -r scripts /tmp/build/
+          chown -R builder:builder /tmp/build
+          sudo -u builder bash -c "cd /tmp/build && chmod +x scripts/package-arch.sh && scripts/package-arch.sh '${{ env.VERSION }}'"
 
-      - name: Upload Arch Tarball and PKGBUILD
+      - name: Upload Arch Package
         uses: actions/upload-artifact@v4
         with:
-          name: arch-tarball-pkgbuild
-          path: |
-            avallama_${{ env.VERSION }}_arch_x64.tar.gz
-            PKGBUILD
-  
-  
+          name: arch-package
+          path: /tmp/build/*.pkg.tar.zst
+
+
   build-macos:
     name: macOS Packages (.zip for x64 and arm64)
     runs-on: macos-latest
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -136,8 +149,11 @@ jobs:
 
   release:
     name: Publish GitHub Release
-    needs: [ build-windows, build-linux, build-macos ]
+    needs: [ build-windows, build-debian, build-arch, build-macos ]
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -163,7 +179,7 @@ jobs:
           find artifacts -type f -exec cp {} release-assets/ \;
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@aec2ec56f94eb8180ceec724245f64ef008b89f5
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
