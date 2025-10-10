@@ -1,7 +1,10 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System;
 using avallama.Utilities;
 
-namespace avallama.Tests.Utilities;
+namespace avallama.Tests.TestUtilities;
 
 public class SynchronousAvaloniaDispatcher : IAvaloniaDispatcher
 {

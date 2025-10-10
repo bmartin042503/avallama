@@ -5,7 +5,7 @@ using System;
 using avallama.Utilities;
 using Xunit;
 
-namespace avallama.Tests;
+namespace avallama.Tests.Utilities;
 
 public class ObservableStackTests
 {

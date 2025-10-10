@@ -2,7 +2,10 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
-using System.Configuration;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Threading;
 using Avalonia.Styling;
 
 namespace avallama.Services;
@@ -27,36 +30,48 @@ public interface IConfigurationService
 
 public class ConfigurationService : IConfigurationService
 {
+    private readonly string _configPath;
+    private readonly Dictionary<string, string> _settings;
+    private readonly Lock _lock = new();
+
+    public ConfigurationService()
+    {
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var appDir = Path.Combine(appData, "avallama");
+        if (!Directory.Exists(appDir))
+        {
+            Directory.CreateDirectory(appDir);
+        }
+        _configPath = Path.Combine(appDir, "config.json");
+
+        if (File.Exists(_configPath))
+        {
+            var json = File.ReadAllText(_configPath);
+            _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(json)
+                        ?? new Dictionary<string, string>();
+        }
+        else
+        {
+            _settings = new Dictionary<string, string>();
+        }
+    }
+
     public string ReadSetting(string key)
     {
-        try
+        lock (_lock)
         {
-            var appSettings = ConfigurationManager.AppSettings;
-            return appSettings[key] ?? string.Empty;
+            return _settings.TryGetValue(key, out var value) ? value : string.Empty;
         }
-        catch (ConfigurationErrorsException e)
-        {
-            Console.WriteLine(e.Message);
-        }
-        return string.Empty;
     }
 
     public void SaveSetting(string key, string value)
     {
-        try
+        lock (_lock)
         {
-            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configFile.AppSettings.Settings;
-            if (settings[key] == null)
-            {
-                settings.Add(key, value);
-            }
-            else
-            {
-                settings[key].Value = value;
-            }
-            configFile.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+            _settings[key] = value;
+            var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(_configPath, json);
+
             if (Avalonia.Application.Current is not App app) return;
             if (key == ConfigurationKey.ColorScheme)
             {
@@ -67,10 +82,6 @@ public class ConfigurationService : IConfigurationService
                     _ => ThemeVariant.Default
                 };
             }
-        }
-        catch (ConfigurationErrorsException e)
-        {
-            Console.WriteLine(e.Message);
         }
     }
 }

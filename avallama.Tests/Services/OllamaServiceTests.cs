@@ -1,3 +1,6 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -13,7 +16,7 @@ using avallama.Models;
 using avallama.Services;
 using avallama.Tests.Extensions;
 using avallama.Tests.Fixtures;
-using avallama.Tests.Utilities;
+using avallama.Tests.TestUtilities;
 using Moq;
 using Moq.Protected;
 using Xunit;

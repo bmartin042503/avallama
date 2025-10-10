@@ -11,7 +11,7 @@ using Avalonia.Media.TextFormatting;
 using Xunit;
 using Colors = Avalonia.Media.Colors;
 
-namespace avallama.Tests;
+namespace avallama.Tests.Controls;
 
 public class TextHelperTests
 {

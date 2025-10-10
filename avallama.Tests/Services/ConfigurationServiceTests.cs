@@ -4,7 +4,7 @@
 using avallama.Services;
 using Xunit;
 
-namespace avallama.Tests;
+namespace avallama.Tests.Services;
 
 public class ConfigurationServiceTests
 {
