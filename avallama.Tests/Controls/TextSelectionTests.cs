@@ -4,7 +4,7 @@
 using avallama.Controls;
 using Xunit;
 
-namespace avallama.Tests;
+namespace avallama.Tests.Controls;
 
 public class TextSelectionTests
 {

@@ -4,7 +4,7 @@
 using avallama.Models;
 using Xunit;
 
-namespace avallama.Tests;
+namespace avallama.Tests.Models;
 
 public class GuideItemTests
 {

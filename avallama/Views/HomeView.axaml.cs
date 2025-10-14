@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using avallama.Services;
@@ -49,6 +48,8 @@ public partial class HomeView : UserControl
 
     // megnézi hogy milyen állapotban van az ablak és a sidebar
     // majd eszerint beállítja a marginjukat, hogy macOS-en az ablakkezelő gombok használhatóak legyenek
+
+    // ReSharper disable once InconsistentNaming
     private void SetMacOSMargin()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return;

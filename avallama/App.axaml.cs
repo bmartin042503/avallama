@@ -7,7 +7,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using avallama.Extensions;
 using Avalonia.Markup.Xaml;
@@ -77,7 +76,7 @@ public partial class App : Application
         _ollamaService = services.GetRequiredService<OllamaService>();
         _dialogService = services.GetRequiredService<DialogService>();
         _databaseInitService = services.GetRequiredService<DatabaseInitService>();
-        SharedDbConnection = Task.Run(() => _databaseInitService.GetOpenConnectionAsync()).GetAwaiter().GetResult();
+        SharedDbConnection = _databaseInitService.GetOpenConnectionAsync().GetAwaiter().GetResult();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
