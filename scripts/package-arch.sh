@@ -44,6 +44,7 @@ arch=('x86_64')
 pkgdesc="User-friendly GUI for Ollama"
 url="https://www.github.com/4foureyes/avallama"
 license=('MIT')
+depends=('icu' 'fontconfig' 'freetype2' 'libx11' 'libxrender' 'libxcb' 'mesa' 'libpng' 'zlib')
 source=()
 sha256sums=()
 options=(!debug !strip)

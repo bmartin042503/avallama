@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Install base build tools and .NET
         run: |
-          pacman -Sy --noconfirm base-devel git curl unzip icu dotnet-sdk dotnet-runtime
+          pacman -Sy --noconfirm base-devel git curl unzip icu dotnet-sdk dotnet-runtime fontconfig freetype2 libx11 libxrender libxcb mesa libpng zlib
           dotnet --version
 
       - name: Checkout source
