@@ -26,6 +26,7 @@ namespace avallama.Utilities
         /// </returns>
         public static bool IsPointerOverText(TextLayout? textLayout, Point? textLayoutPosition, Point pointerPosition)
         {
+            // TODO: optimization
             if (textLayout == null || textLayoutPosition == null)
                 return false;
 

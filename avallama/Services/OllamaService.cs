@@ -303,7 +303,7 @@ public class OllamaService : IOllamaService
         return false;
     }
 
-    public async Task<string> GetModelParamNum(string modelName)
+    public async Task<long> GetModelParamNum(string modelName)
     {
         EnsureStarted();
         LoadSettings();
@@ -315,6 +315,43 @@ public class OllamaService : IOllamaService
 
         var jsonPayload = JsonSerializer.Serialize(payload);
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await _httpClient.PostAsync("/api/show", content);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var json = JsonNode.Parse(responseContent);
+            return long.Parse(json?["model_info"]?["general.parameter_count"]?.ToString() ?? "0");
+        }
+        catch (JsonException ex)
+        {
+            _dialogService.ShowErrorDialog(ex.Message, false);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            OnServiceStatusChanged(
+                ServiceStatus.Failed,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
+            );
+        }
+
+        return 0;
+    }
+
+    public async Task<IDictionary<string, string>> GetModelInformation(string modelName)
+    {
+        EnsureStarted();
+        LoadSettings();
+
+        var payload = new
+        {
+            model = modelName
+        };
+
+        var jsonPayload = JsonSerializer.Serialize(payload);
+        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+        var infoDict = new Dictionary<string, string>();
 
         try
         {
@@ -463,13 +500,25 @@ public class OllamaService : IOllamaService
     public async Task<List<OllamaModel>> ListLibraryModelsAsOllamaModelsAsync()
     {
         EnsureStarted();
-        var libraryInfos = await new LibraryScraper(_httpClient).ListModelsFromLibraryAsync();
+        var libraryModels = await new LibraryScraper(_httpClient).GetAllOllamaModelsAsync();
+
+        var result = new List<OllamaModel>();
+
+        foreach (var libraryModel in libraryModels)
+        {
+            var model = new OllamaModel();
+            model.Name = libraryModel.Name;
+            model.Parameters = long.Parse(await GetModelParamNum(libraryModel.Name));
+
+            result.Add(model);
+        }
 
         return libraryInfos.Select(li => new OllamaModel
             {
                 Name = li.Name,
-                Format = string.Empty,
-                Details = null,
+                Parameters = await GetModelParamNum(li.Name),
+                Info = new Dictionary<string, string> {},
+                Family =  new OllamaModelFamily(),
                 Size = 0,
                 DownloadStatus = ModelDownloadStatus.Ready,
                 RunsSlow = false
@@ -547,16 +596,7 @@ public class OllamaService : IOllamaService
                     detailsDict["Parameter Size"] = m.Details.Parameter_Size ?? "";
                 }
 
-                return new OllamaModel(
-                    name: m.Name!,
-                    quantization: quant ?? 0,
-                    parameters: parameters ?? double.NaN,
-                    format: m.Details?.Format ?? string.Empty,
-                    details: detailsDict,
-                    size: (long)m.Size!,
-                    downloadStatus: ModelDownloadStatus.Downloaded, // safe default
-                    runsSlow: false
-                );
+                return new OllamaModel();
             })
         );
     }

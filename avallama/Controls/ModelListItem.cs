@@ -21,7 +21,7 @@ namespace avallama.Controls;
 // felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
 // code cleaning + proper documentation
 
-public class ModelBlock : Control
+public class ModelListItem : Control
 {
     // StyledProperty - belekerül az Avalonia styles rendszerébe így például írhatunk rá stílusokat stb.
     // DirectProperty - nem kerül bele, megadott egyszerű értékeknek, jobb teljesítmény (kell getter, setter)
@@ -29,33 +29,33 @@ public class ModelBlock : Control
     // azért Title a property neve, mert a 'Name' már le van foglalva és szerintem összekavarodna
     // de ez a Model nevét tartalmazza amúgy
     public static readonly StyledProperty<string?> TitleProperty =
-        AvaloniaProperty.Register<ModelBlock, string?>(nameof(Title));
+        AvaloniaProperty.Register<ModelListItem, string?>(nameof(Title));
 
-    public static readonly DirectProperty<ModelBlock, ModelDownloadStatus> DownloadStatusProperty =
-        AvaloniaProperty.RegisterDirect<ModelBlock, ModelDownloadStatus>(
+    public static readonly DirectProperty<ModelListItem, ModelDownloadStatus> DownloadStatusProperty =
+        AvaloniaProperty.RegisterDirect<ModelListItem, ModelDownloadStatus>(
             nameof(DownloadStatus),
             o => o.DownloadStatus,
             (o, v) => o.DownloadStatus = v
         );
 
-    public static readonly DirectProperty<ModelBlock, long> DownloadedBytesProperty =
-        AvaloniaProperty.RegisterDirect<ModelBlock, long>(
+    public static readonly DirectProperty<ModelListItem, long> DownloadedBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelListItem, long>(
             nameof(DownloadedBytes),
             o => o.DownloadedBytes,
             (o, v) => o.DownloadedBytes = v,
             unsetValue: 0
         );
 
-    public static readonly DirectProperty<ModelBlock, long> SizeInBytesProperty =
-        AvaloniaProperty.RegisterDirect<ModelBlock, long>(
+    public static readonly DirectProperty<ModelListItem, long> SizeInBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelListItem, long>(
             nameof(SizeInBytes),
             o => o.SizeInBytes,
             (o, v) => o.SizeInBytes = v,
             unsetValue: 0
         );
 
-    public static readonly DirectProperty<ModelBlock, string?> SelectedNameProperty =
-        AvaloniaProperty.RegisterDirect<ModelBlock, string?>(
+    public static readonly DirectProperty<ModelListItem, string?> SelectedNameProperty =
+        AvaloniaProperty.RegisterDirect<ModelListItem, string?>(
             nameof(SelectedName),
             o => o.SelectedName,
             (o, v) => o.SelectedName = v,
@@ -63,10 +63,10 @@ public class ModelBlock : Control
         );
 
     public static readonly StyledProperty<ICommand> CommandProperty =
-        AvaloniaProperty.Register<ModelInfoBlock, ICommand>(nameof(Command));
+        AvaloniaProperty.Register<ModelListItem, ICommand>(nameof(Command));
 
     public static readonly StyledProperty<object?> CommandParameterProperty =
-        AvaloniaProperty.Register<ModelInfoBlock, object?>(nameof(CommandParameter));
+        AvaloniaProperty.Register<ModelListItem, object?>(nameof(CommandParameter));
 
     public string? Title
     {
@@ -191,7 +191,7 @@ public class ModelBlock : Control
     private void RenderBackground(DrawingContext context)
     {
         IBrush background;
-        
+
         if (Title == SelectedName)
         {
             background = ColorProvider.GetColor(AppColor.Primary);
@@ -202,7 +202,7 @@ public class ModelBlock : Control
                 ? ColorProvider.GetColor(AppColor.SecondaryContainer)
                 : ColorProvider.GetColor(AppColor.SurfaceContainerHighest);
         }
-        
+
         context.DrawRectangle(background, null,
             new RoundedRect(
                 new Rect(Bounds.Size),
@@ -432,7 +432,7 @@ public class ModelBlock : Control
     protected override Size MeasureOverride(Size availableSize)
     {
         CreateTextLayouts();
-        
+
         return new Size(
             width: availableSize.Width,
             height: BasePadding.Top + BasePadding.Bottom + (_titleTextLayout?.Height ?? 0.0)

@@ -11,7 +11,9 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:localization="clr-namespace:avallama.Services"
              xmlns:controls="clr-namespace:avallama.Controls"
+             xmlns:utilities="clr-namespace:avallama.Controls.Utilities"
              xmlns:converters="clr-namespace:avallama.Converters"
+             xmlns:dualTextItem="clr-namespace:avallama.Controls.DualTextItem"
              Background="{DynamicResource Surface}"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
@@ -47,8 +49,8 @@ Licensed under the MIT License. See LICENSE file for details.
                 <TextBox Grid.Column="1" Watermark="{localization:LocalizationService Key='SEARCH'}" MaxLines="1"
                          Background="{DynamicResource SurfaceContainerHighest}">
                     <TextBox.InnerRightContent>
-                        <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
-                                             Margin="0,0,10,0" StrokeColor="{DynamicResource Primary}" />
+                        <utilities:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
+                                              Margin="0,0,10,0" StrokeColor="{DynamicResource Primary}" />
                     </TextBox.InnerRightContent>
                 </TextBox>
 
@@ -59,7 +61,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
                     <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
-                            <controls:ConversationItem
+                            <dualTextItem:ConversationItem
                                 Id="{Binding ConversationId}"
                                 SelectedId="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectedConversation.ConversationId}"
                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectConversation}"
@@ -76,7 +78,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <!-- Beállítások gomb -->
                 <Button Classes="svgButton" Cursor="Hand"
                         Command="{Binding Path=((vm:MainViewModel)DataContext).OpenSettings, RelativeSource={RelativeSource AncestorType=Window}}">
-                    <controls:DynamicSvg
+                    <utilities:DynamicSvg
                         Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
                 </Button>
 
@@ -84,7 +86,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <Button Classes="svgButton"
                         Command="{Binding Path=((vm:MainViewModel)DataContext).OpenModelManager, RelativeSource={RelativeSource AncestorType=Window}}"
                         Cursor="Hand">
-                    <controls:DynamicSvg
+                    <utilities:DynamicSvg
                         Path="/Assets/Svg/model-manager.svg" Width="28"
                         FillColor="{DynamicResource Primary}" />
                 </Button>
@@ -99,7 +101,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <!-- SideBar expand/hide gomb -->
         <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton"
                 Click="SideBarBtn_OnClick" Cursor="Hand">
-            <controls:DynamicSvg
+            <utilities:DynamicSvg
                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
         </Button>
 
@@ -136,9 +138,9 @@ Licensed under the MIT License. See LICENSE file for details.
 
             <!-- Modellkorlátozás warning szöveg -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center">
-                <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
-                                     FillColor="{DynamicResource Outline}"
-                                     Width="18" />
+                <utilities:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
+                                      FillColor="{DynamicResource Outline}"
+                                      Width="18" />
 
                 <TextBlock Grid.Column="1" Text="{Binding LanguageLimitationWarning}"
                            Foreground="{DynamicResource Outline}"
@@ -149,9 +151,9 @@ Licensed under the MIT License. See LICENSE file for details.
             <!-- Alacsony VRAM szöveg -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
                   IsVisible="{Binding IsResourceWarningVisible}">
-                <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
-                                     FillColor="{DynamicResource Error}"
-                                     Width="18" />
+                <utilities:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
+                                      FillColor="{DynamicResource Error}"
+                                      Width="18" />
 
                 <TextBlock Grid.Column="1" Text="{Binding ResourceLimitWarning}"
                            Foreground="{DynamicResource Error}"
@@ -162,9 +164,9 @@ Licensed under the MIT License. See LICENSE file for details.
             <!-- Modell nincs letöltve szöveg -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
                   IsVisible="{Binding IsNoModelsDownloadedVisible}">
-                <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
-                                     FillColor="{DynamicResource Error}"
-                                     Width="18" />
+                <utilities:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
+                                      FillColor="{DynamicResource Error}"
+                                      Width="18" />
 
                 <TextBlock Grid.Column="1" Text="{Binding NoModelsDownloadedWarning}"
                            Foreground="{DynamicResource Error}"
@@ -244,9 +246,9 @@ Licensed under the MIT License. See LICENSE file for details.
                                         CornerRadius="20" Padding="15,8" HorizontalAlignment="Left"
                                         MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource MessageItemSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}">
                                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Left">
-                                        <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
-                                                             FillColor="{DynamicResource Error}"
-                                                             Width="16" />
+                                        <utilities:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
+                                                              FillColor="{DynamicResource Error}"
+                                                              Width="16" />
 
                                         <TextBlock Grid.Column="1" Text="{Binding Content}"
                                                    Foreground="{DynamicResource Error}"
@@ -257,7 +259,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             </DataTemplate>
 
                             <DataTemplate DataType="models:GeneratedMessage">
-                                <controls:MessageItem
+                                <dualTextItem:MessageItem
                                     Classes="generatedMessage"
                                     Text="{Binding Content}"
                                     SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
@@ -266,7 +268,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             </DataTemplate>
 
                             <DataTemplate DataType="models:Message">
-                                <controls:MessageItem
+                                <dualTextItem:MessageItem
                                     HorizontalAlignment="Right"
                                     Classes="userMessage"
                                     Text="{Binding Content}"
@@ -287,7 +289,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         Click="ScrollToBottomBtn_OnClick" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                         Margin="0,0,0,-5">
                     <Border Padding="4" Background="{DynamicResource Primary}" CornerRadius="24">
-                        <controls:DynamicSvg
+                        <utilities:DynamicSvg
                             Path="/Assets/Svg/arrow-down.svg" Width="40" FillColor="{DynamicResource OnPrimary}" />
                     </Border>
                 </Button>

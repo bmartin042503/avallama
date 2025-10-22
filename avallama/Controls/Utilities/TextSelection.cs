@@ -7,7 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
 
-namespace avallama.Controls
+namespace avallama.Controls.Utilities
 {
     /// <summary>
     /// Represents a text selection model capable of rendering highlighted selections,

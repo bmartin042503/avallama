@@ -14,7 +14,6 @@ namespace avallama.Models;
 // és ha nem elérhető a szerver a letöltéshez akkor így legalább külön választhatóak
 // tehát amit le tud tölteni azt letöltheti, amit nem az nem (de ez majd később)
 
-// a hiba státuszt meg egyelőre sztem elég egy dialoggal jelezni és a dialog után Ready-re váltani ismét
 public enum ModelDownloadStatus
 {
     NotEnoughSpace, // nincs elég hely a letöltéshez
@@ -36,54 +35,12 @@ public enum ModelDownloadAction
 
 public partial class OllamaModel : ObservableObject
 {
-    // model neve
-    [ObservableProperty] private string _name;
-    [ObservableProperty] private int? _quantization;
-    [ObservableProperty] private double? _parameters;
-
-    // pl. GGUF, MLX stb.
-    [ObservableProperty] private string? _format = string.Empty;
-
-    // modell részletei szótárban, például
-    // 'General architecture:' -> 'llama'
-    // 'Context length:' -> '8192'
-    // stb.
-    [ObservableProperty] private IDictionary<string, string>? _details;
-
+    [ObservableProperty] private string _name = string.Empty;
+    [ObservableProperty] private long _parameters;
+    [ObservableProperty] private IDictionary<string, string> _info = new Dictionary<string, string>();
+    [ObservableProperty] private OllamaModelFamily? _family;
     [ObservableProperty] private long _size; // byteokban
     [ObservableProperty] private ModelDownloadStatus _downloadStatus;
     [ObservableProperty] private double _downloadProgress; // ha a status Downloading, 0.0 és 1.0 közötti érték
-
-    // ha nincs elég vram vagy bármi hasonló ami miatt lassan futhat akkor ezt true-ra kell állítani
     [ObservableProperty] private bool _runsSlow;
-
-    public OllamaModel(
-        string name,
-        int quantization,
-        double parameters,
-        string format,
-        IDictionary<string, string> details,
-        long size,
-        ModelDownloadStatus downloadStatus,
-        bool runsSlow
-    )
-    {
-        Name = name;
-        Quantization = quantization;
-        Parameters = parameters;
-        Format = format;
-        Details = details;
-        Size = size;
-        DownloadStatus = downloadStatus;
-        RunsSlow = runsSlow;
-    }
-
-    public OllamaModel()
-    {
-        Name = string.Empty;
-        Quantization = null;
-        Parameters = double.NaN;
-        Format = string.Empty;
-        Details = null;
-    }
 }

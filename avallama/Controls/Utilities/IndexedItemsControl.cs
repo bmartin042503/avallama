@@ -4,7 +4,7 @@
 using Avalonia;
 using Avalonia.Controls;
 
-namespace avallama.Controls;
+namespace avallama.Controls.Utilities;
 
 // ItemsControl aminek az elemei rendelkeznek index-el
 // létrehoztam de mégsem kellett, viszont elképzelhető, hogy a jövőben kelleni fog
@@ -25,7 +25,7 @@ public class IndexedItemsControl : ItemsControl
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
-        
+
         if (GetItemIndex(container) == 0)
         {
             SetItemIndex(container, index);

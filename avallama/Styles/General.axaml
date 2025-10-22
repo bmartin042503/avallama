@@ -1,16 +1,17 @@
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:avallama.Controls">
-    
+        xmlns:controls="clr-namespace:avallama.Controls"
+        xmlns:utilities="clr-namespace:avallama.Controls.Utilities">
+
     <!-- Egyéb stílusdefiníciók, amiknek nincs értelme külön fájlt létrehozni -->
 
     <!-- Ezzel megadjuk hogy az IndexedItemsControl az ItemsControl-hoz hasonlóan jelenítse meg az elemeket -->
-    <Style Selector="controls|IndexedItemsControl">
+    <Style Selector="utilities|IndexedItemsControl">
         <Setter Property="Template">
             <ControlTemplate>
                 <ItemsPresenter/>

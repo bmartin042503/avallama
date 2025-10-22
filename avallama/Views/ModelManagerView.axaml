@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -12,6 +12,8 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:converters="clr-namespace:avallama.Converters"
+             xmlns:utilities="clr-namespace:avallama.Controls.Utilities"
+             xmlns:modelItem="clr-namespace:avallama.Controls.ModelItem"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
@@ -36,7 +38,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
                 Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center" />
             <Button Command="{Binding ShowInfo}" Classes="svgButton">
-                <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
+                <utilities:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
                                      Width="20" VerticalAlignment="Center" />
             </Button>
         </StackPanel>
@@ -50,8 +52,8 @@ Licensed under the MIT License. See LICENSE file for details.
                      HorizontalAlignment="Stretch" Text="{Binding SearchBoxText}"
                      VerticalAlignment="Stretch">
                 <TextBox.InnerRightContent>
-                    <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
-                                         Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
+                    <utilities:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
+                                          Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
                 </TextBox.InnerRightContent>
             </TextBox>
 
@@ -80,7 +82,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <!-- "Nincs megjeleníthető model" svg és szöveg -->
             <StackPanel Grid.Row="2" Orientation="Vertical" IsVisible="{Binding !HasModelsToDisplay}"
                         Spacing="30" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <controls:DynamicSvg Path="/Assets/Svg/sad.svg" Height="120" FillColor="{DynamicResource Primary}" />
+                <utilities:DynamicSvg Path="/Assets/Svg/sad.svg" Height="120" FillColor="{DynamicResource Primary}" />
 
                 <TextBlock Text="{services:LocalizationService Key='NO_MODELS_FOUND'}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"
@@ -94,7 +96,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="models:OllamaModel">
-                            <controls:ModelBlock
+                            <controls:ModelListItem
                                 Margin="0,12,0,0"
                                 Title="{Binding Name}"
                                 DownloadStatus="{Binding DownloadStatus}"
@@ -113,13 +115,13 @@ Licensed under the MIT License. See LICENSE file for details.
                       Margin="4,0,4,0" />
 
         <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
-        <controls:ModelInfoBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+        <modelItem:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
                                  IsVisible="{Binding IsModelInfoBlockVisible}"
                                  Title="{Binding SelectedModel.Name}"
-                                 Quantization="{Binding SelectedModel.Quantization}"
+                                 Quantization="{Binding SelectedModel}"
                                  Parameters="{Binding SelectedModel.Parameters}"
-                                 Format="{Binding SelectedModel.Format}"
-                                 DetailItemsSource="{Binding SelectedModel.Details}"
+                                 Format="{Binding SelectedModel}"
+                                 DetailItemsSource="{Binding SelectedModel}"
                                  SizeInBytes="{Binding SelectedModel.Size}"
                                  DownloadStatus="{Binding SelectedModel.DownloadStatus}"
                                  DownloadSpeed="{Binding DownloadSpeed}"
