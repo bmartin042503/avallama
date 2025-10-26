@@ -34,7 +34,7 @@ public partial class HomeViewModel : PageViewModel
     private readonly IOllamaService _ollamaService;
     private readonly IDialogService _dialogService;
     private readonly IConfigurationService _configurationService;
-    private readonly IDatabaseService _databaseService;
+    private readonly IConversationService _conversationService;
 
     private readonly TaskCompletionSource<bool> _ollamaServerStarted = new();
     private readonly IMessenger _messenger;
@@ -90,7 +90,7 @@ public partial class HomeViewModel : PageViewModel
         NewMessageText = NewMessageText.Trim();
         var message = new Message(NewMessageText);
         SelectedConversation.AddMessage(message);
-        await _databaseService.InsertMessage(SelectedConversation.ConversationId, message, null, null);
+        await _conversationService.InsertMessage(SelectedConversation.ConversationId, message, null, null);
         NewMessageText = string.Empty;
         if (Conversations.IndexOf(SelectedConversation) != 0)
         {
@@ -107,7 +107,7 @@ public partial class HomeViewModel : PageViewModel
             LocalizationService.GetString("NEW_CONVERSATION"),
             "llama3.2"
         );
-        newConversation.ConversationId = await _databaseService.CreateConversation(newConversation);
+        newConversation.ConversationId = await _conversationService.CreateConversation(newConversation);
         Conversations.Push(newConversation);
         SelectedConversation = newConversation;
     }
@@ -127,7 +127,7 @@ public partial class HomeViewModel : PageViewModel
         var state = GetState(SelectedConversation);
         if (state.MessagesLoaded) return;
 
-        SelectedConversation.Messages = await _databaseService.GetMessagesForConversation(SelectedConversation);
+        SelectedConversation.Messages = await _conversationService.GetMessagesForConversation(SelectedConversation);
         state.MessagesLoaded = true;
     }
 
@@ -164,7 +164,7 @@ public partial class HomeViewModel : PageViewModel
                 }
             }
         }
-        await _databaseService.InsertMessage(SelectedConversation.ConversationId, generatedMessage, CurrentlySelectedModel, generatedMessage.GenerationSpeed);
+        await _conversationService.InsertMessage(SelectedConversation.ConversationId, generatedMessage, CurrentlySelectedModel, generatedMessage.GenerationSpeed);
     }
 
     private async Task RegenerateConversationTitle()
@@ -182,7 +182,7 @@ public partial class HomeViewModel : PageViewModel
             }
 
             SelectedConversation.MessageCountToRegenerateTitle = 0;
-            await _databaseService.UpdateConversationTitle(SelectedConversation);
+            await _conversationService.UpdateConversationTitle(SelectedConversation);
         }
     }
 
@@ -196,7 +196,7 @@ public partial class HomeViewModel : PageViewModel
         IOllamaService ollamaService,
         IDialogService dialogService,
         IConfigurationService configurationService,
-        IDatabaseService databaseService,
+        IConversationService conversationService,
         IMessenger messenger
     )
     {
@@ -206,7 +206,7 @@ public partial class HomeViewModel : PageViewModel
         _dialogService = dialogService;
         _ollamaService = ollamaService;
         _configurationService = configurationService;
-        _databaseService = databaseService;
+        _conversationService = conversationService;
         _messenger = messenger;
         _availableModels = [];
         _currentlySelectedModel = "";
@@ -353,7 +353,7 @@ public partial class HomeViewModel : PageViewModel
 
     private async Task InitializeConversations()
     {
-        _conversations = await _databaseService.GetConversations();
+        _conversations = await _conversationService.GetConversations();
         if (_conversations.Count <= 0)
         {
             await CreateNewConversation();
@@ -361,7 +361,7 @@ public partial class HomeViewModel : PageViewModel
         }
 
         SelectedConversation = _conversations.FirstOrDefault()!;
-        SelectedConversation.Messages = await _databaseService.GetMessagesForConversation(SelectedConversation);
+        SelectedConversation.Messages = await _conversationService.GetMessagesForConversation(SelectedConversation);
         GetState(SelectedConversation).MessagesLoaded = true;
     }
 

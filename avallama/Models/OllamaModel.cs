@@ -1,10 +1,9 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections.Generic;
-using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Tmds.DBus.Protocol;
 
 namespace avallama.Models;
 
@@ -86,4 +85,20 @@ public partial class OllamaModel : ObservableObject
         Format = string.Empty;
         Details = null;
     }
+}
+
+public class OllamaModelFamily(
+    string name,
+    string description,
+    long pullCount,
+    IList<string> labels,
+    int tagCount,
+    DateTime lastUpdated)
+{
+    public string Name { get; set; } = name;
+    public string Description { get; set; } = description;
+    public long PullCount { get; set; } = pullCount;
+    public IList<string> Labels { get; set; } = labels;
+    public int TagCount { get; set; } = tagCount;
+    public DateTime LastUpdated { get; set; } = lastUpdated;
 }

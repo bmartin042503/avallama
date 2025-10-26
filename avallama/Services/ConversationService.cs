@@ -20,7 +20,7 @@ internal static class Roles
     public const string Assistant = "assistant";
 }
 
-public interface IDatabaseService
+public interface IConversationService
 {
     public Task<Guid> CreateConversation(Conversation conversation);
     public Task InsertMessage(Guid conversationId, Message message, string? modelName, double? tokenPerSec);
@@ -29,12 +29,11 @@ public interface IDatabaseService
     public Task<ObservableCollection<Message>> GetMessagesForConversation(Conversation conversation);
 }
 
-public class DatabaseService : IDatabaseService, IDisposable
+public class ConversationService : IConversationService, IDisposable
 {
     private readonly SqliteConnection _connection;
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public DatabaseService(SqliteConnection? testConnection = null)
+    public ConversationService(SqliteConnection? testConnection = null)
     {
         if (testConnection is not null)
         {
@@ -57,9 +56,7 @@ public class DatabaseService : IDatabaseService, IDisposable
     public async Task<Guid> CreateConversation(Conversation conversation)
     {
         var conversationId = Guid.NewGuid();
-
-        await _semaphore.WaitAsync();
-        try
+        using (DatabaseLock.Instance.AcquireWriteLock())
         {
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText =
@@ -79,10 +76,6 @@ public class DatabaseService : IDatabaseService, IDisposable
                 throw;
             }
         }
-        finally
-        {
-            _semaphore.Release();
-        }
 
         return conversationId;
     }
@@ -91,8 +84,7 @@ public class DatabaseService : IDatabaseService, IDisposable
     {
         if (message is FailedMessage) return;
 
-        await _semaphore.WaitAsync();
-        try
+        using (DatabaseLock.Instance.AcquireWriteLock())
         {
             await using var transaction = await _connection.BeginTransactionAsync();
             var now = DateTime.Now;
@@ -133,17 +125,12 @@ public class DatabaseService : IDatabaseService, IDisposable
                 throw;
             }
         }
-        finally
-        {
-            _semaphore.Release();
-        }
     }
 
     public async Task<ObservableStack<Conversation>> GetConversations()
     {
         ObservableStack<Conversation> conversations;
-        await _semaphore.WaitAsync();
-        try
+        using (DatabaseLock.Instance.AcquireReadLock())
         {
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT * FROM conversations ORDER BY last_message_sent_at DESC";
@@ -180,11 +167,6 @@ public class DatabaseService : IDatabaseService, IDisposable
                     lastModels.GetValueOrDefault(conv.ConversationId,
                         "llama3.2:2b"); // this default could be set in settings?
             }
-
-        }
-        finally
-        {
-            _semaphore.Release();
         }
 
         return conversations;
@@ -240,8 +222,7 @@ public class DatabaseService : IDatabaseService, IDisposable
 
     public async Task<bool> UpdateConversationTitle(Conversation conversation)
     {
-        await _semaphore.WaitAsync();
-        try
+        using (DatabaseLock.Instance.AcquireWriteLock())
         {
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText = "UPDATE conversations SET title = @title WHERE id = @ConversationId";
@@ -258,17 +239,12 @@ public class DatabaseService : IDatabaseService, IDisposable
                 throw;
             }
         }
-        finally
-        {
-            _semaphore.Release();
-        }
     }
 
     public async Task<ObservableCollection<Message>> GetMessagesForConversation(Conversation conversation)
     {
         ObservableCollection<Message> messages;
-        await _semaphore.WaitAsync();
-        try
+        using (DatabaseLock.Instance.AcquireReadLock())
         {
             messages = [];
             await using var cmd = _connection.CreateCommand();
@@ -298,17 +274,12 @@ public class DatabaseService : IDatabaseService, IDisposable
                 throw;
             }
         }
-        finally
-        {
-            _semaphore.Release();
-        }
 
         return messages;
     }
 
     public void Dispose()
     {
-        _semaphore.Dispose();
         _connection.Dispose();
         GC.SuppressFinalize(this);
     }
