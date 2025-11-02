@@ -7,6 +7,7 @@ using Xunit;
 
 namespace avallama.Tests.Services;
 
+[Collection("Database Tests")]
 public class DatabaseInitServiceTests
 {
 
@@ -16,7 +17,7 @@ public class DatabaseInitServiceTests
         var service = new DatabaseInitService(isTest: true);
         await AsyncAssertExtensions.DoesNotThrowAsync(async () =>
         {
-            await using var conn = await service.GetOpenConnectionAsync();
+            await using var conn = await service.InitializeDatabaseAsync();
             Assert.NotNull(conn);
             Assert.Equal(System.Data.ConnectionState.Open, conn.State);
         });
@@ -27,7 +28,7 @@ public class DatabaseInitServiceTests
     {
         var service = new DatabaseInitService();
 
-        await using var conn = await service.GetOpenConnectionAsync();
+        await using var conn = await service.InitializeDatabaseAsync();
 
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT value FROM schema_metadata WHERE key = 'schema_hash'";
@@ -42,7 +43,7 @@ public class DatabaseInitServiceTests
     public async Task InitializeSchemaAsync_MessagesIndex_IsUsed_WhenQueryingMessages_ForConversation()
     {
         var service = new DatabaseInitService(isTest: true);
-        await using var conn = await service.GetOpenConnectionAsync();
+        await using var conn = await service.InitializeDatabaseAsync();
 
         await using (var insertCmd = conn.CreateCommand())
         {
@@ -74,7 +75,7 @@ public class DatabaseInitServiceTests
     public async Task InitializeSchemaAsync_ConversationsIndex_IsUsed_WhenQueryingByLastMessage()
     {
         var service = new DatabaseInitService(isTest: true);
-        await using var conn = await service.GetOpenConnectionAsync();
+        await using var conn = await service.InitializeDatabaseAsync();
 
         await using (var insertCmd = conn.CreateCommand())
         {
@@ -97,5 +98,70 @@ public class DatabaseInitServiceTests
 
         var planText = string.Join(" ", queryPlan);
         Assert.Contains("idx_conversations_last_msg", planText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task InitializeSchemaAsync_ModelFamiliesIndex_IsUsed_WhenQueryingByPullCount()
+    {
+        var service = new DatabaseInitService(isTest: true);
+        await using var conn = await service.InitializeDatabaseAsync();
+
+        await using (var insertCmd = conn.CreateCommand())
+        {
+            insertCmd.CommandText = """
+                                    INSERT INTO model_families (name, description, pull_count, tag_count, cached_at)
+                                    VALUES ('family-1', 'Test Family', 1024, 0, '2024-01-01T00:00:00Z');
+                                    """;
+            await insertCmd.ExecuteNonQueryAsync();
+        }
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "EXPLAIN QUERY PLAN SELECT * FROM model_families ORDER BY pull_count DESC";
+        await using var reader = await cmd.ExecuteReaderAsync();
+        var queryPlan = new List<string>();
+        while (await reader.ReadAsync())
+        {
+            queryPlan.Add(reader.GetString(3));
+        }
+
+        var planText = string.Join(" ", queryPlan);
+        Assert.Contains("idx_models_pull_count_desc", planText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task InitializeSchemaAsync_OllamaModelsIndex_IsUsed_WhenQueryingByName()
+    {
+        var service = new DatabaseInitService(isTest: true);
+        await using var conn = await service.InitializeDatabaseAsync();
+
+        await using (var insertCmd = conn.CreateCommand())
+        {
+            insertCmd.CommandText = """
+                                    INSERT INTO model_families (name, description, pull_count, tag_count, cached_at)
+                                    VALUES ('family-1', 'Test Family', 1024, 0, '2024-01-01T00:00:00Z');
+                                    """;
+            await insertCmd.ExecuteNonQueryAsync();
+        }
+
+        await using (var insertCmd = conn.CreateCommand())
+        {
+            insertCmd.CommandText = """
+                                    INSERT INTO ollama_models (name, family_name, size, cached_at)
+                                    VALUES ('model-1', 'family-1', 1024, '2024-01-01T00:00:00Z');
+                                    """;
+            await insertCmd.ExecuteNonQueryAsync();
+        }
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "EXPLAIN QUERY PLAN SELECT * FROM ollama_models ORDER BY name ASC";
+        await using var reader = await cmd.ExecuteReaderAsync();
+        var queryPlan = new List<string>();
+        while (await reader.ReadAsync())
+        {
+            queryPlan.Add(reader.GetString(3));
+        }
+
+        var planText = string.Join(" ", queryPlan);
+        Assert.Contains("idx_models_name_asc", planText, StringComparison.OrdinalIgnoreCase);
     }
 }

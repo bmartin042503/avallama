@@ -4,11 +4,11 @@
 <h1 align="center">Avallama</h1>
 
 <p align="center">
-  <a href="https://github.com/eyeonspringfield/avallama/actions/workflows/pr.yml">
-    <img alt="Build" src="https://github.com/eyeonspringfield/avallama/actions/workflows/pr.yml/badge.svg?branch=main">
+  <a href="https://github.com/4foureyes/avallama/actions/workflows/pr.yml">
+    <img alt="Build" src="https://github.com/4foureyes/avallama/actions/workflows/pr.yml/badge.svg?branch=main">
   </a>
-  <a href="https://codecov.io/gh/eyeonspringfield/avallama">
-    <img alt="Coverage" src="https://codecov.io/gh/eyeonspringfield/avallama/branch/main/graph/badge.svg">
+  <a href="https://codecov.io/gh/4foureyes/avallama">
+    <img alt="Coverage" src="https://codecov.io/gh/4foureyes/avallama/branch/main/graph/badge.svg">
   </a>
 </p>
 

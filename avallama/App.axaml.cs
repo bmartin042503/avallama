@@ -76,7 +76,7 @@ public partial class App : Application
         _ollamaService = services.GetRequiredService<OllamaService>();
         _dialogService = services.GetRequiredService<DialogService>();
         _databaseInitService = services.GetRequiredService<DatabaseInitService>();
-        SharedDbConnection = _databaseInitService.GetOpenConnectionAsync().GetAwaiter().GetResult();
+        SharedDbConnection = _databaseInitService.InitializeDatabaseAsync().GetAwaiter().GetResult();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

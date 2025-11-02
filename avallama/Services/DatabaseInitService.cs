@@ -12,7 +12,7 @@ namespace avallama.Services;
 
 public interface IDatabaseInitService
 {
-    Task<SqliteConnection> GetOpenConnectionAsync();
+    Task<SqliteConnection> InitializeDatabaseAsync();
 }
 
 public class DatabaseInitService : IDatabaseInitService
@@ -45,6 +45,37 @@ public class DatabaseInitService : IDatabaseInitService
 
                                            CREATE INDEX IF NOT EXISTS idx_conversations_last_msg
                                            ON conversations (last_message_sent_at);
+
+                                           CREATE TABLE IF NOT EXISTS model_families (
+                                           name TEXT PRIMARY KEY,
+                                           description TEXT NOT NULL,
+                                           pull_count INTEGER NOT NULL DEFAULT 0,
+                                           labels TEXT,
+                                           tag_count INTEGER NOT NULL DEFAULT 0,
+                                           last_updated TEXT,
+                                           cached_at TEXT NOT NULL,
+                                           UNIQUE(name)
+                                           );
+
+                                           CREATE TABLE IF NOT EXISTS ollama_models (
+                                           name TEXT PRIMARY KEY,
+                                           family_name TEXT NOT NULL,
+                                           parameters REAL,
+                                           size INTEGER NOT NULL,
+                                           format TEXT,
+                                           quantization TEXT,
+                                           architecture TEXT,
+                                           block_count INTEGER,
+                                           context_length INTEGER,
+                                           embedding_length INTEGER,
+                                           additional_info TEXT,
+                                           download_status INTEGER NOT NULL DEFAULT 0,
+                                           cached_at TEXT NOT NULL,
+                                           FOREIGN KEY (family_name) REFERENCES model_families(name) ON DELETE CASCADE
+                                           );
+
+                                           CREATE INDEX IF NOT EXISTS idx_models_pull_count_desc ON model_families(pull_count DESC);
+                                           CREATE INDEX IF NOT EXISTS idx_models_name_asc ON ollama_models(name ASC);
                                            """;
 
     public DatabaseInitService(bool? isTest = false)
@@ -63,7 +94,7 @@ public class DatabaseInitService : IDatabaseInitService
         _dbPath = Path.Combine(appDir, "avallama.db");
     }
 
-    public async Task<SqliteConnection> GetOpenConnectionAsync()
+    public async Task<SqliteConnection> InitializeDatabaseAsync()
     {
         var isNew = !File.Exists(_dbPath);
 

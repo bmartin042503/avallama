@@ -9,5 +9,7 @@ public enum SortingOption
     ParametersDescending,
     ParametersAscending,
     SizeDescending,
-    SizeAscending
+    SizeAscending,
+    PullCountDescending,
+    PullCountAscending
 }

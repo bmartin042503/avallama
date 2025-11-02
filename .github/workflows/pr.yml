@@ -52,6 +52,8 @@ jobs:
           --no-build
           --collect:"XPlat Code Coverage"
           --logger "trx;LogFileName=test-results.trx"
+          --logger "console;verbosity=detailed"
+          -v d
 
       - name: Upload test results
         if: always()
