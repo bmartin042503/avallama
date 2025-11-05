@@ -284,6 +284,28 @@ public class ConversationServiceTests : IDisposable
         Assert.Equal(longContent, messages[0].Content);
     }
 
+    [Fact]
+    public async Task DeleteConversation_DeletesConversation()
+    {
+        var id = await _conversationService.CreateConversation(
+            new Conversation(Guid.Empty, "Test", new List<Message>()));
+        await _conversationService.DeleteConversation(id);
+        var conversations = await _conversationService.GetConversations();
+        Assert.DoesNotContain(conversations, c => c.ConversationId == id);
+    }
+
+    [Fact]
+    public async Task DeleteConversation_DeletesConversationMessages()
+    {
+        var id = await _conversationService.CreateConversation(
+            new Conversation(Guid.Empty, "Test", new List<Message>()));
+        await _conversationService.InsertMessage(id, new Message("Message 1"), null, null);
+        await _conversationService.DeleteConversation(id);
+        var messages = await _conversationService.GetMessagesForConversation(
+            new Conversation(id, "Test", new List<Message>()));
+        Assert.Empty(messages);
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
