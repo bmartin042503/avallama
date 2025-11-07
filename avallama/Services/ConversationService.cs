@@ -27,6 +27,7 @@ public interface IConversationService
     public Task<ObservableStack<Conversation>> GetConversations();
     public Task<bool> UpdateConversationTitle(Conversation conversation);
     public Task<ObservableCollection<Message>> GetMessagesForConversation(Conversation conversation);
+    public Task DeleteConversation(Guid conversationId);
 }
 
 public class ConversationService : IConversationService, IDisposable
@@ -276,6 +277,25 @@ public class ConversationService : IConversationService, IDisposable
         }
 
         return messages;
+    }
+
+    public async Task DeleteConversation(Guid conversationId)
+    {
+        using (DatabaseLock.Instance.AcquireWriteLock())
+        {
+            await using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "DELETE FROM conversations WHERE id = @ConversationId";
+            cmd.Parameters.AddWithValue("@ConversationId", conversationId);
+            try
+            {
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception)
+            {
+                // TODO: InterruptService
+                throw;
+            }
+        }
     }
 
     public void Dispose()

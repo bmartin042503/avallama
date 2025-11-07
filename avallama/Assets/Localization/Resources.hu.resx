@@ -353,7 +353,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Törlés megerősítése</value>
     </data>
     <data name="CONFIRM_DELETION_DIALOG_DESC" xml:space="preserve">
-        <value>Biztos, hogy törölni szeretnéd a(z) {0} modellt?</value>
+        <value>Biztos, hogy törölni szeretnéd a(z) {0}?</value>
     </data>
     <data name="RESTART_NEEDED_DIALOG_DESC" xml:space="preserve">
         <value>Szeretnéd újraindítani az alkalmazást most?</value>
@@ -399,5 +399,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="ERROR_DELETING_MODEL" xml:space="preserve">
         <value>Hiba történt a modell törlése során.</value>
+    </data>
+    <data name="THIS_CONVERSATION" xml:space="preserve">
+        <value>beszélgetést</value>
     </data>
 </root>

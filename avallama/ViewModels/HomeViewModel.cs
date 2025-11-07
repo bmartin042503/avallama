@@ -48,6 +48,7 @@ public partial class HomeViewModel : PageViewModel
         get => _conversations;
         set => SetProperty(ref _conversations, value);
     }
+
     private readonly ConditionalWeakTable<Conversation, ConversationState> _conversationStates = new();
 
     private ObservableCollection<string> _availableModels;
@@ -97,6 +98,7 @@ public partial class HomeViewModel : PageViewModel
             Conversations.Remove(SelectedConversation);
             Conversations.Push(SelectedConversation);
         }
+
         await AddGeneratedMessage();
     }
 
@@ -132,6 +134,31 @@ public partial class HomeViewModel : PageViewModel
     }
 
     [RelayCommand]
+    public async Task DeleteConversation()
+    {
+        var newSelectedConversations = Conversations.IndexOf(SelectedConversation) + 1;
+
+        var res = await _dialogService.ShowConfirmationDialog(
+            LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"), LocalizationService.GetString("DELETE"),
+            LocalizationService.GetString("CANCEL"),
+            string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"),
+                LocalizationService.GetString("THIS_CONVERSATION")), ConfirmationType.Positive);
+
+        if (res is ConfirmationResult { Confirmation: ConfirmationType.Negative }) return;
+
+        await _conversationService.DeleteConversation(SelectedConversation.ConversationId);
+        Conversations.Remove(SelectedConversation);
+
+        if (Conversations.Count == 0)
+        {
+            await CreateNewConversation();
+            return;
+        }
+        var newIndex = Math.Min(Conversations.IndexOf(SelectedConversation) + 1, Conversations.Count - 1);
+        SelectedConversation = Conversations[newIndex];
+    }
+
+    [RelayCommand]
     public async Task RetryOllamaConnection()
     {
         await _ollamaService.Retry();
@@ -164,7 +191,9 @@ public partial class HomeViewModel : PageViewModel
                 }
             }
         }
-        await _conversationService.InsertMessage(SelectedConversation.ConversationId, generatedMessage, CurrentlySelectedModel, generatedMessage.GenerationSpeed);
+
+        await _conversationService.InsertMessage(SelectedConversation.ConversationId, generatedMessage,
+            CurrentlySelectedModel, generatedMessage.GenerationSpeed);
     }
 
     private async Task RegenerateConversationTitle()
@@ -231,7 +260,7 @@ public partial class HomeViewModel : PageViewModel
         {
             // Triggering conversations and ollama task in parallel
             var conversationsTasks = InitializeConversations();
-            var ollamaTask  = InitializeOllama();
+            var ollamaTask = InitializeOllama();
 
             await Task.WhenAll(conversationsTasks, ollamaTask);
 
@@ -385,10 +414,12 @@ public partial class HomeViewModel : PageViewModel
             IsNoModelsDownloadedVisible = true;
             return;
         }
+
         foreach (var model in downloadedModels)
         {
             AvailableModels.Add(model.Name);
         }
+
         AvailableModels.RemoveAt(0);
         CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
         IsModelsDropdownEnabled = true;
