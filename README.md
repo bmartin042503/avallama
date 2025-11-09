@@ -88,7 +88,7 @@ sudo pacman -Rns avallama
 
 The Windows installer is **not signed with a trusted code-signing certificate**, so Windows SmartScreen may prevent it from running. If you wish to circumvent this, click `More info -> Run anyway`.
 
-1. Download the latest version of AvallamaSetup.exe from the [releases](https://github.com/4foureyes/avallama/releases) page.
+1. Download the latest Windows installer from the [releases](https://github.com/4foureyes/avallama/releases) page, e.g. `avallama-setup-0.2.0.exe`.
 2. Open the installer and go through the setup steps.
 3. Once installed, you can run the application from the Start Menu.
 

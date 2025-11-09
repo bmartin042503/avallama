@@ -1,14 +1,18 @@
+#ifndef AppVersion
 #define AppVersion "0.0.0"
+#endif
 
 [Setup]
-AppName=Avallama
+AppName=avallama
 AppVersion={#AppVersion}
-DefaultDirName={localappdata}\Avallama
+AppVerName=avallama
+DefaultDirName={localappdata}\avallama
 DefaultGroupName=4foureyes
-UninstallDisplayIcon={app}\Avallama.exe
+UninstallDisplayIcon={app}\avallama.exe
 OutputDir=.
-OutputBaseFilename=AvallamaSetup
+OutputBaseFilename=avallama-setup-{#AppVersion}
 PrivilegesRequired=lowest
+VersionInfoVersion={#AppVersion}
 
 [Code]
 var
@@ -28,50 +32,69 @@ end;
 
 procedure CreateOllamaWarningPage(Page: TWizardPage);
 var
-  Label1, Label2, Label3, Label4: TLabel;
-  Button1: TButton;
+  TitleLabel, InfoLabel1, InfoLabel2, InfoLabel3, InfoLabel4: TLabel;
+  DownloadButton: TButton;
 begin
-  Label1 := TLabel.Create(Page);
-  Label1.Parent := Page.Surface;
-  Label1.Caption := 'No installation of Ollama was found on your system.';
-  Label1.Top := 20;
-  Label1.Left := 10;
-  Label1.AutoSize := True;
-  
-  Label2 := TLabel.Create(Page);
-  Label2.Parent := Page.Surface;
-  Label2.Caption := 'An installation of Ollama is required for Avallama to work properly.';
-  Label2.Top := 40;
-  Label2.Left := 10;
-  Label2.AutoSize := True;
-  
-  Label3 := TLabel.Create(Page);
-  Label3.Parent := Page.Surface;
-  Label3.Caption := 'Click the button below to open the Ollama download page in your browser.';
-  Label3.Top := 60;
-  Label3.Left := 10;
-  Label3.AutoSize := True;
-  
-  Label4 := TLabel.Create(Page);
-  Label4.Parent := Page.Surface;
-  Label4.Caption := 'If Ollama has been installed, please continute with the setup.';
-  Label4.Top := 80;
-  Label4.Left := 10;
-  Label4.AutoSize := True;
+  { Title }
+  TitleLabel := TLabel.Create(Page);
+  TitleLabel.Parent := Page.Surface;
+  TitleLabel.Caption := 'No Ollama install was found on your machine.';
+  TitleLabel.Font.Style := [fsBold];
+  TitleLabel.Font.Size := 12;
+  TitleLabel.Left := 10;
+  TitleLabel.Top := 10;
+  TitleLabel.AutoSize := True;
 
-  Button1 := TButton.Create(Page);
-  Button1.Parent := Page.Surface;
-  Button1.Caption := 'Open';
-  Button1.Top := Label4.Top + Label4.Height + 10;
-  Button1.Left := 10;
-  Button1.OnClick := @Button1Click;
+  { Line 1 }
+  InfoLabel1 := TLabel.Create(Page);
+  InfoLabel1.Parent := Page.Surface;
+  InfoLabel1.Caption :=
+    'Avallama can be used with an existing Ollama instance on your network.';
+  InfoLabel1.Left := 10;
+  InfoLabel1.Top := TitleLabel.Top + TitleLabel.Height + 10;
+  InfoLabel1.Width := Page.SurfaceWidth - 20;
+
+  { Line 2 }
+  InfoLabel2 := TLabel.Create(Page);
+  InfoLabel2.Parent := Page.Surface;
+  InfoLabel2.Caption :=
+    'In this case, you may safely continue with the installation.';
+  InfoLabel2.Left := 10;
+  InfoLabel2.Top := InfoLabel1.Top + InfoLabel1.Height + 10;
+  InfoLabel2.Width := Page.SurfaceWidth - 20;
+
+  { Line 3 }
+  InfoLabel3 := TLabel.Create(Page);
+  InfoLabel3.Parent := Page.Surface;
+  InfoLabel3.Caption :=
+    'Otherwise, please install Ollama before continuing.';
+  InfoLabel3.Left := 10;
+  InfoLabel3.Top := InfoLabel2.Top + InfoLabel2.Height + 10;
+  InfoLabel3.Width := Page.SurfaceWidth - 20;
+
+  { Line 4 }
+  InfoLabel4 := TLabel.Create(Page);
+  InfoLabel4.Parent := Page.Surface;
+  InfoLabel4.Caption :=
+    'Click the button below to open the Ollama download page.';
+  InfoLabel4.Left := 10;
+  InfoLabel4.Top := InfoLabel3.Top + InfoLabel3.Height + 10;
+  InfoLabel4.Width := Page.SurfaceWidth - 20;
+
+  { Download button }
+  DownloadButton := TButton.Create(Page);
+  DownloadButton.Parent := Page.Surface;
+  DownloadButton.Caption := 'Open';
+  DownloadButton.Top := InfoLabel4.Top + InfoLabel4.Height + 15;
+  DownloadButton.Left := 10;
+  DownloadButton.OnClick := @Button1Click;
 end;
 
 procedure InitializeWizard();
 begin
   if not IsOllamaInstalled() then
   begin
-    MyPage := CreateCustomPage(wpWelcome, 'Warning', 'Avallama requires Ollama to be installed.');
+    MyPage := CreateCustomPage(wpWelcome, 'Warning', 'No Ollama installation found');
     CreateOllamaWarningPage(MyPage);
   end;
 end;
@@ -80,8 +103,11 @@ end;
 Source: "{#SourcePath}\..\win-dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\Avallama"; Filename: "{app}\Avallama.exe"; IconFilename: "{app}\Avallama.exe"
-Name: "{group}\Uninstall Avallama"; Filename: "{uninstallexe}"
+Name: "{group}\avallama"; Filename: "{app}\avallama.exe"; IconFilename: "{app}\avallama.exe"
+Name: "{group}\Uninstall avallama"; Filename: "{uninstallexe}"
 
 [Run]
-Filename: "{app}\Avallama.exe"; Description: "Launch application"; Flags: nowait postinstall
+Filename: "{app}\avallama.exe"; Description: "Launch avallama"; Flags: nowait postinstall
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{userappdata}\avallama"
