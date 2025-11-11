@@ -809,7 +809,7 @@ public class ModelItem : Control
         if (SizeInBytes <= 0) return null;
 
         var formattedSize = string.Format(LocalizationService.GetString("MODEL_SIZE"),
-            RenderHelper.GetSizeInGb(SizeInBytes));
+            ConversionHelper.GetSizeInGb(SizeInBytes));
 
         return new TextLayout(
             formattedSize,
@@ -892,7 +892,7 @@ public class ModelItem : Control
 
         // (letöltött byteok/teljes méret) szöveg
         var downloadedBytesInfo =
-            $" ({RenderHelper.GetSizeInGb(DownloadedBytes)}/{RenderHelper.GetSizeInGb(SizeInBytes)})";
+            $" ({ConversionHelper.GetSizeInGb(DownloadedBytes)}/{ConversionHelper.GetSizeInGb(SizeInBytes)})";
 
         // letöltés sebessége szöveg
         var downloadSpeedInfo = $" - {DownloadSpeed} Mbps";

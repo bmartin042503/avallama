@@ -31,7 +31,7 @@ public interface IOllamaService
     void Stop();
     Task Retry();
     Task<bool> IsModelDownloaded();
-    Task<string> GetModelParamNum(string modelName);
+    Task<long> GetModelParamNum(string modelName);
     IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
     IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName);
     Task<bool> IsOllamaServerRunning();
@@ -358,8 +358,10 @@ public class OllamaService : IOllamaService
             var response = await _httpClient.PostAsync("/api/show", content);
             var responseContent = await response.Content.ReadAsStringAsync();
             var json = JsonNode.Parse(responseContent);
-            return (json?["details"]?["parameter_size"] == null ? "" : ":") +
-                   json?["details"]?["parameter_size"]?.ToString().ToLower();
+            // return (json?["details"]?["parameter_size"] == null ? "" : ":") +
+                   // json?["details"]?["parameter_size"]?.ToString().ToLower();
+            // TODO: fix and replace this
+            return new Dictionary<string, string>();
         }
         catch (JsonException ex)
         {
@@ -373,7 +375,7 @@ public class OllamaService : IOllamaService
             );
         }
 
-        return string.Empty;
+        return new Dictionary<string, string>();
     }
 
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName)
@@ -508,12 +510,12 @@ public class OllamaService : IOllamaService
         {
             var model = new OllamaModel();
             model.Name = libraryModel.Name;
-            model.Parameters = long.Parse(await GetModelParamNum(libraryModel.Name));
+            model.Parameters = 0; // TODO: fix and replace this
 
             result.Add(model);
         }
 
-        return libraryInfos.Select(li => new OllamaModel
+        /*return libraryModels.Select(li => new OllamaModel
             {
                 Name = li.Name,
                 Parameters = await GetModelParamNum(li.Name),
@@ -523,7 +525,9 @@ public class OllamaService : IOllamaService
                 DownloadStatus = ModelDownloadStatus.Ready,
                 RunsSlow = false
             })
-            .ToList();
+            .ToList();*/
+        // TODO: fix and replace this
+        return result;
     }
 
 
