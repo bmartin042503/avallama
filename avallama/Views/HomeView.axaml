@@ -116,6 +116,19 @@ Licensed under the MIT License. See LICENSE file for details.
                       IsEnabled="{Binding IsModelsDropdownEnabled}" Name="ModelsComboBox"/>
         </StackPanel>
 
+        <Button Grid.Row="0" Grid.Column="3"
+                Classes="svgButton"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,10,10,0"
+                Cursor="Hand"
+                Command="{Binding DeleteConversationCommand}">
+            <utilities:DynamicSvg
+                Path="/Assets/Svg/trash.svg"
+                Width="30"
+                FillColor="{DynamicResource Primary}" />
+        </Button>
+
         <!-- Tájékoztató szövegek -->
         <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Orientation="Vertical" Margin="18,10,18,0"
                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="6"

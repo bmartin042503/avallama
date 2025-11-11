@@ -40,8 +40,8 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<DatabaseInitService>();
         collection.AddTransient<IDatabaseInitService>(sp => sp.GetRequiredService<DatabaseInitService>());
 
-        collection.AddSingleton<DatabaseService>();
-        collection.AddSingleton<IDatabaseService>(sp => sp.GetRequiredService<DatabaseService>());
+        collection.AddSingleton<ConversationService>();
+        collection.AddSingleton<IConversationService>(sp => sp.GetRequiredService<ConversationService>());
 
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
