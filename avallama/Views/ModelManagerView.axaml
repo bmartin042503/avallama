@@ -39,12 +39,12 @@ Licensed under the MIT License. See LICENSE file for details.
                 Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center" />
             <Button Command="{Binding ShowInfo}" Classes="svgButton">
                 <utilities:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
-                                     Width="20" VerticalAlignment="Center" />
+                                      Width="20" VerticalAlignment="Center" />
             </Button>
         </StackPanel>
 
         <!-- Bal oldali modelválasztó, kereső, rendező rész -->
-        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch">
+        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*,*" HorizontalAlignment="Stretch">
 
             <!-- Keresőmező -->
             <TextBox Grid.Row="0" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1"
@@ -109,6 +109,17 @@ Licensed under the MIT License. See LICENSE file for details.
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+
+            <!-- Pagination button (as a dots SVG) -->
+            <Button Grid.Row="3" CornerRadius="8"
+                    IsVisible="{Binding IsPaginationButtonVisible}"
+                    Background="{DynamicResource SecondaryContainer}" Padding="14,0"
+                    Cursor="Hand" HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Command="{Binding Paginate}">
+                <utilities:DynamicSvg Path="/Assets/Svg/dots.svg" FillColor="{DynamicResource OnSecondaryContainer}"
+                                      Height="30"/>
+            </Button>
         </Grid>
 
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
@@ -116,18 +127,18 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
         <modelItem:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
-                                 IsVisible="{Binding IsModelInfoBlockVisible}"
-                                 Title="{Binding SelectedModel.Name}"
-                                 Quantization="{Binding SelectedModel}"
-                                 Parameters="{Binding SelectedModel.Parameters}"
-                                 Format="{Binding SelectedModel}"
-                                 DetailItemsSource="{Binding SelectedModel}"
-                                 SizeInBytes="{Binding SelectedModel.Size}"
-                                 DownloadStatus="{Binding SelectedModel.DownloadStatus}"
-                                 DownloadSpeed="{Binding DownloadSpeed}"
-                                 DownloadedBytes="{Binding DownloadedBytes}"
-                                 RunsSlow="{Binding SelectedModel.RunsSlow}"
-                                 Command="{Binding ModelAction}" />
+                             IsVisible="{Binding IsModelInfoBlockVisible}"
+                             Title="{Binding SelectedModel.Name}"
+                             Quantization="{Binding SelectedModel}"
+                             Parameters="{Binding SelectedModel.Parameters}"
+                             Format="{Binding SelectedModel}"
+                             DetailItemsSource="{Binding SelectedModel}"
+                             SizeInBytes="{Binding SelectedModel.Size}"
+                             DownloadStatus="{Binding SelectedModel.DownloadStatus}"
+                             DownloadSpeed="{Binding DownloadSpeed}"
+                             DownloadedBytes="{Binding DownloadedBytes}"
+                             RunsSlow="{Binding SelectedModel.RunsSlow}"
+                             Command="{Binding ModelAction}" />
 
         <TextBlock Grid.Row="2" Grid.Column="0"
                    Margin="0,22,0,0"

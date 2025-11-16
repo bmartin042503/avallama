@@ -184,8 +184,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
     </data>
-    <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Kvantálás: {0} bit</value>
+    <data name="QUANTIZATION" xml:space="preserve">
+        <value>Kvantálás</value>
     </data>
     <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
         <value>Nincs elég hely a letöltéshez</value>
@@ -402,5 +402,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="THIS_CONVERSATION" xml:space="preserve">
         <value>beszélgetést</value>
+    </data>
+    <data name="FORMAT" xml:space="preserve">
+        <value>Formátum</value>
+    </data>
+    <data name="LOAD_MORE" xml:space="preserve">
+        <value>Továbbiak betöltése..</value>
     </data>
 </root>

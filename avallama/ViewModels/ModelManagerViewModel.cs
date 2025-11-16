@@ -37,6 +37,7 @@ public partial class ModelManagerViewModel : PageViewModel
     [ObservableProperty] private string _selectedModelName = string.Empty;
     [ObservableProperty] private OllamaModel? _selectedModel;
     [ObservableProperty] private bool _isModelInfoBlockVisible;
+    [ObservableProperty] private bool _isPaginationButtonVisible;
 
     // a jelenleg letöltés alatt álló modell letöltési sebessége Mbps-ben
     [ObservableProperty] private double _downloadSpeed;
@@ -51,6 +52,9 @@ public partial class ModelManagerViewModel : PageViewModel
 
     // a jelenleg letöltés alatt álló modell
     private OllamaModel? _downloadingModel;
+
+    private const int PaginationLimit = 50;
+    private int _paginationIndex;
 
     public SortingOption SelectedSortingOption
     {
@@ -99,8 +103,22 @@ public partial class ModelManagerViewModel : PageViewModel
 
     private async Task LoadModelsData()
     {
-        _modelsData = await _ollamaService.ListDownloaded();
-        _modelsData = _modelsData.Concat(await _ollamaService.ListLibraryModelsAsOllamaModelsAsync());
+        // ModelCacheServiceből lekérni a modellek adatait, ha nincsenek akkor scraper folyamat indítása, majd ezután cachelés
+        try
+        {
+            await foreach (var model in _ollamaService.StreamAllScrapedModelsAsync())
+            {
+                Console.WriteLine($"Megjott a model: {model.Name}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while loading the models data: {ex.Message}");
+            // TODO: proper logging
+        }
+
+        Paginate();
+        IsPaginationButtonVisible = _paginationIndex < _modelsData.Count() - 1;
 
         var ollamaModels = _modelsData as OllamaModel[] ?? _modelsData.ToArray();
         if (ollamaModels.Length == 0)
@@ -190,6 +208,25 @@ public partial class ModelManagerViewModel : PageViewModel
         );
 
         HasModelsToDisplay = Models.Count > 0;
+    }
+
+    [RelayCommand]
+    public void Paginate()
+    {
+        if (!_modelsData.Any()) return;
+
+        if (_paginationIndex < _modelsData.Count() - 1)
+        {
+            var modelsToAdd = Math.Min(PaginationLimit, _modelsData.Count() - 1 - _paginationIndex);
+            foreach (var model in _modelsData.Skip(_paginationIndex).Take(modelsToAdd + 1))
+            {
+                Models.Add(model);
+            }
+
+            _paginationIndex += modelsToAdd;
+
+            IsPaginationButtonVisible = _paginationIndex < _modelsData.Count() - 1;
+        }
     }
 
     // ez akkor hívódik meg ha a felhasználó valamelyik letöltéssel kapcsolatos interaktálható gombra kattint

@@ -46,6 +46,9 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
 
+        collection.AddSingleton<ModelCacheService>();
+        collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());
+
         collection.AddSingleton<DialogService>();
         collection.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
 

@@ -19,6 +19,7 @@ using System.Text.Json.Nodes;
 using avallama.Dtos;
 using avallama.Models;
 using avallama.Utilities;
+using avallama.Utilities.Scraper;
 
 namespace avallama.Services;
 
@@ -35,7 +36,7 @@ public interface IOllamaService
     IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
     IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName);
     Task<bool> IsOllamaServerRunning();
-    Task<List<OllamaModel>> ListLibraryModelsAsOllamaModelsAsync();
+    IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync();
     Task<bool> DeleteModel(string modelName);
     Task<ObservableCollection<OllamaModel>> ListDownloaded();
     ServiceStatus? CurrentServiceStatus { get; }
@@ -50,6 +51,7 @@ public class OllamaService : IOllamaService
 
     private readonly IConfigurationService _configurationService;
     private readonly IDialogService _dialogService;
+    private readonly IModelCacheService _modelCacheService;
 
     // Maximum wait time for requests, currently 15 seconds for slower machines
     // but might need to be readjusted in the future
@@ -80,10 +82,12 @@ public class OllamaService : IOllamaService
     public Func<int> GetProcessCountFunc { get; init; } = () => Process.GetProcessesByName("ollama").Length;
 
     public OllamaService(IConfigurationService configurationService, IDialogService dialogService,
+        IModelCacheService modelCacheService,
         IAvaloniaDispatcher dispatcher)
     {
         _configurationService = configurationService;
         _dialogService = dialogService;
+        _modelCacheService = modelCacheService;
         _dispatcher = dispatcher;
         _httpClient = new HttpClient();
         LoadSettings();
@@ -115,6 +119,7 @@ public class OllamaService : IOllamaService
         {
             return;
         }
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             OllamaPath = Path.Combine(
@@ -231,6 +236,7 @@ public class OllamaService : IOllamaService
         {
             KillProcess(process);
         }
+
         _httpClient.Dispose();
     }
 
@@ -300,6 +306,7 @@ public class OllamaService : IOllamaService
                 LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
             );
         }
+
         return false;
     }
 
@@ -359,7 +366,7 @@ public class OllamaService : IOllamaService
             var responseContent = await response.Content.ReadAsStringAsync();
             var json = JsonNode.Parse(responseContent);
             // return (json?["details"]?["parameter_size"] == null ? "" : ":") +
-                   // json?["details"]?["parameter_size"]?.ToString().ToLower();
+            // json?["details"]?["parameter_size"]?.ToString().ToLower();
             // TODO: fix and replace this
             return new Dictionary<string, string>();
         }
@@ -465,7 +472,6 @@ public class OllamaService : IOllamaService
                 // If the host were to change then the HomeViewModel can display accordingly
                 OnServiceStatusChanged(ServiceStatus.Running);
             }
-
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
@@ -499,37 +505,14 @@ public class OllamaService : IOllamaService
         }
     }
 
-    public async Task<List<OllamaModel>> ListLibraryModelsAsOllamaModelsAsync()
+    public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync()
     {
         EnsureStarted();
-        var libraryModels = await new LibraryScraper(_httpClient).GetAllOllamaModelsAsync();
-
-        var result = new List<OllamaModel>();
-
-        foreach (var libraryModel in libraryModels)
+        await foreach (var model in OllamaLibraryScraper.GetAllOllamaModelsAsync())
         {
-            var model = new OllamaModel();
-            model.Name = libraryModel.Name;
-            model.Parameters = 0; // TODO: fix and replace this
-
-            result.Add(model);
+            yield return model;
         }
-
-        /*return libraryModels.Select(li => new OllamaModel
-            {
-                Name = li.Name,
-                Parameters = await GetModelParamNum(li.Name),
-                Info = new Dictionary<string, string> {},
-                Family =  new OllamaModelFamily(),
-                Size = 0,
-                DownloadStatus = ModelDownloadStatus.Ready,
-                RunsSlow = false
-            })
-            .ToList();*/
-        // TODO: fix and replace this
-        return result;
     }
-
 
     public async Task<bool> DeleteModel(string modelName)
     {
@@ -541,18 +524,18 @@ public class OllamaService : IOllamaService
             model = modelName
         };
 
-         var jsonPayload = JsonSerializer.Serialize(payload);
+        var jsonPayload = JsonSerializer.Serialize(payload);
 
-         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-         var request = new HttpRequestMessage(HttpMethod.Delete, "/api/delete")
-         {
-             Content = content
-         };
+        var request = new HttpRequestMessage(HttpMethod.Delete, "/api/delete")
+        {
+            Content = content
+        };
 
-         var response =  await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-         return response.StatusCode == HttpStatusCode.OK;
+        return response.StatusCode == HttpStatusCode.OK;
     }
 
     public async Task<ObservableCollection<OllamaModel>> ListDownloaded()
