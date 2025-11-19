@@ -1,13 +1,13 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using avallama.Utilities;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
-namespace avallama.Controls.ModelItem
+namespace avallama.Controls.ModelManager
 {
     public class ModelItemLabel : Control
     {

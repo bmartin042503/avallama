@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Threading.Tasks;
-using avallama.Controls.Utilities;
-using avallama.Utilities;
+using avallama.Controls;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;

@@ -87,7 +87,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             }
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(modelFamilies);
+        await _modelCacheService.CacheModelFamilyAsync(modelFamilies);
 
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM model_families";
@@ -112,7 +112,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             }
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(initialModelFamilies);
+        await _modelCacheService.CacheModelFamilyAsync(initialModelFamilies);
 
         var updatedModelFamilies = new List<OllamaModelFamily>
         {
@@ -127,7 +127,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             }
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(updatedModelFamilies);
+        await _modelCacheService.CacheModelFamilyAsync(updatedModelFamilies);
 
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText =
@@ -167,7 +167,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 LastUpdated = DateTime.UtcNow
             }
         };
-        await _modelCacheService.CacheOllamaModelFamilyAsync(initialModelFamilies);
+        await _modelCacheService.CacheModelFamilyAsync(initialModelFamilies);
 
         var updatedModelFamilies = new List<OllamaModelFamily>
         {
@@ -181,7 +181,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 LastUpdated = DateTime.UtcNow
             }
         };
-        await _modelCacheService.CacheOllamaModelFamilyAsync(updatedModelFamilies);
+        await _modelCacheService.CacheModelFamilyAsync(updatedModelFamilies);
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM model_families";
         var count = (long)(await cmd.ExecuteScalarAsync() ?? 0);
@@ -201,7 +201,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             LastUpdated = DateTime.UtcNow
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
+        await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
 
         var models = new List<OllamaModel>
         {
@@ -220,7 +220,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             }
         };
 
-        await _modelCacheService.CacheOllamaModelsAsync(models);
+        await _modelCacheService.CacheModelsAsync(models);
 
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM ollama_models";
@@ -242,7 +242,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             LastUpdated = DateTime.UtcNow
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
+        await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
 
         var initialModel = new List<OllamaModel>
         {
@@ -260,7 +260,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 Size = 2048000
             }
         };
-        await _modelCacheService.CacheOllamaModelsAsync(initialModel);
+        await _modelCacheService.CacheModelsAsync(initialModel);
         var updatedModel = new List<OllamaModel>
         {
             new()
@@ -277,7 +277,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 Size = 4096000
             }
         };
-        await _modelCacheService.CacheOllamaModelsAsync(updatedModel);
+        await _modelCacheService.CacheModelsAsync(updatedModel);
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText =
             "SELECT quantization, parameters, format, download_status FROM ollama_models WHERE name = 'model-1:7b'";
@@ -302,7 +302,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             LastUpdated = DateTime.UtcNow
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
+        await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
         var initialModels = new List<OllamaModel>
         {
             new()
@@ -332,7 +332,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 Size = 4096000
             }
         };
-        await _modelCacheService.CacheOllamaModelsAsync(initialModels);
+        await _modelCacheService.CacheModelsAsync(initialModels);
         var updatedModels = new List<OllamaModel>
         {
             new()
@@ -349,7 +349,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 Size = 2048000
             }
         };
-        await _modelCacheService.CacheOllamaModelsAsync(updatedModels);
+        await _modelCacheService.CacheModelsAsync(updatedModels);
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM ollama_models";
         var count = (long)(await cmd.ExecuteScalarAsync() ?? 0);
@@ -369,7 +369,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             LastUpdated = DateTime.UtcNow
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
+        await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
 
         var initialModel = new List<OllamaModel>
         {
@@ -387,7 +387,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 Size = 2048000
             }
         };
-        await _modelCacheService.CacheOllamaModelsAsync(initialModel);
+        await _modelCacheService.CacheModelsAsync(initialModel);
 
         var info = new Dictionary<string, string>
         {
@@ -410,7 +410,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             RunsSlow = false
         };
 
-        await _modelCacheService.UpdateOllamaModelAsync(modelToUpdate);
+        await _modelCacheService.UpdateModelAsync(modelToUpdate);
 
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText =
@@ -450,9 +450,9 @@ public class ModelCacheServiceTests : IAsyncDisposable
             }
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(modelFamilies);
+        await _modelCacheService.CacheModelFamilyAsync(modelFamilies);
 
-        var cachedFamilies = await _modelCacheService.GetCachedOllamaModelFamiliesAsync();
+        var cachedFamilies = await _modelCacheService.GetCachedModelFamiliesAsync();
 
         Assert.Equal(2, cachedFamilies.Count);
         Assert.Contains(cachedFamilies, mf => mf.Name == "model-family-1");
@@ -472,7 +472,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             LastUpdated = DateTime.UtcNow
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
+        await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
 
         var models = new List<OllamaModel>
         {
@@ -504,9 +504,9 @@ public class ModelCacheServiceTests : IAsyncDisposable
             }
         };
 
-        await _modelCacheService.CacheOllamaModelsAsync(models);
+        await _modelCacheService.CacheModelsAsync(models);
 
-        var cachedModels = await _modelCacheService.GetCachedOllamaModelsAsync();
+        var cachedModels = await _modelCacheService.GetCachedModelsAsync();
 
         Assert.Equal(2, cachedModels.Count);
         Assert.Contains(cachedModels, m => m.Name == "model-1:7b");
@@ -530,10 +530,10 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 LastUpdated = DateTime.UtcNow
             }
         };
-        await _modelCacheService.CacheOllamaModelFamilyAsync(modelFamilies);
+        await _modelCacheService.CacheModelFamilyAsync(modelFamilies);
 
         var tasks = Enumerable.Range(0, 50)
-            .Select(_ => Task.Run(async () => await _modelCacheService.GetCachedOllamaModelFamiliesAsync()))
+            .Select(_ => Task.Run(async () => await _modelCacheService.GetCachedModelFamiliesAsync()))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -555,10 +555,10 @@ public class ModelCacheServiceTests : IAsyncDisposable
             LastUpdated = DateTime.UtcNow
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { initialFamily });
+        await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { initialFamily });
 
         var readTasks = Enumerable.Range(0, 30)
-            .Select(_ => Task.Run(async () => await _modelCacheService.GetCachedOllamaModelFamiliesAsync()));
+            .Select(_ => Task.Run(async () => await _modelCacheService.GetCachedModelFamiliesAsync()));
 
         var writeTasks = Enumerable.Range(0, 20)
             .Select(i => Task.Run(async () =>
@@ -572,12 +572,12 @@ public class ModelCacheServiceTests : IAsyncDisposable
                     TagCount = 1,
                     LastUpdated = DateTime.UtcNow
                 };
-                await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { updated });
+                await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { updated });
             }));
 
         await Task.WhenAll(readTasks.Concat(writeTasks));
 
-        var final = await _modelCacheService.GetCachedOllamaModelFamiliesAsync();
+        var final = await _modelCacheService.GetCachedModelFamiliesAsync();
         Assert.Single(final);
     }
 
@@ -594,7 +594,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             LastUpdated = DateTime.UtcNow
         };
 
-        await _modelCacheService.CacheOllamaModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
+        await _modelCacheService.CacheModelFamilyAsync(new List<OllamaModelFamily> { modelFamily });
 
         var model = new OllamaModel
         {
@@ -610,7 +610,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             Size = 2048000
         };
 
-        await _modelCacheService.CacheOllamaModelsAsync(new List<OllamaModel> { model });
+        await _modelCacheService.CacheModelsAsync(new List<OllamaModel> { model });
 
         var tasks = Enumerable.Range(0, 100)
             .Select(i => Task.Run(async () =>
@@ -630,13 +630,13 @@ public class ModelCacheServiceTests : IAsyncDisposable
                     DownloadProgress = 1.0,
                     RunsSlow = false
                 };
-                await _modelCacheService.UpdateOllamaModelAsync(updated);
+                await _modelCacheService.UpdateModelAsync(updated);
             }))
             .ToArray();
 
         await Task.WhenAll(tasks);
 
-        var cached = await _modelCacheService.GetCachedOllamaModelsAsync();
+        var cached = await _modelCacheService.GetCachedModelsAsync();
         Assert.Single(cached);
         Assert.Equal("model-1:7b", cached[0].Name);
     }
@@ -656,15 +656,15 @@ public class ModelCacheServiceTests : IAsyncDisposable
             }).ToList();
 
         var writeTask = Task.Run(async () =>
-            await _modelCacheService.CacheOllamaModelFamilyAsync(modelFamilies));
+            await _modelCacheService.CacheModelFamilyAsync(modelFamilies));
 
         var readTasks = Enumerable.Range(0, 50)
-            .Select(_ => Task.Run(async () => await _modelCacheService.GetCachedOllamaModelFamiliesAsync()))
+            .Select(_ => Task.Run(async () => await _modelCacheService.GetCachedModelFamiliesAsync()))
             .ToArray();
 
         await Task.WhenAll(readTasks.Append(writeTask));
 
-        var final = await _modelCacheService.GetCachedOllamaModelFamiliesAsync();
+        var final = await _modelCacheService.GetCachedModelFamiliesAsync();
         Assert.Equal(100, final.Count);
     }
 

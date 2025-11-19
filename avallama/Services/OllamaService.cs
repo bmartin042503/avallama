@@ -51,7 +51,6 @@ public class OllamaService : IOllamaService
 
     private readonly IConfigurationService _configurationService;
     private readonly IDialogService _dialogService;
-    private readonly IModelCacheService _modelCacheService;
 
     // Maximum wait time for requests, currently 15 seconds for slower machines
     // but might need to be readjusted in the future
@@ -81,13 +80,14 @@ public class OllamaService : IOllamaService
     // so we mock it
     public Func<int> GetProcessCountFunc { get; init; } = () => Process.GetProcessesByName("ollama").Length;
 
-    public OllamaService(IConfigurationService configurationService, IDialogService dialogService,
-        IModelCacheService modelCacheService,
-        IAvaloniaDispatcher dispatcher)
+    public OllamaService(
+        IConfigurationService configurationService,
+        IDialogService dialogService,
+        IAvaloniaDispatcher dispatcher
+    )
     {
         _configurationService = configurationService;
         _dialogService = dialogService;
-        _modelCacheService = modelCacheService;
         _dispatcher = dispatcher;
         _httpClient = new HttpClient();
         LoadSettings();

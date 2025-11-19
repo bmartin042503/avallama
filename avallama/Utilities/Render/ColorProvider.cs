@@ -7,7 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 
-namespace avallama.Utilities;
+namespace avallama.Utilities.Render;
 
 
 // a témának megfelelő színt adja vissza a szín kulcsának alapján
@@ -16,7 +16,7 @@ public static class ColorProvider
     public static ImmutableSolidColorBrush GetColor(AppColor appColor)
     {
         var defaultColorBrush = new ImmutableSolidColorBrush(Colors.Black);
-        
+
         object? color = defaultColorBrush;
         var themes = Application.Current?.Resources.ThemeDictionaries;
         if (themes is null) return defaultColorBrush;
@@ -26,7 +26,7 @@ public static class ColorProvider
             Application.Current?.ActualThemeVariant ?? ThemeVariant.Default,
             out var theme
         );
-        
+
         // a themeből kiszedi a színt
         theme?.TryGetResource(
             appColor.ToString(),
@@ -39,8 +39,8 @@ public static class ColorProvider
         {
             return new ImmutableSolidColorBrush(extractedColor);
         }
-        
+
         return color as ImmutableSolidColorBrush ?? defaultColorBrush;
-            
+
     }
 }

@@ -5,7 +5,7 @@ using System;
 using Avalonia;
 using Avalonia.Media.TextFormatting;
 
-namespace avallama.Utilities
+namespace avallama.Utilities.Render
 {
     /// <summary>
     /// Provides helper methods for working with <see cref="TextLayout"/> objects,

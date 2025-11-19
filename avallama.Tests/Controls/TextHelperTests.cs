@@ -1,7 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using avallama.Utilities;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;

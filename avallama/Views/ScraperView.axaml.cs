@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
+using System.Threading.Tasks;
+using avallama.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -29,10 +31,13 @@ public partial class ScraperView : UserControl
         };
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         _timer?.Start();
+
+        if (DataContext is ScraperViewModel scraperViewModel)
+            await scraperViewModel.InitializeAsync();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

@@ -83,8 +83,9 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public async Task OpenModelManager()
     {
-        var models = await _modelCacheService.GetCachedOllamaModelsAsync();
+        var models = await _modelCacheService.GetCachedModelsAsync();
         CurrentPageViewModel = _pageFactory.GetPageViewModel(models.Count == 0 ? ApplicationPage.Scraper : ApplicationPage.ModelManager);
+        // CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
     }
 
     [RelayCommand]

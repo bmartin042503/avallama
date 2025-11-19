@@ -418,4 +418,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
         <value>A modellkönyvtár frissítése sikeresen megtörtént. A frissítést bármikor újra futtathatod a Beállításokból.</value>
     </data>
+    <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
+        <value>Modellek mentése..</value>
+    </data>
 </root>

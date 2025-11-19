@@ -57,8 +57,8 @@ Licensed under the MIT License. See LICENSE file for details.
 
             <!-- Beszélgetés elemek -->
             <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="14">
-                <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
-                    <ItemsControl.DataTemplates>
+                <controls:IndexedItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
+                    <controls:IndexedItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
                             <dualTextItem:ConversationItem
                                 Id="{Binding ConversationId}"
@@ -66,10 +66,19 @@ Licensed under the MIT License. See LICENSE file for details.
                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectConversation}"
                                 Text="{Binding Title}"
                                 SubText="{Binding Model}"
-                                Margin="0,0,0,14" />
+                                Margin="0,0,0,14">
+                                <dualTextItem:ConversationItem.ContextFlyout>
+                                    <controls:ActionMenu>
+                                        <Button
+                                            Content="{services:LocalizationService Key='DELETE'}"
+                                            Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).DeleteConversation}"
+                                            CommandParameter="{Binding ConversationId}"/>
+                                    </controls:ActionMenu>
+                                </dualTextItem:ConversationItem.ContextFlyout>
+                            </dualTextItem:ConversationItem>
                         </DataTemplate>
-                    </ItemsControl.DataTemplates>
-                </ItemsControl>
+                    </controls:IndexedItemsControl.DataTemplates>
+                </controls:IndexedItemsControl>
             </ScrollViewer>
 
             <StackPanel Grid.Row="2" Margin="10" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
@@ -114,19 +123,6 @@ Licensed under the MIT License. See LICENSE file for details.
                       SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
                       IsEnabled="{Binding IsModelsDropdownEnabled}" Name="ModelsComboBox"/>
         </StackPanel>
-
-        <Button Grid.Row="0" Grid.Column="3"
-                Classes="svgButton"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="0,10,10,0"
-                Cursor="Hand"
-                Command="{Binding DeleteConversationCommand}">
-            <controls:DynamicSvg
-                Path="/Assets/Svg/trash.svg"
-                Width="30"
-                FillColor="{DynamicResource Primary}" />
-        </Button>
 
         <!-- Tájékoztató szövegek -->
         <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Orientation="Vertical" Margin="18,10,18,0"

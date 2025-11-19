@@ -4,7 +4,7 @@
 using Avalonia;
 using Avalonia.Controls;
 
-namespace avallama.Controls.Utilities;
+namespace avallama.Controls;
 
 // ItemsControl aminek az elemei rendelkeznek index-el
 // létrehoztam de mégsem kellett, viszont elképzelhető, hogy a jövőben kelleni fog

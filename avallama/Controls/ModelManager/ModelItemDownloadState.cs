@@ -3,7 +3,7 @@
 
 using Avalonia.Controls;
 
-namespace avallama.Controls.ModelItem;
+namespace avallama.Controls.ModelManager;
 
 public class ModelItemDownloadState : Control
 {

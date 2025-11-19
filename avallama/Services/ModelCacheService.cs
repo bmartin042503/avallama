@@ -15,11 +15,11 @@ namespace avallama.Services;
 
 public interface IModelCacheService
 {
-    public Task CacheOllamaModelFamilyAsync(IList<OllamaModelFamily> modelFamilies);
-    public Task CacheOllamaModelsAsync(IList<OllamaModel> models);
-    public Task UpdateOllamaModelAsync(OllamaModel model);
-    public Task<IList<OllamaModel>> GetCachedOllamaModelsAsync();
-    public Task<IList<OllamaModelFamily>> GetCachedOllamaModelFamiliesAsync();
+    public Task CacheModelFamilyAsync(IList<OllamaModelFamily> modelFamilies);
+    public Task CacheModelsAsync(IList<OllamaModel> models);
+    public Task UpdateModelAsync(OllamaModel model);
+    public Task<IList<OllamaModel>> GetCachedModelsAsync();
+    public Task<IList<OllamaModelFamily>> GetCachedModelFamiliesAsync();
 }
 
 public class ModelCacheService : IModelCacheService
@@ -46,7 +46,7 @@ public class ModelCacheService : IModelCacheService
         _connection.Open();
     }
 
-    public async Task CacheOllamaModelFamilyAsync(IList<OllamaModelFamily> modelFamilies)
+    public async Task CacheModelFamilyAsync(IList<OllamaModelFamily> modelFamilies)
     {
         var now = DateTime.Now;
 
@@ -91,7 +91,7 @@ public class ModelCacheService : IModelCacheService
             var toDelete = existingModelFamilies.Values.Where(f => !newFamilies.ContainsKey(f.Name));
             var toUpdate = modelFamilies
                 .Where(f => existingModelFamilies.ContainsKey(f.Name))
-                .Where(f => HasOllamaModelFamilyChanged(f, existingModelFamilies[f.Name]));
+                .Where(f => HasModelFamilyChanged(f, existingModelFamilies[f.Name]));
 
             var insertList = toInsert.ToList();
             if (insertList.Count != 0)
@@ -172,7 +172,7 @@ public class ModelCacheService : IModelCacheService
         }
     }
 
-    private static bool HasOllamaModelFamilyChanged(OllamaModelFamily newFamily, OllamaModelFamily existingFamily)
+    private static bool HasModelFamilyChanged(OllamaModelFamily newFamily, OllamaModelFamily existingFamily)
     {
         return newFamily.Description != existingFamily.Description ||
                newFamily.PullCount != existingFamily.PullCount ||
@@ -181,7 +181,7 @@ public class ModelCacheService : IModelCacheService
                !newFamily.Labels.SequenceEqual(existingFamily.Labels);
     }
 
-    public async Task<IList<OllamaModelFamily>> GetCachedOllamaModelFamiliesAsync()
+    public async Task<IList<OllamaModelFamily>> GetCachedModelFamiliesAsync()
     {
         var modelFamilies = new List<OllamaModelFamily>();
         using (DatabaseLock.Instance.AcquireReadLock())
@@ -218,7 +218,7 @@ public class ModelCacheService : IModelCacheService
         return modelFamilies;
     }
 
-    public async Task CacheOllamaModelsAsync(IList<OllamaModel> models)
+    public async Task CacheModelsAsync(IList<OllamaModel> models)
     {
         var now = DateTime.Now;
 
@@ -279,7 +279,7 @@ public class ModelCacheService : IModelCacheService
             var toDelete = existingModels.Values.Where(m => !newModels.ContainsKey(m.Name));
             var toUpdate = models
                 .Where(m => existingModels.ContainsKey(m.Name))
-                .Where(m => HasOllamaModelChanged(m, existingModels[m.Name]));
+                .Where(m => HasModelChanged(m, existingModels[m.Name]));
 
             var insertList = toInsert.ToList();
             if (insertList.Count != 0)
@@ -427,7 +427,7 @@ public class ModelCacheService : IModelCacheService
         return colonIndex > 0 ? modelName[..colonIndex] : modelName;
     }
 
-    private static bool HasOllamaModelChanged(OllamaModel newModel, OllamaModel existingModel)
+    private static bool HasModelChanged(OllamaModel newModel, OllamaModel existingModel)
     {
         if (newModel.Parameters != existingModel.Parameters ||
             newModel.Size != existingModel.Size ||
@@ -457,7 +457,7 @@ public class ModelCacheService : IModelCacheService
     }
 
 
-    public async Task UpdateOllamaModelAsync(OllamaModel model)
+    public async Task UpdateModelAsync(OllamaModel model)
     {
         var now = DateTime.Now;
 
@@ -504,7 +504,7 @@ public class ModelCacheService : IModelCacheService
         }
     }
 
-    public async Task<IList<OllamaModel>> GetCachedOllamaModelsAsync()
+    public async Task<IList<OllamaModel>> GetCachedModelsAsync()
     {
         var models = new List<OllamaModel>();
 

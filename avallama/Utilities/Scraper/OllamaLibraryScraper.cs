@@ -14,6 +14,8 @@ using HtmlAgilityPack;
 
 namespace avallama.Utilities.Scraper;
 
+// TODO: Skip cloud models ("cloud" in name or labels)
+
 public static class OllamaLibraryScraper
 {
     private const string OllamaUrl = "https://www.ollama.com";
@@ -22,8 +24,8 @@ public static class OllamaLibraryScraper
 
     private static readonly TokenBucketRateLimiterOptions RateLimiterOptions = new()
     {
-        TokenLimit = 7,
-        TokensPerPeriod = 2,
+        TokenLimit = 5,
+        TokensPerPeriod = 1,
         ReplenishmentPeriod = TimeSpan.FromSeconds(1),
         QueueLimit = 15,
         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,

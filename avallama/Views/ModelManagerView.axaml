@@ -12,8 +12,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:converters="clr-namespace:avallama.Converters"
-             xmlns:utilities="clr-namespace:avallama.Controls.Utilities"
-             xmlns:modelItem="clr-namespace:avallama.Controls.ModelItem"
+             xmlns:modelManager="clr-namespace:avallama.Controls.ModelManager"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
@@ -96,7 +95,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="models:OllamaModel">
-                            <controls:ModelListItem
+                            <modelManager:ModelListItem
                                 Margin="0,12,0,0"
                                 Title="{Binding Name}"
                                 DownloadStatus="{Binding DownloadStatus}"
@@ -126,7 +125,7 @@ Licensed under the MIT License. See LICENSE file for details.
                       Margin="4,0,4,0" />
 
         <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
-        <modelItem:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+        <modelManager:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
                              IsVisible="{Binding IsModelInfoBlockVisible}"
                              Title="{Binding SelectedModel.Name}"
                              Quantization="{Binding SelectedModel}"

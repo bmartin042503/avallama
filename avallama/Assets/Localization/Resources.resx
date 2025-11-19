@@ -420,9 +420,12 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>{0} models found..</value>
     </data>
     <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
-        <value>This process may take several minutes. Please keep the application open while we collect the latest model information.</value>
+        <value>This process may take several minutes. Please keep the application open while it collects the latest model information.</value>
     </data>
     <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
         <value>Model library updated successfully. You can run the update again anytime from the Settings.</value>
+    </data>
+    <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
+        <value>Caching models..</value>
     </data>
 </root>

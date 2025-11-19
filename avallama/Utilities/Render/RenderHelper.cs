@@ -11,7 +11,7 @@ using Avalonia.Svg;
 using ShimSkiaSharp;
 using Svg.Model;
 
-namespace avallama.Utilities;
+namespace avallama.Utilities.Render;
 
 public static class RenderHelper
 {

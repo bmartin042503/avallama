@@ -10,6 +10,7 @@ using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
 using avallama.Utilities;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -18,7 +19,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Svg;
 using ShimSkiaSharp;
 
-namespace avallama.Controls.ModelItem;
+namespace avallama.Controls.ModelManager;
 
 // TODO - Javítás/Implementálás:
 // - felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál

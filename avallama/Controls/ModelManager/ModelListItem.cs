@@ -5,7 +5,7 @@ using System;
 using System.Windows.Input;
 using avallama.Constants;
 using avallama.Models;
-using avallama.Utilities;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -15,7 +15,7 @@ using Avalonia.Svg;
 using Avalonia.Threading;
 using ShimSkiaSharp;
 
-namespace avallama.Controls;
+namespace avallama.Controls.ModelManager;
 
 // TODO:
 // felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
