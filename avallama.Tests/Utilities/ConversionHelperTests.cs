@@ -6,29 +6,29 @@ using Xunit;
 
 namespace avallama.Tests.Utilities;
 
-public class RenderHelperTests
+public class ConversionHelperTests
 {
     [Fact]
     public void GetSizeInGb_ZeroBytes()
     {
-        var result = RenderHelper.GetSizeInGb(0);
+        var result = ConversionHelper.FormatSizeInGb(0);
         Assert.Equal("0 GB", result);
     }
 
     [Fact]
     public void GetSizeInGb_OneGiB()
     {
-        long gib = 1024L * 1024 * 1024;
-        var result = RenderHelper.GetSizeInGb(gib);
+        long gib = 1000L * 1000 * 1000;
+        var result = ConversionHelper.FormatSizeInGb(gib);
         Assert.Equal("1 GB", result);
     }
 
     [Fact]
     public void GetSizeInGb_OnePointFiveGiB()
     {
-        long gib = 1024L * 1024 * 1024;
+        long gib = 1000L * 1000 * 1000;
         long size = gib * 3 / 2; // 1.5 GiB
-        var result = RenderHelper.GetSizeInGb(size);
+        var result = ConversionHelper.FormatSizeInGb(size);
         Assert.Equal("1.5 GB", result);
     }
 }

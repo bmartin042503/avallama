@@ -134,8 +134,10 @@ public partial class HomeViewModel : PageViewModel
     }
 
     [RelayCommand]
-    public async Task DeleteConversation()
+    public async Task DeleteConversation(object parameter)
     {
+        if (parameter is not Guid guid) return;
+        Console.WriteLine($"Called with guid of: " + guid);
         var newSelectedConversations = Conversations.IndexOf(SelectedConversation) + 1;
 
         var res = await _dialogService.ShowConfirmationDialog(
@@ -146,7 +148,7 @@ public partial class HomeViewModel : PageViewModel
 
         if (res is ConfirmationResult { Confirmation: ConfirmationType.Negative }) return;
 
-        await _conversationService.DeleteConversation(SelectedConversation.ConversationId);
+        await _conversationService.DeleteConversation(guid);
         Conversations.Remove(SelectedConversation);
 
         if (Conversations.Count == 0)

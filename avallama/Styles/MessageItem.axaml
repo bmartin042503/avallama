@@ -5,26 +5,27 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:avallama.Controls">
+        xmlns:controls="clr-namespace:avallama.Controls"
+        xmlns:dualTextItem="clr-namespace:avallama.Controls.DualTextItem">
     <Design.PreviewWith>
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="10">
-                    <controls:MessageItem
+                    <dualTextItem:MessageItem
                         Classes="userMessage"
                         Text="Short user message" />
 
-                    <controls:MessageItem
+                    <dualTextItem:MessageItem
                         Classes="generatedMessage"
                         Text="Generated message"
                         SubText="SubText" />
 
-                    <controls:MessageItem
+                    <dualTextItem:MessageItem
                         Classes="userMessage"
                         MaxWidth="350"
                         Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis eros non diam blandit facilisis at non lectus. Mauris neque nibh, tempus quis est eget, porta cursus arcu. Fusce molestie magna lectus, vitae vestibulum dolor varius a." />
 
-                    <controls:MessageItem
+                    <dualTextItem:MessageItem
                         Classes="generatedMessage"
                         MaxWidth="350"
                         Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis eros non diam blandit facilisis at non lectus. Mauris neque nibh, tempus quis est eget, porta cursus arcu. Fusce molestie magna lectus, vitae vestibulum dolor varius a."
@@ -35,7 +36,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </Design.PreviewWith>
 
     <!-- Base styles -->
-    <Style Selector="controls|MessageItem">
+    <Style Selector="dualTextItem|MessageItem">
         <Setter Property="TextAlignment" Value="Start"/>
         <Setter Property="TextFontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="20"/>
@@ -46,7 +47,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </Style>
 
     <!-- User message styles -->
-    <Style Selector="controls|MessageItem.userMessage">
+    <Style Selector="dualTextItem|MessageItem.userMessage">
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimary}"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -54,7 +55,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </Style>
 
     <!-- Generated message styles -->
-    <Style Selector="controls|MessageItem.generatedMessage">
+    <Style Selector="dualTextItem|MessageItem.generatedMessage">
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurfaceVariant}"/>
         <Setter Property="SubTextAlignment" Value="End"/>

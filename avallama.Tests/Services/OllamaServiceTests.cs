@@ -85,10 +85,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
 
         await ol.Start();
 
-        await AsyncAssertExtensions.DoesNotThrowAsync(async () =>
-        {
-            await ol.GetModelParamNum("testllama");
-        });
+        await AsyncAssertExtensions.DoesNotThrowAsync(async () => { await ol.GetModelParamNum("testllama"); });
     }
 
     // Start() tests

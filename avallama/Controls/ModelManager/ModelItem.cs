@@ -10,6 +10,7 @@ using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
 using avallama.Utilities;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -18,7 +19,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Svg;
 using ShimSkiaSharp;
 
-namespace avallama.Controls;
+namespace avallama.Controls.ModelManager;
 
 // TODO - Javítás/Implementálás:
 // - felmérni hogy milyen a teljesítmény, különböző render metódusok mennyiszer hívódnak meg, mennyi ramot fogyaszt és allokál
@@ -26,7 +27,7 @@ namespace avallama.Controls;
 // - scroll funkcionalitás modelinformationre
 // - szövegkijelölés, vmi új felhasználható típusban
 
-public class ModelInfoBlock : Control
+public class ModelItem : Control
 {
     // StyledProperty - belekerül az Avalonia styles rendszerébe így például írhatunk rá stílusokat stb.
     // DirectProperty - nem kerül bele, megadott egyszerű értékeknek, jobb teljesítmény (kell getter, setter)
@@ -44,76 +45,76 @@ public class ModelInfoBlock : Control
     }
 
     public static readonly StyledProperty<string?> TitleProperty =
-        AvaloniaProperty.Register<ModelInfoBlock, string?>(nameof(Title));
+        AvaloniaProperty.Register<ModelItem, string?>(nameof(Title));
 
-    public static readonly DirectProperty<ModelInfoBlock, int?> QuantizationProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, int?>(
+    public static readonly DirectProperty<ModelItem, int?> QuantizationProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, int?>(
             nameof(Quantization),
             o => o.Quantization,
             (o, v) => o.Quantization = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, double?> ParametersProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, double?>(
+    public static readonly DirectProperty<ModelItem, double?> ParametersProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, double?>(
             nameof(Parameters),
             o => o.Parameters,
             (o, v) => o.Parameters = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, string?> FormatProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, string?>(
+    public static readonly DirectProperty<ModelItem, string?> FormatProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, string?>(
             nameof(Format),
             o => o.Format,
             (o, v) => o.Format = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, IDictionary<string, string>?> DetailItemsSourceProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, IDictionary<string, string>?>(
+    public static readonly DirectProperty<ModelItem, IDictionary<string, string>?> DetailItemsSourceProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, IDictionary<string, string>?>(
             nameof(DetailItemsSource),
             o => o.DetailItemsSource,
             (o, v) => o.DetailItemsSource = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, long> SizeInBytesProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, long>(
+    public static readonly DirectProperty<ModelItem, long> SizeInBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, long>(
             nameof(SizeInBytes),
             o => o.SizeInBytes,
             (o, v) => o.SizeInBytes = v,
             unsetValue: 0
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, ModelDownloadStatus> DownloadStatusProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, ModelDownloadStatus>(
+    public static readonly DirectProperty<ModelItem, ModelDownloadStatus> DownloadStatusProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, ModelDownloadStatus>(
             nameof(DownloadStatus),
             o => o.DownloadStatus,
             (o, v) => o.DownloadStatus = v
         );
 
     // Mbps
-    public static readonly DirectProperty<ModelInfoBlock, double?> DownloadSpeedProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, double?>(
+    public static readonly DirectProperty<ModelItem, double?> DownloadSpeedProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, double?>(
             nameof(DownloadSpeed),
             o => o.DownloadSpeed,
             (o, v) => o.DownloadSpeed = v
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, long> DownloadedBytesProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, long>(
+    public static readonly DirectProperty<ModelItem, long> DownloadedBytesProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, long>(
             nameof(DownloadedBytes),
             o => o.DownloadedBytes,
             (o, v) => o.DownloadedBytes = v,
             unsetValue: 0
         );
 
-    public static readonly DirectProperty<ModelInfoBlock, bool?> RunsSlowProperty =
-        AvaloniaProperty.RegisterDirect<ModelInfoBlock, bool?>(
+    public static readonly DirectProperty<ModelItem, bool?> RunsSlowProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, bool?>(
             nameof(RunsSlow),
             o => o.RunsSlow,
             (o, v) => o.RunsSlow = v
         );
 
     public static readonly StyledProperty<ICommand> CommandProperty =
-        AvaloniaProperty.Register<ModelInfoBlock, ICommand>(nameof(Command));
+        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(Command));
 
     public string? Title
     {
@@ -274,6 +275,7 @@ public class ModelInfoBlock : Control
 
         // model (letöltési) állapotának renderelése
         RenderStatus(context);
+
     }
 
     private void RenderBackground(DrawingContext context)
@@ -808,7 +810,7 @@ public class ModelInfoBlock : Control
         if (SizeInBytes <= 0) return null;
 
         var formattedSize = string.Format(LocalizationService.GetString("MODEL_SIZE"),
-            RenderHelper.GetSizeInGb(SizeInBytes));
+            ConversionHelper.FormatSizeInGb(SizeInBytes));
 
         return new TextLayout(
             formattedSize,
@@ -891,7 +893,7 @@ public class ModelInfoBlock : Control
 
         // (letöltött byteok/teljes méret) szöveg
         var downloadedBytesInfo =
-            $" ({RenderHelper.GetSizeInGb(DownloadedBytes)}/{RenderHelper.GetSizeInGb(SizeInBytes)})";
+            $" ({ConversionHelper.FormatSizeInGb(DownloadedBytes)}/{ConversionHelper.FormatSizeInGb(SizeInBytes)})";
 
         // letöltés sebessége szöveg
         var downloadSpeedInfo = $" - {DownloadSpeed} Mbps";

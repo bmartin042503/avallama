@@ -25,7 +25,7 @@ public class IndexedItemsControl : ItemsControl
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
-        
+
         if (GetItemIndex(container) == 0)
         {
             SetItemIndex(container, index);

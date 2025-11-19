@@ -11,4 +11,5 @@ public class TestServicesFixture
     public Mock<IConfigurationService> ConfigMock { get; } = new();
     public Mock<IConversationService> DbMock { get; } = new();
     public Mock<IMessenger> MessengerMock { get; } = new();
+    public Mock<IModelCacheService> ModelCacheMock { get; } = new();
 }

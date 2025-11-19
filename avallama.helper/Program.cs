@@ -15,18 +15,18 @@ internal static class Program
         // avallama elindítja ezt a processt ha újra kell indítani az alkalmazást
         // miután elindította bezárja magát, majd ez a process ismét elindítja az avallamát
         // később akár frissítésnél is használható
-        
+
         // első argumentum: processId
         // második argumentum: processPath
         if (args.Length < 2) return;
 
         var processId = int.Parse(args[0]);
         var avallamaPath = args[1];
-        
+
         try
         {
             var avallamaProcess = Process.GetProcessById(processId);
-            
+
             // megvárja amíg bezárul az avallama
             avallamaProcess.WaitForExit();
 

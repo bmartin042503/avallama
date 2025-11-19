@@ -9,5 +9,6 @@ public enum ApplicationPage
     Home,
     Guide,
     Settings,
-    ModelManager
+    ModelManager,
+    Scraper
 }

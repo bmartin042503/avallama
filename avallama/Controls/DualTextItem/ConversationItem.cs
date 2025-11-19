@@ -4,21 +4,21 @@
 using System;
 using System.Windows.Input;
 using avallama.Constants;
-using avallama.Utilities;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
-namespace avallama.Controls
+namespace avallama.Controls.DualTextItem
 {
     /// <summary>
     /// Represents a conversation list item with support for hover and active visual states,
     /// as well as selectable and command-triggered behavior.
-    /// Inherits text rendering and layout logic from <see cref="TextItem"/>.
+    /// Inherits text rendering and layout logic from <see cref="DualTextItem"/>.
     /// </summary>
-    public class ConversationItem : TextItem
+    public class ConversationItem : DualTextItem
     {
         #region Avalonia Properties
 

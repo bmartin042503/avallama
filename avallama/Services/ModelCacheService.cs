@@ -1,11 +1,12 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using avallama.Constants;
 using avallama.Models;
 using avallama.Utilities;
 using Microsoft.Data.Sqlite;
@@ -14,11 +15,11 @@ namespace avallama.Services;
 
 public interface IModelCacheService
 {
-    public Task CacheOllamaModelFamilyAsync(IList<OllamaModelFamily> modelFamilies);
-    public Task CacheOllamaModelAsync(IList<OllamaModel> models);
-    public Task UpdateOllamaModelAsync(OllamaModel model);
-    public Task<IList<OllamaModel>> GetCachedOllamaModelsAsync();
-    public Task<IList<OllamaModelFamily>> GetCachedOllamaModelFamiliesAsync();
+    public Task CacheModelFamilyAsync(IList<OllamaModelFamily> modelFamilies);
+    public Task CacheModelsAsync(IList<OllamaModel> models);
+    public Task UpdateModelAsync(OllamaModel model);
+    public Task<IList<OllamaModel>> GetCachedModelsAsync();
+    public Task<IList<OllamaModelFamily>> GetCachedModelFamiliesAsync();
 }
 
 public class ModelCacheService : IModelCacheService
@@ -45,7 +46,7 @@ public class ModelCacheService : IModelCacheService
         _connection.Open();
     }
 
-    public async Task CacheOllamaModelFamilyAsync(IList<OllamaModelFamily> modelFamilies)
+    public async Task CacheModelFamilyAsync(IList<OllamaModelFamily> modelFamilies)
     {
         var now = DateTime.Now;
 
@@ -69,13 +70,15 @@ public class ModelCacheService : IModelCacheService
                 var tagCount = reader.GetInt32(4);
                 var lastUpdated = reader.IsDBNull(5) ? DateTime.MinValue : reader.GetDateTime(5);
 
-                var modelFamily = new OllamaModelFamily(
-                    name,
-                    description,
-                    pullCount,
-                    labels,
-                    tagCount,
-                    lastUpdated);
+                var modelFamily = new OllamaModelFamily
+                {
+                    Name = name,
+                    Description = description,
+                    PullCount = pullCount,
+                    Labels = labels,
+                    TagCount = tagCount,
+                    LastUpdated = lastUpdated
+                };
 
                 existingModelFamilies[name] = modelFamily;
             }
@@ -88,7 +91,7 @@ public class ModelCacheService : IModelCacheService
             var toDelete = existingModelFamilies.Values.Where(f => !newFamilies.ContainsKey(f.Name));
             var toUpdate = modelFamilies
                 .Where(f => existingModelFamilies.ContainsKey(f.Name))
-                .Where(f => HasOllamaModelFamilyChanged(f, existingModelFamilies[f.Name]));
+                .Where(f => HasModelFamilyChanged(f, existingModelFamilies[f.Name]));
 
             var insertList = toInsert.ToList();
             if (insertList.Count != 0)
@@ -169,7 +172,7 @@ public class ModelCacheService : IModelCacheService
         }
     }
 
-    private static bool HasOllamaModelFamilyChanged(OllamaModelFamily newFamily, OllamaModelFamily existingFamily)
+    private static bool HasModelFamilyChanged(OllamaModelFamily newFamily, OllamaModelFamily existingFamily)
     {
         return newFamily.Description != existingFamily.Description ||
                newFamily.PullCount != existingFamily.PullCount ||
@@ -178,12 +181,11 @@ public class ModelCacheService : IModelCacheService
                !newFamily.Labels.SequenceEqual(existingFamily.Labels);
     }
 
-    public async Task<IList<OllamaModelFamily>> GetCachedOllamaModelFamiliesAsync()
+    public async Task<IList<OllamaModelFamily>> GetCachedModelFamiliesAsync()
     {
         var modelFamilies = new List<OllamaModelFamily>();
         using (DatabaseLock.Instance.AcquireReadLock())
         {
-
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText =
                 "SELECT name, description, pull_count, labels, tag_count, last_updated FROM model_families ORDER BY pull_count DESC";
@@ -199,7 +201,15 @@ public class ModelCacheService : IModelCacheService
                 var tagCount = reader.GetInt32(4);
                 var lastUpdated = reader.IsDBNull(5) ? DateTime.MinValue : reader.GetDateTime(5);
 
-                var modelFamily = new OllamaModelFamily(name, description, pullCount, labels, tagCount, lastUpdated);
+                var modelFamily = new OllamaModelFamily
+                {
+                    Name = name,
+                    Description = description,
+                    PullCount = pullCount,
+                    Labels = labels,
+                    TagCount = tagCount,
+                    LastUpdated = lastUpdated
+                };
 
                 modelFamilies.Add(modelFamily);
             }
@@ -208,7 +218,7 @@ public class ModelCacheService : IModelCacheService
         return modelFamilies;
     }
 
-    public async Task CacheOllamaModelAsync(IList<OllamaModel> models)
+    public async Task CacheModelsAsync(IList<OllamaModel> models)
     {
         var now = DateTime.Now;
 
@@ -229,12 +239,14 @@ public class ModelCacheService : IModelCacheService
 
             while (await reader.ReadAsync())
             {
-                var details = new Dictionary<string, string>();
+                var info = new Dictionary<string, string>();
 
-                if (!reader.IsDBNull(6)) details["architecture"] = reader.GetString(6);
-                if (!reader.IsDBNull(7)) details["block_count"] = reader.GetInt32(7).ToString();
-                if (!reader.IsDBNull(8)) details["context_length"] = reader.GetInt32(8).ToString();
-                if (!reader.IsDBNull(9)) details["embedding_length"] = reader.GetInt32(9).ToString();
+                if (!reader.IsDBNull(4)) info["format"] = reader.GetString(4);
+                if (!reader.IsDBNull(5)) info["quantization"] = reader.GetString(5);
+                if (!reader.IsDBNull(6)) info["architecture"] = reader.GetString(6);
+                if (!reader.IsDBNull(7)) info["block_count"] = reader.GetInt32(7).ToString();
+                if (!reader.IsDBNull(8)) info["context_length"] = reader.GetInt32(8).ToString();
+                if (!reader.IsDBNull(9)) info["embedding_length"] = reader.GetInt32(9).ToString();
 
                 if (!reader.IsDBNull(10))
                 {
@@ -243,7 +255,7 @@ public class ModelCacheService : IModelCacheService
                     {
                         foreach (var kvp in additionalInfo)
                         {
-                            details[kvp.Key] = kvp.Value;
+                            info[kvp.Key] = kvp.Value;
                         }
                     }
                 }
@@ -251,11 +263,9 @@ public class ModelCacheService : IModelCacheService
                 var model = new OllamaModel
                 {
                     Name = reader.GetString(0),
-                    Parameters = reader.IsDBNull(2) ? null : reader.GetDouble(2),
+                    Parameters = reader.IsDBNull(2) ? 0 : reader.GetInt64(2),
                     Size = reader.GetInt64(3),
-                    Format = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    Quantization = reader.IsDBNull(5) ? null : reader.GetInt32(5),
-                    Details = details.Count > 0 ? details : null,
+                    Info = info,
                     DownloadStatus = (ModelDownloadStatus)reader.GetInt32(11)
                 };
 
@@ -269,7 +279,7 @@ public class ModelCacheService : IModelCacheService
             var toDelete = existingModels.Values.Where(m => !newModels.ContainsKey(m.Name));
             var toUpdate = models
                 .Where(m => existingModels.ContainsKey(m.Name))
-                .Where(m => HasOllamaModelChanged(m, existingModels[m.Name]));
+                .Where(m => HasModelChanged(m, existingModels[m.Name]));
 
             var insertList = toInsert.ToList();
             if (insertList.Count != 0)
@@ -286,15 +296,16 @@ public class ModelCacheService : IModelCacheService
                 for (var i = 0; i < insertList.Count; i++)
                 {
                     var model = insertList[i];
-                    var (architecture, blockCount, contextLength, embeddingLength, additionalInfo) =
-                        ExtractModelDetails(model.Details);
+                    var (format, quantization, architecture, blockCount, contextLength, embeddingLength, additionalInfo
+                            ) =
+                        ExtractModelInfo(model.Info);
 
                     insertCmd.Parameters.AddWithValue($"@name{i}", model.Name);
                     insertCmd.Parameters.AddWithValue($"@familyName{i}", ExtractFamilyName(model.Name));
-                    insertCmd.Parameters.AddWithValue($"@parameters{i}", model.Parameters ?? (object)DBNull.Value);
+                    insertCmd.Parameters.AddWithValue($"@parameters{i}", model.Parameters);
                     insertCmd.Parameters.AddWithValue($"@size{i}", model.Size);
-                    insertCmd.Parameters.AddWithValue($"@format{i}", model.Format ?? (object)DBNull.Value);
-                    insertCmd.Parameters.AddWithValue($"@quantization{i}", model.Quantization ?? (object)DBNull.Value);
+                    insertCmd.Parameters.AddWithValue($"@format{i}", format ?? (object)DBNull.Value);
+                    insertCmd.Parameters.AddWithValue($"@quantization{i}", quantization ?? (object)DBNull.Value);
                     insertCmd.Parameters.AddWithValue($"@architecture{i}", architecture ?? (object)DBNull.Value);
                     insertCmd.Parameters.AddWithValue($"@blockCount{i}", blockCount ?? (object)DBNull.Value);
                     insertCmd.Parameters.AddWithValue($"@contextLength{i}", contextLength ?? (object)DBNull.Value);
@@ -333,15 +344,17 @@ public class ModelCacheService : IModelCacheService
                 for (var i = 0; i < updateList.Count; i++)
                 {
                     var model = updateList[i];
-                    var (architecture, blockCount, contextLength, embeddingLength, additionalInfo) =
-                        ExtractModelDetails(model.Details);
+
+                    var (format, quantization, architecture, blockCount, contextLength, embeddingLength, additionalInfo
+                            ) =
+                        ExtractModelInfo(model.Info);
 
                     updateCmd.Parameters.AddWithValue($"@name{i}", model.Name);
                     updateCmd.Parameters.AddWithValue($"@familyName{i}", ExtractFamilyName(model.Name));
-                    updateCmd.Parameters.AddWithValue($"@parameters{i}", model.Parameters ?? (object)DBNull.Value);
+                    updateCmd.Parameters.AddWithValue($"@parameters{i}", model.Parameters);
                     updateCmd.Parameters.AddWithValue($"@size{i}", model.Size);
-                    updateCmd.Parameters.AddWithValue($"@format{i}", model.Format ?? (object)DBNull.Value);
-                    updateCmd.Parameters.AddWithValue($"@quantization{i}", model.Quantization ?? (object)DBNull.Value);
+                    updateCmd.Parameters.AddWithValue($"@format{i}", format ?? (object)DBNull.Value);
+                    updateCmd.Parameters.AddWithValue($"@quantization{i}", quantization ?? (object)DBNull.Value);
                     updateCmd.Parameters.AddWithValue($"@architecture{i}", architecture ?? (object)DBNull.Value);
                     updateCmd.Parameters.AddWithValue($"@blockCount{i}", blockCount ?? (object)DBNull.Value);
                     updateCmd.Parameters.AddWithValue($"@contextLength{i}", contextLength ?? (object)DBNull.Value);
@@ -373,28 +386,39 @@ public class ModelCacheService : IModelCacheService
         }
     }
 
-    private static (string?, int?, int?, int?, string?) ExtractModelDetails(IDictionary<string, string>? details)
+    private static (string?, string?, string?, int?, int?, int?, string?) ExtractModelInfo(
+        IDictionary<string, string>? info)
     {
-        if (details == null) return (null, null, null, null, null);
+        if (info == null) return (null, null, null, null, null, null, null);
 
-        var architecture = details.TryGetValue("architecture", out var arch) ? arch : null;
-        var blockCount = details.TryGetValue("block_count", out var bc) && int.TryParse(bc, out var bcVal)
+        var format = info.TryGetValue("format", out var fmt) ? fmt : null;
+        var quantization = info.TryGetValue("quantization", out var qntzn)
+            ? qntzn
+            : null;
+        var architecture = info.TryGetValue("architecture", out var arch)
+            ? arch
+            : null;
+        var blockCount = info.TryGetValue("block_count", out var bc) &&
+                         int.TryParse(bc, out var bcVal)
             ? bcVal
             : (int?)null;
-        var contextLength = details.TryGetValue("context_length", out var cl) && int.TryParse(cl, out var clVal)
+        var contextLength = info.TryGetValue("context_length", out var cl) &&
+                            int.TryParse(cl, out var clVal)
             ? clVal
             : (int?)null;
-        var embeddingLength = details.TryGetValue("embedding_length", out var el) && int.TryParse(el, out var elVal)
+        var embeddingLength = info.TryGetValue("embedding_length", out var el) &&
+                              int.TryParse(el, out var elVal)
             ? elVal
             : (int?)null;
 
-        var additionalDetails = details
-            .Where(kvp => kvp.Key is not ("architecture" or "block_count" or "context_length" or "embedding_length"))
+        var additionalDetails = info
+            .Where(kvp => kvp.Key is not ("format" or "quantization" or "architecture" or "block_count"
+                or "context_length" or "embedding_length"))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         var additionalInfo = additionalDetails.Count > 0 ? JsonSerializer.Serialize(additionalDetails) : null;
 
-        return (architecture, blockCount, contextLength, embeddingLength, additionalInfo);
+        return (format, quantization, architecture, blockCount, contextLength, embeddingLength, additionalInfo);
     }
 
     private static string ExtractFamilyName(string modelName)
@@ -403,40 +427,26 @@ public class ModelCacheService : IModelCacheService
         return colonIndex > 0 ? modelName[..colonIndex] : modelName;
     }
 
-    private static bool HasOllamaModelChanged(OllamaModel newModel, OllamaModel existingModel)
+    private static bool HasModelChanged(OllamaModel newModel, OllamaModel existingModel)
     {
-        const double epsilon = 1e-9;
-
-        bool parametersChanged;
-        if (!newModel.Parameters.HasValue && !existingModel.Parameters.HasValue)
-        {
-            parametersChanged = false;
-        }
-        else if (!newModel.Parameters.HasValue || !existingModel.Parameters.HasValue)
-        {
-            parametersChanged = true;
-        }
-        else
-        {
-            parametersChanged = Math.Abs(newModel.Parameters.Value - existingModel.Parameters.Value) > epsilon;
-        }
-
-        if (parametersChanged ||
+        if (newModel.Parameters != existingModel.Parameters ||
             newModel.Size != existingModel.Size ||
-            newModel.Format != existingModel.Format ||
-            newModel.Quantization != existingModel.Quantization ||
+            newModel.Info["format"] !=
+            existingModel.Info["format"] ||
+            newModel.Info["quantization"] !=
+            existingModel.Info["quantization"] ||
             newModel.DownloadStatus != existingModel.DownloadStatus)
         {
             return true;
         }
 
-        if (newModel.Details == null && existingModel.Details == null) return false;
-        if (newModel.Details == null || existingModel.Details == null) return true;
+        if (newModel.Info.Count != existingModel.Info.Count)
+            return true;
 
-        if (newModel.Details.Count != existingModel.Details.Count) return true;
-        foreach (var kv in newModel.Details)
+        if (newModel.Info.Count != existingModel.Info.Count) return true;
+        foreach (var kv in newModel.Info)
         {
-            if (!existingModel.Details.TryGetValue(kv.Key, out var otherVal) ||
+            if (!existingModel.Info.TryGetValue(kv.Key, out var otherVal) ||
                 !string.Equals(kv.Value, otherVal, StringComparison.Ordinal))
             {
                 return true;
@@ -447,7 +457,7 @@ public class ModelCacheService : IModelCacheService
     }
 
 
-    public async Task UpdateOllamaModelAsync(OllamaModel model)
+    public async Task UpdateModelAsync(OllamaModel model)
     {
         var now = DateTime.Now;
 
@@ -473,14 +483,14 @@ public class ModelCacheService : IModelCacheService
                               WHERE name = @name
                               """;
 
-            var (architecture, blockCount, contextLength, embeddingLength, additionalInfo) =
-                ExtractModelDetails(model.Details);
+            var (format, quantization, architecture, blockCount, contextLength, embeddingLength, additionalInfo) =
+                ExtractModelInfo(model.Info);
 
             cmd.Parameters.AddWithValue("@name", model.Name);
-            cmd.Parameters.AddWithValue("@parameters", model.Parameters ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@parameters", model.Parameters);
             cmd.Parameters.AddWithValue("@size", model.Size);
-            cmd.Parameters.AddWithValue("@format", model.Format ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@quantization", model.Quantization ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@format", format ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@quantization", quantization ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@architecture", architecture ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@blockCount", blockCount ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@contextLength", contextLength ?? (object)DBNull.Value);
@@ -494,7 +504,7 @@ public class ModelCacheService : IModelCacheService
         }
     }
 
-    public async Task<IList<OllamaModel>> GetCachedOllamaModelsAsync()
+    public async Task<IList<OllamaModel>> GetCachedModelsAsync()
     {
         var models = new List<OllamaModel>();
 
@@ -506,12 +516,14 @@ public class ModelCacheService : IModelCacheService
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                var details = new Dictionary<string, string>();
+                var info = new Dictionary<string, string>();
 
-                if (!reader.IsDBNull(6)) details["architecture"] = reader.GetString(6);
-                if (!reader.IsDBNull(7)) details["block_count"] = reader.GetInt32(7).ToString();
-                if (!reader.IsDBNull(8)) details["context_length"] = reader.GetInt32(8).ToString();
-                if (!reader.IsDBNull(9)) details["embedding_length"] = reader.GetInt32(9).ToString();
+                if (!reader.IsDBNull(4)) info["format"] = reader.GetString(4);
+                if (!reader.IsDBNull(5)) info["quantization"] = reader.GetString(5);
+                if (!reader.IsDBNull(6)) info["architecture"] = reader.GetString(6);
+                if (!reader.IsDBNull(7)) info["block_count"] = reader.GetInt32(7).ToString();
+                if (!reader.IsDBNull(8)) info["context_length"] = reader.GetInt32(8).ToString();
+                if (!reader.IsDBNull(9)) info["embedding_length"] = reader.GetInt32(9).ToString();
 
                 if (!reader.IsDBNull(10))
                 {
@@ -520,7 +532,7 @@ public class ModelCacheService : IModelCacheService
                     {
                         foreach (var kvp in additionalInfo)
                         {
-                            details[kvp.Key] = kvp.Value;
+                            info[kvp.Key] = kvp.Value;
                         }
                     }
                 }
@@ -528,11 +540,9 @@ public class ModelCacheService : IModelCacheService
                 var model = new OllamaModel
                 {
                     Name = reader.GetString(0),
-                    Parameters = reader.IsDBNull(2) ? null : reader.GetDouble(2),
+                    Parameters = reader.IsDBNull(2) ? 0 : reader.GetInt64(2),
                     Size = reader.GetInt64(3),
-                    Format = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    Quantization = reader.IsDBNull(5) ? null : reader.GetInt32(5),
-                    Details = details.Count > 0 ? details : null,
+                    Info = info,
                     DownloadStatus = (ModelDownloadStatus)reader.GetInt32(11)
                 };
 

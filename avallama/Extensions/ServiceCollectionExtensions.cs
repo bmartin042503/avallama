@@ -23,8 +23,6 @@ public static class ServiceCollectionExtensions
         // ciklikus függőségre vigyázni kell, mert megeshet hogy nem dob kivételt, nem hoz létre semmit de mégis fut az alkalmazás
         // és nehezen lehet debuggolni, pl. AppService -> MainViewModel -> PageFactory -> Func<...> -> HomeViewModel -> AppService
 
-        // TODO: ezeket majd talán jobban "interfészesíteni" hogy tesztelésnél könnyebb legyen
-
         // gyenge referenciás messenger, ami azt jelenti hogy nem kell manuálisan törölni őket
         collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
@@ -46,6 +44,9 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
 
+        collection.AddSingleton<ModelCacheService>();
+        collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());
+
         collection.AddSingleton<DialogService>();
         collection.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
 
@@ -55,6 +56,7 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<SettingsViewModel>();
         collection.AddSingleton<ModelManagerViewModel>();
         collection.AddTransient<GuideViewModel>();
+        collection.AddTransient<ScraperViewModel>();
 
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<DialogViewModelFactory>();
@@ -69,6 +71,7 @@ public static class ServiceCollectionExtensions
             ApplicationPage.Guide => serviceProvider.GetRequiredService<GuideViewModel>(),
             ApplicationPage.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
             ApplicationPage.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
+            ApplicationPage.Scraper => serviceProvider.GetRequiredService<ScraperViewModel>(),
             _ => throw new InvalidOperationException() // ha még nincs adott Page regisztrálva akkor kivétel
         });
 

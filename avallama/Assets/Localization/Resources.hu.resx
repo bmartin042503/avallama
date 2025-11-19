@@ -184,8 +184,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
     </data>
-    <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Kvantálás: {0} bit</value>
+    <data name="QUANTIZATION" xml:space="preserve">
+        <value>Kvantálás</value>
     </data>
     <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
         <value>Nincs elég hely a letöltéshez</value>
@@ -402,5 +402,23 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="THIS_CONVERSATION" xml:space="preserve">
         <value>beszélgetést</value>
+    </data>
+    <data name="FORMAT" xml:space="preserve">
+        <value>Formátum</value>
+    </data>
+    <data name="SCRAPER_TITLE" xml:space="preserve">
+        <value>Modellkönyvtár frissítése</value>
+    </data>
+    <data name="SCRAPER_MODELS_FOUND" xml:space="preserve">
+        <value>{0} modell észlelve..</value>
+    </data>
+    <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
+        <value>Ez a folyamat több percig is eltarthat. Kérjük, ne zárd be az alkalmazást, amíg a frissítés tart.</value>
+    </data>
+    <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>A modellkönyvtár frissítése sikeresen megtörtént. A frissítést bármikor újra futtathatod a Beállításokból.</value>
+    </data>
+    <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
+        <value>Modellek mentése..</value>
     </data>
 </root>

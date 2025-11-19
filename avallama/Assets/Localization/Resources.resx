@@ -191,8 +191,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>Parameters: {0}B</value>
     </data>
-    <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Quantization: {0} bits</value>
+    <data name="QUANTIZATION" xml:space="preserve">
+        <value>Quantization</value>
     </data>
     <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
         <value>Not enough space to download</value>
@@ -409,5 +409,23 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="THIS_CONVERSATION" xml:space="preserve">
         <value>this conversation</value>
+    </data>
+    <data name="FORMAT" xml:space="preserve">
+        <value>Format</value>
+    </data>
+    <data name="SCRAPER_TITLE" xml:space="preserve">
+        <value>Updating your model library</value>
+    </data>
+    <data name="SCRAPER_MODELS_FOUND" xml:space="preserve">
+        <value>{0} models found..</value>
+    </data>
+    <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
+        <value>This process may take several minutes. Please keep the application open while it collects the latest model information.</value>
+    </data>
+    <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>Model library updated successfully. You can run the update again anytime from the Settings.</value>
+    </data>
+    <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
+        <value>Caching models..</value>
     </data>
 </root>

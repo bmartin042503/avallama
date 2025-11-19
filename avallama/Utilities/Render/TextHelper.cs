@@ -5,7 +5,7 @@ using System;
 using Avalonia;
 using Avalonia.Media.TextFormatting;
 
-namespace avallama.Utilities
+namespace avallama.Utilities.Render
 {
     /// <summary>
     /// Provides helper methods for working with <see cref="TextLayout"/> objects,
@@ -26,6 +26,7 @@ namespace avallama.Utilities
         /// </returns>
         public static bool IsPointerOverText(TextLayout? textLayout, Point? textLayoutPosition, Point pointerPosition)
         {
+            // TODO: optimization
             if (textLayout == null || textLayoutPosition == null)
                 return false;
 

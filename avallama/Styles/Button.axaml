@@ -1,4 +1,4 @@
-﻿<!-- 
+﻿<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -167,9 +167,9 @@ Licensed under the MIT License. See LICENSE file for details.
                                     Spacing="10"
                                     HorizontalAlignment="Center">
                             <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
-                                                 Width="10"
-                                                 FillColor="{TemplateBinding Foreground}"
-                                                 HorizontalAlignment="Center" />
+                                                  Width="10"
+                                                  FillColor="{TemplateBinding Foreground}"
+                                                  HorizontalAlignment="Center" />
                             <TextBlock x:Name="ButtonTextContent"
                                        Text="{TemplateBinding Content}"
                                        Foreground="{TemplateBinding Foreground}"
