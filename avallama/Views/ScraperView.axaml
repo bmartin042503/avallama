@@ -1,0 +1,47 @@
+<!--
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:avallama.ViewModels"
+             xmlns:services="clr-namespace:avallama.Services"
+             xmlns:controls="clr-namespace:avallama.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="avallama.Views.ScraperView"
+             x:DataType="vm:ScraperViewModel"
+             Background="{DynamicResource Surface}">
+    <Grid RowDefinitions="2*,Auto,*,Auto,*">
+        <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="6" VerticalAlignment="Center">
+
+            <!-- progress svg -->
+            <controls:DynamicSvg x:Name="Spinner" Path="/Assets/Svg/spinner.svg" FillColor="{DynamicResource Primary}"
+                                 Height="64" Margin="0,0,0,30">
+                <controls:DynamicSvg.RenderTransform>
+                    <RotateTransform Angle="0" />
+                </controls:DynamicSvg.RenderTransform>
+            </controls:DynamicSvg>
+
+            <!-- title -->
+            <TextBlock Text="{services:LocalizationService Key='SCRAPER_TITLE'}"
+                       FontSize="20" FontWeight="Medium" TextAlignment="Center" />
+
+            <!-- progress text -->
+            <TextBlock Text="{Binding ProgressText}"
+                       FontSize="14" FontWeight="Medium" TextAlignment="Center" />
+
+            <!-- cancel button -->
+            <!-- TODO: set it disabled when it's the first scraping -->
+            <Button Content="{services:LocalizationService Key='CANCEL'}" HorizontalAlignment="Center"
+                    Margin="0,30,0,0" Cursor="Hand"
+                    Command="{Binding Path=((vm:MainViewModel)DataContext).OpenHome, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </StackPanel>
+
+        <!-- description -->
+        <TextBlock Grid.Row="3" Text="{services:LocalizationService Key='SCRAPER_DESCRIPTION'}"
+                   FontSize="14" Opacity="0.5" MaxWidth="500" TextWrapping="Wrap" TextAlignment="Center" />
+    </Grid>
+</UserControl>

@@ -16,6 +16,7 @@ public partial class MainViewModel : ViewModelBase
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
     private readonly ConfigurationService _configurationService;
+    private readonly IModelCacheService _modelCacheService;
     private readonly IMessenger _messenger;
 
     private string? _firstTime;
@@ -25,11 +26,13 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(
         PageFactory pageFactory,
         ConfigurationService configurationService,
+        IModelCacheService modelCacheService,
         IMessenger messenger
     )
     {
         _pageFactory = pageFactory;
         _configurationService = configurationService;
+        _modelCacheService = modelCacheService;
         _messenger = messenger;
 
         _firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
@@ -78,9 +81,10 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void OpenModelManager()
+    public async Task OpenModelManager()
     {
-        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
+        var models = await _modelCacheService.GetCachedOllamaModelsAsync();
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(models.Count == 0 ? ApplicationPage.Scraper : ApplicationPage.ModelManager);
     }
 
     [RelayCommand]

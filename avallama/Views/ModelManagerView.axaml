@@ -38,8 +38,8 @@ Licensed under the MIT License. See LICENSE file for details.
                 Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
                 Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center" />
             <Button Command="{Binding ShowInfo}" Classes="svgButton">
-                <utilities:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
-                                      Width="20" VerticalAlignment="Center" />
+                <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
+                                     Width="20" VerticalAlignment="Center" />
             </Button>
         </StackPanel>
 
@@ -52,8 +52,8 @@ Licensed under the MIT License. See LICENSE file for details.
                      HorizontalAlignment="Stretch" Text="{Binding SearchBoxText}"
                      VerticalAlignment="Stretch">
                 <TextBox.InnerRightContent>
-                    <utilities:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
-                                          Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
+                    <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
+                                         Margin="0,0,12,1" StrokeColor="{DynamicResource OnSurfaceVariant}" />
                 </TextBox.InnerRightContent>
             </TextBox>
 
@@ -82,7 +82,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <!-- "Nincs megjeleníthető model" svg és szöveg -->
             <StackPanel Grid.Row="2" Orientation="Vertical" IsVisible="{Binding !HasModelsToDisplay}"
                         Spacing="30" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <utilities:DynamicSvg Path="/Assets/Svg/sad.svg" Height="120" FillColor="{DynamicResource Primary}" />
+                <controls:DynamicSvg Path="/Assets/Svg/sad.svg" Height="120" FillColor="{DynamicResource Primary}" />
 
                 <TextBlock Text="{services:LocalizationService Key='NO_MODELS_FOUND'}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"
@@ -117,8 +117,8 @@ Licensed under the MIT License. See LICENSE file for details.
                     Cursor="Hand" HorizontalAlignment="Center"
                     VerticalAlignment="Bottom"
                     Command="{Binding Paginate}">
-                <utilities:DynamicSvg Path="/Assets/Svg/dots.svg" FillColor="{DynamicResource OnSecondaryContainer}"
-                                      Height="30"/>
+                <controls:DynamicSvg Path="/Assets/Svg/dots.svg" FillColor="{DynamicResource OnSecondaryContainer}"
+                                     Height="30"/>
             </Button>
         </Grid>
 

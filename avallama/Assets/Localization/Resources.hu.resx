@@ -406,7 +406,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="FORMAT" xml:space="preserve">
         <value>Formátum</value>
     </data>
-    <data name="LOAD_MORE" xml:space="preserve">
-        <value>Továbbiak betöltése..</value>
+    <data name="SCRAPER_TITLE" xml:space="preserve">
+        <value>Modellkönyvtár frissítése</value>
+    </data>
+    <data name="SCRAPER_MODELS_FOUND" xml:space="preserve">
+        <value>{0} modell észlelve..</value>
+    </data>
+    <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
+        <value>Ez a folyamat több percig is eltarthat. Kérjük, ne zárd be az alkalmazást, amíg a frissítés tart.</value>
+    </data>
+    <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>A modellkönyvtár frissítése sikeresen megtörtént. A frissítést bármikor újra futtathatod a Beállításokból.</value>
     </data>
 </root>

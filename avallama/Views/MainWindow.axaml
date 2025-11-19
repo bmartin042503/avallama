@@ -9,7 +9,6 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:avallama.Controls"
-        xmlns:utilities="clr-namespace:avallama.Controls.Utilities"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="avallama.Views.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -24,13 +23,13 @@ Licensed under the MIT License. See LICENSE file for details.
         <StackPanel ZIndex="100" Canvas.Right="0" Canvas.Top="0" Margin="10" Orientation="Horizontal"
                     HorizontalAlignment="Right" Spacing="5">
             <Button Classes="windowManager hide" Click="HideButton_OnClick">
-                <utilities:DynamicSvg Path="/Assets/Svg/hide.svg" Width="12" />
+                <controls:DynamicSvg Path="/Assets/Svg/hide.svg" Width="12" />
             </Button>
             <Button Classes="windowManager minmax" Click="MinMaxButton_OnClick">
-                <utilities:DynamicSvg x:Name="MinMaxSvg" Path="/Assets/Svg/maximize.svg" Width="12" />
+                <controls:DynamicSvg x:Name="MinMaxSvg" Path="/Assets/Svg/maximize.svg" Width="12" />
             </Button>
             <Button Classes="windowManager close" Click="CloseButton_OnClick">
-                <utilities:DynamicSvg Path="/Assets/Svg/close.svg" Width="12" />
+                <controls:DynamicSvg Path="/Assets/Svg/close.svg" Width="12" />
             </Button>
         </StackPanel>
         <ContentControl

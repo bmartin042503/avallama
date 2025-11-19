@@ -5,8 +5,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:avallama.Controls"
-        xmlns:utilities="clr-namespace:avallama.Controls.Utilities">
+        xmlns:controls="clr-namespace:avallama.Controls">
     <!-- Preview -->
     <Design.PreviewWith>
         <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
@@ -21,20 +20,20 @@ Licensed under the MIT License. See LICENSE file for details.
                     <Button Classes="lessSecondaryButton" Content="Less Secondary Button" />
                     <Button Content="Disabled Button" IsEnabled="False" />
                     <Button Classes="windowManager hide">
-                        <utilities:DynamicSvg Path="/Assets/Svg/hide.svg"
+                        <controls:DynamicSvg Path="/Assets/Svg/hide.svg"
                                              Width="12" />
                     </Button>
                     <Button Classes="windowManager minmax">
-                        <utilities:DynamicSvg Path="/Assets/Svg/maximize.svg"
+                        <controls:DynamicSvg Path="/Assets/Svg/maximize.svg"
                                              Width="12" />
                     </Button>
                     <Button Classes="windowManager close">
-                        <utilities:DynamicSvg Path="/Assets/Svg/close.svg"
+                        <controls:DynamicSvg Path="/Assets/Svg/close.svg"
                                              Width="12" />
                     </Button>
                     <Button Classes="avallamaWhite" Content="Icon Button" />
                     <Button Classes="svgButton">
-                        <utilities:DynamicSvg Path="/Assets/Svg/sidebar.svg" Width="20"
+                        <controls:DynamicSvg Path="/Assets/Svg/sidebar.svg" Width="20"
                                              FillColor="{DynamicResource Primary}" />
                     </Button>
                     <Button Classes="errorButton" Content="Close" />
@@ -101,27 +100,27 @@ Licensed under the MIT License. See LICENSE file for details.
         </Setter>
     </Style>
 
-    <Style Selector="Button.windowManager.hide utilities|DynamicSvg">
+    <Style Selector="Button.windowManager.hide controls|DynamicSvg">
         <Setter Property="FillColor" Value="{DynamicResource Primary}" />
     </Style>
 
-    <Style Selector="Button.windowManager.minmax utilities|DynamicSvg">
+    <Style Selector="Button.windowManager.minmax controls|DynamicSvg">
         <Setter Property="FillColor" Value="{DynamicResource Primary}" />
     </Style>
 
-    <Style Selector="Button.windowManager.close utilities|DynamicSvg">
+    <Style Selector="Button.windowManager.close controls|DynamicSvg">
         <Setter Property="StrokeColor" Value="{DynamicResource Primary}" />
     </Style>
 
-    <Style Selector="Button.windowManager.hide:pointerover utilities|DynamicSvg">
+    <Style Selector="Button.windowManager.hide:pointerover controls|DynamicSvg">
         <Setter Property="FillColor" Value="{DynamicResource OnPrimary}" />
     </Style>
 
-    <Style Selector="Button.windowManager.minmax:pointerover utilities|DynamicSvg">
+    <Style Selector="Button.windowManager.minmax:pointerover controls|DynamicSvg">
         <Setter Property="FillColor" Value="{DynamicResource OnPrimary}" />
     </Style>
 
-    <Style Selector="Button.windowManager.close:pointerover utilities|DynamicSvg">
+    <Style Selector="Button.windowManager.close:pointerover controls|DynamicSvg">
         <Setter Property="StrokeColor" Value="{DynamicResource OnPrimary}" />
     </Style>
 
@@ -167,7 +166,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <StackPanel Orientation="Horizontal"
                                     Spacing="10"
                                     HorizontalAlignment="Center">
-                            <utilities:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
+                            <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
                                                   Width="10"
                                                   FillColor="{TemplateBinding Foreground}"
                                                   HorizontalAlignment="Center" />

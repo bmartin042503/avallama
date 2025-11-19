@@ -61,6 +61,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     public async Task CallingOllamaServiceMethod_BeforeStart_Throws()
     {
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher());
         await Assert.ThrowsAsync<InvalidOperationException>(async () => { await ol.GetModelParamNum("testllama"); });
     }
@@ -74,6 +75,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process()
@@ -85,10 +87,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
 
         await ol.Start();
 
-        await AsyncAssertExtensions.DoesNotThrowAsync(async () =>
-        {
-            await ol.GetModelParamNum("testllama");
-        });
+        await AsyncAssertExtensions.DoesNotThrowAsync(async () => { await ol.GetModelParamNum("testllama"); });
     }
 
     // Start() tests
@@ -102,6 +101,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -124,6 +124,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -151,6 +152,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => null,
@@ -178,6 +180,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => null,
@@ -238,6 +241,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -304,6 +308,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -361,6 +366,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),

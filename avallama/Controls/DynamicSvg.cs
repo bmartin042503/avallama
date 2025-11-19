@@ -6,7 +6,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
 
-namespace avallama.Controls.Utilities;
+namespace avallama.Controls;
 
 /// <summary>
 /// Svg megjelenítésére használható. A FillColor és a StrokeColor propertykkel megadható az SVG színe.

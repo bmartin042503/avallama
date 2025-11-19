@@ -413,4 +413,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="FORMAT" xml:space="preserve">
         <value>Format</value>
     </data>
+    <data name="SCRAPER_TITLE" xml:space="preserve">
+        <value>Updating your model library</value>
+    </data>
+    <data name="SCRAPER_MODELS_FOUND" xml:space="preserve">
+        <value>{0} models found..</value>
+    </data>
+    <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
+        <value>This process may take several minutes. Please keep the application open while we collect the latest model information.</value>
+    </data>
+    <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>Model library updated successfully. You can run the update again anytime from the Settings.</value>
+    </data>
 </root>

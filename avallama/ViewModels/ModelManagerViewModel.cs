@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
-using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -103,19 +102,7 @@ public partial class ModelManagerViewModel : PageViewModel
 
     private async Task LoadModelsData()
     {
-        // ModelCacheServiceből lekérni a modellek adatait, ha nincsenek akkor scraper folyamat indítása, majd ezután cachelés
-        try
-        {
-            await foreach (var model in _ollamaService.StreamAllScrapedModelsAsync())
-            {
-                Console.WriteLine($"Megjott a model: {model.Name}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error while loading the models data: {ex.Message}");
-            // TODO: proper logging
-        }
+        // TODO: ModelCacheServiceből lekérni a modellek adatait
 
         Paginate();
         IsPaginationButtonVisible = _paginationIndex < _modelsData.Count() - 1;
