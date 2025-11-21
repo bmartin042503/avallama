@@ -58,6 +58,10 @@ Licensed under the MIT License. See LICENSE file for details.
         <DependentUpon>SettingsView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Styles\TemplatedControls\ModelItem.axaml.cs">
+        <DependentUpon>ModelItem.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

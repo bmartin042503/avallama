@@ -421,4 +421,10 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SORT_PULL_COUNT_DESCENDING" xml:space="preserve">
         <value>Legnépszerűbb</value>
     </data>
+    <data name="PULL_COUNT" xml:space="preserve">
+        <value>Letöltések száma</value>
+    </data>
+    <data name="LAST_UPDATED" xml:space="preserve">
+        <value>Utoljára frissítve</value>
+    </data>
 </root>

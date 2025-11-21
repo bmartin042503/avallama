@@ -186,7 +186,7 @@ Licensed under the MIT License. See LICENSE file for details.
                            Foreground="{DynamicResource Error}"
                            TextAlignment="Left"
                            TextWrapping="Wrap"
-                           Name="NoModelsWarningTextBlock" />
+                           x:Name="NoModelsWarningTextBlock" />
             </Grid>
         </StackPanel>
 

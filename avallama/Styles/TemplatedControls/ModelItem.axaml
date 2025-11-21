@@ -1,0 +1,193 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:templatedControls="using:avallama.Styles.TemplatedControls"
+        xmlns:services="using:avallama.Services"
+        xmlns:models="clr-namespace:avallama.Models"
+        xmlns:collections="clr-namespace:System.Collections.Generic;assembly=System.Collections"
+        xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
+        xmlns:converters="clr-namespace:avallama.Converters">
+    <Design.PreviewWith>
+
+        <templatedControls:ModelItem
+            Title="deepseek-r1:8b"
+            RunsSlow="True" Margin="40"
+            MaxWidth="600"
+            SizeInBytes="32000000">
+
+            <templatedControls:ModelItem.Family>
+                <models:OllamaModelFamily
+                    Name="DeepSeek"
+                    Description="DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro. "
+                    PullCount="1234"
+                    TagCount="4">
+
+                    <models:OllamaModelFamily.Labels>
+                        <collections:List x:TypeArguments="x:String">
+                            <x:String>tools</x:String>
+                            <x:String>thinking</x:String>
+                            <x:String>1.5b</x:String>
+                        </collections:List>
+                    </models:OllamaModelFamily.Labels>
+
+                </models:OllamaModelFamily>
+            </templatedControls:ModelItem.Family>
+
+            <templatedControls:ModelItem.Info>
+                <collections:Dictionary x:TypeArguments="x:String, x:String">
+                    <x:String x:Key="Architecture">qwen3</x:String>
+                    <x:String x:Key="Parameters">8.19B</x:String>
+                    <x:String x:Key="Quantization">Q4_K_M</x:String>
+                    <x:String x:Key="Total downloads">66.6m</x:String>
+                    <x:String x:Key="Last updated">2 months ago</x:String>
+                    <x:String x:Key="License">MIT License Copyright (c) 2023 DeepSeek</x:String>
+                </collections:Dictionary>
+            </templatedControls:ModelItem.Info>
+
+        </templatedControls:ModelItem>
+    </Design.PreviewWith>
+
+    <Style Selector="templatedControls|ModelItem">
+        <Style.Resources>
+            <converters:ModelSizeConverter x:Key="ModelSizeConverter" />
+        </Style.Resources>
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Padding="16"
+                        BorderBrush="{DynamicResource OutlineVariant}"
+                        BorderThickness="0.75"
+                        Background="{DynamicResource SurfaceContainerLow}"
+                        CornerRadius="10">
+
+                    <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="32" RowSpacing="20">
+
+                        <!-- Title -->
+                        <SelectableTextBlock Grid.Row="0" Grid.Column="0" Text="{TemplateBinding Title}" FontSize="26"
+                                             Foreground="{DynamicResource OnSurface}"
+                                             VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                             FontFamily="{StaticResource Manrope}" />
+
+                        <!-- Warning message -->
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{services:LocalizationService Key='MIGHT_RUN_SLOW'}"
+                                   IsVisible="{TemplateBinding RunsSlow}" FontSize="14"
+                                   Foreground="{DynamicResource Error}"
+                                   VerticalAlignment="Center"
+                                   FontFamily="{StaticResource Manrope}" />
+
+                        <!-- Family labels -->
+                        <ItemsControl
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            ItemsSource="{Binding Family.Labels, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" ItemSpacing="12" LineSpacing="12" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource Secondary}"
+                                            Padding="10,5"
+                                            CornerRadius="6">
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{DynamicResource OnSecondary}"
+                                                   FontSize="12"
+                                                   FontFamily="{StaticResource Manrope}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Model information -->
+                        <Border
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Background="{DynamicResource SurfaceContainerHighest}"
+                            BorderBrush="{DynamicResource OutlineVariant}"
+                            BorderThickness="0.75"
+                            Padding="12"
+                            CornerRadius="8">
+                            <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Grid
+                                    RowDefinitions="Auto,*,Auto"
+                                    RowSpacing="12"
+                                    ColumnSpacing="18">
+
+                                    <!-- Family description -->
+                                    <SelectableTextBlock
+                                        Grid.Row="0"
+                                        Text="{Binding Family.Description, RelativeSource={RelativeSource TemplatedParent}}"
+                                        FontSize="14" Foreground="{DynamicResource OnSurface}"
+                                        FontFamily="{StaticResource Manrope}"
+                                        TextWrapping="Wrap"/>
+
+                                    <ItemsControl
+                                        Grid.Row="1"
+                                        ItemsSource="{Binding Info, RelativeSource={RelativeSource TemplatedParent}}">
+
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Vertical" Spacing="8" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+
+                                        <!-- Info -->
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <DataTemplate.DataType>
+                                                    <x:Type TypeName="scg:KeyValuePair"
+                                                            x:TypeArguments="x:String, x:String"/>
+                                                </DataTemplate.DataType>
+
+                                                <StackPanel Orientation="Horizontal">
+                                                    <SelectableTextBlock Text="{Binding Key}"
+                                                                         Foreground="{DynamicResource OnSurface}"
+                                                                         FontSize="12"
+                                                                         FontFamily="{StaticResource Manrope}" />
+                                                    <SelectableTextBlock Text=": "
+                                                                         Foreground="{DynamicResource OnSurface}"
+                                                                         FontSize="12"
+                                                                         FontFamily="{StaticResource Manrope}" />
+                                                    <SelectableTextBlock Text="{Binding Value}"
+                                                                         Foreground="{DynamicResource OnSurface}"
+                                                                         FontSize="12"
+                                                                         FontFamily="{StaticResource Manrope}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Learn more hyperlink -->
+                                    <HyperlinkButton
+                                        Grid.Row="2"
+                                        Content="{services:LocalizationService Key='LEARN_MORE'}"
+                                        Foreground="{DynamicResource Primary}" Padding="0"
+                                        Cursor="Hand"
+                                        FontFamily="{StaticResource Manrope}" FontWeight="Bold"/>
+
+                                    <!-- TODO: Token/sec speed block (+row) -->
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+
+                        <Grid ColumnDefinitions="Auto,*" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="12">
+                            <Border Grid.Column="0" DockPanel.Dock="Left" Padding="10,5"
+                                    Background="{DynamicResource SurfaceContainerHighest}"
+                                    BorderBrush="{DynamicResource OutlineVariant}"
+                                    BorderThickness="0.75"
+                                    CornerRadius="6">
+                                <TextBlock Text="{Binding Path=SizeInBytes, Converter={StaticResource ModelSizeConverter}, RelativeSource={RelativeSource TemplatedParent}}"
+                                           FontFamily="{StaticResource Manrope}"
+                                           FontSize="12"/>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

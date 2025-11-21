@@ -108,6 +108,10 @@ public partial class ModelManagerViewModel : PageViewModel
         _modelsData = (await _modelCacheService.GetCachedModelsAsync())
             .Where(m => !m.Name.EndsWith("-cloud", StringComparison.OrdinalIgnoreCase));
 
+        // _modelsData = GenerateTestModels();
+
+        _paginationIndex = 0;
+
         var modelsData = _modelsData.ToList();
         IsPaginationButtonVisible = _paginationIndex < modelsData.Count - 1;
 
@@ -367,4 +371,49 @@ public partial class ModelManagerViewModel : PageViewModel
         // TODO: tájékoztató a modelmanager működéséről, modellek információiról stb.
         _dialogService.ShowInfoDialog("ModelManager info here");
     }
+
+    public static List<OllamaModel> GenerateTestModels(int count = 50)
+    {
+        var rnd = new Random();
+
+        var familyNames = new[] { "test-model", "alpha", "beta-llm", "neuro", "research", "proto" };
+        var labelPool = new[] { "professional", "thinking", "lightweight", "experimental", "fast", "accurate" };
+        var quantizations = new[] { "Q4_K_M", "Q5_K_S", "Q6_K_L", "FP8", "Q3_K_M" };
+
+        var list = new List<OllamaModel>();
+
+        for (int i = 0; i < count; i++)
+        {
+            // Random family
+            var familyName = familyNames[rnd.Next(familyNames.Length)];
+            var family = new OllamaModelFamily
+            {
+                Name = familyName,
+                Description = "Lorem ipsum dolor sit amet consectetur, etc.",
+                PullCount = rnd.Next(100_000, 5_000_000),
+                Labels = labelPool.OrderBy(x => rnd.Next()).Take(rnd.Next(1, 4)).ToList(),
+                LastUpdated = DateTime.Now.AddDays(-rnd.Next(0, 400)),
+                TagCount = rnd.Next(1, 10)
+            };
+
+            // Random model name
+            var parametersB = new[] { 3, 7, 8, 13, 20, 34 }[rnd.Next(6)];
+            var quant = quantizations[rnd.Next(quantizations.Length)];
+            var name = $"{familyName}:{parametersB}b-{quant}";
+
+            var model = new OllamaModel
+            {
+                Name = name,
+                Family = family,
+                Size = rnd.NextInt64(10_000_000, 40_000_000),      // 10MB–40MB
+                Parameters = parametersB * 1_000_000L,             // pl. 8b → 8M
+                RunsSlow = rnd.Next(0, 2) == 0
+            };
+
+            list.Add(model);
+        }
+
+        return list;
+    }
+
 }

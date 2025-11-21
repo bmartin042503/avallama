@@ -17,4 +17,13 @@ Licensed under the MIT License. See LICENSE file for details.
             </ControlTemplate>
         </Setter>
     </Style>
+
+    <Style Selector="SelectableTextBlock">
+        <Setter Property="SelectionBrush" Value="{DynamicResource Selection}"/>
+    </Style>
+
+    <Style Selector="HyperlinkButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Secondary}" />
+    </Style>
 </Styles>

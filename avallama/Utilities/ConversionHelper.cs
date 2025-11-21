@@ -15,8 +15,8 @@ namespace avallama.Utilities;
 public static class ConversionHelper
 {
     private const double Thousand = 1_000d;
-    private const double Million  = 1_000_000d;
-    private const double Billion  = 1_000_000_000d;
+    private const double Million = 1_000_000d;
+    private const double Billion = 1_000_000_000d;
 
     private const double Kb = 1_000d;
     private const double Mb = 1_000_000d;
@@ -65,10 +65,38 @@ public static class ConversionHelper
     }
 
     /// <summary>
-    /// Converts a size string (e.g., "2.5GB") into its byte value using SI units (1000-based).
+    /// Converts a long number into an abbreviated numeric string like "1.5M", "120K", or "2B".
     /// </summary>
-    /// <param name="size">The size string.</param>
-    /// <returns>The size in bytes, or 0 if parsing fails.</returns>
+    /// <param name="number">The number to abbreviate.</param>
+    /// <returns>The abbreviated string representation.</returns>
+    public static string FormatToAbbreviatedNumber(long number)
+    {
+        double value = number;
+        var suffix = "";
+
+        if (Math.Abs(number) >= Billion)
+        {
+            value = number / Billion;
+            suffix = "B";
+        }
+        else if (Math.Abs(number) >= Million)
+        {
+            value = number / Million;
+            suffix = "M";
+        }
+        else if (Math.Abs(number) >= Thousand)
+        {
+            value = number / Thousand;
+            suffix = "K";
+        }
+
+        var formatted = value % 1 == 0
+            ? ((long)value).ToString()
+            : value.ToString("0.#", CultureInfo.InvariantCulture);
+
+        return formatted + suffix;
+    }
+
     public static long ParseSizeToBytes(string size)
     {
         if (string.IsNullOrWhiteSpace(size))
@@ -85,13 +113,13 @@ public static class ConversionHelper
 
         var multiplier = unit switch
         {
-            "B"  => 1,
+            "B" => 1,
             "KB" => Kb,
             "MB" => Mb,
             "GB" => Gb,
             "TB" => Tb,
             "PB" => Pb,
-            _    => 0
+            _ => 0
         };
 
         return (long)(value * multiplier);
@@ -136,4 +164,3 @@ public static class ConversionHelper
         );
     }
 }
-

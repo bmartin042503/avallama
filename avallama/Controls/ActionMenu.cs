@@ -35,7 +35,7 @@ public class ActionMenu : PopupFlyoutBase
                 Background = ColorProvider.GetColor(AppColor.SurfaceContainerHighest),
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(12, 6),
-                BorderBrush = ColorProvider.GetColor(AppColor.OnSurface),
+                BorderBrush = ColorProvider.GetColor(AppColor.OutlineVariant),
                 BorderThickness = new Thickness(1),
                 Child = Items
             }

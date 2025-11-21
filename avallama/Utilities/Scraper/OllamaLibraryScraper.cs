@@ -205,7 +205,8 @@ public static class OllamaLibraryScraper
             {
                 Name = tagName,
                 Size = ConversionHelper.ParseSizeToBytes(tagSize),
-                Family = family
+                Family = family,
+                DownloadStatus = ModelDownloadStatus.Ready
             };
 
             yield return model;
