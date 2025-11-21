@@ -293,7 +293,7 @@ public class ModelCacheService : IModelCacheService
                 {
                     var (format, quantization, architecture, blockCount, contextLength, embeddingLength,
                             additionalInfo) =
-                        ExtractModelInfo(model.Info.ToDictionary(m => m.Key, m => m.Value));
+                        ExtractModelInfo(model.Info);
 
                     await using var insertCmd = _connection.CreateCommand();
                     insertCmd.CommandText = """
@@ -336,7 +336,7 @@ public class ModelCacheService : IModelCacheService
                 {
                     var (format, quantization, architecture, blockCount, contextLength, embeddingLength,
                             additionalInfo) =
-                        ExtractModelInfo(model.Info.ToDictionary(m => m.Key, m => m.Value));
+                        ExtractModelInfo(model.Info);
 
                     await using var updateCmd = _connection.CreateCommand();
                     updateCmd.CommandText = """
@@ -436,27 +436,24 @@ public class ModelCacheService : IModelCacheService
 
     private static bool HasModelChanged(OllamaModel newModel, OllamaModel existingModel)
     {
-        var newModelDict = newModel.Info.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        var existingModelDict = existingModel.Info.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
         if (newModel.Parameters != existingModel.Parameters ||
             newModel.Size != existingModel.Size ||
-            newModelDict["format"] !=
-            existingModelDict["format"] ||
-            newModelDict["quantization"] !=
-            existingModelDict["quantization"] ||
+            newModel.Info["format"] !=
+            existingModel.Info["format"] ||
+            newModel.Info["quantization"] !=
+            existingModel.Info["quantization"] ||
             newModel.DownloadStatus != existingModel.DownloadStatus)
         {
             return true;
         }
 
-        if (newModelDict.Count != existingModelDict.Count)
+        if (newModel.Info.Count != existingModel.Info.Count)
             return true;
 
-        if (newModelDict.Count != existingModelDict.Count) return true;
+        if (newModel.Info.Count != existingModel.Info.Count) return true;
         foreach (var kv in newModel.Info)
         {
-            if (!existingModelDict.TryGetValue(kv.Key, out var otherVal) ||
+            if (!existingModel.Info.TryGetValue(kv.Key, out var otherVal) ||
                 !string.Equals(kv.Value, otherVal, StringComparison.Ordinal))
             {
                 return true;
@@ -494,7 +491,7 @@ public class ModelCacheService : IModelCacheService
                               """;
 
             var (format, quantization, architecture, blockCount, contextLength, embeddingLength, additionalInfo) =
-                ExtractModelInfo(model.Info.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+                ExtractModelInfo(model.Info);
 
             cmd.Parameters.AddWithValue("@name", model.Name);
             cmd.Parameters.AddWithValue("@parameters", model.Parameters);

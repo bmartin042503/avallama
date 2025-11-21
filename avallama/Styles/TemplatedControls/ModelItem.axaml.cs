@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 using avallama.Models;
 using avallama.Services;
@@ -15,6 +16,9 @@ public class ModelItem : TemplatedControl
 {
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<ModelItem, string?>(nameof(Title));
+
+    public static readonly StyledProperty<string?> InformationProperty =
+        AvaloniaProperty.Register<ModelItem, string?>(nameof(Information));
 
     public static readonly DirectProperty<ModelItem, OllamaModelFamily?> FamilyProperty =
         AvaloniaProperty.RegisterDirect<ModelItem, OllamaModelFamily?>(
@@ -30,11 +34,11 @@ public class ModelItem : TemplatedControl
             (o, v) => o.Parameters = v
         );
 
-    public static readonly DirectProperty<ModelItem, IDictionary<string, string>?> InfoProperty =
+    public static readonly DirectProperty<ModelItem, IDictionary<string, string>?> InformationSourceProperty =
         AvaloniaProperty.RegisterDirect<ModelItem, IDictionary<string, string>?>(
-            nameof(Info),
-            o => o.Info,
-            (o, v) => o.Info = v
+            nameof(InformationSource),
+            o => o.InformationSource,
+            (o, v) => o.InformationSource = v
         );
 
     public static readonly DirectProperty<ModelItem, long> SizeInBytesProperty =
@@ -84,6 +88,12 @@ public class ModelItem : TemplatedControl
         set => SetValue(TitleProperty, value);
     }
 
+    public string? Information
+    {
+        get => GetValue(InformationProperty);
+        set => SetValue(InformationProperty, value);
+    }
+
     private double? _parameters;
 
     public double? Parameters
@@ -100,12 +110,12 @@ public class ModelItem : TemplatedControl
         set => SetAndRaise(FamilyProperty, ref _family, value);
     }
 
-    private IDictionary<string, string>? _info;
+    private IDictionary<string, string>? _informationSource;
 
-    public IDictionary<string, string>? Info
+    public IDictionary<string, string>? InformationSource
     {
-        get => _info;
-        set => SetAndRaise(InfoProperty, ref _info, value);
+        get => _informationSource;
+        set => SetAndRaise(InformationSourceProperty, ref _informationSource, value);
     }
 
     private long _sizeInBytes;
@@ -158,19 +168,20 @@ public class ModelItem : TemplatedControl
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == InfoProperty)
+        if (change.Property == InformationSourceProperty)
         {
-            // Add pull count from family to model info
-            Info?.Add(
-                LocalizationService.GetString("PULL_COUNT"),
-                ConversionHelper.FormatToAbbreviatedNumber(Family?.PullCount ?? 0)
-            );
+            if (InformationSource != null)
+            {
+                // Add pull count from family to model info
+                InformationSource[LocalizationService.GetString("PULL_COUNT")] =
+                    ConversionHelper.FormatToAbbreviatedNumber(Family?.PullCount ?? 0);
 
-            // Add last updated date from family to model info
-            Info?.Add(
-                LocalizationService.GetString("LAST_UPDATED"),
-                Family?.LastUpdated.ToString("yyyy-MM-dd") ?? string.Empty
-            );
+                // Add last updated date from family to model info
+                InformationSource[LocalizationService.GetString("LAST_UPDATED")] =
+                    Family?.LastUpdated.ToString("yyyy-MM-dd") ?? string.Empty;
+
+                Information = string.Join('\n', InformationSource.Select(kv => $"{kv.Key}: {kv.Value}"));
+            }
         }
     }
 }

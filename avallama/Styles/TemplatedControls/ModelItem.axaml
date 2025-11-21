@@ -32,7 +32,7 @@
                 </models:OllamaModelFamily>
             </templatedControls:ModelItem.Family>
 
-            <templatedControls:ModelItem.Info>
+            <templatedControls:ModelItem.InformationSource>
                 <collections:Dictionary x:TypeArguments="x:String, x:String">
                     <x:String x:Key="Architecture">qwen3</x:String>
                     <x:String x:Key="Parameters">8.19B</x:String>
@@ -41,7 +41,7 @@
                     <x:String x:Key="Last updated">2 months ago</x:String>
                     <x:String x:Key="License">MIT License Copyright (c) 2023 DeepSeek</x:String>
                 </collections:Dictionary>
-            </templatedControls:ModelItem.Info>
+            </templatedControls:ModelItem.InformationSource>
 
         </templatedControls:ModelItem>
     </Design.PreviewWith>
@@ -125,41 +125,10 @@
                                         FontFamily="{StaticResource Manrope}"
                                         TextWrapping="Wrap"/>
 
-                                    <ItemsControl
-                                        Grid.Row="1"
-                                        ItemsSource="{Binding Info, RelativeSource={RelativeSource TemplatedParent}}">
-
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Vertical" Spacing="8" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-
-                                        <!-- Info -->
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <DataTemplate.DataType>
-                                                    <x:Type TypeName="scg:KeyValuePair"
-                                                            x:TypeArguments="x:String, x:String"/>
-                                                </DataTemplate.DataType>
-
-                                                <StackPanel Orientation="Horizontal">
-                                                    <SelectableTextBlock Text="{Binding Key}"
-                                                                         Foreground="{DynamicResource OnSurface}"
-                                                                         FontSize="12"
-                                                                         FontFamily="{StaticResource Manrope}" />
-                                                    <SelectableTextBlock Text=": "
-                                                                         Foreground="{DynamicResource OnSurface}"
-                                                                         FontSize="12"
-                                                                         FontFamily="{StaticResource Manrope}" />
-                                                    <SelectableTextBlock Text="{Binding Value}"
-                                                                         Foreground="{DynamicResource OnSurface}"
-                                                                         FontSize="12"
-                                                                         FontFamily="{StaticResource Manrope}" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                    <SelectableTextBlock Grid.Row="1" Text="{TemplateBinding Information}"
+                                                         Foreground="{DynamicResource OnSurface}"
+                                                         FontSize="12" LineHeight="22"
+                                                         FontFamily="{StaticResource Manrope}" />
 
                                     <!-- Learn more hyperlink -->
                                     <HyperlinkButton

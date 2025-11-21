@@ -133,7 +133,7 @@ Licensed under the MIT License. See LICENSE file for details.
                              Title="{Binding SelectedModel.Name}"
                              Family="{Binding SelectedModel.Family}"
                              Parameters="{Binding SelectedModel.Parameters}"
-                             Info="{Binding SelectedModel.Info}"
+                             InformationSource="{Binding SelectedModel.Info}"
                              SizeInBytes="{Binding SelectedModel.Size}"
                              DownloadStatus="{Binding SelectedModel.DownloadStatus}"
                              DownloadSpeed="{Binding DownloadSpeed}"
