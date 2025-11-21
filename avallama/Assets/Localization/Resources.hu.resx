@@ -319,12 +319,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SORT_SIZE_ASCENDING" xml:space="preserve">
         <value>Méret (növekvő)</value>
     </data>
-    <data name="SORT_PARAMETERS_DESCENDING" xml:space="preserve">
-        <value>Paraméter (csökkenő)</value>
-    </data>
-    <data name="SORT_PARAMETERS_ASCENDING" xml:space="preserve">
-        <value>Paraméter (növekvő)</value>
-    </data>
     <data name="SORT_DOWNLOADED" xml:space="preserve">
         <value>Letöltött</value>
     </data>
@@ -420,5 +414,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
         <value>Modellek mentése..</value>
+    </data>
+    <data name="SORT_PULL_COUNT_ASCENDING" xml:space="preserve">
+        <value>Kevésbé népszerű</value>
+    </data>
+    <data name="SORT_PULL_COUNT_DESCENDING" xml:space="preserve">
+        <value>Legnépszerűbb</value>
     </data>
 </root>

@@ -1,7 +1,7 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "avallama", "avallama\avallama.csproj", "{71F69597-EBB7-487D-9B4F-432FB1D459D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "avallama.helper", "avallama.helper\avallama.helper.csproj", "{CF493CAD-7EA3-4FCD-9E5F-C800986E2318}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "avallama.Helper", "avallama.Helper\avallama.Helper.csproj", "{CF493CAD-7EA3-4FCD-9E5F-C800986E2318}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "avallama.Tests", "avallama.Tests\avallama.Tests.csproj", "{6C1C6AE2-BB4C-49D8-9A71-9D840E5C1C4B}"
 EndProject

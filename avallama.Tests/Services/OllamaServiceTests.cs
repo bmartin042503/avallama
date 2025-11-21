@@ -16,7 +16,6 @@ using avallama.Models;
 using avallama.Services;
 using avallama.Tests.Extensions;
 using avallama.Tests.Fixtures;
-using avallama.Tests.TestUtilities;
 using Moq;
 using Moq.Protected;
 using Xunit;

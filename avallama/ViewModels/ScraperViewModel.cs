@@ -55,6 +55,8 @@ public partial class ScraperViewModel : PageViewModel
 
             ProgressText = LocalizationService.GetString("SCRAPER_CACHING_MODELS");
 
+            // TODO: optimize, since streamallscrapedmodels gets all families already but it can not be extracted currently
+
             // This "calls" the scraper again, but the result is cached in OllamaService
             var families = await _ollamaService.GetScrapedFamiliesAsync();
             await _modelCacheService.CacheModelFamilyAsync(families);

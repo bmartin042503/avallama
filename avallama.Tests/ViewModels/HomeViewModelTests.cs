@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Services;
 using avallama.Tests.Fixtures;
-using avallama.Utilities;
 using avallama.ViewModels;
 using avallama.Views;
 using Avalonia.Controls;

@@ -21,8 +21,8 @@ public class SortingOptionConverter : IValueConverter
             return sortingOption switch
             {
                 SortingOption.Downloaded => LocalizationService.GetString("SORT_DOWNLOADED"),
-                SortingOption.ParametersAscending => LocalizationService.GetString("SORT_PARAMETERS_ASCENDING"),
-                SortingOption.ParametersDescending => LocalizationService.GetString("SORT_PARAMETERS_DESCENDING"),
+                SortingOption.PullCountAscending => LocalizationService.GetString("SORT_PULL_COUNT_ASCENDING"),
+                SortingOption.PullCountDescending => LocalizationService.GetString("SORT_PULL_COUNT_DESCENDING"),
                 SortingOption.SizeAscending => LocalizationService.GetString("SORT_SIZE_ASCENDING"),
                 SortingOption.SizeDescending => LocalizationService.GetString("SORT_SIZE_DESCENDING"),
                 _ => null

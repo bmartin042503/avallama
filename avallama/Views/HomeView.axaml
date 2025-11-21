@@ -38,13 +38,13 @@ Licensed under the MIT License. See LICENSE file for details.
               Background="{DynamicResource SurfaceContainer}">
             <Grid Grid.Row="0" ColumnDefinitions="2.5*, 6*" x:Name="SideBarTopGrid">
 
-                <!-- Új beszélgetés gomb -->
+                <!-- New conversation button -->
                 <Button Grid.Column="0" x:Name="NewConversationBtn" Classes="avallamaWhite"
                         Content="{services:LocalizationService Key='NEW'}" FontWeight="Bold"
                         Margin="0,0,14,0" HorizontalAlignment="Stretch" Cursor="Hand"
                         IsEnabled="True" Command="{Binding CreateNewConversation}" />
 
-                <!-- Beszélgetés keresőmező -->
+                <!-- Conversation searchbar -->
                 <TextBox Grid.Column="1" Watermark="{services:LocalizationService Key='SEARCH'}" MaxLines="1"
                          Background="{DynamicResource SurfaceContainerHighest}">
                     <TextBox.InnerRightContent>
@@ -55,10 +55,10 @@ Licensed under the MIT License. See LICENSE file for details.
 
             </Grid>
 
-            <!-- Beszélgetés elemek -->
+            <!-- Conversation elements -->
             <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="14">
-                <controls:IndexedItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
-                    <controls:IndexedItemsControl.DataTemplates>
+                <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
+                    <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
                             <dualTextItem:ConversationItem
                                 Id="{Binding ConversationId}"
@@ -67,31 +67,37 @@ Licensed under the MIT License. See LICENSE file for details.
                                 Text="{Binding Title}"
                                 SubText="{Binding Model}"
                                 Margin="0,0,0,14">
+
+                                <!-- ActionMenu that appears at right click -->
                                 <dualTextItem:ConversationItem.ContextFlyout>
                                     <controls:ActionMenu>
                                         <Button
                                             Content="{services:LocalizationService Key='DELETE'}"
                                             Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).DeleteConversation}"
-                                            CommandParameter="{Binding ConversationId}"/>
+                                            CommandParameter="{Binding ConversationId}"
+                                            Classes="clearButton"
+                                            Foreground="{DynamicResource OnSurface}"
+                                            HorizontalAlignment="Center"/>
                                     </controls:ActionMenu>
                                 </dualTextItem:ConversationItem.ContextFlyout>
+
                             </dualTextItem:ConversationItem>
                         </DataTemplate>
-                    </controls:IndexedItemsControl.DataTemplates>
-                </controls:IndexedItemsControl>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
             </ScrollViewer>
 
             <StackPanel Grid.Row="2" Margin="10" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
 
-                <!-- Beállítások gomb -->
-                <Button Classes="svgButton" Cursor="Hand"
+                <!-- Settings button -->
+                <Button Classes="clearButton" Cursor="Hand"
                         Command="{Binding Path=((vm:MainViewModel)DataContext).OpenSettings, RelativeSource={RelativeSource AncestorType=Window}}">
                     <controls:DynamicSvg
                         Path="/Assets/Svg/settings.svg" Width="24" FillColor="{DynamicResource Primary}" />
                 </Button>
 
-                <!-- Modellkezelő gomb -->
-                <Button Classes="svgButton"
+                <!-- ModelManager button -->
+                <Button Classes="clearButton"
                         Command="{Binding Path=((vm:MainViewModel)DataContext).OpenModelManager, RelativeSource={RelativeSource AncestorType=Window}}"
                         Cursor="Hand">
                     <controls:DynamicSvg
@@ -102,12 +108,12 @@ Licensed under the MIT License. See LICENSE file for details.
             </StackPanel>
         </Grid>
 
-        <!-- GridSplitter, amivel át lehet méretezni az oszlopokat -->
+        <!-- GridSplitter that can resize columns -->
         <GridSplitter Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" x:Name="GridSplitter" Opacity="0"
                       ResizeDirection="Columns" />
 
-        <!-- SideBar expand/hide gomb -->
-        <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="svgButton"
+        <!-- SideBar expand/hide button -->
+        <Button Grid.Row="0" Grid.Column="2" x:Name="SideBarButton" Classes="clearButton"
                 Click="SideBarBtn_OnClick" Cursor="Hand">
             <controls:DynamicSvg
                 Path="/Assets/Svg/sidebar.svg" Width="20" FillColor="{DynamicResource Primary}" />
@@ -116,7 +122,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <StackPanel Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal"
                     HorizontalAlignment="Center" Margin="0,20,0,0" Spacing="14">
 
-            <!-- Modellválasztó ComboBox -->
+            <!-- Model chooser ComboBox -->
             <ComboBox Width="175"
                       VerticalAlignment="Center"
                       ItemsSource="{Binding AvailableModels}"
@@ -124,7 +130,7 @@ Licensed under the MIT License. See LICENSE file for details.
                       IsEnabled="{Binding IsModelsDropdownEnabled}" Name="ModelsComboBox"/>
         </StackPanel>
 
-        <!-- Tájékoztató szövegek -->
+        <!-- Informational messages -->
         <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1" Orientation="Vertical" Margin="18,10,18,0"
                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="6"
                     IsVisible="{Binding ShowInformationalMessages}">
@@ -133,7 +139,7 @@ Licensed under the MIT License. See LICENSE file for details.
             hanem ...-al trimmelje le a végét (CharacterEllipsis), pontosabban *-al megadva az oszlop szélességét
             tudja a TextBlock trimmelni a szövegét -->
 
-            <!-- Remote ollama csatlakozási szöveg -->
+            <!-- Remote ollama connection text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" HorizontalAlignment="Center"
                   IsVisible="{Binding IsRemoteConnectionTextVisible}">
                 <Ellipse Grid.Column="0" Width="12" Height="12" Fill="{DynamicResource Success}" />
@@ -144,7 +150,7 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextTrimming="CharacterEllipsis" />
             </Grid>
 
-            <!-- Modellkorlátozás warning szöveg -->
+            <!-- Model limitation warning text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center">
                 <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
                                      FillColor="{DynamicResource Outline}"
@@ -156,7 +162,7 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextTrimming="CharacterEllipsis" />
             </Grid>
 
-            <!-- Alacsony VRAM szöveg -->
+            <!-- Low VRAM text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
                   IsVisible="{Binding IsResourceWarningVisible}">
                 <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
@@ -169,7 +175,7 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextTrimming="CharacterEllipsis" />
             </Grid>
 
-            <!-- Modell nincs letöltve szöveg -->
+            <!-- Model is not downloaded text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
                   IsVisible="{Binding IsNoModelsDownloadedVisible}">
                 <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
@@ -186,7 +192,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="3" RowDefinitions="*,Auto" Margin="18,0">
 
-            <!-- Letöltési státusz -->
+            <!-- Download status -->
             <StackPanel Grid.Row="0"
                         IsVisible="{Binding IsDownloading}"
                         Orientation="Vertical"
@@ -224,11 +230,11 @@ Licensed under the MIT License. See LICENSE file for details.
                     Foreground="{DynamicResource OnPrimaryContainer}" />
             </StackPanel>
 
-            <!-- Ollama újraindítása (ha nem tudott csatlakozni hozzá)  -->
+            <!-- Restart Ollama (if it's unable to connect)  -->
             <StackPanel Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center"
                         Spacing="12" ZIndex="10" Margin="40, 0" IsVisible="{Binding IsRetryPanelVisible}">
 
-                <!-- Hibaüzenet -->
+                <!-- Error message -->
                 <TextBlock Text="{Binding RetryInfoText}"
                            TextAlignment="Center"
                            FontSize="14" Foreground="{DynamicResource OnSurface}" TextWrapping="Wrap" />
@@ -293,7 +299,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         CornerRadius="24"
                         IsVisible="False"
                         HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-3" />
-                <Button x:Name="ScrollToBottomBtn" IsVisible="False" Classes="svgButton" Cursor="Hand"
+                <Button x:Name="ScrollToBottomBtn" IsVisible="False" Classes="clearButton" Cursor="Hand"
                         Click="ScrollToBottomBtn_OnClick" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                         Margin="0,0,0,-5">
                     <Border Padding="4" Background="{DynamicResource Primary}" CornerRadius="24">

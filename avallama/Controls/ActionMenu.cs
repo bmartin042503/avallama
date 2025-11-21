@@ -6,6 +6,7 @@ using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace avallama.Controls;
@@ -31,9 +32,11 @@ public class ActionMenu : PopupFlyoutBase
             BorderThickness = new Thickness(0),
             Content = new Border
             {
-                Background = ColorProvider.GetColor(AppColor.Primary),
-                CornerRadius = new CornerRadius(12),
-                Padding = new Thickness(4),
+                Background = ColorProvider.GetColor(AppColor.SurfaceContainerHighest),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(12, 6),
+                BorderBrush = ColorProvider.GetColor(AppColor.OnSurface),
+                BorderThickness = new Thickness(1),
                 Child = Items
             }
         };

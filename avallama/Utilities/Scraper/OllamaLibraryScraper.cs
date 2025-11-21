@@ -76,7 +76,7 @@ public static class OllamaLibraryScraper
             }
         });
 
-        return new OllamaLibraryScraperResult()
+        return new OllamaLibraryScraperResult
         {
             Models = StreamModels(),
             Families = families
