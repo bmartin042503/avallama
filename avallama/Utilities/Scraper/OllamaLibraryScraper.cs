@@ -14,8 +14,6 @@ using HtmlAgilityPack;
 
 namespace avallama.Utilities.Scraper;
 
-// TODO: Skip cloud models ("cloud" in name or labels)
-
 public static class OllamaLibraryScraper
 {
     private const string OllamaUrl = "https://www.ollama.com";
@@ -42,19 +40,20 @@ public static class OllamaLibraryScraper
         );
     }
 
-    public static async Task<OllamaLibraryScraperResult> GetAllOllamaModelsAsync()
+    public static async Task<OllamaLibraryScraperResult> GetAllOllamaModelsAsync(CancellationToken cancellationToken)
     {
         var families = await GetOllamaFamiliesAsync();
         var channel = Channel.CreateUnbounded<OllamaModel>();
 
         var tasks = families.Select(async family =>
         {
-            await Throttler.WaitAsync();
+            await Throttler.WaitAsync(cancellationToken);
             try
             {
-                await foreach (var model in GetOllamaModelsFromFamilyAsync(family))
+                await foreach (var model in GetOllamaModelsFromFamilyAsync(family).WithCancellation(cancellationToken))
                 {
-                    await channel.Writer.WriteAsync(model);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await channel.Writer.WriteAsync(model, cancellationToken);
                 }
             }
             finally
@@ -74,7 +73,7 @@ public static class OllamaLibraryScraper
             {
                 channel.Writer.Complete();
             }
-        });
+        }, cancellationToken);
 
         return new OllamaLibraryScraperResult
         {
@@ -84,7 +83,7 @@ public static class OllamaLibraryScraper
 
         async IAsyncEnumerable<OllamaModel> StreamModels()
         {
-            await foreach (var model in channel.Reader.ReadAllAsync())
+            await foreach (var model in channel.Reader.ReadAllAsync(cancellationToken))
             {
                 yield return model;
             }

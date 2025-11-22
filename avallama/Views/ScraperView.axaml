@@ -34,10 +34,10 @@ Licensed under the MIT License. See LICENSE file for details.
                        FontSize="14" FontWeight="Medium" TextAlignment="Center" />
 
             <!-- cancel button -->
-            <!-- TODO: set it disabled when it's the first scraping -->
-            <Button Content="{services:LocalizationService Key='CANCEL'}" HorizontalAlignment="Center"
+            <Button IsEnabled="{Binding IsCancelEnabled}"
+                    Content="{services:LocalizationService Key='CANCEL'}" HorizontalAlignment="Center"
                     Margin="0,30,0,0" Cursor="Hand"
-                    Command="{Binding Path=((vm:MainViewModel)DataContext).OpenHome, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    Command="{Binding CancelScraping}" />
         </StackPanel>
 
         <!-- description -->

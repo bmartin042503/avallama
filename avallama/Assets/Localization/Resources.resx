@@ -416,22 +416,25 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
         <value>This process may take several minutes. Please keep the application open while it collects the latest model information.</value>
     </data>
-    <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
-        <value>Model library updated successfully. You can run the update again anytime from the Settings.</value>
+    <data name="SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>Model library updated successfully.</value>
     </data>
     <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
         <value>Caching models..</value>
     </data>
     <data name="SORT_PULL_COUNT_ASCENDING" xml:space="preserve">
-        <value>Least popular</value>
+        <value>Pull count (ascending)</value>
     </data>
     <data name="SORT_PULL_COUNT_DESCENDING" xml:space="preserve">
-        <value>Most popular</value>
+        <value>Pull count (descending)</value>
     </data>
     <data name="PULL_COUNT" xml:space="preserve">
         <value>Pull count</value>
     </data>
     <data name="LAST_UPDATED" xml:space="preserve">
         <value>Last updated</value>
+    </data>
+    <data name="UPDATE_MODEL_LIBRARY" xml:space="preserve">
+        <value>Update model library</value>
     </data>
 </root>

@@ -1,21 +1,28 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace avallama.Constants;
 
-// üzenetek/kérések, amiket az alkalmazás az MVVM rétegein belül küldhetnek egymásnak
-// ezek nélkül több helyen ciklikus függőség alakulna ki ha csak a dependencykre hagyatkoznánk
 
 public static class ApplicationMessage
 {
-    // kérés, hogy az app jelenítse meg az ollama indítási confirmation dialogot
+    // request ollama start confirmation dialog
     public class AskOllamaStart() : ValueChangedMessage<bool>(true);
-    
-    // kérés az alkalmazás leállítására
+
+    // request for app shutdown
     public class Shutdown() : ValueChangedMessage<bool>(true);
-    
-    // kérés az alkalmazás újraindítására
+
+    // request for app restart
     public class Restart() : ValueChangedMessage<bool>(true);
-    
-    // kérés a beállítások újratöltésére
+
+    // request for settings to reload
     public class ReloadSettings() : ValueChangedMessage<bool>(true);
+
+    // request for an application page
+    public class RequestPage(ApplicationPage page) : ValueChangedMessage<bool>(true)
+    {
+        public ApplicationPage Page { get; } = page;
+    }
 }

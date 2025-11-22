@@ -10,12 +10,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using avallama.Dtos;
 using avallama.Models;
 using avallama.Utilities;
@@ -37,7 +39,7 @@ public interface IOllamaService
     IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName);
     Task<bool> IsOllamaServerRunning();
     Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync();
-    IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync();
+    IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(CancellationToken cancellationToken);
     Task<bool> DeleteModel(string modelName);
     Task<ObservableCollection<OllamaModel>> ListDownloaded();
     ServiceStatus? CurrentServiceStatus { get; }
@@ -65,6 +67,8 @@ public class OllamaService : IOllamaService
     private string OllamaPath { get; set; } = "";
     private bool _started;
     private OllamaLibraryScraper.OllamaLibraryScraperResult? _cachedScrapeResult;
+
+    private CancellationToken? _scraperCancellationToken;
 
     public ServiceStatus? CurrentServiceStatus { get; private set; }
     public string? CurrentServiceMessage { get; private set; }
@@ -513,7 +517,7 @@ public class OllamaService : IOllamaService
             return _cachedScrapeResult;
 
         EnsureStarted();
-        _cachedScrapeResult = await OllamaLibraryScraper.GetAllOllamaModelsAsync();
+        _cachedScrapeResult = await OllamaLibraryScraper.GetAllOllamaModelsAsync(_scraperCancellationToken ?? CancellationToken.None);
         return _cachedScrapeResult;
     }
 
@@ -527,12 +531,15 @@ public class OllamaService : IOllamaService
         return result.Families;
     }
 
-    public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync()
+    public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        _scraperCancellationToken ??= cancellationToken;
+
         var result = await EnsureScrapeResultAsync();
 
-        await foreach (var model in result.Models)
+        await foreach (var model in result.Models.WithCancellation(cancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             yield return model;
         }
     }

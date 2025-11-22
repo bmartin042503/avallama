@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Factories;
@@ -42,7 +43,10 @@ public partial class MainViewModel : ViewModelBase
         }
         else if (_firstTime == "false")
         {
-            CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
+            CurrentPageViewModel = _pageFactory.GetPageViewModel(
+                string.IsNullOrEmpty(_configurationService.ReadSetting(ConfigurationKey.LastUpdatedCache))
+                    ? ApplicationPage.Scraper
+                    : ApplicationPage.Home);
             Task.Run(async () => await CheckOllamaStart());
         }
     }
@@ -58,6 +62,11 @@ public partial class MainViewModel : ViewModelBase
         var apiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         var apiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
 
+        _messenger.Register<ApplicationMessage.RequestPage>(this, (_, msg) =>
+        {
+            CurrentPageViewModel = _pageFactory.GetPageViewModel(msg.Page);
+        });
+
         if (!string.IsNullOrEmpty(_firstTime) && !string.IsNullOrEmpty(apiHost) &&
             !string.IsNullOrEmpty(apiPort)) return;
 
@@ -70,8 +79,10 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public async Task OpenHome()
     {
-        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
         await CheckOllamaStart();
+        var models = await _modelCacheService.GetCachedModelsAsync();
+        CurrentPageViewModel =
+            _pageFactory.GetPageViewModel(models.Count == 0 ? ApplicationPage.Scraper : ApplicationPage.Home);
     }
 
     [RelayCommand]
@@ -81,16 +92,21 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task OpenModelManager()
+    public void OpenModelManager()
     {
-        var models = await _modelCacheService.GetCachedModelsAsync();
-        CurrentPageViewModel = _pageFactory.GetPageViewModel(models.Count == 0 ? ApplicationPage.Scraper : ApplicationPage.ModelManager);
-        // CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
     }
 
     [RelayCommand]
     public void OpenSettings()
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Settings);
+    }
+
+    [RelayCommand]
+    public void StartScraper()
+    {
+
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Scraper);
     }
 }

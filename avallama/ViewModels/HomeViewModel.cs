@@ -137,7 +137,7 @@ public partial class HomeViewModel : PageViewModel
     public async Task DeleteConversation(object parameter)
     {
         if (parameter is not Guid guid) return;
-        Console.WriteLine($"Called with guid of: " + guid);
+
         var newSelectedConversations = Conversations.IndexOf(SelectedConversation) + 1;
 
         var res = await _dialogService.ShowConfirmationDialog(

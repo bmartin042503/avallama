@@ -409,22 +409,25 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
         <value>Ez a folyamat több percig is eltarthat. Kérjük, ne zárd be az alkalmazást, amíg a frissítés tart.</value>
     </data>
-    <data name="FIRST_SCRAPING_FINISHED_DESC" xml:space="preserve">
-        <value>A modellkönyvtár frissítése sikeresen megtörtént. A frissítést bármikor újra futtathatod a Beállításokból.</value>
+    <data name="SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>A modellkönyvtár frissítése sikeresen megtörtént.</value>
     </data>
     <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
         <value>Modellek mentése..</value>
     </data>
     <data name="SORT_PULL_COUNT_ASCENDING" xml:space="preserve">
-        <value>Kevésbé népszerű</value>
+        <value>Letöltések (növekvő)</value>
     </data>
     <data name="SORT_PULL_COUNT_DESCENDING" xml:space="preserve">
-        <value>Legnépszerűbb</value>
+        <value>Letöltések (csökkenő)</value>
     </data>
     <data name="PULL_COUNT" xml:space="preserve">
         <value>Letöltések száma</value>
     </data>
     <data name="LAST_UPDATED" xml:space="preserve">
         <value>Utoljára frissítve</value>
+    </data>
+    <data name="UPDATE_MODEL_LIBRARY" xml:space="preserve">
+        <value>Modellkönyvtár frissítése</value>
     </data>
 </root>

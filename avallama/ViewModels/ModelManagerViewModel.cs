@@ -146,7 +146,13 @@ public partial class ModelManagerViewModel : PageViewModel
     // A rendezés beállítása alapján rendezi a modelleket
     private void SortModels()
     {
-        if (!_modelsData.Any()) return;
+        var search = SearchBoxText.Trim();
+        var hasSearch = !string.IsNullOrEmpty(search);
+        var dataToSort = hasSearch ? _filteredModelsData.ToList() : _modelsData.ToList();
+
+        if (dataToSort.Count == 0) return;
+
+        IEnumerable<OllamaModel> sortResult = dataToSort;
 
         switch (SelectedSortingOption)
         {
@@ -154,26 +160,35 @@ public partial class ModelManagerViewModel : PageViewModel
             // ha pedig van akkor külön veszi a letöltött modelleket a Models-ből majd összevonja egy olyan Models-el (amiből ki vannak véve a Downloaded elemek)
             // így előre kerülnek a letöltött státuszban lévők
             case SortingOption.Downloaded:
-                _modelsData = _modelsData.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                    ? _modelsData.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                        .Concat(_modelsData.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded))
-                    : _modelsData;
+                sortResult = dataToSort.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                    ? dataToSort.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                        .Concat(dataToSort.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded))
+                    : dataToSort;
                 break;
             case SortingOption.PullCountAscending:
-                _modelsData = _modelsData.OrderBy(m => m.Family?.PullCount);
+                sortResult = dataToSort.OrderBy(m => m.Family?.PullCount);
                 break;
             case SortingOption.PullCountDescending:
-                _modelsData = _modelsData.OrderByDescending(m => m.Family?.PullCount);
+                sortResult = dataToSort.OrderByDescending(m => m.Family?.PullCount);
                 break;
             case SortingOption.SizeAscending:
-                _modelsData = _modelsData.OrderBy(m => m.Size);
+                sortResult = dataToSort.OrderBy(m => m.Size);
                 break;
             case SortingOption.SizeDescending:
-                _modelsData = _modelsData.OrderByDescending(m => m.Size);
+                sortResult = dataToSort.OrderByDescending(m => m.Size);
                 break;
         }
 
-        ResetPagination(_modelsData);
+        if (hasSearch)
+        {
+            _filteredModelsData = sortResult;
+        }
+        else
+        {
+            _modelsData = sortResult;
+        }
+
+        ResetPagination(hasSearch ? _filteredModelsData : _modelsData);
     }
 
     // Filters models by the search text and sets the _filteredModelsData
