@@ -11,10 +11,10 @@ using Avalonia.Metadata;
 
 namespace avallama.Controls;
 
-public class ActionMenu : PopupFlyoutBase
+public class DeletePopup : PopupFlyoutBase
 {
     public static readonly StyledProperty<Control?> ItemsProperty =
-        AvaloniaProperty.Register<ActionMenu, Control?>(nameof(Items));
+        AvaloniaProperty.Register<DeletePopup, Control?>(nameof(Items));
 
     [Content]
     public Control? Items
@@ -30,15 +30,8 @@ public class ActionMenu : PopupFlyoutBase
             Background = null,
             BorderBrush = null,
             BorderThickness = new Thickness(0),
-            Content = new Border
-            {
-                Background = ColorProvider.GetColor(AppColor.SurfaceContainerHighest),
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(12, 6),
-                BorderBrush = ColorProvider.GetColor(AppColor.OutlineVariant),
-                BorderThickness = new Thickness(1),
-                Child = Items
-            }
+            Padding = new Thickness(0),
+            Content = Items
         };
     }
 }

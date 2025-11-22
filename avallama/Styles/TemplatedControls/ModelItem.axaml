@@ -5,7 +5,8 @@
         xmlns:models="clr-namespace:avallama.Models"
         xmlns:collections="clr-namespace:System.Collections.Generic;assembly=System.Collections"
         xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
-        xmlns:converters="clr-namespace:avallama.Converters">
+        xmlns:converters="clr-namespace:avallama.Converters"
+        xmlns:vm="clr-namespace:avallama.ViewModels">
     <Design.PreviewWith>
 
         <templatedControls:ModelItem
@@ -125,9 +126,10 @@
                                         FontFamily="{StaticResource Manrope}"
                                         TextWrapping="Wrap"/>
 
+                                    <!-- All information combined -->
                                     <SelectableTextBlock Grid.Row="1" Text="{TemplateBinding Information}"
                                                          Foreground="{DynamicResource OnSurface}"
-                                                         FontSize="12" LineHeight="22"
+                                                         FontSize="14" LineHeight="28"
                                                          FontFamily="{StaticResource Manrope}" />
 
                                     <!-- Learn more hyperlink -->
@@ -136,6 +138,8 @@
                                         Content="{services:LocalizationService Key='LEARN_MORE'}"
                                         Foreground="{DynamicResource Primary}" Padding="0"
                                         Cursor="Hand"
+                                        Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ForwardToOllama}"
+                                        CommandParameter="{TemplateBinding Title}"
                                         FontFamily="{StaticResource Manrope}" FontWeight="Bold"/>
 
                                     <!-- TODO: Token/sec speed block (+row) -->
@@ -143,8 +147,8 @@
                             </ScrollViewer>
                         </Border>
 
-                        <Grid ColumnDefinitions="Auto,*" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="12">
-                            <Border Grid.Column="0" DockPanel.Dock="Left" Padding="10,5"
+                        <Grid ColumnDefinitions="Auto,*" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="32">
+                            <Border Grid.Column="0"  Padding="10,5"
                                     Background="{DynamicResource SurfaceContainerHighest}"
                                     BorderBrush="{DynamicResource OutlineVariant}"
                                     BorderThickness="0.75"
@@ -153,6 +157,7 @@
                                            FontFamily="{StaticResource Manrope}"
                                            FontSize="12"/>
                             </Border>
+
                         </Grid>
                     </Grid>
                 </Border>

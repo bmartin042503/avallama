@@ -138,7 +138,7 @@ public static class ConversionHelper
 
         var displayValue = rounded % 1 == 0
             ? ((int)rounded).ToString(CultureInfo.InvariantCulture)
-            : rounded.ToString("0.0", CultureInfo.InvariantCulture);
+            : rounded.ToString("0.00", CultureInfo.InvariantCulture);
 
         return string.Format(
             LocalizationService.GetString("SIZE_IN_GB"),

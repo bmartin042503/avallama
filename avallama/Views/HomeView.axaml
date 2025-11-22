@@ -68,17 +68,20 @@ Licensed under the MIT License. See LICENSE file for details.
                                 SubText="{Binding Model}"
                                 Margin="0,0,0,14">
 
-                                <!-- ActionMenu that appears at right click -->
+                                <!-- DeletePopup that appears at right click -->
                                 <dualTextItem:ConversationItem.ContextFlyout>
-                                    <controls:ActionMenu>
+                                    <controls:DeletePopup>
                                         <Button
                                             Content="{services:LocalizationService Key='DELETE'}"
                                             Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).DeleteConversation}"
                                             CommandParameter="{Binding ConversationId}"
-                                            Classes="clearButton"
-                                            Foreground="{DynamicResource OnSurface}"
-                                            HorizontalAlignment="Center"/>
-                                    </controls:ActionMenu>
+                                            Classes="errorButton"
+                                            BorderBrush="{DynamicResource Error}"
+                                            BorderThickness="1"
+                                            Foreground="{DynamicResource OnError}"
+                                            HorizontalAlignment="Center"
+                                            Padding="12,6"/>
+                                    </controls:DeletePopup>
                                 </dualTextItem:ConversationItem.ContextFlyout>
 
                             </dualTextItem:ConversationItem>

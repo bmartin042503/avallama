@@ -10,8 +10,35 @@ using Xunit;
 
 namespace avallama.Tests.ViewModels;
 
-public class ModelManagerViewModelTests (TestServicesFixture fixture) : IClassFixture<TestServicesFixture>
+public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFixture<TestServicesFixture>
 {
+    [Fact]
+    public async Task InitializesModelManager_NoModelSelected_ModelItemIsInvisible()
+    {
+        fixture.ModelCacheMock.Reset();
+
+        var models = CreateModels(50);
+
+        fixture.ModelCacheMock
+            .Setup(o => o.GetCachedModelsAsync())
+            .ReturnsAsync(models);
+
+        var vm = new ModelManagerViewModel(
+            fixture.DialogMock.Object,
+            fixture.OllamaMock.Object,
+            fixture.ModelCacheMock.Object
+        );
+
+        await vm.InitializeAsync();
+
+        Assert.Equal(string.Empty, vm.SelectedModelName);
+        Assert.Null(vm.SelectedModel);
+        Assert.False(vm.IsModelInfoBlockVisible);
+        Assert.Equal(models.Count, vm.Models.Count);
+        Assert.True(vm.HasModelsToDisplay);
+    }
+
+
     [Fact]
     public async Task LoadModelsData_HasModelsInMemory_ExceedsPaginationLimit_ShouldExposeOnlyLimitedNumberOfModels()
     {
@@ -54,10 +81,8 @@ public class ModelManagerViewModelTests (TestServicesFixture fixture) : IClassFi
 
         await vm.InitializeAsync();
 
-        // TODO: fix pagination logic
-        //Assert.Equal(30, vm.Models.Count);
-        //Assert.False(vm.IsPaginationButtonVisible);
-        Assert.True(true);
+        Assert.Equal(models.Count, vm.Models.Count);
+        Assert.False(vm.IsPaginationButtonVisible);
     }
 
     [Fact]
@@ -87,10 +112,8 @@ public class ModelManagerViewModelTests (TestServicesFixture fixture) : IClassFi
             vm.Paginate();
         }
 
-        // TODO: fix pagination logic
-        // Assert.Equal(models.Count, vm.Models.Count);
-        //Assert.False(vm.IsPaginationButtonVisible);
-        Assert.True(true);
+        Assert.Equal(models.Count, vm.Models.Count);
+        Assert.False(vm.IsPaginationButtonVisible);
     }
 
     [Fact]
@@ -102,7 +125,10 @@ public class ModelManagerViewModelTests (TestServicesFixture fixture) : IClassFi
         {
             new() { Name = "llama-3", Size = 1_000_000_000, DownloadStatus = ModelDownloadStatus.Ready },
             new() { Name = "llama-3-instruct", Size = 2_000_000_000, DownloadStatus = ModelDownloadStatus.Ready },
-            new() { Name = "mistral", Size = 3_000_000_000, DownloadStatus = ModelDownloadStatus.Ready }
+            new() { Name = "mistral", Size = 3_000_000_000, DownloadStatus = ModelDownloadStatus.Ready },
+            new() { Name = "gemma-21b", Size = 21_000_000_000, DownloadStatus = ModelDownloadStatus.Ready },
+            new() { Name = "deepseek-r1:4b", Size = 4_000_000_000, DownloadStatus = ModelDownloadStatus.Ready },
+            new() { Name = "qwen:6b", Size = 6_000_000_000, DownloadStatus = ModelDownloadStatus.Ready }
         };
 
         fixture.ModelCacheMock
@@ -117,11 +143,28 @@ public class ModelManagerViewModelTests (TestServicesFixture fixture) : IClassFi
 
         await vm.InitializeAsync();
 
-        vm.SearchBoxText = "llama";
+        vm.SearchBoxText = "mistral";
+        Assert.True(vm.HasModelsToDisplay);
+        Assert.Single(vm.Models);
+        Assert.Equal("mistral", vm.Models[0].Name);
 
+        vm.SearchBoxText = "llama";
         Assert.True(vm.HasModelsToDisplay);
         Assert.Equal(2, vm.Models.Count);
-        Assert.All(vm.Models, m => Assert.Contains("llama", m.Name));
+        Assert.Equal("llama-3", vm.Models[0].Name);
+        Assert.Equal("llama-3-instruct", vm.Models[1].Name);
+
+        vm.SearchBoxText = "d3rpsfek";
+        Assert.False(vm.HasModelsToDisplay);
+        Assert.Empty(vm.Models);
+
+        vm.SearchBoxText = "ma";
+        Assert.True(vm.HasModelsToDisplay);
+        Assert.Equal(4, vm.Models.Count);
+        Assert.Equal("llama-3", vm.Models[0].Name);
+        Assert.Equal("gemma-21b", vm.Models[1].Name);
+        Assert.Equal("llama-3-instruct", vm.Models[2].Name);
+        Assert.Equal("mistral", vm.Models[3].Name);
     }
 
     [Fact]
@@ -149,6 +192,7 @@ public class ModelManagerViewModelTests (TestServicesFixture fixture) : IClassFi
 
         vm.SearchBoxText = "not-existing";
 
+        Assert.False(vm.IsPaginationButtonVisible);
         Assert.False(vm.HasModelsToDisplay);
         Assert.Empty(vm.Models);
     }
@@ -363,6 +407,7 @@ public class ModelManagerViewModelTests (TestServicesFixture fixture) : IClassFi
                 }
             );
         }
+
         return models;
     }
 }
