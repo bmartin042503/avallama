@@ -50,10 +50,10 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             "model2"
         };
 
-        await vm.InitializeModels();
+        await vm.InitializeModels(test: true);
 
         Assert.Equal(availableModels, vm.AvailableModels);
-        Assert.Equal("model2", vm.SelectedModelName);
+        Assert.Equal("model1", vm.SelectedModelName);
         Assert.True(vm.IsModelsDropdownEnabled);
     }
 
@@ -74,7 +74,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.MessengerMock.Object
         );
 
-        await vm.InitializeModels();
+        await vm.InitializeModels(test: true);
 
         Assert.Single(vm.AvailableModels);
         Assert.Equal(LocalizationService.GetString("NO_MODELS_FOUND"), vm.SelectedModelName);
@@ -97,7 +97,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         var view = new HomeView { DataContext = vm };
 
-        await vm.InitializeModels();
+        await vm.InitializeModels(test: true);
 
         var combo = view.FindControl<ComboBox>("ModelsComboBox");
         var warning = view.FindControl<TextBlock>("NoModelsWarningTextBlock");

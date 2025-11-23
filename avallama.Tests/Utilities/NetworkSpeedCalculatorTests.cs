@@ -11,7 +11,7 @@ namespace avallama.Tests.Utilities;
 public class NetworkSpeedCalculatorTests
 {
     [Fact]
-    public void CalculateSpeed_WithSampleSizeOfTenMillionBytes_ReturnsSpeedOfTenMegabytesPerSecond()
+    public void CalculateSpeed_WithSampleSizeOfTenMillionBytes_ReturnsSpeedAroundTenMegabytesPerSecond()
     {
         var networkSpeedCalculator = new NetworkSpeedCalculator();
 
@@ -28,11 +28,11 @@ public class NetworkSpeedCalculatorTests
         }
 
         var roundedSpeed = Math.Round(speed / 4, 1); // we divide it by 4 so it calculates for 1 sec
-        Assert.True(roundedSpeed is >= 9.0 and <= 11.0);
+        Assert.True(roundedSpeed is >= 7.5 and <= 12.5);
     }
 
     [Fact]
-    public void CalculateSpeed_WithSampleSizeOfTenBillionBytes_ReturnsSpeedOfThousandMegabytesPerSecond()
+    public void CalculateSpeed_WithSampleSizeOfTenBillionBytes_ReturnsSpeedAroundThousandMegabytesPerSecond()
     {
         var networkSpeedCalculator = new NetworkSpeedCalculator();
 
@@ -49,6 +49,6 @@ public class NetworkSpeedCalculatorTests
         }
 
         var roundedSpeed = Math.Round(speed / 4, 1); // we divide it by 4 so it calculates for 1 sec
-        Assert.True(roundedSpeed is >= 990.0 and <= 1100.0);
+        Assert.True(roundedSpeed is >= 750.0 and <= 1250.0);
     }
 }

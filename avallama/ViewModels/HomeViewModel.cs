@@ -390,10 +390,13 @@ public partial class HomeViewModel : PageViewModel
         return _conversationStates.GetOrCreateValue(conversation);
     }
 
-    public async Task InitializeModels()
+    public async Task InitializeModels(bool test = false)
     {
         // wait for ollama to start
-        await _ollamaServerStarted.Task;
+        if (!test)
+        {
+            await _ollamaServerStarted.Task;
+        }
 
         var previouslySelectedModelName = string.Empty;
         if (_isInitializedAsync && !string.IsNullOrEmpty(SelectedModelName)
