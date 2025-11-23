@@ -46,7 +46,7 @@ public partial class GuideViewModel : PageViewModel
         if (_guideIndex == _guideItems.Count - 1)
         {
             CurrentTitle = LocalizationService.GetString("THANK_YOU");
-            CurrentDescription = string.Empty;
+            CurrentDescription = LocalizationService.GetString("GUIDE_COMPLETION_MESSAGE");
             IsImageVisible = false;
             IsNextButtonEnabled = false;
             SkipButtonText = LocalizationService.GetString("START");

@@ -27,7 +27,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Avallama</value>
     </data>
     <data name="GREETING_SUBTEXT" xml:space="preserve">
-        <value>Run any open source LLM locally</value>
+        <value>Run open source LLMs locally</value>
     </data>
     <data name="GET_STARTED" xml:space="preserve">
         <value>Get started</value>
@@ -445,5 +445,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="GUIDE_ITEM_3_DESCRIPTION" xml:space="preserve">
         <value>Customize your experience: switch between light and dark modes, connect to different Ollama servers, update your library and tailor the app to your preferences.</value>
+    </data>
+    <data name="GUIDE_COMPLETION_MESSAGE" xml:space="preserve">
+        <value>Avallama is still under development, and issues may arise while using the application. Please report any issues on GitHub.</value>
+    </data>
+    <data name="NEVER" xml:space="preserve">
+        <value>Never</value>
     </data>
 </root>

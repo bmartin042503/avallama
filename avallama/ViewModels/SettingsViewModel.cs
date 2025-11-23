@@ -183,7 +183,7 @@ public partial class SettingsViewModel : PageViewModel
         ShowInformationalMessages = showInformationalMessages == "True";
 
         var lastModelUpdate = _configurationService.ReadSetting(ConfigurationKey.LastUpdatedCache);
-        LastModelUpdate = LocalizationService.GetString("LAST_UPDATED") + ": " + lastModelUpdate;
+        LastModelUpdate = LocalizationService.GetString("LAST_UPDATED") + ": " + (!lastModelUpdate.Equals(string.Empty) ? lastModelUpdate : LocalizationService.GetString("NEVER"));
     }
 
     private void SaveSettings()

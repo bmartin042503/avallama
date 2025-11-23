@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Vágjunk bele</value>
     </data>
     <data name="GREETING_SUBTEXT" xml:space="preserve">
-        <value>Futtass bármilyen LLM modellt lokálisan</value>
+        <value>Futtass nyílt forráskódú LLMeket lokálisan</value>
     </data>
     <data name="GREETING_TEXT" xml:space="preserve">
         <value>Avallama</value>
@@ -438,5 +438,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="GUIDE_ITEM_3_DESCRIPTION" xml:space="preserve">
         <value>Testreszabhatod az élményt: válthatsz világos és sötét mód között, csatlakozhatsz más Ollama szerverekhez, frissítheted a teljes modell könyvtárad, és sok más opció amikkel a saját igényeidhez igazíthatod az alkalmazást.</value>
+    </data>
+    <data name="GUIDE_COMPLETION_MESSAGE" xml:space="preserve">
+        <value>Az avallama még fejlesztés alatt áll, és előfordulhatnak problémák a használata során. Kérjük, jelentsd ay előforduló hibákat a GitHubon.</value>
+    </data>
+    <data name="NEVER" xml:space="preserve">
+        <value>Soha</value>
     </data>
 </root>

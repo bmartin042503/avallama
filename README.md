@@ -16,8 +16,7 @@
 <p align="center">A cross-platform local AI desktop app powered by Ollama</p>
 
 <p align="center">
-    <img style="border-radius: 10px; box-shadow: 0 5px 25px #755085;" src="avallama/Assets/Images/home.png" alt="Avallama Home">
-    <img style="border-radius: 10px; box-shadow: 0 5px 25px #755085;" src="avallama/Assets/Images/modelmanager.png" alt="Avallama Model manager">
+    <img style="border-radius: 10px;" src="avallama/Assets/Images/home.png" alt="Avallama Home">
 </p>
 
 This project is currently being developed by Márk Csörgő and Martin Bartos.
