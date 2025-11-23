@@ -47,7 +47,7 @@ public class ApplicationService : IApplicationService
         _configurationService = configurationService;
         messenger.Register<ApplicationMessage.Shutdown>(this, (_, _) => { Shutdown(); });
         messenger.Register<ApplicationMessage.Restart>(this, (_, _) => { Restart(); });
-        
+
         messenger.Register<ApplicationMessage.AskOllamaStart>(this, (_, _) =>
         {
             Task.Run(async () =>
@@ -60,7 +60,6 @@ public class ApplicationService : IApplicationService
         });
     }
 
-    // TODO: ollama csatlakozásáról dialog, hogy sikerült-e stb.
     public async Task AskOllamaStart()
     {
         // ollama indítás confirmation dialog megjelenítése
@@ -70,14 +69,14 @@ public class ApplicationService : IApplicationService
             negativeButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_REMOTE"),
             description: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_DESC")
         );
-        
+
         // ha remote lett kiválasztva
-        if (result is ConfirmationResult { Confirmation: ConfirmationType.Negative }) 
+        if (result is ConfirmationResult { Confirmation: ConfirmationType.Negative })
         {
             // input dialog megjelenítése inputfieldekkel megadva
             var dialogResult = await _dialogService.ShowInputDialog(
                 title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
-                description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"), 
+                description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"),
                 inputFields: new List<InputField>
                 {
                     new (
@@ -93,7 +92,7 @@ public class ApplicationService : IApplicationService
                     )
                 }
             );
-            
+
             // ha inputresult érkezik akkor kinyerjük belőle az adatokat
             if (dialogResult is InputResult inputResult)
             {
@@ -126,10 +125,10 @@ public class ApplicationService : IApplicationService
         // ez a helper process megvárja amíg az alkalmazás bezárul, majd elindít egy teljesen új avallamát
         var processPath = Environment.ProcessPath;
         var processId = Environment.ProcessId;
-        
+
         // ez egyelőre most a helper könyvtárban keresi a processt, tehát devnél ez a bin/Debug/net9.0/helper lenne
         var helperPath = Path.Combine(AppContext.BaseDirectory, "helper", "avallama.helper");
-        
+
         if (!File.Exists(helperPath))
         {
             throw new FileNotFoundException($"Helper executable not found at path: {helperPath}");
@@ -139,7 +138,7 @@ public class ApplicationService : IApplicationService
         {
             throw new InvalidOperationException($"Helper executable at path {helperPath} is a symbolic link, which is not allowed.");
         }
-        
+
         var psi = new ProcessStartInfo
         {
             FileName = helperPath,

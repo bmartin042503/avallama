@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Services;
 using avallama.Tests.Fixtures;
-using avallama.Utilities;
 using avallama.ViewModels;
 using avallama.Views;
 using Avalonia.Controls;
@@ -26,13 +26,13 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
     public async Task InitializeModels_WhenNonEmptyList_HasItems_SelectedLastModel_DropdownEnabled()
     {
         fixture.OllamaMock.Reset();
-        var models = new ObservableCollection<OllamaModel>
+        var models = new List<OllamaModel>
         {
-            new OllamaModel { Name = "model1" },
-            new OllamaModel { Name = "model2" }
+            new() { Name = "model1" },
+            new() { Name = "model2" }
         };
         fixture.OllamaMock
-            .Setup(o => o.ListDownloaded())
+            .Setup(o => o.ListDownloadedModels())
             .ReturnsAsync(models);
         DbMock();
 
@@ -44,15 +44,16 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.MessengerMock.Object
         );
 
-        var availableModels = new ObservableCollection<string>{
+        var availableModels = new ObservableCollection<string>
+        {
             "model1",
             "model2"
         };
 
-        await vm.InitializeModels();
+        await vm.InitializeModels(test: true);
 
         Assert.Equal(availableModels, vm.AvailableModels);
-        Assert.Equal("model2", vm.CurrentlySelectedModel);
+        Assert.Equal("model1", vm.SelectedModelName);
         Assert.True(vm.IsModelsDropdownEnabled);
     }
 
@@ -61,7 +62,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
     {
         fixture.OllamaMock.Reset();
         fixture.OllamaMock
-            .Setup(o => o.ListDownloaded())
+            .Setup(o => o.ListDownloadedModels())
             .ReturnsAsync([]);
         DbMock();
 
@@ -73,18 +74,17 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.MessengerMock.Object
         );
 
-        await vm.InitializeModels();
+        await vm.InitializeModels(test: true);
 
         Assert.Single(vm.AvailableModels);
-        Assert.Equal(LocalizationService.GetString("NO_MODELS_FOUND"), vm.CurrentlySelectedModel);
+        Assert.Equal(LocalizationService.GetString("NO_MODELS_FOUND"), vm.SelectedModelName);
         Assert.False(vm.IsModelsDropdownEnabled);
-
     }
 
     [AvaloniaFact]
     public async Task View_WhenEmptyModelsList_DisablesComboBox()
     {
-        fixture.OllamaMock.Setup(o => o.ListDownloaded())
+        fixture.OllamaMock.Setup(o => o.ListDownloadedModels())
             .ReturnsAsync([]);
         DbMock();
 
@@ -97,7 +97,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         var view = new HomeView { DataContext = vm };
 
-        await vm.InitializeModels();
+        await vm.InitializeModels(test: true);
 
         var combo = view.FindControl<ComboBox>("ModelsComboBox");
         var warning = view.FindControl<TextBlock>("NoModelsWarningTextBlock");

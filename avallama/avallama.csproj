@@ -46,6 +46,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.9" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
         <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.9" />
+        <PackageReference Include="System.Threading.RateLimiting" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -55,6 +56,10 @@ Licensed under the MIT License. See LICENSE file for details.
       </Compile>
       <Compile Update="Views\SettingsView.axaml.cs">
         <DependentUpon>SettingsView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Styles\TemplatedControls\ModelItem.axaml.cs">
+        <DependentUpon>ModelItem.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

@@ -23,9 +23,6 @@ public partial class HomeViewModel : PageViewModel
 {
     private const string OllamaDownloadUrl = @"https://ollama.com/download/";
 
-    public string LanguageLimitationWarning { get; } =
-        string.Format(LocalizationService.GetString("ONLY_SUPPORTED_MODEL"), "llama3.2");
-
     public string ResourceLimitWarning { get; } = string.Format(LocalizationService.GetString("LOW_VRAM_WARNING"));
 
     public string NoModelsDownloadedWarning { get; } =
@@ -61,15 +58,8 @@ public partial class HomeViewModel : PageViewModel
 
     [ObservableProperty] private string _newMessageText = string.Empty;
     [ObservableProperty] private bool _isResourceWarningVisible;
-    [ObservableProperty] private bool _isNoModelsDownloadedVisible;
-    [ObservableProperty] private bool _isDownloaded;
-    [ObservableProperty] private string _currentlySelectedModel;
-    [ObservableProperty] private bool _isDownloading;
-    [ObservableProperty] private string _downloadStatus = "";
-    [ObservableProperty] private double _downloadProgress;
-    [ObservableProperty] private bool _isMaxPercent;
-    [ObservableProperty] private string _downloadSpeed = string.Empty;
-    [ObservableProperty] private string _downloadAmount = string.Empty;
+    [ObservableProperty] private bool _isNoModelsWarningVisible;
+    [ObservableProperty] private bool _isMessageBoxEnabled;
     [ObservableProperty] private Conversation _selectedConversation = null!;
     [ObservableProperty] private string _remoteConnectionText = string.Empty;
     [ObservableProperty] private bool _isRemoteConnectionTextVisible;
@@ -78,6 +68,19 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private string _retryInfoText = string.Empty;
     [ObservableProperty] private bool _showInformationalMessages;
     [ObservableProperty] private bool _isModelsDropdownEnabled = true;
+
+    private bool _isInitializedAsync;
+
+    private string _selectedModelName = string.Empty;
+    public string SelectedModelName
+    {
+        get => _selectedModelName;
+        set
+        {
+            _selectedModelName = value;
+            OnPropertyChanged();
+        }
+    }
 
     // TODO:
     // Van egy bug amit kicsit nehezen lehet reprodukálni, de épp a 3. üzenetem írtam, generálta volna az új beszélgetés címet az ollama
@@ -107,7 +110,7 @@ public partial class HomeViewModel : PageViewModel
     {
         var newConversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
-            "llama3.2"
+            " " // TODO: change this to string.Empty if ConversationItem is converted to TemplatedControl
         );
         newConversation.ConversationId = await _conversationService.CreateConversation(newConversation);
         Conversations.Push(newConversation);
@@ -134,8 +137,10 @@ public partial class HomeViewModel : PageViewModel
     }
 
     [RelayCommand]
-    public async Task DeleteConversation()
+    public async Task DeleteConversation(object parameter)
     {
+        if (parameter is not Guid guid) return;
+
         var newSelectedConversations = Conversations.IndexOf(SelectedConversation) + 1;
 
         var res = await _dialogService.ShowConfirmationDialog(
@@ -146,7 +151,7 @@ public partial class HomeViewModel : PageViewModel
 
         if (res is ConfirmationResult { Confirmation: ConfirmationType.Negative }) return;
 
-        await _conversationService.DeleteConversation(SelectedConversation.ConversationId);
+        await _conversationService.DeleteConversation(guid);
         Conversations.Remove(SelectedConversation);
 
         if (Conversations.Count == 0)
@@ -174,11 +179,11 @@ public partial class HomeViewModel : PageViewModel
         // hibás (nem generált) üzenetek kitörlése
         messageHistory.RemoveAll(message => message is FailedMessage);
 
-        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, CurrentlySelectedModel))
+        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, SelectedModelName))
         {
             if (chunk.Message != null) generatedMessage.Content += chunk.Message.Content;
 
-            if (chunk.EvalCount.HasValue && chunk.EvalDuration.HasValue)
+            if (chunk is { EvalCount: not null, EvalDuration: not null })
             {
                 double tokensPerSecond =
                     chunk.EvalCount.GetValueOrDefault() / (double)chunk.EvalDuration * Math.Pow(10, 9);
@@ -193,7 +198,9 @@ public partial class HomeViewModel : PageViewModel
         }
 
         await _conversationService.InsertMessage(SelectedConversation.ConversationId, generatedMessage,
-            CurrentlySelectedModel, generatedMessage.GenerationSpeed);
+            SelectedModelName, generatedMessage.GenerationSpeed);
+
+        SelectedConversation.Model = SelectedModelName;
     }
 
     private async Task RegenerateConversationTitle()
@@ -201,11 +208,14 @@ public partial class HomeViewModel : PageViewModel
         if (await _ollamaService.IsOllamaServerRunning())
         {
             SelectedConversation.Title = string.Empty;
+
+            // TODO: better solution for title generation (not working for thinking models etc.)
             const string request =
                 "Generate only a single short title for this conversation with no use of quotation marks.";
+
             var tmpMessage = new Message(request);
             var messageHistory = new List<Message>(SelectedConversation.Messages.ToList()) { tmpMessage };
-            await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, CurrentlySelectedModel))
+            await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, SelectedModelName))
             {
                 if (chunk.Message != null) SelectedConversation.Title += chunk.Message.Content;
             }
@@ -213,12 +223,6 @@ public partial class HomeViewModel : PageViewModel
             SelectedConversation.MessageCountToRegenerateTitle = 0;
             await _conversationService.UpdateConversationTitle(SelectedConversation);
         }
-    }
-
-    private async Task CheckModelDownload()
-    {
-        IsDownloaded = await _ollamaService.IsModelDownloaded();
-        IsNoModelsDownloadedVisible = !IsDownloaded;
     }
 
     public HomeViewModel(
@@ -229,7 +233,6 @@ public partial class HomeViewModel : PageViewModel
         IMessenger messenger
     )
     {
-        // beállítás, hogy a viewmodel milyen paget kezel
         Page = ApplicationPage.Home;
 
         _dialogService = dialogService;
@@ -238,7 +241,6 @@ public partial class HomeViewModel : PageViewModel
         _conversationService = conversationService;
         _messenger = messenger;
         _availableModels = [];
-        _currentlySelectedModel = "";
 
         _messenger.Register<ApplicationMessage.ReloadSettings>(this, (_, _) => { LoadSettings(); });
 
@@ -249,38 +251,27 @@ public partial class HomeViewModel : PageViewModel
         {
             OllamaServiceStatusChanged(_ollamaService.CurrentServiceStatus, _ollamaService.CurrentServiceMessage);
         }
-
-        // Yes I know this is also fire-and-forget but exceptions are "handled"
-        _ = Task.Run(InitializePipelineAsync);
     }
 
-    private async Task InitializePipelineAsync()
+    public async Task InitializeAsync()
     {
         try
         {
-            // Triggering conversations and ollama task in parallel
-            var conversationsTasks = InitializeConversations();
-            var ollamaTask = InitializeOllama();
+            var tmpName = SelectedModelName;
+            AvailableModels.Clear();
+            SelectedModelName = tmpName;
 
-            await Task.WhenAll(conversationsTasks, ollamaTask);
+            if(!_isInitializedAsync) await InitializeConversations();
 
-            // Initialize models has hard dependency on ollama init, so we run after
             await InitializeModels();
+
+            _isInitializedAsync = true;
         }
         catch (Exception ex)
         {
-            //TODO implement logging service, console logged for now
+            // TODO: proper logging
             Console.WriteLine(ex);
         }
-    }
-
-    private async Task InitializeOllama()
-    {
-        // megvárja amíg kapcsolódik az ollama szerverhez, ez gondolom azért kell, mert hamarabb futna le ez a metódus mint hogy a szerver elindul (?)
-        await _ollamaServerStarted.Task;
-
-        // ezt majd dinamikusan aszerint hogy melyik modell van használatban betöltéskor
-        await CheckModelDownload();
     }
 
     private void LoadSettings()
@@ -382,7 +373,7 @@ public partial class HomeViewModel : PageViewModel
 
     private async Task InitializeConversations()
     {
-        _conversations = await _conversationService.GetConversations();
+        Conversations = await _conversationService.GetConversations();
         if (_conversations.Count <= 0)
         {
             await CreateNewConversation();
@@ -399,19 +390,34 @@ public partial class HomeViewModel : PageViewModel
         return _conversationStates.GetOrCreateValue(conversation);
     }
 
-    public async Task InitializeModels()
+    public async Task InitializeModels(bool test = false)
     {
+        // wait for ollama to start
+        if (!test)
+        {
+            await _ollamaServerStarted.Task;
+        }
+
+        var previouslySelectedModelName = string.Empty;
+        if (_isInitializedAsync && !string.IsNullOrEmpty(SelectedModelName)
+            && SelectedModelName != LocalizationService.GetString("LOADING_MODELS")
+            && SelectedModelName != LocalizationService.GetString("NO_MODELS_FOUND"))
+        {
+            previouslySelectedModelName = SelectedModelName;
+        }
+
         IsModelsDropdownEnabled = false;
         AvailableModels.Add(LocalizationService.GetString("LOADING_MODELS"));
-        CurrentlySelectedModel = AvailableModels[0];
-        var downloadedModels = await _ollamaService.ListDownloaded();
+        SelectedModelName = AvailableModels[0];
+        var downloadedModels = await _ollamaService.ListDownloadedModels();
         if (downloadedModels.Count == 0)
         {
             AvailableModels.Clear();
             AvailableModels.Add(LocalizationService.GetString("NO_MODELS_FOUND"));
-            CurrentlySelectedModel = AvailableModels[0];
+            SelectedModelName = AvailableModels[0];
             IsModelsDropdownEnabled = false;
-            IsNoModelsDownloadedVisible = true;
+            IsNoModelsWarningVisible = true;
+            IsMessageBoxEnabled = false;
             return;
         }
 
@@ -421,8 +427,18 @@ public partial class HomeViewModel : PageViewModel
         }
 
         AvailableModels.RemoveAt(0);
-        CurrentlySelectedModel = AvailableModels.LastOrDefault() ?? string.Empty;
         IsModelsDropdownEnabled = true;
+        IsNoModelsWarningVisible = false;
+        IsMessageBoxEnabled = true;
+
+        var sorted = AvailableModels.OrderBy(x => x).ToList();
+        AvailableModels.Clear();
+        foreach (var item in sorted)
+            AvailableModels.Add(item);
+
+        if (!_isInitializedAsync) SelectedModelName = AvailableModels[0];
+
+        if (!string.IsNullOrEmpty(previouslySelectedModelName)) SelectedModelName = previouslySelectedModelName;
     }
 }
 

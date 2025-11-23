@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using avallama.ViewModels;
 
-namespace avallama;
+namespace avallama.DataTemplates;
 
 public class ViewLocator : IDataTemplate
 {

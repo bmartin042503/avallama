@@ -6,7 +6,7 @@ Licensed under the MIT License. See LICENSE file for details.
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="avallama.App"
-             xmlns:local="using:avallama"
+             xmlns:dataTemplates="using:avallama.DataTemplates"
              RequestedThemeVariant="Light"
              x:Name="Avallama">
     <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
@@ -29,14 +29,17 @@ Licensed under the MIT License. See LICENSE file for details.
         <StyleInclude Source="Styles/MessageItem.axaml" />
         <StyleInclude Source="Styles/ConversationItem.axaml" />
         <StyleInclude Source="Styles/ComboBox.axaml" />
-        <StyleInclude Source="Styles/ModelBlock.axaml" />
         <StyleInclude Source="Styles/General.axaml" />
         <StyleInclude Source="Styles/ToggleSwitch.axaml" />
         <FluentTheme />
+
+        <!-- Templated Controls -->
+        <StyleInclude Source="Styles/TemplatedControls/ModelItem.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>
-        <local:ViewLocator />
+        <dataTemplates:ViewLocator />
+        <dataTemplates:ModelDownloadStatusTemplateSelector />
     </Application.DataTemplates>
 
     <!-- macOS menü -->

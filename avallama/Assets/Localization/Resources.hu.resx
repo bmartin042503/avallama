@@ -23,7 +23,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Vágjunk bele</value>
     </data>
     <data name="GREETING_SUBTEXT" xml:space="preserve">
-        <value>Futtass bármilyen LLM modellt lokálisan</value>
+        <value>Futtass nyílt forráskódú LLMeket lokálisan</value>
     </data>
     <data name="GREETING_TEXT" xml:space="preserve">
         <value>Avallama</value>
@@ -161,16 +161,16 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Kihagyás</value>
     </data>
     <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
-        <value>Indíts új beszélgetést egyetlen kattintással</value>
+        <value>Okos beszélgetések</value>
     </data>
     <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
-        <value>Minden adat lokálisan van tárolva, biztonságban</value>
+        <value>Használj több Ollama modellt egy beszélgetésre. Könnyedén válthatsz köztük és a beszélgetés folytatódik ott ahol abbahagytad. Minden adat helyileg, a készülékeden van tárolva — semmi sem kerül harmadik félhez.</value>
     </data>
     <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
-        <value>Tölts le különböző AI modelleket</value>
+        <value>Modellkezelő</value>
     </data>
     <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
-        <value>Egyszerű, és személyreszabható</value>
+        <value>Személyre szabott beállítások</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
         <value>Hamarosan elérhető további funkciókkal..</value>
@@ -184,8 +184,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
     </data>
-    <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Kvantálás: {0} bit</value>
+    <data name="QUANTIZATION" xml:space="preserve">
+        <value>Kvantálás</value>
     </data>
     <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
         <value>Nincs elég hely a letöltéshez</value>
@@ -301,8 +301,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MIGHT_RUN_SLOW" xml:space="preserve">
         <value>Lassan futhat a rendszereden</value>
     </data>
-    <data name="DOWNLOADED_MODELS_INFO" xml:space="preserve">
-        <value>{0} letöltött modell ({1} GB)</value>
+    <data name="DOWNLOADED_MODELS" xml:space="preserve">
+        <value>{0} letöltött modell</value>
     </data>
     <data name="GENERATION_SPEED" xml:space="preserve">
         <value>Generálás sebessége</value>
@@ -318,12 +318,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="SORT_SIZE_ASCENDING" xml:space="preserve">
         <value>Méret (növekvő)</value>
-    </data>
-    <data name="SORT_PARAMETERS_DESCENDING" xml:space="preserve">
-        <value>Paraméter (csökkenő)</value>
-    </data>
-    <data name="SORT_PARAMETERS_ASCENDING" xml:space="preserve">
-        <value>Paraméter (növekvő)</value>
     </data>
     <data name="SORT_DOWNLOADED" xml:space="preserve">
         <value>Letöltött</value>
@@ -343,8 +337,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOADING" xml:space="preserve">
         <value>Letöltés</value>
     </data>
-    <data name="PAUSED" xml:space="preserve">
-        <value>Szüneteltetve</value>
+    <data name="DOWNLOAD_PAUSED" xml:space="preserve">
+        <value>Letöltés szüneteltetve</value>
     </data>
     <data name="MULTIPLE_DOWNLOADS_WARNING" xml:space="preserve">
         <value>Egy modell letöltése már folyamatban van. Kérlek szakítsd meg a letöltést, mielőtt újabbat indítanál.\n\nDolgozunk rajta, hogy a jövőben több letöltés is elérhető legyen egyszerre.</value>
@@ -402,5 +396,56 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="THIS_CONVERSATION" xml:space="preserve">
         <value>beszélgetést</value>
+    </data>
+    <data name="FORMAT" xml:space="preserve">
+        <value>Formátum</value>
+    </data>
+    <data name="SCRAPER_TITLE" xml:space="preserve">
+        <value>Modellkönyvtár frissítése</value>
+    </data>
+    <data name="SCRAPER_MODELS_FOUND" xml:space="preserve">
+        <value>{0} modell észlelve..</value>
+    </data>
+    <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
+        <value>Ez a folyamat több percig is eltarthat. Kérjük, ne zárd be az alkalmazást, amíg a frissítés tart.</value>
+    </data>
+    <data name="SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>A modellkönyvtár frissítése sikeresen megtörtént.</value>
+    </data>
+    <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
+        <value>Modellek mentése..</value>
+    </data>
+    <data name="SORT_PULL_COUNT_ASCENDING" xml:space="preserve">
+        <value>Letöltések (növekvő)</value>
+    </data>
+    <data name="SORT_PULL_COUNT_DESCENDING" xml:space="preserve">
+        <value>Letöltések (csökkenő)</value>
+    </data>
+    <data name="PULL_COUNT" xml:space="preserve">
+        <value>Letöltések száma</value>
+    </data>
+    <data name="LAST_UPDATED" xml:space="preserve">
+        <value>Utoljára frissítve</value>
+    </data>
+    <data name="UPDATE_MODEL_LIBRARY" xml:space="preserve">
+        <value>Modellkönyvtár frissítése</value>
+    </data>
+    <data name="DOWNLOADING_PART" xml:space="preserve">
+        <value>Letöltés ({0}. rész)</value>
+    </data>
+    <data name="GUIDE_ITEM_2_DESCRIPTION" xml:space="preserve">
+        <value>Böngéssz, tölts le bármilyen Ollama modellt. Tekintsd meg a részletes információkat, és kezeld egyszerűen a helyi könyvtárad.</value>
+    </data>
+    <data name="GUIDE_ITEM_3_DESCRIPTION" xml:space="preserve">
+        <value>Testreszabhatod az élményt: válthatsz világos és sötét mód között, csatlakozhatsz más Ollama szerverekhez, frissítheted a teljes modell könyvtárad, és sok más opció amikkel a saját igényeidhez igazíthatod az alkalmazást.</value>
+    </data>
+    <data name="GUIDE_COMPLETION_MESSAGE" xml:space="preserve">
+        <value>Az avallama még fejlesztés alatt áll, és előfordulhatnak problémák a használata során. Kérjük, jelentsd ay előforduló hibákat a GitHubon.</value>
+    </data>
+    <data name="NEVER" xml:space="preserve">
+        <value>Soha</value>
+    </data>
+    <data name="MODEL_MANAGER_GUIDE" xml:space="preserve">
+        <value>A Modellkezelő segítségével könnyedén böngészheted, letöltheted és kezelheted az Ollama által elérhető nyelvi modelleket. A modellek listája közvetlenül a hivatalos Ollama weboldaláról kerül lekérésre, majd ezt követően a lokális adatbázisba lesznek lementve.\n\nAz egyes modelleknél megjelenő technikai adatok magyarázata:\n\n- Formátum: A modell fájl- és tárolási formátuma.\n\n- Architektúra: A modell felépítése (pl. LLaMA, Mistral), amely meghatározza a teljesítményt és a képességeket.\n\n- Blokkok száma: A modell belső rétegeinek száma; a több blokk általában nagyobb teljesítményt, de magasabb erőforrásigényt jelent.\n\n- Kontextus hossza: Az a tokenszám, amelyet a modell egyetlen kérés során figyelembe tud venni, lehetővé téve hosszabb beszélgetések és dokumentumok kezelését.\n\n- Beágyazási hossz: A modell által előállított vektorok mérete, amely hasznos szemantikus kereséshez és hasonlósági vizsgálatokhoz.\n\n- Kvantálási szint: A modell tömörítésének mértéke; az alacsonyabb bitrátájú modellek kevesebb memóriát használnak és gyorsabban futnak, kisebb pontosságvesztés mellett.</value>
     </data>
 </root>

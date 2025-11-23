@@ -8,63 +8,63 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
-namespace avallama.Controls
+namespace avallama.Controls.DualTextItem
 {
     /// <summary>
     /// A customizable text box control with configurable background, two text lines (main and sub),
     /// and several styling properties such as font, padding, corner radius, and spacing.
     /// </summary>
-    public class TextItem : Control
+    public class DualTextItem : Control
     {
         #region Styled Properties
 
         public static readonly StyledProperty<string?> TextProperty =
-            AvaloniaProperty.Register<TextItem, string?>(nameof(Text));
+            AvaloniaProperty.Register<DualTextItem, string?>(nameof(Text));
 
         public static readonly StyledProperty<IBrush?> TextColorProperty =
-            AvaloniaProperty.Register<TextItem, IBrush?>(nameof(TextColor));
+            AvaloniaProperty.Register<DualTextItem, IBrush?>(nameof(TextColor));
 
         public static readonly StyledProperty<string?> SubTextProperty =
-            AvaloniaProperty.Register<TextItem, string?>(nameof(SubText));
+            AvaloniaProperty.Register<DualTextItem, string?>(nameof(SubText));
 
         public static readonly StyledProperty<IBrush?> SubTextColorProperty =
-            AvaloniaProperty.Register<TextItem, IBrush?>(nameof(SubTextColor));
+            AvaloniaProperty.Register<DualTextItem, IBrush?>(nameof(SubTextColor));
 
         public static readonly StyledProperty<Thickness?> PaddingProperty =
-            AvaloniaProperty.Register<TextItem, Thickness?>(nameof(Padding));
+            AvaloniaProperty.Register<DualTextItem, Thickness?>(nameof(Padding));
 
         public static readonly StyledProperty<CornerRadius?> CornerRadiusProperty =
-            AvaloniaProperty.Register<TextItem, CornerRadius?>(nameof(CornerRadius));
+            AvaloniaProperty.Register<DualTextItem, CornerRadius?>(nameof(CornerRadius));
 
         public static readonly StyledProperty<double?> TextFontSizeProperty =
-            AvaloniaProperty.Register<TextItem, double?>(nameof(TextFontSize));
+            AvaloniaProperty.Register<DualTextItem, double?>(nameof(TextFontSize));
 
         public static readonly StyledProperty<double?> SubTextFontSizeProperty =
-            AvaloniaProperty.Register<TextItem, double?>(nameof(SubTextFontSize));
+            AvaloniaProperty.Register<DualTextItem, double?>(nameof(SubTextFontSize));
 
         public static readonly StyledProperty<TextAlignment?> TextAlignmentProperty =
-            AvaloniaProperty.Register<TextItem, TextAlignment?>(nameof(TextAlignment));
+            AvaloniaProperty.Register<DualTextItem, TextAlignment?>(nameof(TextAlignment));
 
         public static readonly StyledProperty<TextAlignment?> SubTextAlignmentProperty =
-            AvaloniaProperty.Register<TextItem, TextAlignment?>(nameof(SubTextAlignment));
+            AvaloniaProperty.Register<DualTextItem, TextAlignment?>(nameof(SubTextAlignment));
 
         public static readonly StyledProperty<FontFamily?> FontFamilyProperty =
-            AvaloniaProperty.Register<TextItem, FontFamily?>(nameof(FontFamily));
+            AvaloniaProperty.Register<DualTextItem, FontFamily?>(nameof(FontFamily));
 
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
-            AvaloniaProperty.Register<TextItem, IBrush?>(nameof(Background));
+            AvaloniaProperty.Register<DualTextItem, IBrush?>(nameof(Background));
 
         public static readonly StyledProperty<double?> SpacingProperty =
-            AvaloniaProperty.Register<TextItem, double?>(nameof(Spacing));
+            AvaloniaProperty.Register<DualTextItem, double?>(nameof(Spacing));
 
         public static readonly StyledProperty<double?> LineHeightProperty =
-            AvaloniaProperty.Register<TextItem, double?>(nameof(LineHeight));
+            AvaloniaProperty.Register<DualTextItem, double?>(nameof(LineHeight));
 
         public static readonly StyledProperty<int?> MaxLinesProperty =
-            AvaloniaProperty.Register<TextItem, int?>(nameof(MaxLines));
+            AvaloniaProperty.Register<DualTextItem, int?>(nameof(MaxLines));
 
         public static readonly StyledProperty<TextTrimming?> TextTrimmingProperty =
-            AvaloniaProperty.Register<TextItem, TextTrimming?>(nameof(TextTrimming));
+            AvaloniaProperty.Register<DualTextItem, TextTrimming?>(nameof(TextTrimming));
 
         #endregion
 

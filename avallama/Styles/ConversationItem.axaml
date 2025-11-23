@@ -5,21 +5,21 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:avallama.Controls">
+        xmlns:dualTextItem="clr-namespace:avallama.Controls.DualTextItem">
     <Design.PreviewWith>
         <Border Padding="20" Background="{DynamicResource Surface}">
             <StackPanel Orientation="Vertical" Spacing="20">
-                <controls:ConversationItem
+                <dualTextItem:ConversationItem
                     Text="Generating one thousand lorem ipsum texts"
                     Width="300"
                     SubText="llama3.2"/>
 
-                <controls:ConversationItem
+                <dualTextItem:ConversationItem
                     Text="The perfect conversation"
                     Width="300"
                     SubText="deepseek-r1"/>
 
-                <controls:ConversationItem
+                <dualTextItem:ConversationItem
                     Text="Testing the model"
                     Width="300"
                     SubText="gpt-oss"/>
@@ -28,7 +28,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </Design.PreviewWith>
 
     <!-- Base styles -->
-    <Style Selector="controls|ConversationItem">
+    <Style Selector="dualTextItem|ConversationItem">
         <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighest}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnSurface}"/>
         <Setter Property="TextFontSize" Value="16"/>
@@ -44,14 +44,14 @@ Licensed under the MIT License. See LICENSE file for details.
     </Style>
 
     <!-- Selected conversation item styles -->
-    <Style Selector="controls|ConversationItem">
+    <Style Selector="dualTextItem|ConversationItem">
         <Setter Property="ActiveBackground" Value="{DynamicResource PrimaryContainer}"/>
         <Setter Property="ActiveTextColor" Value="{DynamicResource OnPrimaryContainer}"/>
         <Setter Property="ActiveSubTextColor" Value="{DynamicResource OnPrimaryContainer}"/>
     </Style>
 
     <!-- Hovered conversation item styles -->
-    <Style Selector="controls|ConversationItem">
+    <Style Selector="dualTextItem|ConversationItem">
         <Setter Property="HoverBackground" Value="{DynamicResource SecondaryContainer}"/>
         <Setter Property="HoverTextColor" Value="{DynamicResource OnSecondaryContainer}"/>
         <Setter Property="HoverSubTextColor" Value="{DynamicResource OnSecondaryContainer}"/>

@@ -19,6 +19,7 @@ public static class ConfigurationKey
     public const string ApiHost = "api-host";
     public const string ApiPort = "api-port";
     public const string ShowInformationalMessages = "show-informational-messages";
+    public const string LastUpdatedCache = "last-updated-cache";
 }
 
 public interface IConfigurationService

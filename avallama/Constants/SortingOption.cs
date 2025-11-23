@@ -6,8 +6,6 @@ namespace avallama.Constants;
 public enum SortingOption
 {
     Downloaded,
-    ParametersDescending,
-    ParametersAscending,
     SizeDescending,
     SizeAscending,
     PullCountDescending,

@@ -18,10 +18,11 @@ public static class GuideItems
             new(
                 title: LocalizationService.GetString("GUIDE_ITEM_2_TITLE"),
                 description: LocalizationService.GetString("GUIDE_ITEM_2_DESCRIPTION"),
-                imageSource: "avares://avallama/Assets/Images/home.png"
+                imageSource: "avares://avallama/Assets/Images/modelmanager.png"
             ),
             new(
                 title: LocalizationService.GetString("GUIDE_ITEM_3_TITLE"),
+                description: LocalizationService.GetString("GUIDE_ITEM_3_DESCRIPTION"),
                 imageSource: "avares://avallama/Assets/Images/settings.png"
             )
         };

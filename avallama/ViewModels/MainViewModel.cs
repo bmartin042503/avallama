@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Factories;
@@ -16,6 +17,7 @@ public partial class MainViewModel : ViewModelBase
     // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
     private readonly PageFactory _pageFactory;
     private readonly ConfigurationService _configurationService;
+    private readonly IModelCacheService _modelCacheService;
     private readonly IMessenger _messenger;
 
     private string? _firstTime;
@@ -25,12 +27,19 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(
         PageFactory pageFactory,
         ConfigurationService configurationService,
+        IModelCacheService modelCacheService,
         IMessenger messenger
     )
     {
         _pageFactory = pageFactory;
         _configurationService = configurationService;
+        _modelCacheService = modelCacheService;
         _messenger = messenger;
+
+        _messenger.Register<ApplicationMessage.RequestPage>(this, (_, msg) =>
+        {
+            CurrentPageViewModel = _pageFactory.GetPageViewModel(msg.Page);
+        });
 
         _firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
         if (string.IsNullOrEmpty(_firstTime))
@@ -40,17 +49,12 @@ public partial class MainViewModel : ViewModelBase
         else if (_firstTime == "false")
         {
             CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
-            Task.Run(async () => await CheckOllamaStart());
+            CheckOllamaStart();
         }
     }
 
-    private async Task CheckOllamaStart()
+    private void CheckOllamaStart()
     {
-        // kisebb delay, ugyanis a MainViewModel hamarabb inicializálódik mint az ApplicationService
-        // és ha nincs ez a delay akkor az ApplicationService nem tudná fogadni a kérést az ollama indítás dialog megjelenítésére
-        // mert az elveszne
-        await Task.Delay(500);
-
         _firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
         var apiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         var apiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
@@ -65,10 +69,10 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task OpenHome()
+    public void OpenHome()
     {
+        CheckOllamaStart();
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
-        await CheckOllamaStart();
     }
 
     [RelayCommand]
@@ -78,14 +82,26 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void OpenModelManager()
+    public async Task OpenModelManager()
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
+        var models = await _modelCacheService.GetCachedModelsAsync();
+        if (models.Count == 0)
+        {
+            CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Scraper);
+        }
     }
 
     [RelayCommand]
     public void OpenSettings()
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Settings);
+    }
+
+    [RelayCommand]
+    public void StartScraper()
+    {
+
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Scraper);
     }
 }

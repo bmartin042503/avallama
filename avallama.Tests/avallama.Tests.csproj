@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-      <None Include="../nativelibs/macos/libFullScreenCheck.dylib">
+      <None Include="../native/macos/libFullScreenCheck.dylib">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
   </ItemGroup>

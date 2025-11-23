@@ -4,7 +4,7 @@
 using System;
 using avallama.Utilities;
 
-namespace avallama.Tests.TestUtilities;
+namespace avallama.Tests;
 
 public class SynchronousAvaloniaDispatcher : IAvaloniaDispatcher
 {

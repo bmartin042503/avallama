@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Factories;
@@ -329,7 +330,7 @@ public class DialogService(
 
     /// <summary>
     /// Megjelenít egy megerősítésre váró dialogot a felhasználónak, két választható gombbal.
-    /// A metódus aszinkron módon várja meg, míg a felhasználó valamelyik gombra kattint, 
+    /// A metódus aszinkron módon várja meg, míg a felhasználó valamelyik gombra kattint,
     /// majd visszatér a választott eredménnyel egy <see cref="DialogResult"/> típusban.
     /// </summary>
     /// <param name="title">
@@ -449,7 +450,7 @@ public class DialogService(
     /// <code>
     /// var dialogResult = await _dialogService.ShowInputDialog(
     ///     title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
-    ///     description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"), 
+    ///     description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"),
     ///     inputFields: new List()
     ///     {
     ///         new (placeholder: LocalizationService.GetString("API_HOST_SETTING")),
@@ -459,7 +460,7 @@ public class DialogService(
     ///         )
     ///     }
     /// );
-    ///     
+    ///
     /// if (dialogResult is InputResult inputResult)
     /// {
     ///     var count = 0;
@@ -530,7 +531,7 @@ public class DialogService(
         {
             control.ErrorMessage.IsVisible = false;
             control.ErrorMessage.Text = string.Empty;
-            
+
             // validation check
             for (var i = 0; i < fields.Count; i++)
             {
@@ -547,7 +548,7 @@ public class DialogService(
                     return;
                 }
             }
-            
+
             // a textboxok, vagyis a beviteli mezők szövegeit összevonja egy List<string>-be
             var inputList = control.InputFieldsStackPanel.Children.Select(item =>
                     item as TextBox
@@ -625,7 +626,7 @@ public class DialogService(
             : Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow
                 : null;
-        
+
         _dialogStack.Push(dialogWindow);
         dialogWindow.Closing += (_, _) =>
         {

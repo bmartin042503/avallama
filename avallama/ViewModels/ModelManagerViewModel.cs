@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,19 +18,22 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace avallama.ViewModels;
 
-// TODO: összekötni valós adatokkal, valós letöltés implementációval stb.
 public partial class ModelManagerViewModel : PageViewModel
 {
-    private readonly DialogService _dialogService;
-    private readonly OllamaService _ollamaService;
+    private readonly IDialogService _dialogService;
+    private readonly IOllamaService _ollamaService;
+    private readonly IModelCacheService _modelCacheService;
 
-    // ide lesz betöltve az összes model adat
+    // all loaded models (stays in the memory)
     private IEnumerable<OllamaModel> _modelsData = [];
 
-    // modellrendezési opciók
+    // filtered models
+    private IEnumerable<OllamaModel> _filteredModelsData = [];
+
+    // model sorting options
     public IEnumerable<SortingOption> SortingOptions { get; } = Enum.GetValues<SortingOption>();
 
-    // megjelenített modellek, ez módosul, pl. keresésnél, rendezésnél stb.
+    // rendered models on the UI
     [ObservableProperty] private ObservableCollection<OllamaModel> _models = [];
 
     [ObservableProperty] private string _downloadedModelsInfo = string.Empty;
@@ -37,11 +42,16 @@ public partial class ModelManagerViewModel : PageViewModel
     [ObservableProperty] private string _selectedModelName = string.Empty;
     [ObservableProperty] private OllamaModel? _selectedModel;
     [ObservableProperty] private bool _isModelInfoBlockVisible;
+    [ObservableProperty] private bool _isPaginationButtonVisible;
 
-    // a jelenleg letöltés alatt álló modell letöltési sebessége Mbps-ben
-    [ObservableProperty] private double _downloadSpeed;
+    private Timer? _downloadSpeedUpdateTimer;
+    private int _downloadingPartCount;
+    private double _downloadSpeed;
+    private long _downloadedBytes;
+    private long _bytesToDownload;
 
-    [ObservableProperty] private long _downloadedBytes;
+    [ObservableProperty] private string _downloadStatusText = string.Empty;
+    [ObservableProperty] private string _downloadSpeedText = "0 MB/s";
 
     private SortingOption _selectedSortingOption;
 
@@ -49,8 +59,11 @@ public partial class ModelManagerViewModel : PageViewModel
     // aztán kivételt dobva fogja megszakítani a taskot
     private CancellationTokenSource _downloadCancellationTokenSource = new();
 
-    // a jelenleg letöltés alatt álló modell
+    // currently downloading model
     private OllamaModel? _downloadingModel;
+
+    public const int PaginationLimit = 50;
+    private int _paginationIndex;
 
     public SortingOption SelectedSortingOption
     {
@@ -71,22 +84,18 @@ public partial class ModelManagerViewModel : PageViewModel
         set
         {
             _searchBoxText = value;
-
-            // ollama modellek újraszűrése a searchbox értéke alapján
             FilterModels();
-            SortModels();
-
             OnPropertyChanged();
         }
     }
 
-    public ModelManagerViewModel(DialogService dialogService, OllamaService ollamaService)
+    public ModelManagerViewModel(IDialogService dialogService, IOllamaService ollamaService,
+        IModelCacheService modelCacheService)
     {
         Page = ApplicationPage.ModelManager;
         _dialogService = dialogService;
         _ollamaService = ollamaService;
-
-        _ = LoadModelsData();
+        _modelCacheService = modelCacheService;
 
         SelectedSortingOption = SortingOption.Downloaded;
 
@@ -97,49 +106,50 @@ public partial class ModelManagerViewModel : PageViewModel
         }
     }
 
+    public async Task InitializeAsync()
+    {
+        await LoadModelsData();
+    }
+
     private async Task LoadModelsData()
     {
-        _modelsData = await _ollamaService.ListDownloaded();
-        _modelsData = _modelsData.Concat(await _ollamaService.ListLibraryModelsAsOllamaModelsAsync());
+        // Get models data from cache excluding cloud models
+        // TODO: extract cloud models that has "cloud" in their names or "cloud" among their labels
+        _modelsData = (await _modelCacheService.GetCachedModelsAsync())
+            .Where(m => !m.Name.EndsWith("-cloud", StringComparison.OrdinalIgnoreCase));
 
-        var ollamaModels = _modelsData as OllamaModel[] ?? _modelsData.ToArray();
-        if (ollamaModels.Length == 0)
-        {
-            IsModelInfoBlockVisible = false;
-            return;
-        }
+        var modelsData = _modelsData.ToList();
+        IsPaginationButtonVisible = modelsData.Count > PaginationLimit;
 
-        Models = new ObservableCollection<OllamaModel>(ollamaModels);
+        _paginationIndex = Math.Min(modelsData.Count, PaginationLimit);
+
+        if (modelsData.Count == 0) return;
+
+        SortModels();
+
+        Models = new ObservableCollection<OllamaModel>(modelsData.Take(Math.Min(modelsData.Count, PaginationLimit)));
         HasModelsToDisplay = Models.Count > 0;
 
-        IsModelInfoBlockVisible = true;
-
-        var downloadedModelsCount = ollamaModels.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
+        var downloadedModelsCount = modelsData.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
 
         HasDownloadedModels = downloadedModelsCount > 0;
 
         if (!HasDownloadedModels) return;
 
-        var downloadedSizeSum = ollamaModels
-            .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-            .Sum(m => m.Size);
-
-        var totalSizeInGb = downloadedSizeSum / 1_073_741_824.0;
-
-        DownloadedModelsInfo =
-            string.Format(
-                LocalizationService.GetString("DOWNLOADED_MODELS_INFO"),
-                downloadedModelsCount,
-                totalSizeInGb
-            );
+        UpdateDownloadedModelsInfo();
     }
 
     // A rendezés beállítása alapján rendezi a modelleket
     private void SortModels()
     {
-        if (Models.Count == 0) return;
+        var search = SearchBoxText.Trim();
+        var hasSearch = !string.IsNullOrEmpty(search);
+        var dataToSort = hasSearch ? _filteredModelsData : _modelsData;
+        var models = dataToSort.ToList();
 
-        IEnumerable<OllamaModel> sortedModels;
+        if (models.Count == 0) return;
+
+        IEnumerable<OllamaModel> sortResult = models;
 
         switch (SelectedSortingOption)
         {
@@ -147,32 +157,38 @@ public partial class ModelManagerViewModel : PageViewModel
             // ha pedig van akkor külön veszi a letöltött modelleket a Models-ből majd összevonja egy olyan Models-el (amiből ki vannak véve a Downloaded elemek)
             // így előre kerülnek a letöltött státuszban lévők
             case SortingOption.Downloaded:
-                sortedModels = Models.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                    ? Models.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                        .Concat(Models.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded))
-                    : Models;
+                sortResult = models.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                    ? models.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                        .Concat(models.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded))
+                    : models;
                 break;
-            case SortingOption.ParametersAscending:
-                sortedModels = Models.OrderBy(m => m.Parameters);
+            case SortingOption.PullCountAscending:
+                sortResult = models.OrderBy(m => m.Family?.PullCount);
                 break;
-            case SortingOption.ParametersDescending:
-                sortedModels = Models.OrderByDescending(m => m.Parameters);
+            case SortingOption.PullCountDescending:
+                sortResult = models.OrderByDescending(m => m.Family?.PullCount);
                 break;
             case SortingOption.SizeAscending:
-                sortedModels = Models.OrderBy(m => m.Size);
+                sortResult = models.OrderBy(m => m.Size);
                 break;
             case SortingOption.SizeDescending:
-                sortedModels = Models.OrderByDescending(m => m.Size);
-                break;
-            default:
-                sortedModels = Models;
+                sortResult = models.OrderByDescending(m => m.Size);
                 break;
         }
 
-        Models = new ObservableCollection<OllamaModel>(sortedModels);
+        if (hasSearch)
+        {
+            _filteredModelsData = sortResult;
+        }
+        else
+        {
+            _modelsData = sortResult;
+        }
+
+        ResetPagination(hasSearch ? _filteredModelsData : _modelsData);
     }
 
-    // A keresés szövege alapján szűri a modelleket
+    // Filters models by the search text and sets the _filteredModelsData
     private void FilterModels()
     {
         if (!_modelsData.Any())
@@ -182,14 +198,68 @@ public partial class ModelManagerViewModel : PageViewModel
         }
 
         var search = SearchBoxText.Trim();
+        if (string.IsNullOrEmpty(search)) return;
+
+        _filteredModelsData = _modelsData
+            .Select(m => new
+            {
+                Model = m,
+                Score = GetSearchMatchScore(m.Name, search)
+            })
+            .Where(x => x.Score >= 25)
+            .OrderByDescending(x => x.Score)
+            .Select(x => x.Model);
+
+        var filteredModelsData = _filteredModelsData.ToList();
+
+        ResetPagination(filteredModelsData);
+
+        HasModelsToDisplay = filteredModelsData.Count > 0;
+    }
+
+    private void ResetPagination(IEnumerable<OllamaModel> models)
+    {
+        var modelsList = models.ToList();
+        Models = new ObservableCollection<OllamaModel>(modelsList.Take(Math.Min(PaginationLimit, modelsList.Count)));
+        _paginationIndex = Math.Min(PaginationLimit, modelsList.Count);
+        IsPaginationButtonVisible = modelsList.Count > PaginationLimit;
+    }
+
+    [RelayCommand]
+    public void ForwardToOllama(object parameter)
+    {
+        if (parameter is string modelName)
+        {
+            const string libraryUrl = @"https://ollama.com/library/";
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = libraryUrl + modelName,
+                UseShellExecute = true
+            });
+        }
+    }
+
+    [RelayCommand]
+    public void Paginate()
+    {
+        var search = SearchBoxText.Trim();
         var hasSearch = !string.IsNullOrEmpty(search);
+        var dataToPaginate = hasSearch ? _filteredModelsData.ToList() : _modelsData.ToList();
 
-        Models = new ObservableCollection<OllamaModel>(
-            _modelsData
-                .Where(m => !hasSearch || m.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-        );
+        if (dataToPaginate.Count == 0) return;
 
-        HasModelsToDisplay = Models.Count > 0;
+        if (_paginationIndex < dataToPaginate.Count)
+        {
+            var modelsToAdd = Math.Min(PaginationLimit, dataToPaginate.Count - _paginationIndex);
+            foreach (var model in dataToPaginate.Skip(_paginationIndex).Take(modelsToAdd))
+            {
+                Models.Add(model);
+                _paginationIndex++;
+            }
+        }
+
+        IsPaginationButtonVisible = _paginationIndex < dataToPaginate.Count;
     }
 
     // ez akkor hívódik meg ha a felhasználó valamelyik letöltéssel kapcsolatos interaktálható gombra kattint
@@ -213,6 +283,7 @@ public partial class ModelManagerViewModel : PageViewModel
                     break;
                 case ModelDownloadAction.Pause:
                     SelectedModel.DownloadStatus = ModelDownloadStatus.Paused;
+                    await _modelCacheService.UpdateModelAsync(SelectedModel);
                     await _downloadCancellationTokenSource.CancelAsync();
                     break;
                 case ModelDownloadAction.Resume:
@@ -232,17 +303,19 @@ public partial class ModelManagerViewModel : PageViewModel
                 case ModelDownloadAction.Cancel:
                     SelectedModel.DownloadStatus = ModelDownloadStatus.Ready;
                     _downloadingModel = null;
-                    DownloadedBytes = 0;
+                    _downloadedBytes = 0;
+                    _bytesToDownload = 0;
+                    _downloadSpeed = 0.0;
                     await _downloadCancellationTokenSource.CancelAsync();
                     break;
                 case ModelDownloadAction.Delete:
                     var dialogResult = await _dialogService.ShowConfirmationDialog(
-                        title: LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
-                        description: string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"),
+                        LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
+                        LocalizationService.GetString("DELETE"),
+                        LocalizationService.GetString("CANCEL"),
+                        string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"),
                             SelectedModel.Name),
-                        positiveButtonText: LocalizationService.GetString("DELETE"),
-                        negativeButtonText: LocalizationService.GetString("CANCEL"),
-                        highlight: ConfirmationType.Positive
+                        ConfirmationType.Positive
                     );
 
                     if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
@@ -250,10 +323,15 @@ public partial class ModelManagerViewModel : PageViewModel
                         SelectedModel.DownloadStatus = ModelDownloadStatus.Ready;
                         if (!await _ollamaService.DeleteModel(SelectedModel.Name))
                         {
-                            _dialogService.ShowErrorDialog(LocalizationService.GetString("ERROR_DELETING_MODEL"));
+                            _dialogService.ShowErrorDialog(LocalizationService.GetString("ERROR_DELETING_MODEL"),
+                                false);
                         }
-                        DownloadedBytes = 0;
+
+                        await _modelCacheService.UpdateModelAsync(SelectedModel);
+
+                        _downloadedBytes = 0;
                         SortModels();
+                        UpdateDownloadedModelsInfo();
                     }
 
                     break;
@@ -261,7 +339,6 @@ public partial class ModelManagerViewModel : PageViewModel
         }
     }
 
-    // TODO: Fix UI inconsistencies with download
     private async Task DownloadSelectedModelAsync()
     {
         if (SelectedModel == null) return;
@@ -272,45 +349,79 @@ public partial class ModelManagerViewModel : PageViewModel
         {
             await Task.Run(async () =>
             {
+                var networkSpeedCalculator = new NetworkSpeedCalculator();
                 _downloadingModel = SelectedModel;
-                while (_downloadingModel != null && DownloadedBytes != _downloadingModel.Size)
+                _downloadingPartCount = 1;
+
+                _downloadSpeedUpdateTimer = new Timer(UpdateDownloadSpeedText, null, TimeSpan.FromMilliseconds(1000),
+                    TimeSpan.FromMilliseconds(1000));
+
+                await foreach (var chunk in _ollamaService.PullModel(_downloadingModel.Name))
                 {
-                    // ez ellenőrzi hogy meg lett-e hívva a cancel a letöltésre, és ha igen kivételt dob
                     _downloadCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-                    await foreach (var chunk in _ollamaService.PullModel(_downloadingModel.Name))
+                    if (chunk is { Total: not null, Completed: not null })
                     {
-                        if (chunk.Total.HasValue && chunk.Completed.HasValue)
+                        if (_bytesToDownload != 0 && chunk.Total.Value != _bytesToDownload)
                         {
-                            DownloadedBytes = chunk.Completed.Value;
-                        }
-                        DownloadSpeed = Math.Round((double)(DownloadedBytes * 8) / 1_000_000, 2);
-                        if (_downloadingModel != null && DownloadedBytes > _downloadingModel.Size)
-                        {
-                            DownloadedBytes = _downloadingModel.Size;
+                            _downloadingPartCount++;
                         }
 
-                        if (chunk.Status == "success")
+                        _bytesToDownload = chunk.Total.Value;
+                        _downloadedBytes = chunk.Completed.Value;
+                    }
+
+                    _downloadSpeed = networkSpeedCalculator.CalculateSpeed(chunk.Completed ?? 0);
+
+                    DownloadStatusText = string.Format(LocalizationService.GetString("DOWNLOADING_PART"),
+                        _downloadingPartCount);
+                    DownloadStatusText +=
+                        $" - {ConversionHelper.BytesToReadableSize(_downloadedBytes)}/{ConversionHelper.BytesToReadableSize(_bytesToDownload)}";
+
+                    if (chunk.Status == "success")
+                    {
+                        if (_downloadingModel != null)
                         {
-                            if (_downloadingModel != null)
-                                _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
-                            _downloadingModel = null;
-                            DownloadedBytes = 0;
-                            SortModels();
+                            _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                            await _modelCacheService.UpdateModelAsync(_downloadingModel);
                         }
+
+                        await _downloadSpeedUpdateTimer.DisposeAsync();
+                        _downloadingModel = null;
+                        _downloadedBytes = 0;
+                        _bytesToDownload = 0;
+                        _downloadSpeed = 0.0;
+                        SortModels();
+
+                        UpdateDownloadedModelsInfo();
                     }
                 }
             }, _downloadCancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
-            // ez akkor fut le ha a felhasználó szünetelteti a letöltést vagy visszavonja azt
-            // TODO: letöltés visszavonása/szüneteltetése api-n keresztül, a _downloadingModel.DownloadStatus alapján
+            _downloadSpeedUpdateTimer?.Dispose();
         }
         finally
         {
             _downloadCancellationTokenSource.Dispose();
         }
+    }
+
+    private void UpdateDownloadedModelsInfo()
+    {
+        var downloadedModelsCount = _modelsData.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
+        var downloadedSizeSum = _modelsData
+            .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+            .Sum(m => m.Size);
+
+        DownloadedModelsInfo =
+            string.Format(
+                LocalizationService.GetString("DOWNLOADED_MODELS"),
+                downloadedModelsCount
+            );
+
+        DownloadedModelsInfo += $" ({ConversionHelper.BytesToReadableSize(downloadedSizeSum)})";
     }
 
     [RelayCommand]
@@ -321,6 +432,8 @@ public partial class ModelManagerViewModel : PageViewModel
             if (string.IsNullOrEmpty(modelName)) return;
             SelectedModelName = modelName;
 
+            IsModelInfoBlockVisible = true;
+
             var modelFromName = _modelsData.FirstOrDefault(m => m.Name == SelectedModelName);
             if (modelFromName != null) SelectedModel = modelFromName;
         }
@@ -330,6 +443,71 @@ public partial class ModelManagerViewModel : PageViewModel
     public void ShowInfo()
     {
         // TODO: tájékoztató a modelmanager működéséről, modellek információiról stb.
-        _dialogService.ShowInfoDialog("ModelManager info here");
+        _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
+    }
+
+    private void UpdateDownloadSpeedText(object? state)
+    {
+        DownloadSpeedText = $"{_downloadSpeed:0.##} MB/s";
+    }
+
+    private static int LevenshteinDistance(string s, string t)
+    {
+        if (string.IsNullOrEmpty(s))
+            return t.Length;
+        if (string.IsNullOrEmpty(t))
+            return s.Length;
+
+        var d = new int[s.Length + 1, t.Length + 1];
+
+        for (var i = 0; i <= s.Length; i++)
+            d[i, 0] = i;
+
+        for (var j = 0; j <= t.Length; j++)
+            d[0, j] = j;
+
+        for (var i = 1; i <= s.Length; i++)
+        {
+            for (var j = 1; j <= t.Length; j++)
+            {
+                var cost = s[i - 1] == t[j - 1] ? 0 : 1;
+
+                d[i, j] = Math.Min(
+                    Math.Min(
+                        d[i - 1, j] + 1,
+                        d[i, j - 1] + 1),
+                    d[i - 1, j - 1] + cost
+                );
+            }
+        }
+
+        return d[s.Length, t.Length];
+    }
+
+
+    private static int GetSearchMatchScore(string name, string search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+            return 0;
+
+        name = name.ToLowerInvariant();
+        search = search.ToLowerInvariant();
+
+        var score = 0;
+
+        if (name.StartsWith(search))
+            score += 100;
+
+        if (name.Contains(search))
+            score += 40;
+
+        // fuzzy, looks for typos
+        int lev = LevenshteinDistance(name, search);
+
+        // the least the distance the better it is (max 30 score)
+        var fuzzyScore = Math.Max(0, 30 - lev);
+        score += fuzzyScore;
+
+        return score;
     }
 }

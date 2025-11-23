@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -12,6 +12,8 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:converters="clr-namespace:avallama.Converters"
+             xmlns:modelManager="clr-namespace:avallama.Controls.ModelManager"
+             xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
@@ -35,14 +37,14 @@ Licensed under the MIT License. See LICENSE file for details.
             <TextBlock
                 Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
                 Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center" />
-            <Button Command="{Binding ShowInfo}" Classes="svgButton">
+            <Button Command="{Binding ShowInfo}" Classes="clearButton">
                 <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
                                      Width="20" VerticalAlignment="Center" />
             </Button>
         </StackPanel>
 
         <!-- Bal oldali modelválasztó, kereső, rendező rész -->
-        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch">
+        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto" HorizontalAlignment="Stretch">
 
             <!-- Keresőmező -->
             <TextBox Grid.Row="0" Watermark="{services:LocalizationService Key='SEARCH_FOR_MODELS'}" MaxLines="1"
@@ -88,44 +90,52 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextAlignment="Center" />
             </StackPanel>
 
-            <!-- Modelválasztó -->
+            <!-- Model selection -->
             <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,14,0,0"
                           AllowAutoHide="True">
-                <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="models:OllamaModel">
-                            <controls:ModelBlock
-                                Margin="0,12,0,0"
-                                Title="{Binding Name}"
-                                DownloadStatus="{Binding DownloadStatus}"
-                                SizeInBytes="{Binding Size}"
-                                DownloadedBytes="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadedBytes}"
-                                SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
-                                CommandParameter="{Binding Name}" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <StackPanel Orientation="Vertical" Spacing="12">
+                    <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="models:OllamaModel">
+                                <modelManager:ModelListItem
+                                    Margin="0,12,0,0"
+                                    Title="{Binding Name}"
+                                    DownloadStatus="{Binding DownloadStatus}"
+                                    SizeInBytes="{Binding Size}"
+                                    SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
+                                    CommandParameter="{Binding Name}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Pagination button (as a dots SVG) -->
+                    <Button CornerRadius="8"
+                            IsVisible="{Binding IsPaginationButtonVisible}"
+                            Background="{DynamicResource SurfaceContainerHighest}" Padding="14,0"
+                            Cursor="Hand" HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding Paginate}">
+                        <controls:DynamicSvg Path="/Assets/Svg/dots.svg" FillColor="{DynamicResource OnSecondaryContainer}"
+                                             Height="26"/>
+                    </Button>
+                </StackPanel>
             </ScrollViewer>
         </Grid>
 
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
                       Margin="4,0,4,0" />
 
-        <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
-        <controls:ModelInfoBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
-                                 IsVisible="{Binding IsModelInfoBlockVisible}"
-                                 Title="{Binding SelectedModel.Name}"
-                                 Quantization="{Binding SelectedModel.Quantization}"
-                                 Parameters="{Binding SelectedModel.Parameters}"
-                                 Format="{Binding SelectedModel.Format}"
-                                 DetailItemsSource="{Binding SelectedModel.Details}"
-                                 SizeInBytes="{Binding SelectedModel.Size}"
-                                 DownloadStatus="{Binding SelectedModel.DownloadStatus}"
-                                 DownloadSpeed="{Binding DownloadSpeed}"
-                                 DownloadedBytes="{Binding DownloadedBytes}"
-                                 RunsSlow="{Binding SelectedModel.RunsSlow}"
-                                 Command="{Binding ModelAction}" />
+        <templatedControls:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                             IsVisible="{Binding IsModelInfoBlockVisible}"
+                             Title="{Binding SelectedModel.Name}"
+                             Family="{Binding SelectedModel.Family}"
+                             Parameters="{Binding SelectedModel.Parameters}"
+                             InformationSource="{Binding SelectedModel.Info}"
+                             SizeInBytes="{Binding SelectedModel.Size}"
+                             DownloadStatus="{Binding SelectedModel.DownloadStatus}"
+                             RunsSlow="{Binding SelectedModel.RunsSlow}"
+                             Command="{Binding ModelAction}" />
 
         <TextBlock Grid.Row="2" Grid.Column="0"
                    Margin="0,22,0,0"

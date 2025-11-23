@@ -1,4 +1,4 @@
-﻿<!-- 
+﻿<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -32,7 +32,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                              Width="12" />
                     </Button>
                     <Button Classes="avallamaWhite" Content="Icon Button" />
-                    <Button Classes="svgButton">
+                    <Button Classes="clearButton">
                         <controls:DynamicSvg Path="/Assets/Svg/sidebar.svg" Width="20"
                                              FillColor="{DynamicResource Primary}" />
                     </Button>
@@ -132,14 +132,14 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Background" Value="{DynamicResource Error}" />
     </Style>
 
-    <Style Selector="Button.svgButton">
+    <Style Selector="Button.clearButton">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="0" />
     </Style>
 
-    <Style Selector="Button.svgButton:pointerover /template/ ContentPresenter">
+    <Style Selector="Button.clearButton:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="Transparent" />
+        <!-- <Setter Property="Foreground" Value="Transparent" /> -->
     </Style>
 
     <!-- thank you bmartin -->
@@ -167,9 +167,9 @@ Licensed under the MIT License. See LICENSE file for details.
                                     Spacing="10"
                                     HorizontalAlignment="Center">
                             <controls:DynamicSvg Path="/Assets/Svg/avallama-logo-white.svg"
-                                                 Width="10"
-                                                 FillColor="{TemplateBinding Foreground}"
-                                                 HorizontalAlignment="Center" />
+                                                  Width="10"
+                                                  FillColor="{TemplateBinding Foreground}"
+                                                  HorizontalAlignment="Center" />
                             <TextBlock x:Name="ButtonTextContent"
                                        Text="{TemplateBinding Content}"
                                        Foreground="{TemplateBinding Foreground}"

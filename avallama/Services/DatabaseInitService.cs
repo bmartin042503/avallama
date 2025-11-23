@@ -60,7 +60,7 @@ public class DatabaseInitService : IDatabaseInitService
                                            CREATE TABLE IF NOT EXISTS ollama_models (
                                            name TEXT PRIMARY KEY,
                                            family_name TEXT NOT NULL,
-                                           parameters REAL,
+                                           parameters INTEGER,
                                            size INTEGER NOT NULL,
                                            format TEXT,
                                            quantization TEXT,

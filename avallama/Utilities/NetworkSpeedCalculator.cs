@@ -3,44 +3,68 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace avallama.Utilities
 {
+
+    /// <summary>
+    /// Provides functionality to calculate the network download speed in megabytes per second (MB/s)
+    /// over a short moving time window. This is useful for smoothing out fluctuations in instantaneous
+    /// download speed measurements.
+    /// </summary>
     public class NetworkSpeedCalculator
     {
-        private long _lastCompleted;
-        private DateTime _lastUpdateTime = DateTime.MinValue;
-        private readonly Queue<double> _speedReadings = new();
-        private readonly TimeSpan _timeWindow = TimeSpan.FromMilliseconds(100);
+        private readonly Stopwatch _stopwatch = new();
+        private long _lastBytes;
 
-        public double CalculateSpeed(long completed)
+        private readonly TimeSpan _timeWindow = TimeSpan.FromMilliseconds(500);
+        private readonly Queue<(double Time, double Speed)> _samples = new();
+
+        public NetworkSpeedCalculator()
         {
-            var currentTime = DateTime.Now;
+            _stopwatch.Start();
+        }
 
-            if (_lastUpdateTime == DateTime.MinValue || completed == _lastCompleted)
+        /// <summary>
+        /// Calculates the current average download speed based on the number of completed bytes.
+        /// </summary>
+        /// <param name="completedBytes">The total number of bytes downloaded so far.</param>
+        /// <returns>The average download speed in megabytes per second (MB/s) over the recent time window.</returns>
+        /// <remarks>
+        /// This method maintains a moving time window (default 500 milliseconds) and averages all
+        /// speed samples within that window to smooth out fluctuations in network speed.
+        /// On the first call, the method returns 0 as there is no prior data to calculate speed.
+        /// </remarks>
+        public double CalculateSpeed(long completedBytes)
+        {
+            var now = _stopwatch.Elapsed.TotalSeconds;
+
+            if (_lastBytes == 0)
             {
-                _lastUpdateTime = currentTime;
-                _lastCompleted = completed;
+                _lastBytes = completedBytes;
                 return 0;
             }
 
-            var downloadedBytes = completed - _lastCompleted;
-            var elapsedTime = (currentTime - _lastUpdateTime).TotalSeconds;
+            var downloaded = completedBytes - _lastBytes;
+            var dt = now - _samples.LastOrDefault().Time;
 
-            _lastUpdateTime = currentTime;
-            _lastCompleted = completed;
+            if (dt <= 0) dt = 0.000001;
 
-            var speedInBytesPerSecond = downloadedBytes / elapsedTime;
-            var speedInMbps = (speedInBytesPerSecond * 8) / 1_000_000;
+            _lastBytes = completedBytes;
 
-            _speedReadings.Enqueue(speedInMbps);
+            var bytesPerSec = downloaded / dt;
+            var mbPerSec = bytesPerSec / 1_000_000.0;
 
-            while (_speedReadings.Count > 0 && currentTime - _lastUpdateTime > _timeWindow)
+            _samples.Enqueue((now, mbPerSec));
+
+            while (_samples.Count > 0 && now - _samples.Peek().Time > _timeWindow.TotalSeconds)
             {
-                _speedReadings.Dequeue();
+                _samples.Dequeue();
             }
-            return _speedReadings.Average();
+
+            return _samples.Average(s => s.Speed);
         }
     }
 }

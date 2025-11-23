@@ -16,7 +16,7 @@
 <p align="center">A cross-platform local AI desktop app powered by Ollama</p>
 
 <p align="center">
-    <img style="border-radius: 10px; box-shadow: 0 5px 25px #755085;" src="avallama/Assets/prodimg2.png" alt="Avallama picture">
+    <img style="border-radius: 10px;" src="avallama/Assets/Images/home.png" alt="Avallama Home">
 </p>
 
 This project is currently being developed by Márk Csörgő and Martin Bartos.
@@ -24,7 +24,7 @@ This project is currently being developed by Márk Csörgő and Martin Bartos.
 ## Features
 
 -  **Seamless Local LLMs** - Chat seamlessly with LLMs hosted locally on your machine
--  **Your Data Stays With You** - Avallama runs completely locally, meaning your chats stay with you, and only you
+-  **Your Data Stays With You** - Chats are saved to your machine, ensuring your data privacy
 -  **Ollama On The Network** – Connect the app to an Ollama instance on your network to easily use your AI workstation on any device
 -  **Multi-Platform Support** – Runs on Windows, Linux and macOS utilizing the Avalonia framework
 -  **Lightweight and Efficient** – Designed to be minimal while providing a smooth experience
@@ -49,9 +49,9 @@ cd ~/Downloads
 ```
 3. Install the package using the following command:
 ```bash
-sudo apt install ./avallama_0.1.0_amd64.deb
+sudo apt install ./avallama_0.2.0_amd64.deb
 ```
-*Replace `./avallama_0.1.0_amd64.deb` with the correct filename of the latest package*
+*Replace `./avallama_0.2.0_amd64.deb` with the correct filename of the latest package*
 
 4. After that, you can run the application from the application menu or with the `avallama` command
 
@@ -62,10 +62,8 @@ sudo apt remove avallama
 
 #### Arch Linux (x64)
 
-This installation method has not been verified and may run unexpectedly.
-
 1. Download the latest .pkg.tar.zst from the Releases tab
-2. Open a terminal and navigate to the directory where the files were downloaded.
+2. Open a terminal and navigate to the directory where the file was downloaded.
 3. Install the package using the following command:
 ```bash
 sudo pacman -U avallama-0.2.0-1-x86_64.pkg.tar.zst
@@ -109,18 +107,46 @@ This application is **not signed nor notarized**. MacOS may prevent it from runn
 
 If the '*app is damaged or can't be opened*' error occurs, make sure you remove the quarantine flag of the ZIP file using the following command in the Terminal, and extract it again:
 ```bash
-xattr -d com.apple.quarantine avallama_0.1.0-alpha_osx_arm64.zip
+xattr -d com.apple.quarantine avallama_0.2.0_osx_arm64.zip
 ```
 
 ### Building from source
 
 If you are comfortable building the app from source, feel free to clone the repository and build the application to test out the newest features we are actively implementing.
 
+1. Install the [.NET SDK](https://dotnet.microsoft.com/en-us/download) (version 9.0 or later).
+2. Clone the repository: `git clone https://github.com/4foureyes/avallama.git`
+3. Navigate to the project directory: `cd avallama`
+4. Restore dependencies: `dotnet restore`
+5. Build the project: `dotnet build -c Release`
+6. Run the application: `dotnet run -c Release --project avallama/avallama.csproj`
+7. (Optional) To create a self-contained publish for your platform, run:
+```bash
+dotnet publish -c Release -r <RID> --self-contained true
+```
+The output executable will be located in the `avallama/bin/Release/net9.0/<RID>/publish/` directory.
+
+*Replace `<RID>` with your platform's Runtime Identifier, e.g. `win-x64`, `linux-x64`, `osx-arm64`, `osx-x64`*
+
 ## Known issues
 
 This is a list of issues we are aware of that will be fixed in a subsequent release. Please do not open new issues for the following known problems, as they are already being addressed.
 
-- Arch Linux: Install is not functional
+**All platforms**:
+- When using a thinking model, generated conversation titles may be malformed or missing.
+- When switching between conversations at the exact moment a title is being generated, the title may not update correctly.
+- When switching models mid-conversation, messages may fail to send if the model is not loaded into memory yet.
+- Searching through conversations is not yet implemented.
+- Markdown and custom tags (e.g. `<think>`) rendering is not yet supported.
+- Automatic restarting of the app when changing language settings may not work as expected.
+
+**Linux**:
+- When uninstalling, configuration files in `~/.config/avallama` are not removed automatically.
+- Ollama process management is not fully functional, as Ollama installs itself as a systemd service.
+- When starting the app from a terminal, killing the app prints a stack trace to the terminal.
+
+**macOS**:
+- The application installation process is not ideal, as it requires manual extraction from a ZIP file.
 
 ## License
 

@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -15,7 +15,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <StackPanel Orientation="Vertical" Margin="20">
         <StackPanel Orientation="Horizontal" Spacing="10">
             <controls:DynamicSvg Path="/Assets/Svg/error.svg" Opacity="0.5" Width="24"
-                                 FillColor="{DynamicResource OnSurfaceVariant}" />
+                                  FillColor="{DynamicResource OnSurfaceVariant}" />
             <TextBlock Classes="H2" Text="{services:LocalizationService Key='ERROR_DIALOG_TITLE'}"
                        Foreground="{DynamicResource OnSurfaceVariant}" Opacity="0.5" />
         </StackPanel>

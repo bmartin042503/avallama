@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
-using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Services;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
@@ -30,6 +30,8 @@ public partial class SettingsViewModel : PageViewModel
     private bool _isChangesSavedTextVisible;
     private bool _restartNeeded;
     private bool _showInformationalMessages;
+
+    [ObservableProperty] private string _lastModelUpdate = string.Empty;
 
     // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et
     public bool RestartNeeded
@@ -179,6 +181,9 @@ public partial class SettingsViewModel : PageViewModel
 
         var showInformationalMessages = _configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages);
         ShowInformationalMessages = showInformationalMessages == "True";
+
+        var lastModelUpdate = _configurationService.ReadSetting(ConfigurationKey.LastUpdatedCache);
+        LastModelUpdate = LocalizationService.GetString("LAST_UPDATED") + ": " + (!lastModelUpdate.Equals(string.Empty) ? lastModelUpdate : LocalizationService.GetString("NEVER"));
     }
 
     private void SaveSettings()
@@ -254,7 +259,7 @@ public partial class SettingsViewModel : PageViewModel
     public void ResetSettingsToDefault()
     {
         // alapértelmezett beállítások
-        
+
         // rendszer nyelvének lekérése, ha ez magyar akkor arra állítja be, ha nem akkor pedig defaultra (angol)
         var systemUiCultureName = CultureInfo.CurrentUICulture.Name;
         SelectedLanguageIndex = systemUiCultureName == "hu-HU" ? 0 : 1;

@@ -2,20 +2,21 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Threading.Tasks;
-using avallama.Utilities;
+using avallama.Controls;
+using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 
-namespace avallama.Controls
+namespace avallama.Controls.DualTextItem
 {
     /// <summary>
-    /// A specialized <see cref="TextItem"/> control that supports text selection and clipboard operations.
+    /// A specialized <see cref="DualTextItem"/> control that supports text selection and clipboard operations.
     /// Provides interactive selection, copying, and pointer-based highlighting similar to text editors.
     /// </summary>
-    public class MessageItem : TextItem
+    public class MessageItem : DualTextItem
     {
         #region Styled Properties
 

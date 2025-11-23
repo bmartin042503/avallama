@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using avallama.Services;
@@ -208,5 +209,12 @@ public partial class HomeView : UserControl
                 NewConversationBtn.Content = LocalizationService.GetString("NEW");
                 break;
         }
+    }
+
+    protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (DataContext is HomeViewModel homeViewModel)
+            await homeViewModel.InitializeAsync();
     }
 }

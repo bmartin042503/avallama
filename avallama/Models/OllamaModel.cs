@@ -1,7 +1,6 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -13,7 +12,6 @@ namespace avallama.Models;
 // és ha nem elérhető a szerver a letöltéshez akkor így legalább külön választhatóak
 // tehát amit le tud tölteni azt letöltheti, amit nem az nem (de ez majd később)
 
-// a hiba státuszt meg egyelőre sztem elég egy dialoggal jelezni és a dialog után Ready-re váltani ismét
 public enum ModelDownloadStatus
 {
     NotEnoughSpace, // nincs elég hely a letöltéshez
@@ -33,72 +31,26 @@ public enum ModelDownloadAction
     Delete
 }
 
-public partial class OllamaModel : ObservableObject
+public static class ModelInfoKey
 {
-    // model neve
-    [ObservableProperty] private string _name;
-    [ObservableProperty] private int? _quantization;
-    [ObservableProperty] private double? _parameters;
-
-    // pl. GGUF, MLX stb.
-    [ObservableProperty] private string? _format = string.Empty;
-
-    // modell részletei szótárban, például
-    // 'General architecture:' -> 'llama'
-    // 'Context length:' -> '8192'
-    // stb.
-    [ObservableProperty] private IDictionary<string, string>? _details;
-
-    [ObservableProperty] private long _size; // byteokban
-    [ObservableProperty] private ModelDownloadStatus _downloadStatus;
-    [ObservableProperty] private double _downloadProgress; // ha a status Downloading, 0.0 és 1.0 közötti érték
-
-    // ha nincs elég vram vagy bármi hasonló ami miatt lassan futhat akkor ezt true-ra kell állítani
-    [ObservableProperty] private bool _runsSlow;
-
-    public OllamaModel(
-        string name,
-        int quantization,
-        double parameters,
-        string format,
-        IDictionary<string, string> details,
-        long size,
-        ModelDownloadStatus downloadStatus,
-        bool runsSlow
-    )
-    {
-        Name = name;
-        Quantization = quantization;
-        Parameters = parameters;
-        Format = format;
-        Details = details;
-        Size = size;
-        DownloadStatus = downloadStatus;
-        RunsSlow = runsSlow;
-    }
-
-    public OllamaModel()
-    {
-        Name = string.Empty;
-        Quantization = null;
-        Parameters = double.NaN;
-        Format = string.Empty;
-        Details = null;
-    }
+    public const string Format = "format";
+    public const string Quantization = "quantization";
+    public const string Architecture = "architecture";
+    public const string BlockCount = "block_count";
+    public const string ContextLength = "context_length";
+    public const string EmbeddingLength = "embedding_length";
+    public const string PullCount = "pull_count";
+    public const string LastUpdated = "last-updated";
+    public const string License = "license";
 }
 
-public class OllamaModelFamily(
-    string name,
-    string description,
-    long pullCount,
-    IList<string> labels,
-    int tagCount,
-    DateTime lastUpdated)
+public partial class OllamaModel : ObservableObject
 {
-    public string Name { get; set; } = name;
-    public string Description { get; set; } = description;
-    public long PullCount { get; set; } = pullCount;
-    public IList<string> Labels { get; set; } = labels;
-    public int TagCount { get; set; } = tagCount;
-    public DateTime LastUpdated { get; set; } = lastUpdated;
+    [ObservableProperty] private string _name = string.Empty;
+    [ObservableProperty] private long _parameters;
+    [ObservableProperty] private IDictionary<string, string> _info = new Dictionary<string, string>();
+    [ObservableProperty] private OllamaModelFamily? _family;
+    [ObservableProperty] private long _size; // byteokban
+    [ObservableProperty] private ModelDownloadStatus _downloadStatus;
+    [ObservableProperty] private bool _runsSlow;
 }

@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -27,8 +27,8 @@ Licensed under the MIT License. See LICENSE file for details.
             </Border>
             <TextBlock Text="{Binding CurrentTitle}" HorizontalAlignment="Center"
                        FontSize="20" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding CurrentDescription}" HorizontalAlignment="Center"
-                       Classes="subText" Opacity="0.5" />
+            <TextBlock Text="{Binding CurrentDescription}" HorizontalAlignment="Center" Margin="0,12"
+                       Classes="subText" Opacity="0.5" MaxWidth="800" TextWrapping="Wrap" TextAlignment="Center"/>
             <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center"
                         Margin="0,20,0,30" Classes="subText">
                 <Button

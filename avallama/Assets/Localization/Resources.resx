@@ -27,7 +27,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Avallama</value>
     </data>
     <data name="GREETING_SUBTEXT" xml:space="preserve">
-        <value>Run any open source LLM locally</value>
+        <value>Run open source LLMs locally</value>
     </data>
     <data name="GET_STARTED" xml:space="preserve">
         <value>Get started</value>
@@ -168,16 +168,16 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Skip</value>
     </data>
     <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
-        <value>Start a new conversation with just one click</value>
+        <value>Smart Conversations</value>
     </data>
     <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
-        <value>Your data is stored locally, fully private and secure</value>
+        <value>Chat with multiple Ollama models at once, switch between them seamlessly, and keep several conversations active simultaneously. All conversations are stored locally on your machine — nothing is sent to third parties.</value>
     </data>
     <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
-        <value>Explore and use different AI models</value>
+        <value>Model Manager</value>
     </data>
     <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
-        <value>Quick and easy access to all settings</value>
+        <value>Personalized Settings</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
         <value>Coming soon with more features..</value>
@@ -191,8 +191,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>Parameters: {0}B</value>
     </data>
-    <data name="MODEL_QUANTIZATION" xml:space="preserve">
-        <value>Quantization: {0} bits</value>
+    <data name="QUANTIZATION" xml:space="preserve">
+        <value>Quantization</value>
     </data>
     <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
         <value>Not enough space to download</value>
@@ -308,8 +308,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MIGHT_RUN_SLOW" xml:space="preserve">
         <value>Might run slow on your system</value>
     </data>
-    <data name="DOWNLOADED_MODELS_INFO" xml:space="preserve">
-        <value>{0} downloaded models ({1} GB)</value>
+    <data name="DOWNLOADED_MODELS" xml:space="preserve">
+        <value>{0} downloaded models</value>
     </data>
     <data name="GENERATION_SPEED" xml:space="preserve">
         <value>Generation speed</value>
@@ -325,12 +325,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="SORT_SIZE_ASCENDING" xml:space="preserve">
         <value>Size (ascending)</value>
-    </data>
-    <data name="SORT_PARAMETERS_DESCENDING" xml:space="preserve">
-        <value>Parameters (descending)</value>
-    </data>
-    <data name="SORT_PARAMETERS_ASCENDING" xml:space="preserve">
-        <value>Parameters (ascending)</value>
     </data>
     <data name="SORT_DOWNLOADED" xml:space="preserve">
         <value>Downloaded</value>
@@ -350,8 +344,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOADING" xml:space="preserve">
         <value>Downloading</value>
     </data>
-    <data name="PAUSED" xml:space="preserve">
-        <value>Paused</value>
+    <data name="DOWNLOAD_PAUSED" xml:space="preserve">
+        <value>Download paused</value>
     </data>
     <data name="MULTIPLE_DOWNLOADS_WARNING" xml:space="preserve">
         <value>A download is already in progress. Please cancel the current download before starting a new one.\n\nWe're working on supporting multiple downloads in the future.</value>
@@ -409,5 +403,56 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="THIS_CONVERSATION" xml:space="preserve">
         <value>this conversation</value>
+    </data>
+    <data name="FORMAT" xml:space="preserve">
+        <value>Format</value>
+    </data>
+    <data name="SCRAPER_TITLE" xml:space="preserve">
+        <value>Updating your model library</value>
+    </data>
+    <data name="SCRAPER_MODELS_FOUND" xml:space="preserve">
+        <value>{0} models found..</value>
+    </data>
+    <data name="SCRAPER_DESCRIPTION" xml:space="preserve">
+        <value>This process may take several minutes. Please keep the application open while it collects the latest model information.</value>
+    </data>
+    <data name="SCRAPING_FINISHED_DESC" xml:space="preserve">
+        <value>Model library updated successfully.</value>
+    </data>
+    <data name="SCRAPER_CACHING_MODELS" xml:space="preserve">
+        <value>Caching models..</value>
+    </data>
+    <data name="SORT_PULL_COUNT_ASCENDING" xml:space="preserve">
+        <value>Pull count (ascending)</value>
+    </data>
+    <data name="SORT_PULL_COUNT_DESCENDING" xml:space="preserve">
+        <value>Pull count (descending)</value>
+    </data>
+    <data name="PULL_COUNT" xml:space="preserve">
+        <value>Pull count</value>
+    </data>
+    <data name="LAST_UPDATED" xml:space="preserve">
+        <value>Last updated</value>
+    </data>
+    <data name="UPDATE_MODEL_LIBRARY" xml:space="preserve">
+        <value>Update model library</value>
+    </data>
+    <data name="DOWNLOADING_PART" xml:space="preserve">
+        <value>Downloading part {0}</value>
+    </data>
+    <data name="GUIDE_ITEM_2_DESCRIPTION" xml:space="preserve">
+        <value>Browse, download, or remove any Ollama model. View detailed info and manage your local library with ease.</value>
+    </data>
+    <data name="GUIDE_ITEM_3_DESCRIPTION" xml:space="preserve">
+        <value>Customize your experience: switch between light and dark modes, connect to different Ollama servers, update your library and tailor the app to your preferences.</value>
+    </data>
+    <data name="GUIDE_COMPLETION_MESSAGE" xml:space="preserve">
+        <value>Avallama is still under development, and issues may arise while using the application. Please report any issues on GitHub.</value>
+    </data>
+    <data name="NEVER" xml:space="preserve">
+        <value>Never</value>
+    </data>
+    <data name="MODEL_MANAGER_GUIDE" xml:space="preserve">
+        <value>The Model Manager allows you to easily browse, download, and manage language models available through Ollama. The model list is obtained directly from the official Ollama website. All obtained models are saved into a local database.\n\nExplanation of the technical details shown for each model:\n\n- Format: The model's file and storage format.\n\n- Architecture: The model's underlying design (e.g., LLaMA, Mistral), which affects performance and capabilities.\n\n- Block count: The number of internal layers; more blocks generally mean higher capability but greater resource usage.\n\n- Context length: The number of tokens the model can consider in a single request, enabling longer conversations and documents.\n\n- Embedding length: The size of the vector representations produced by the model, useful for semantic search and similarity tasks.\n\n- Quantization level: The level of compression applied to the model; lower-bit quantization reduces memory use and increases speed, with minor accuracy trade-offs.</value>
     </data>
 </root>
