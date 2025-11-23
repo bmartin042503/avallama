@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using avallama.Utilities;
 using Xunit;
 
@@ -11,7 +12,7 @@ namespace avallama.Tests.Utilities;
 public class NetworkSpeedCalculatorTests
 {
     [Fact]
-    public void CalculateSpeed_WithSampleSizeOfTenMillionBytes_ReturnsSpeedAroundTenMegabytesPerSecond()
+    public async Task CalculateSpeed_WithSampleSizeOfTenMillionBytes_ReturnsSpeedAroundTenMegabytesPerSecond()
     {
         var networkSpeedCalculator = new NetworkSpeedCalculator();
 
@@ -22,7 +23,7 @@ public class NetworkSpeedCalculatorTests
 
         for (var i = 0; i < chunks; i++)
         {
-            Thread.Sleep(250); // 250 ms instead of waiting for a sec each time
+            await Task.Delay(250); // 250 ms instead of waiting for a sec each time
             downloadedBytes += sampleSize;
             speed = networkSpeedCalculator.CalculateSpeed(downloadedBytes);
         }
@@ -32,7 +33,7 @@ public class NetworkSpeedCalculatorTests
     }
 
     [Fact]
-    public void CalculateSpeed_WithSampleSizeOfTenBillionBytes_ReturnsSpeedAroundThousandMegabytesPerSecond()
+    public async Task CalculateSpeed_WithSampleSizeOfTenBillionBytes_ReturnsSpeedAroundThousandMegabytesPerSecond()
     {
         var networkSpeedCalculator = new NetworkSpeedCalculator();
 
@@ -43,7 +44,7 @@ public class NetworkSpeedCalculatorTests
 
         for (var i = 0; i < chunks; i++)
         {
-            Thread.Sleep(250); // 250 ms instead of waiting for a sec each time
+            await Task.Delay(250); // 250 ms instead of waiting for a sec each time
             downloadedBytes += sampleSize;
             speed = networkSpeedCalculator.CalculateSpeed(downloadedBytes);
         }
