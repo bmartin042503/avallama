@@ -130,7 +130,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
                             <!-- Ready template -->
                             <DataTemplate x:Key="Ready" DataType="models:ModelDownloadStatus">
-                                <Button Content="Download"
+                                <Button Content="{services:LocalizationService Key='DOWNLOAD'}"
                                         Cursor="Hand"
                                         Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
                                     <Button.CommandParameter>

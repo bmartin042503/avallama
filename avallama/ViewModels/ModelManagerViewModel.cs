@@ -443,7 +443,7 @@ public partial class ModelManagerViewModel : PageViewModel
     public void ShowInfo()
     {
         // TODO: tájékoztató a modelmanager működéséről, modellek információiról stb.
-        _dialogService.ShowInfoDialog("ModelManager info here");
+        _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
     }
 
     private void UpdateDownloadSpeedText(object? state)

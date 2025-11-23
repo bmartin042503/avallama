@@ -445,4 +445,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="NEVER" xml:space="preserve">
         <value>Soha</value>
     </data>
+    <data name="MODEL_MANAGER_GUIDE" xml:space="preserve">
+        <value>A Modellkezelő segítségével könnyedén böngészheted, letöltheted és kezelheted az Ollama által elérhető nyelvi modelleket. A modellek listája közvetlenül a hivatalos Ollama weboldaláról kerül lekérésre, majd ezt követően a lokális adatbázisba lesznek lementve.\n\nAz egyes modelleknél megjelenő technikai adatok magyarázata:\n\n- Formátum: A modell fájl- és tárolási formátuma.\n\n- Architektúra: A modell felépítése (pl. LLaMA, Mistral), amely meghatározza a teljesítményt és a képességeket.\n\n- Blokkok száma: A modell belső rétegeinek száma; a több blokk általában nagyobb teljesítményt, de magasabb erőforrásigényt jelent.\n\n- Kontextus hossza: Az a tokenszám, amelyet a modell egyetlen kérés során figyelembe tud venni, lehetővé téve hosszabb beszélgetések és dokumentumok kezelését.\n\n- Beágyazási hossz: A modell által előállított vektorok mérete, amely hasznos szemantikus kereséshez és hasonlósági vizsgálatokhoz.\n\n- Kvantálási szint: A modell tömörítésének mértéke; az alacsonyabb bitrátájú modellek kevesebb memóriát használnak és gyorsabban futnak, kisebb pontosságvesztés mellett.</value>
+    </data>
 </root>

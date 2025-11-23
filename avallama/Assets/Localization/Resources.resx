@@ -452,4 +452,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="NEVER" xml:space="preserve">
         <value>Never</value>
     </data>
+    <data name="MODEL_MANAGER_GUIDE" xml:space="preserve">
+        <value>The Model Manager allows you to easily browse, download, and manage language models available through Ollama. The model list is obtained directly from the official Ollama website. All obtained models are saved into a local database.\n\nExplanation of the technical details shown for each model:\n\n- Format: The model's file and storage format.\n\n- Architecture: The model's underlying design (e.g., LLaMA, Mistral), which affects performance and capabilities.\n\n- Block count: The number of internal layers; more blocks generally mean higher capability but greater resource usage.\n\n- Context length: The number of tokens the model can consider in a single request, enabling longer conversations and documents.\n\n- Embedding length: The size of the vector representations produced by the model, useful for semantic search and similarity tasks.\n\n- Quantization level: The level of compression applied to the model; lower-bit quantization reduces memory use and increases speed, with minor accuracy trade-offs.</value>
+    </data>
 </root>
