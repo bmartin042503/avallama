@@ -183,44 +183,6 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="3" RowDefinitions="*,Auto" Margin="18,0">
 
-            <!-- Download status -->
-            <StackPanel Grid.Row="0"
-                        IsVisible="{Binding IsDownloading}"
-                        Orientation="Vertical"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center">
-                <TextBlock
-                    Margin="0,5,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                    Text="{Binding DownloadStatus}"
-                    Foreground="{DynamicResource OnPrimaryContainer}" />
-                <ProgressBar
-                    HorizontalAlignment="Center"
-                    Margin="0,5,0,0"
-                    Minimum="0"
-                    Maximum="100"
-                    Height="10"
-                    Width="250"
-                    Value="{Binding DownloadProgress}"
-                    IsIndeterminate="{Binding IsMaxPercent}"
-                    Foreground="{DynamicResource Primary}" />
-                <TextBlock
-                    Margin="0,5,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                    IsVisible="{Binding !IsMaxPercent}"
-                    Text="{Binding DownloadSpeed}"
-                    Foreground="{DynamicResource OnPrimaryContainer}" />
-                <TextBlock
-                    Margin="0,5,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                    IsVisible="{Binding !IsMaxPercent}"
-                    Text="{Binding DownloadAmount}"
-                    Foreground="{DynamicResource OnPrimaryContainer}" />
-            </StackPanel>
-
             <!-- Restart Ollama (if it's unable to connect)  -->
             <StackPanel Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center"
                         Spacing="12" ZIndex="10" Margin="40, 0" IsVisible="{Binding IsRetryPanelVisible}">

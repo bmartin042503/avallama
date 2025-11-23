@@ -54,6 +54,7 @@ public partial class GuideViewModel : PageViewModel
         }
         _guideIndex++;
         CurrentTitle = _guideItems[_guideIndex].Title;
+        CurrentDescription = _guideItems[_guideIndex].Description;
         CurrentImage = LoadGuideImage(_guideItems[_guideIndex].ImageSource);
     }
 }

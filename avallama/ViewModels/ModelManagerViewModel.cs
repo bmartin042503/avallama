@@ -198,6 +198,7 @@ public partial class ModelManagerViewModel : PageViewModel
         }
 
         var search = SearchBoxText.Trim();
+        if (string.IsNullOrEmpty(search)) return;
 
         _filteredModelsData = _modelsData
             .Select(m => new

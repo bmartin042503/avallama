@@ -32,7 +32,6 @@ public partial class HomeViewModel : PageViewModel
     private readonly IDialogService _dialogService;
     private readonly IConfigurationService _configurationService;
     private readonly IConversationService _conversationService;
-    private readonly IModelCacheService _modelCacheService;
 
     private readonly TaskCompletionSource<bool> _ollamaServerStarted = new();
     private readonly IMessenger _messenger;
@@ -61,13 +60,6 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private bool _isResourceWarningVisible;
     [ObservableProperty] private bool _isNoModelsWarningVisible;
     [ObservableProperty] private bool _isMessageBoxEnabled;
-    [ObservableProperty] private string _selectedModelName;
-    [ObservableProperty] private bool _isDownloading;
-    [ObservableProperty] private string _downloadStatus = "";
-    [ObservableProperty] private double _downloadProgress;
-    [ObservableProperty] private bool _isMaxPercent;
-    [ObservableProperty] private string _downloadSpeed = string.Empty;
-    [ObservableProperty] private string _downloadAmount = string.Empty;
     [ObservableProperty] private Conversation _selectedConversation = null!;
     [ObservableProperty] private string _remoteConnectionText = string.Empty;
     [ObservableProperty] private bool _isRemoteConnectionTextVisible;
@@ -78,6 +70,17 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private bool _isModelsDropdownEnabled = true;
 
     private bool _isInitializedAsync;
+
+    private string _selectedModelName = string.Empty;
+    public string SelectedModelName
+    {
+        get => _selectedModelName;
+        set
+        {
+            _selectedModelName = value;
+            OnPropertyChanged();
+        }
+    }
 
     // TODO:
     // Van egy bug amit kicsit nehezen lehet reprodukálni, de épp a 3. üzenetem írtam, generálta volna az új beszélgetés címet az ollama
@@ -180,7 +183,7 @@ public partial class HomeViewModel : PageViewModel
         {
             if (chunk.Message != null) generatedMessage.Content += chunk.Message.Content;
 
-            if (chunk.EvalCount.HasValue && chunk.EvalDuration.HasValue)
+            if (chunk is { EvalCount: not null, EvalDuration: not null })
             {
                 double tokensPerSecond =
                     chunk.EvalCount.GetValueOrDefault() / (double)chunk.EvalDuration * Math.Pow(10, 9);
@@ -227,7 +230,6 @@ public partial class HomeViewModel : PageViewModel
         IDialogService dialogService,
         IConfigurationService configurationService,
         IConversationService conversationService,
-        IModelCacheService modelCacheService,
         IMessenger messenger
     )
     {
@@ -237,10 +239,8 @@ public partial class HomeViewModel : PageViewModel
         _ollamaService = ollamaService;
         _configurationService = configurationService;
         _conversationService = conversationService;
-        _modelCacheService = modelCacheService;
         _messenger = messenger;
         _availableModels = [];
-        _selectedModelName = "";
 
         _messenger.Register<ApplicationMessage.ReloadSettings>(this, (_, _) => { LoadSettings(); });
 
@@ -257,7 +257,9 @@ public partial class HomeViewModel : PageViewModel
     {
         try
         {
+            var tmpName = SelectedModelName;
             AvailableModels.Clear();
+            SelectedModelName = tmpName;
 
             if(!_isInitializedAsync) await InitializeConversations();
 
@@ -393,6 +395,14 @@ public partial class HomeViewModel : PageViewModel
         // wait for ollama to start
         await _ollamaServerStarted.Task;
 
+        var previouslySelectedModelName = string.Empty;
+        if (_isInitializedAsync && !string.IsNullOrEmpty(SelectedModelName)
+            && SelectedModelName != LocalizationService.GetString("LOADING_MODELS")
+            && SelectedModelName != LocalizationService.GetString("NO_MODELS_FOUND"))
+        {
+            previouslySelectedModelName = SelectedModelName;
+        }
+
         IsModelsDropdownEnabled = false;
         AvailableModels.Add(LocalizationService.GetString("LOADING_MODELS"));
         SelectedModelName = AvailableModels[0];
@@ -423,7 +433,9 @@ public partial class HomeViewModel : PageViewModel
         foreach (var item in sorted)
             AvailableModels.Add(item);
 
-        SelectedModelName = AvailableModels.FirstOrDefault() ?? string.Empty;
+        if (!_isInitializedAsync) SelectedModelName = AvailableModels[0];
+
+        if (!string.IsNullOrEmpty(previouslySelectedModelName)) SelectedModelName = previouslySelectedModelName;
     }
 }
 

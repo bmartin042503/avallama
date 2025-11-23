@@ -28,8 +28,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.OllamaMock.Reset();
         var models = new List<OllamaModel>
         {
-            new OllamaModel { Name = "model1" },
-            new OllamaModel { Name = "model2" }
+            new() { Name = "model1" },
+            new() { Name = "model2" }
         };
         fixture.OllamaMock
             .Setup(o => o.ListDownloadedModels())
@@ -41,7 +41,6 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.DialogMock.Object,
             fixture.ConfigMock.Object,
             fixture.DbMock.Object,
-            fixture.ModelCacheMock.Object,
             fixture.MessengerMock.Object
         );
 
@@ -72,7 +71,6 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.DialogMock.Object,
             fixture.ConfigMock.Object,
             fixture.DbMock.Object,
-            fixture.ModelCacheMock.Object,
             fixture.MessengerMock.Object
         );
 
@@ -95,7 +93,6 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.DialogMock.Object,
             fixture.ConfigMock.Object,
             fixture.DbMock.Object,
-            fixture.ModelCacheMock.Object,
             fixture.MessengerMock.Object);
 
         var view = new HomeView { DataContext = vm };

@@ -168,16 +168,16 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Skip</value>
     </data>
     <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
-        <value>Start a new conversation with just one click</value>
+        <value>Smart Conversations</value>
     </data>
     <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
-        <value>Your data is stored locally, fully private and secure</value>
+        <value>Chat with multiple Ollama models at once, switch between them seamlessly, and keep several conversations active simultaneously. All conversations are stored locally on your machine — nothing is sent to third parties.</value>
     </data>
     <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
-        <value>Explore and use different AI models</value>
+        <value>Model Manager</value>
     </data>
     <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
-        <value>Quick and easy access to all settings</value>
+        <value>Personalized Settings</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
         <value>Coming soon with more features..</value>
@@ -439,5 +439,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="DOWNLOADING_PART" xml:space="preserve">
         <value>Downloading part {0}</value>
+    </data>
+    <data name="GUIDE_ITEM_2_DESCRIPTION" xml:space="preserve">
+        <value>Browse, download, or remove any Ollama model. View detailed info and manage your local library with ease.</value>
+    </data>
+    <data name="GUIDE_ITEM_3_DESCRIPTION" xml:space="preserve">
+        <value>Customize your experience: switch between light and dark modes, connect to different Ollama servers, update your library and tailor the app to your preferences.</value>
     </data>
 </root>

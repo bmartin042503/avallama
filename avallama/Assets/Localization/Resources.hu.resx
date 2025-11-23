@@ -161,16 +161,16 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Kihagyás</value>
     </data>
     <data name="GUIDE_ITEM_1_TITLE" xml:space="preserve">
-        <value>Indíts új beszélgetést egyetlen kattintással</value>
+        <value>Okos beszélgetések</value>
     </data>
     <data name="GUIDE_ITEM_1_DESCRIPTION" xml:space="preserve">
-        <value>Minden adat lokálisan van tárolva, biztonságban</value>
+        <value>Használj több Ollama modellt egy beszélgetésre. Könnyedén válthatsz köztük és a beszélgetés folytatódik ott ahol abbahagytad. Minden adat helyileg, a készülékeden van tárolva — semmi sem kerül harmadik félhez.</value>
     </data>
     <data name="GUIDE_ITEM_2_TITLE" xml:space="preserve">
-        <value>Tölts le különböző AI modelleket</value>
+        <value>Modellkezelő</value>
     </data>
     <data name="GUIDE_ITEM_3_TITLE" xml:space="preserve">
-        <value>Egyszerű, és személyreszabható</value>
+        <value>Személyre szabott beállítások</value>
     </data>
     <data name="COMING_SOON" xml:space="preserve">
         <value>Hamarosan elérhető további funkciókkal..</value>
@@ -432,5 +432,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="DOWNLOADING_PART" xml:space="preserve">
         <value>Letöltés ({0}. rész)</value>
+    </data>
+    <data name="GUIDE_ITEM_2_DESCRIPTION" xml:space="preserve">
+        <value>Böngéssz, tölts le bármilyen Ollama modellt. Tekintsd meg a részletes információkat, és kezeld egyszerűen a helyi könyvtárad.</value>
+    </data>
+    <data name="GUIDE_ITEM_3_DESCRIPTION" xml:space="preserve">
+        <value>Testreszabhatod az élményt: válthatsz világos és sötét mód között, csatlakozhatsz más Ollama szerverekhez, frissítheted a teljes modell könyvtárad, és sok más opció amikkel a saját igényeidhez igazíthatod az alkalmazást.</value>
     </data>
 </root>
