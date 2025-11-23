@@ -102,7 +102,6 @@ Licensed under the MIT License. See LICENSE file for details.
                                     Title="{Binding Name}"
                                     DownloadStatus="{Binding DownloadStatus}"
                                     SizeInBytes="{Binding Size}"
-                                    DownloadedBytes="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadedBytes}"
                                     SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
                                     Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}"
                                     CommandParameter="{Binding Name}" />
@@ -127,7 +126,6 @@ Licensed under the MIT License. See LICENSE file for details.
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
                       Margin="4,0,4,0" />
 
-        <!-- sír axaml hogy nincs fallback value de am le van kezelve minden null érték controlban -->
         <templatedControls:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
                              IsVisible="{Binding IsModelInfoBlockVisible}"
                              Title="{Binding SelectedModel.Name}"
@@ -136,8 +134,6 @@ Licensed under the MIT License. See LICENSE file for details.
                              InformationSource="{Binding SelectedModel.Info}"
                              SizeInBytes="{Binding SelectedModel.Size}"
                              DownloadStatus="{Binding SelectedModel.DownloadStatus}"
-                             DownloadSpeed="{Binding DownloadSpeed}"
-                             DownloadedBytes="{Binding DownloadedBytes}"
                              RunsSlow="{Binding SelectedModel.RunsSlow}"
                              Command="{Binding ModelAction}" />
 

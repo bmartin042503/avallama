@@ -129,7 +129,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <ComboBox Width="175"
                       VerticalAlignment="Center"
                       ItemsSource="{Binding AvailableModels}"
-                      SelectedItem="{Binding CurrentlySelectedModel, Mode=TwoWay}"
+                      SelectedItem="{Binding SelectedModelName, Mode=TwoWay}"
                       IsEnabled="{Binding IsModelsDropdownEnabled}" Name="ModelsComboBox"/>
         </StackPanel>
 
@@ -153,18 +153,6 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextTrimming="CharacterEllipsis" />
             </Grid>
 
-            <!-- Model limitation warning text -->
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center">
-                <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
-                                     FillColor="{DynamicResource Outline}"
-                                     Width="18" />
-
-                <TextBlock Grid.Column="1" Text="{Binding LanguageLimitationWarning}"
-                           Foreground="{DynamicResource Outline}"
-                           TextAlignment="Left"
-                           TextTrimming="CharacterEllipsis" />
-            </Grid>
-
             <!-- Low VRAM text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
                   IsVisible="{Binding IsResourceWarningVisible}">
@@ -180,7 +168,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
             <!-- Model is not downloaded text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
-                  IsVisible="{Binding IsNoModelsDownloadedVisible}">
+                  IsVisible="{Binding IsNoModelsWarningVisible}">
                 <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
                                      FillColor="{DynamicResource Error}"
                                      Width="18" />
@@ -318,7 +306,7 @@ Licensed under the MIT License. See LICENSE file for details.
                      Watermark="{services:LocalizationService Key='SEND_MESSAGE'}"
                      Margin="0,30,0,20"
                      Padding="20, 10"
-                     IsEnabled="{Binding IsDownloaded}"
+                     IsEnabled="{Binding IsMessageBoxEnabled}"
                      Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter"

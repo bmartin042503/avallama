@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
+using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -42,9 +44,14 @@ public partial class ModelManagerViewModel : PageViewModel
     [ObservableProperty] private bool _isModelInfoBlockVisible;
     [ObservableProperty] private bool _isPaginationButtonVisible;
 
-    [ObservableProperty] private double _downloadSpeed; // currently downloading model speed in Mbps
+    private Timer? _downloadSpeedUpdateTimer;
+    private int _downloadingPartCount;
+    private double _downloadSpeed;
+    private long _downloadedBytes;
+    private long _bytesToDownload;
 
-    [ObservableProperty] private long _downloadedBytes;
+    [ObservableProperty] private string _downloadStatusText = string.Empty;
+    [ObservableProperty] private string _downloadSpeedText = "0 MB/s";
 
     private SortingOption _selectedSortingOption;
 
@@ -107,11 +114,9 @@ public partial class ModelManagerViewModel : PageViewModel
     private async Task LoadModelsData()
     {
         // Get models data from cache excluding cloud models
-        // TODO: extract cloud models that has no "cloud" in their names but "cloud" among their labels
+        // TODO: extract cloud models that has "cloud" in their names or "cloud" among their labels
         _modelsData = (await _modelCacheService.GetCachedModelsAsync())
             .Where(m => !m.Name.EndsWith("-cloud", StringComparison.OrdinalIgnoreCase));
-
-        // _modelsData = GenerateTestModels();
 
         var modelsData = _modelsData.ToList();
         IsPaginationButtonVisible = modelsData.Count > PaginationLimit;
@@ -119,6 +124,8 @@ public partial class ModelManagerViewModel : PageViewModel
         _paginationIndex = Math.Min(modelsData.Count, PaginationLimit);
 
         if (modelsData.Count == 0) return;
+
+        SortModels();
 
         Models = new ObservableCollection<OllamaModel>(modelsData.Take(Math.Min(modelsData.Count, PaginationLimit)));
         HasModelsToDisplay = Models.Count > 0;
@@ -129,18 +136,7 @@ public partial class ModelManagerViewModel : PageViewModel
 
         if (!HasDownloadedModels) return;
 
-        var downloadedSizeSum = modelsData
-            .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-            .Sum(m => m.Size);
-
-        var totalSizeInGb = downloadedSizeSum / 1_073_741_824.0;
-
-        DownloadedModelsInfo =
-            string.Format(
-                LocalizationService.GetString("DOWNLOADED_MODELS_INFO"),
-                downloadedModelsCount,
-                totalSizeInGb
-            );
+        UpdateDownloadedModelsInfo();
     }
 
     // A rendezés beállítása alapján rendezi a modelleket
@@ -148,11 +144,12 @@ public partial class ModelManagerViewModel : PageViewModel
     {
         var search = SearchBoxText.Trim();
         var hasSearch = !string.IsNullOrEmpty(search);
-        var dataToSort = hasSearch ? _filteredModelsData.ToList() : _modelsData.ToList();
+        var dataToSort = hasSearch ? _filteredModelsData : _modelsData;
+        var models = dataToSort.ToList();
 
-        if (dataToSort.Count == 0) return;
+        if (models.Count == 0) return;
 
-        IEnumerable<OllamaModel> sortResult = dataToSort;
+        IEnumerable<OllamaModel> sortResult = models;
 
         switch (SelectedSortingOption)
         {
@@ -160,22 +157,22 @@ public partial class ModelManagerViewModel : PageViewModel
             // ha pedig van akkor külön veszi a letöltött modelleket a Models-ből majd összevonja egy olyan Models-el (amiből ki vannak véve a Downloaded elemek)
             // így előre kerülnek a letöltött státuszban lévők
             case SortingOption.Downloaded:
-                sortResult = dataToSort.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                    ? dataToSort.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
-                        .Concat(dataToSort.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded))
-                    : dataToSort;
+                sortResult = models.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                    ? models.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+                        .Concat(models.Where(m => m.DownloadStatus != ModelDownloadStatus.Downloaded))
+                    : models;
                 break;
             case SortingOption.PullCountAscending:
-                sortResult = dataToSort.OrderBy(m => m.Family?.PullCount);
+                sortResult = models.OrderBy(m => m.Family?.PullCount);
                 break;
             case SortingOption.PullCountDescending:
-                sortResult = dataToSort.OrderByDescending(m => m.Family?.PullCount);
+                sortResult = models.OrderByDescending(m => m.Family?.PullCount);
                 break;
             case SortingOption.SizeAscending:
-                sortResult = dataToSort.OrderBy(m => m.Size);
+                sortResult = models.OrderBy(m => m.Size);
                 break;
             case SortingOption.SizeDescending:
-                sortResult = dataToSort.OrderByDescending(m => m.Size);
+                sortResult = models.OrderByDescending(m => m.Size);
                 break;
         }
 
@@ -233,7 +230,7 @@ public partial class ModelManagerViewModel : PageViewModel
         if (parameter is string modelName)
         {
             const string libraryUrl = @"https://ollama.com/library/";
-            ;
+
             Process.Start(new ProcessStartInfo
             {
                 FileName = libraryUrl + modelName,
@@ -285,6 +282,7 @@ public partial class ModelManagerViewModel : PageViewModel
                     break;
                 case ModelDownloadAction.Pause:
                     SelectedModel.DownloadStatus = ModelDownloadStatus.Paused;
+                    await _modelCacheService.UpdateModelAsync(SelectedModel);
                     await _downloadCancellationTokenSource.CancelAsync();
                     break;
                 case ModelDownloadAction.Resume:
@@ -304,17 +302,19 @@ public partial class ModelManagerViewModel : PageViewModel
                 case ModelDownloadAction.Cancel:
                     SelectedModel.DownloadStatus = ModelDownloadStatus.Ready;
                     _downloadingModel = null;
-                    DownloadedBytes = 0;
+                    _downloadedBytes = 0;
+                    _bytesToDownload = 0;
+                    _downloadSpeed = 0.0;
                     await _downloadCancellationTokenSource.CancelAsync();
                     break;
                 case ModelDownloadAction.Delete:
                     var dialogResult = await _dialogService.ShowConfirmationDialog(
-                        title: LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
-                        description: string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"),
+                        LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
+                        LocalizationService.GetString("DELETE"),
+                        LocalizationService.GetString("CANCEL"),
+                        string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"),
                             SelectedModel.Name),
-                        positiveButtonText: LocalizationService.GetString("DELETE"),
-                        negativeButtonText: LocalizationService.GetString("CANCEL"),
-                        highlight: ConfirmationType.Positive
+                        ConfirmationType.Positive
                     );
 
                     if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
@@ -326,8 +326,11 @@ public partial class ModelManagerViewModel : PageViewModel
                                 false);
                         }
 
-                        DownloadedBytes = 0;
+                        await _modelCacheService.UpdateModelAsync(SelectedModel);
+
+                        _downloadedBytes = 0;
                         SortModels();
+                        UpdateDownloadedModelsInfo();
                     }
 
                     break;
@@ -335,7 +338,6 @@ public partial class ModelManagerViewModel : PageViewModel
         }
     }
 
-    // TODO: Fix UI inconsistencies with download
     private async Task DownloadSelectedModelAsync()
     {
         if (SelectedModel == null) return;
@@ -346,46 +348,79 @@ public partial class ModelManagerViewModel : PageViewModel
         {
             await Task.Run(async () =>
             {
+                var networkSpeedCalculator = new NetworkSpeedCalculator();
                 _downloadingModel = SelectedModel;
-                while (_downloadingModel != null && DownloadedBytes != _downloadingModel.Size)
+                _downloadingPartCount = 1;
+
+                _downloadSpeedUpdateTimer = new Timer(UpdateDownloadSpeedText, null, TimeSpan.FromMilliseconds(1000),
+                    TimeSpan.FromMilliseconds(1000));
+
+                await foreach (var chunk in _ollamaService.PullModel(_downloadingModel.Name))
                 {
-                    // ez ellenőrzi hogy meg lett-e hívva a cancel a letöltésre, és ha igen kivételt dob
                     _downloadCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-                    await foreach (var chunk in _ollamaService.PullModel(_downloadingModel.Name))
+                    if (chunk is { Total: not null, Completed: not null })
                     {
-                        if (chunk.Total.HasValue && chunk.Completed.HasValue)
+                        if (_bytesToDownload != 0 && chunk.Total.Value != _bytesToDownload)
                         {
-                            DownloadedBytes = chunk.Completed.Value;
+                            _downloadingPartCount++;
                         }
 
-                        DownloadSpeed = Math.Round((double)(DownloadedBytes * 8) / 1_000_000, 2);
-                        if (_downloadingModel != null && DownloadedBytes > _downloadingModel.Size)
+                        _bytesToDownload = chunk.Total.Value;
+                        _downloadedBytes = chunk.Completed.Value;
+                    }
+
+                    _downloadSpeed = networkSpeedCalculator.CalculateSpeed(chunk.Completed ?? 0);
+
+                    DownloadStatusText = string.Format(LocalizationService.GetString("DOWNLOADING_PART"),
+                        _downloadingPartCount);
+                    DownloadStatusText +=
+                        $" - {ConversionHelper.BytesToReadableSize(_downloadedBytes)}/{ConversionHelper.BytesToReadableSize(_bytesToDownload)}";
+
+                    if (chunk.Status == "success")
+                    {
+                        if (_downloadingModel != null)
                         {
-                            DownloadedBytes = _downloadingModel.Size;
+                            _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                            await _modelCacheService.UpdateModelAsync(_downloadingModel);
                         }
 
-                        if (chunk.Status == "success")
-                        {
-                            if (_downloadingModel != null)
-                                _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
-                            _downloadingModel = null;
-                            DownloadedBytes = 0;
-                            SortModels();
-                        }
+                        await _downloadSpeedUpdateTimer.DisposeAsync();
+                        _downloadingModel = null;
+                        _downloadedBytes = 0;
+                        _bytesToDownload = 0;
+                        _downloadSpeed = 0.0;
+                        SortModels();
+
+                        UpdateDownloadedModelsInfo();
                     }
                 }
             }, _downloadCancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
-            // ez akkor fut le ha a felhasználó szünetelteti a letöltést vagy visszavonja azt
-            // TODO: letöltés visszavonása/szüneteltetése api-n keresztül, a _downloadingModel.DownloadStatus alapján
+            _downloadSpeedUpdateTimer?.Dispose();
         }
         finally
         {
             _downloadCancellationTokenSource.Dispose();
         }
+    }
+
+    private void UpdateDownloadedModelsInfo()
+    {
+        var downloadedModelsCount = _modelsData.Count(m => m.DownloadStatus == ModelDownloadStatus.Downloaded);
+        var downloadedSizeSum = _modelsData
+            .Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
+            .Sum(m => m.Size);
+
+        DownloadedModelsInfo =
+            string.Format(
+                LocalizationService.GetString("DOWNLOADED_MODELS"),
+                downloadedModelsCount
+            );
+
+        DownloadedModelsInfo += $" ({ConversionHelper.BytesToReadableSize(downloadedSizeSum)})";
     }
 
     [RelayCommand]
@@ -410,10 +445,15 @@ public partial class ModelManagerViewModel : PageViewModel
         _dialogService.ShowInfoDialog("ModelManager info here");
     }
 
-    public static int LevenshteinDistance(string s, string t)
+    private void UpdateDownloadSpeedText(object? state)
+    {
+        DownloadSpeedText = $"{_downloadSpeed:0.##} MB/s";
+    }
+
+    private static int LevenshteinDistance(string s, string t)
     {
         if (string.IsNullOrEmpty(s))
-            return t?.Length ?? 0;
+            return t.Length;
         if (string.IsNullOrEmpty(t))
             return s.Length;
 
@@ -444,7 +484,7 @@ public partial class ModelManagerViewModel : PageViewModel
     }
 
 
-    private int GetSearchMatchScore(string name, string search)
+    private static int GetSearchMatchScore(string name, string search)
     {
         if (string.IsNullOrWhiteSpace(search))
             return 0;
@@ -468,49 +508,5 @@ public partial class ModelManagerViewModel : PageViewModel
         score += fuzzyScore;
 
         return score;
-    }
-
-    public static List<OllamaModel> GenerateTestModels(int count = 50)
-    {
-        var rnd = new Random();
-
-        var familyNames = new[] { "test-model", "alpha", "beta-llm", "neuro", "research", "proto" };
-        var labelPool = new[] { "professional", "thinking", "lightweight", "experimental", "fast", "accurate" };
-        var quantizations = new[] { "Q4_K_M", "Q5_K_S", "Q6_K_L", "FP8", "Q3_K_M" };
-
-        var list = new List<OllamaModel>();
-
-        for (int i = 0; i < count; i++)
-        {
-            // Random family
-            var familyName = familyNames[rnd.Next(familyNames.Length)];
-            var family = new OllamaModelFamily
-            {
-                Name = familyName,
-                Description = "Lorem ipsum dolor sit amet consectetur, etc.",
-                PullCount = rnd.Next(100_000, 5_000_000),
-                Labels = labelPool.OrderBy(x => rnd.Next()).Take(rnd.Next(1, 4)).ToList(),
-                LastUpdated = DateTime.Now.AddDays(-rnd.Next(0, 400)),
-                TagCount = rnd.Next(1, 10)
-            };
-
-            // Random model name
-            var parametersB = new[] { 3, 7, 8, 13, 20, 34 }[rnd.Next(6)];
-            var quant = quantizations[rnd.Next(quantizations.Length)];
-            var name = $"{familyName}:{parametersB}b-{quant}";
-
-            var model = new OllamaModel
-            {
-                Name = name,
-                Family = family,
-                Size = rnd.NextInt64(10_000_000, 40_000_000), // 10MB–40MB
-                Parameters = parametersB * 1_000_000L, // pl. 8b → 8M
-                RunsSlow = rnd.Next(0, 2) == 0
-            };
-
-            list.Add(model);
-        }
-
-        return list;
     }
 }

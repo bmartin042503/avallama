@@ -243,12 +243,12 @@ public class ModelCacheService : IModelCacheService
             {
                 var info = new Dictionary<string, string>();
 
-                if (!reader.IsDBNull(4)) info["format"] = reader.GetString(4);
-                if (!reader.IsDBNull(5)) info["quantization"] = reader.GetString(5);
-                if (!reader.IsDBNull(6)) info["architecture"] = reader.GetString(6);
-                if (!reader.IsDBNull(7)) info["block_count"] = reader.GetInt32(7).ToString();
-                if (!reader.IsDBNull(8)) info["context_length"] = reader.GetInt32(8).ToString();
-                if (!reader.IsDBNull(9)) info["embedding_length"] = reader.GetInt32(9).ToString();
+                if (!reader.IsDBNull(4)) info[ModelInfoKey.Format] = reader.GetString(4);
+                if (!reader.IsDBNull(5)) info[ModelInfoKey.Quantization] = reader.GetString(5);
+                if (!reader.IsDBNull(6)) info[ModelInfoKey.Architecture] = reader.GetString(6);
+                if (!reader.IsDBNull(7)) info[ModelInfoKey.BlockCount] = reader.GetInt32(7).ToString();
+                if (!reader.IsDBNull(8)) info[ModelInfoKey.ContextLength] = reader.GetInt32(8).ToString();
+                if (!reader.IsDBNull(9)) info[ModelInfoKey.EmbeddingLength] = reader.GetInt32(9).ToString();
 
                 if (!reader.IsDBNull(10))
                 {
@@ -398,29 +398,29 @@ public class ModelCacheService : IModelCacheService
     {
         if (info == null) return (null, null, null, null, null, null, null);
 
-        var format = info.TryGetValue("format", out var fmt) ? fmt : null;
-        var quantization = info.TryGetValue("quantization", out var qntzn)
+        var format = info.TryGetValue(ModelInfoKey.Format, out var fmt) ? fmt : null;
+        var quantization = info.TryGetValue(ModelInfoKey.Quantization, out var qntzn)
             ? qntzn
             : null;
-        var architecture = info.TryGetValue("architecture", out var arch)
+        var architecture = info.TryGetValue(ModelInfoKey.Architecture, out var arch)
             ? arch
             : null;
-        var blockCount = info.TryGetValue("block_count", out var bc) &&
+        var blockCount = info.TryGetValue(ModelInfoKey.BlockCount, out var bc) &&
                          int.TryParse(bc, out var bcVal)
             ? bcVal
             : (int?)null;
-        var contextLength = info.TryGetValue("context_length", out var cl) &&
+        var contextLength = info.TryGetValue(ModelInfoKey.ContextLength, out var cl) &&
                             int.TryParse(cl, out var clVal)
             ? clVal
             : (int?)null;
-        var embeddingLength = info.TryGetValue("embedding_length", out var el) &&
+        var embeddingLength = info.TryGetValue(ModelInfoKey.EmbeddingLength, out var el) &&
                               int.TryParse(el, out var elVal)
             ? elVal
             : (int?)null;
 
         var additionalDetails = info
-            .Where(kvp => kvp.Key is not ("format" or "quantization" or "architecture" or "block_count"
-                or "context_length" or "embedding_length"))
+            .Where(kvp => kvp.Key is not (ModelInfoKey.Format or ModelInfoKey.Quantization or ModelInfoKey.Architecture or ModelInfoKey.BlockCount
+                or ModelInfoKey.ContextLength or ModelInfoKey.EmbeddingLength or ModelInfoKey.PullCount or ModelInfoKey.LastUpdated))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         var additionalInfo = additionalDetails.Count > 0 ? JsonSerializer.Serialize(additionalDetails) : null;
@@ -438,11 +438,21 @@ public class ModelCacheService : IModelCacheService
     {
         if (newModel.Parameters != existingModel.Parameters ||
             newModel.Size != existingModel.Size ||
-            newModel.Info["format"] !=
-            existingModel.Info["format"] ||
-            newModel.Info["quantization"] !=
-            existingModel.Info["quantization"] ||
             newModel.DownloadStatus != existingModel.DownloadStatus)
+        {
+            return true;
+        }
+
+        if (newModel.Info.TryGetValue(ModelInfoKey.Format, out var newFormat) !=
+            existingModel.Info.TryGetValue(ModelInfoKey.Format, out var oldFormat) ||
+            !string.Equals(newFormat, oldFormat, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (newModel.Info.TryGetValue(ModelInfoKey.Quantization, out var newQuant) !=
+            existingModel.Info.TryGetValue(ModelInfoKey.Quantization, out var oldQuant) ||
+            !string.Equals(newQuant, oldQuant, StringComparison.Ordinal))
         {
             return true;
         }
@@ -531,12 +541,12 @@ public class ModelCacheService : IModelCacheService
             {
                 var info = new Dictionary<string, string>();
 
-                if (!reader.IsDBNull(4)) info["format"] = reader.GetString(4);
-                if (!reader.IsDBNull(5)) info["quantization"] = reader.GetString(5);
-                if (!reader.IsDBNull(6)) info["architecture"] = reader.GetString(6);
-                if (!reader.IsDBNull(7)) info["block_count"] = reader.GetInt32(7).ToString();
-                if (!reader.IsDBNull(8)) info["context_length"] = reader.GetInt32(8).ToString();
-                if (!reader.IsDBNull(9)) info["embedding_length"] = reader.GetInt32(9).ToString();
+                if (!reader.IsDBNull(4)) info[ModelInfoKey.Format] = reader.GetString(4);
+                if (!reader.IsDBNull(5)) info[ModelInfoKey.Quantization] = reader.GetString(5);
+                if (!reader.IsDBNull(6)) info[ModelInfoKey.Architecture] = reader.GetString(6);
+                if (!reader.IsDBNull(7)) info[ModelInfoKey.BlockCount] = reader.GetInt32(7).ToString();
+                if (!reader.IsDBNull(8)) info[ModelInfoKey.ContextLength] = reader.GetInt32(8).ToString();
+                if (!reader.IsDBNull(9)) info[ModelInfoKey.EmbeddingLength] = reader.GetInt32(9).ToString();
 
                 if (!reader.IsDBNull(10))
                 {

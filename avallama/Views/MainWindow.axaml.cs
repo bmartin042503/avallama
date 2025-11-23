@@ -1,7 +1,9 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Runtime.InteropServices;
+using avallama.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,11 +16,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             // Windows specifikus beállítások
-            
+
             // Title bar eltüntetése
             ExtendClientAreaToDecorationsHint = true;
             ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.NoChrome;
@@ -45,7 +47,7 @@ public partial class MainWindow : Window
         grid.Children.Add(contentControl);
         Content = grid;
     }
-    
+
     private void Window_PointerPressed(object? sender, RoutedEventArgs e)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -63,7 +65,7 @@ public partial class MainWindow : Window
     {
         Close();
     }
-    
+
     private void MinMaxButton_OnClick(object? sender, RoutedEventArgs e)
     {
         var svgIcon = this.FindControl<Avalonia.Svg.Svg>("MinMaxSvg");
@@ -78,7 +80,7 @@ public partial class MainWindow : Window
             if(svgIcon != null) svgIcon.Path = "/Assets/Svg/minimize.svg";
         }
     }
-    
+
     private void HideButton_OnClick(object? sender, RoutedEventArgs e)
     {
         WindowState = WindowState.Minimized;

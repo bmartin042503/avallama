@@ -9,27 +9,27 @@ namespace avallama.Tests.Utilities;
 public class ConversionHelperTests
 {
     [Fact]
-    public void GetSizeInGb_ZeroBytes()
+    public void BytesToReadableSize_ZeroBytes()
     {
-        var result = ConversionHelper.FormatSizeInGb(0);
-        Assert.Equal("0 GB", result);
+        var result = ConversionHelper.BytesToReadableSize(0);
+        Assert.Equal("0 B", result);
     }
 
     [Fact]
-    public void GetSizeInGb_OneGiB()
+    public void BytesToReadableSize_OneGB()
     {
-        long gib = 1000L * 1000 * 1000;
-        var result = ConversionHelper.FormatSizeInGb(gib);
+        var gb = 1000L * 1000 * 1000;
+        var result = ConversionHelper.BytesToReadableSize(gb);
         Assert.Equal("1 GB", result);
     }
 
     [Fact]
-    public void GetSizeInGb_OnePointFiveGiB()
+    public void BytesToReadableSize_OnePointFiveGB()
     {
-        long gib = 1000L * 1000 * 1000;
-        long size = gib * 3 / 2; // 1.5 GiB
-        var result = ConversionHelper.FormatSizeInGb(size);
-        Assert.Equal("1.5 GB", result);
+        var gb = 1000L * 1000 * 1000;
+        var size = gb * 3 / 2;
+        var result = ConversionHelper.BytesToReadableSize(size);
+        Assert.Equal("1,5 GB", result);
     }
 }
 

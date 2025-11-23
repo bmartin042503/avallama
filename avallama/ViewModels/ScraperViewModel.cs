@@ -44,7 +44,6 @@ public partial class ScraperViewModel : PageViewModel
         _dialogService = dialogService;
         _configurationService = configurationService;
         _messenger = messenger;
-        Console.WriteLine("scraper reinitialized");
     }
 
     public async Task InitializeAsync()
@@ -87,11 +86,9 @@ public partial class ScraperViewModel : PageViewModel
             await _modelCacheService.CacheModelFamilyAsync(families);
             await _modelCacheService.CacheModelsAsync(models);
 
-            _messenger.Send(new ApplicationMessage.RequestPage(ApplicationPage.ModelManager));
-
             _dialogService.ShowInfoDialog(LocalizationService.GetString("SCRAPING_FINISHED_DESC"));
-
             _configurationService.SaveSetting(ConfigurationKey.LastUpdatedCache, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+            _messenger.Send(new ApplicationMessage.RequestPage(ApplicationPage.ModelManager));
         }
         catch (OperationCanceledException)
         {

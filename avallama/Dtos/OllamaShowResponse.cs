@@ -1,16 +1,16 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace avallama.Dtos;
 
 public sealed class OllamaShowResponse
 {
-    public string? Parameters { get; set; }
-    public long Size { get; set; }
-    public OllamaDetails? Details { get; set; }
+    public string? License { get; set; }
 
-    public sealed class OllamaDetails
-    {
-        public string? Format { get; set; }
-        public string? Quantization { get; set; }
-        public string? Family { get; set; }
-        public int? ContextLength { get; set; }
-    }
+    [JsonPropertyName("model_info")]
+    public Dictionary<string, JsonElement>? Model_Info { get; set; }
 }

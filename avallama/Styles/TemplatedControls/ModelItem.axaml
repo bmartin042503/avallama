@@ -1,15 +1,21 @@
+<!--
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:templatedControls="using:avallama.Styles.TemplatedControls"
         xmlns:services="using:avallama.Services"
         xmlns:models="clr-namespace:avallama.Models"
         xmlns:collections="clr-namespace:System.Collections.Generic;assembly=System.Collections"
-        xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
         xmlns:converters="clr-namespace:avallama.Converters"
-        xmlns:vm="clr-namespace:avallama.ViewModels">
+        xmlns:vm="clr-namespace:avallama.ViewModels"
+        xmlns:dataTemplates="clr-namespace:avallama.DataTemplates"
+        xmlns:controls="clr-namespace:avallama.Controls">
     <Design.PreviewWith>
-
-        <templatedControls:ModelItem
+        <WrapPanel Orientation="Horizontal">
+            <templatedControls:ModelItem
             Title="deepseek-r1:8b"
             RunsSlow="True" Margin="40"
             MaxWidth="600"
@@ -33,6 +39,10 @@
                 </models:OllamaModelFamily>
             </templatedControls:ModelItem.Family>
 
+            <templatedControls:ModelItem.DownloadStatus>
+                <models:ModelDownloadStatus>Paused</models:ModelDownloadStatus>
+            </templatedControls:ModelItem.DownloadStatus>
+
             <templatedControls:ModelItem.InformationSource>
                 <collections:Dictionary x:TypeArguments="x:String, x:String">
                     <x:String x:Key="Architecture">qwen3</x:String>
@@ -45,20 +55,170 @@
             </templatedControls:ModelItem.InformationSource>
 
         </templatedControls:ModelItem>
+
+        <templatedControls:ModelItem
+            Title="llama-3.2:latest"
+            RunsSlow="True" Margin="40"
+            MaxWidth="600"
+            SizeInBytes="32000000">
+
+            <templatedControls:ModelItem.Family>
+                <models:OllamaModelFamily
+                    Name="DeepSeek"
+                    Description="DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro. "
+                    PullCount="1234"
+                    TagCount="4">
+
+                    <models:OllamaModelFamily.Labels>
+                        <collections:List x:TypeArguments="x:String">
+                            <x:String>tools</x:String>
+                            <x:String>thinking</x:String>
+                            <x:String>1.5b</x:String>
+                        </collections:List>
+                    </models:OllamaModelFamily.Labels>
+
+                </models:OllamaModelFamily>
+            </templatedControls:ModelItem.Family>
+
+            <templatedControls:ModelItem.DownloadStatus>
+                <models:ModelDownloadStatus>Downloading</models:ModelDownloadStatus>
+            </templatedControls:ModelItem.DownloadStatus>
+
+            <templatedControls:ModelItem.InformationSource>
+                <collections:Dictionary x:TypeArguments="x:String, x:String">
+                    <x:String x:Key="Architecture">qwen3</x:String>
+                    <x:String x:Key="Parameters">8.19B</x:String>
+                    <x:String x:Key="Quantization">Q4_K_M</x:String>
+                    <x:String x:Key="Total downloads">66.6m</x:String>
+                    <x:String x:Key="Last updated">2 months ago</x:String>
+                    <x:String x:Key="License">MIT License Copyright (c) 2023 DeepSeek</x:String>
+                </collections:Dictionary>
+            </templatedControls:ModelItem.InformationSource>
+
+        </templatedControls:ModelItem>
+        </WrapPanel>
     </Design.PreviewWith>
 
     <Style Selector="templatedControls|ModelItem">
+
         <Style.Resources>
             <converters:ModelSizeConverter x:Key="ModelSizeConverter" />
         </Style.Resources>
 
         <Setter Property="Template">
+
             <ControlTemplate>
+
                 <Border Padding="16"
                         BorderBrush="{DynamicResource OutlineVariant}"
                         BorderThickness="0.75"
                         Background="{DynamicResource SurfaceContainerLow}"
                         CornerRadius="10">
+
+                    <Border.DataTemplates>
+                        <dataTemplates:ModelDownloadStatusTemplateSelector>
+
+                            <!-- Not enough space template -->
+                            <DataTemplate x:Key="NotEnoughSpace" DataType="models:ModelDownloadStatus">
+                                <TextBlock Text="{services:LocalizationService Key='NOT_ENOUGH_SPACE_DOWNLOAD'}"/>
+                            </DataTemplate>
+
+                            <!-- No connection template -->
+                            <DataTemplate x:Key="NoConnection" DataType="models:ModelDownloadStatus">
+                                <TextBlock Text="{services:LocalizationService Key='NO_CONNECTION_DOWNLOAD'}"/>
+                            </DataTemplate>
+
+                            <!-- Ready template -->
+                            <DataTemplate x:Key="Ready" DataType="models:ModelDownloadStatus">
+                                <Button Content="Download"
+                                        Cursor="Hand"
+                                        Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                                    <Button.CommandParameter>
+                                        <models:ModelDownloadAction>Start</models:ModelDownloadAction>
+                                    </Button.CommandParameter>
+                                </Button>
+                            </DataTemplate>
+
+                            <!-- Downloading template -->
+                            <DataTemplate x:Key="Downloading" DataType="models:ModelDownloadStatus">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                    <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" Margin="0,0,8,0">
+                                        <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadStatusText}"
+                                                   FontFamily="{StaticResource Manrope}"
+                                                   VerticalAlignment="Center" FontSize="12" FontWeight="Medium"/>
+
+                                        <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadSpeedText}"
+                                                   FontFamily="{StaticResource Manrope}"
+                                                   VerticalAlignment="Center" FontSize="12" FontWeight="Medium" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+
+                                    <!-- Pause button -->
+                                    <Button Grid.Column="1" Cursor="Hand"
+                                            Padding="10"
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                                        <Button.CommandParameter>
+                                            <models:ModelDownloadAction>Pause</models:ModelDownloadAction>
+                                        </Button.CommandParameter>
+                                        <controls:DynamicSvg Path="/Assets/Svg/pause.svg" Height="12"
+                                                             FillColor="{DynamicResource OnPrimary}"/>
+                                    </Button>
+
+                                    <!-- Cancel button -->
+                                    <Button Grid.Column="2" Cursor="Hand"
+                                            Padding="10"
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                                        <Button.CommandParameter>
+                                            <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
+                                        </Button.CommandParameter>
+                                        <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
+                                                             StrokeColor="{DynamicResource OnPrimary}"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+
+                            <!-- Paused template -->
+                            <DataTemplate x:Key="Paused" DataType="models:ModelDownloadStatus">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                    <TextBlock Grid.Column="0" Text="{services:LocalizationService Key='DOWNLOAD_PAUSED'}"
+                                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                                    <!-- Resume button -->
+                                    <Button Grid.Column="1" Cursor="Hand"
+                                            Padding="10"
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                                        <Button.CommandParameter>
+                                            <models:ModelDownloadAction>Resume</models:ModelDownloadAction>
+                                        </Button.CommandParameter>
+                                        <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="12"
+                                                             FillColor="{DynamicResource OnPrimary}"/>
+                                    </Button>
+
+                                    <!-- Close button -->
+                                    <Button Grid.Column="2" Cursor="Hand"
+                                            Padding="10"
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                                        <Button.CommandParameter>
+                                            <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
+                                        </Button.CommandParameter>
+                                        <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
+                                                             StrokeColor="{DynamicResource OnPrimary}"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+
+                            <!-- Downloaded template -->
+                            <DataTemplate x:Key="Downloaded" DataType="models:ModelDownloadStatus">
+                                <Button Cursor="Hand" Classes="errorButton"
+                                        Content="{services:LocalizationService Key='DELETE'}"
+                                        Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                                    <Button.CommandParameter>
+                                        <models:ModelDownloadAction>Delete</models:ModelDownloadAction>
+                                    </Button.CommandParameter>
+                                </Button>
+                            </DataTemplate>
+
+                        </dataTemplates:ModelDownloadStatusTemplateSelector>
+                    </Border.DataTemplates>
 
                     <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="32" RowSpacing="20">
 
@@ -148,16 +308,17 @@
                         </Border>
 
                         <Grid ColumnDefinitions="Auto,*" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="32">
-                            <Border Grid.Column="0"  Padding="10,5"
+                            <Border Grid.Column="0"  Padding="12,5"
                                     Background="{DynamicResource SurfaceContainerHighest}"
                                     BorderBrush="{DynamicResource OutlineVariant}"
                                     BorderThickness="0.75"
                                     CornerRadius="6">
                                 <TextBlock Text="{Binding Path=SizeInBytes, Converter={StaticResource ModelSizeConverter}, RelativeSource={RelativeSource TemplatedParent}}"
                                            FontFamily="{StaticResource Manrope}"
-                                           FontSize="12"/>
+                                           FontSize="12" VerticalAlignment="Center"/>
                             </Border>
-
+                            <ContentControl Grid.Column="1" Content="{TemplateBinding DownloadStatus}"
+                                            HorizontalAlignment="Right" VerticalAlignment="Center"/>
                         </Grid>
                     </Grid>
                 </Border>

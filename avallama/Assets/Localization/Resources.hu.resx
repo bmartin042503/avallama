@@ -301,8 +301,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MIGHT_RUN_SLOW" xml:space="preserve">
         <value>Lassan futhat a rendszereden</value>
     </data>
-    <data name="DOWNLOADED_MODELS_INFO" xml:space="preserve">
-        <value>{0} letöltött modell ({1} GB)</value>
+    <data name="DOWNLOADED_MODELS" xml:space="preserve">
+        <value>{0} letöltött modell</value>
     </data>
     <data name="GENERATION_SPEED" xml:space="preserve">
         <value>Generálás sebessége</value>
@@ -337,8 +337,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOADING" xml:space="preserve">
         <value>Letöltés</value>
     </data>
-    <data name="PAUSED" xml:space="preserve">
-        <value>Szüneteltetve</value>
+    <data name="DOWNLOAD_PAUSED" xml:space="preserve">
+        <value>Letöltés szüneteltetve</value>
     </data>
     <data name="MULTIPLE_DOWNLOADS_WARNING" xml:space="preserve">
         <value>Egy modell letöltése már folyamatban van. Kérlek szakítsd meg a letöltést, mielőtt újabbat indítanál.\n\nDolgozunk rajta, hogy a jövőben több letöltés is elérhető legyen egyszerre.</value>
@@ -429,5 +429,8 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="UPDATE_MODEL_LIBRARY" xml:space="preserve">
         <value>Modellkönyvtár frissítése</value>
+    </data>
+    <data name="DOWNLOADING_PART" xml:space="preserve">
+        <value>Letöltés ({0}. rész)</value>
     </data>
 </root>

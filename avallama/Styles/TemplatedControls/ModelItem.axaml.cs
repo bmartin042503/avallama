@@ -56,22 +56,6 @@ public class ModelItem : TemplatedControl
             (o, v) => o.DownloadStatus = v
         );
 
-    // Mbps
-    public static readonly DirectProperty<ModelItem, double?> DownloadSpeedProperty =
-        AvaloniaProperty.RegisterDirect<ModelItem, double?>(
-            nameof(DownloadSpeed),
-            o => o.DownloadSpeed,
-            (o, v) => o.DownloadSpeed = v
-        );
-
-    public static readonly DirectProperty<ModelItem, long> DownloadedBytesProperty =
-        AvaloniaProperty.RegisterDirect<ModelItem, long>(
-            nameof(DownloadedBytes),
-            o => o.DownloadedBytes,
-            (o, v) => o.DownloadedBytes = v,
-            unsetValue: 0
-        );
-
     public static readonly DirectProperty<ModelItem, bool?> RunsSlowProperty =
         AvaloniaProperty.RegisterDirect<ModelItem, bool?>(
             nameof(RunsSlow),
@@ -132,22 +116,6 @@ public class ModelItem : TemplatedControl
     {
         get => _downloadStatus;
         set => SetAndRaise(DownloadStatusProperty, ref _downloadStatus, value);
-    }
-
-    private double? _downloadSpeed;
-
-    public double? DownloadSpeed
-    {
-        get => _downloadSpeed;
-        set => SetAndRaise(DownloadSpeedProperty, ref _downloadSpeed, value);
-    }
-
-    private long _downloadedBytes;
-
-    public long DownloadedBytes
-    {
-        get => _downloadedBytes;
-        set => SetAndRaise(DownloadedBytesProperty, ref _downloadedBytes, value);
     }
 
     private bool? _runsSlow;

@@ -59,7 +59,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task CallingOllamaServiceMethod_BeforeStart_Throws()
     {
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher());
         await Assert.ThrowsAsync<InvalidOperationException>(async () => { await ol.GetModelParamNum("testllama"); });
     }
@@ -72,7 +75,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process()
@@ -97,7 +103,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -119,7 +128,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -146,7 +158,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => null,
@@ -173,7 +188,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => null,
@@ -233,7 +251,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -299,7 +320,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),
@@ -356,7 +380,10 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             BaseAddress = new Uri("http://localhost:11434")
         };
 
-        var ol = new OllamaService(_fixture.ConfigMock.Object, _fixture.DialogMock.Object,
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
             new SynchronousAvaloniaDispatcher())
         {
             StartProcessFunc = _ => new Process(),

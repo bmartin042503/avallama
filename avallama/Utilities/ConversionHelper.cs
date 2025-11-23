@@ -126,24 +126,29 @@ public static class ConversionHelper
     }
 
     /// <summary>
-    /// Converts a byte value into a formatted gigabyte (GB) string using
-    /// SI units (1 GB = 1,000,000,000 bytes).
+    /// Converts a byte size (in bytes) to a human-readable string representation with appropriate units (B, KB, MB, GB, etc.).
     /// </summary>
-    /// <param name="bytes">The size in bytes.</param>
-    /// <returns>A formatted string based on the current localization.</returns>
-    public static string FormatSizeInGb(long bytes)
+    /// <param name="bytes">The size in bytes to be converted.</param>
+    /// <returns>
+    /// A string that represents the size in the most appropriate unit (B, KB, MB, GB, etc.), with up to two decimal places.
+    /// For example: "500 B", "3.5 MB", "1.2 GB".
+    /// </returns>
+    public static string BytesToReadableSize(long bytes)
     {
-        var gbValue = bytes / Gb;
-        var rounded = Math.Round(gbValue, 1);
+        if (bytes < 1)
+            return "0 B";
 
-        var displayValue = rounded % 1 == 0
-            ? ((int)rounded).ToString(CultureInfo.InvariantCulture)
-            : rounded.ToString("0.0", CultureInfo.InvariantCulture);
+        string[] units = ["B", "KB", "MB", "GB", "TB", "PB"];
+        double size = bytes;
+        var unitIndex = 0;
 
-        return string.Format(
-            LocalizationService.GetString("SIZE_IN_GB"),
-            displayValue
-        );
+        while (size >= 1000 && unitIndex < units.Length - 1)
+        {
+            size /= 1000;
+            unitIndex++;
+        }
+
+        return $"{size:0.##} {units[unitIndex]}";
     }
 
     /// <summary>

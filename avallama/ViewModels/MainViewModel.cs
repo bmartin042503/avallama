@@ -36,6 +36,11 @@ public partial class MainViewModel : ViewModelBase
         _modelCacheService = modelCacheService;
         _messenger = messenger;
 
+        _messenger.Register<ApplicationMessage.RequestPage>(this, (_, msg) =>
+        {
+            CurrentPageViewModel = _pageFactory.GetPageViewModel(msg.Page);
+        });
+
         _firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
         if (string.IsNullOrEmpty(_firstTime))
         {
@@ -43,29 +48,16 @@ public partial class MainViewModel : ViewModelBase
         }
         else if (_firstTime == "false")
         {
-            CurrentPageViewModel = _pageFactory.GetPageViewModel(
-                string.IsNullOrEmpty(_configurationService.ReadSetting(ConfigurationKey.LastUpdatedCache))
-                    ? ApplicationPage.Scraper
-                    : ApplicationPage.Home);
-            Task.Run(async () => await CheckOllamaStart());
+            CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
+            CheckOllamaStart();
         }
     }
 
-    private async Task CheckOllamaStart()
+    private void CheckOllamaStart()
     {
-        // kisebb delay, ugyanis a MainViewModel hamarabb inicializálódik mint az ApplicationService
-        // és ha nincs ez a delay akkor az ApplicationService nem tudná fogadni a kérést az ollama indítás dialog megjelenítésére
-        // mert az elveszne
-        await Task.Delay(500);
-
         _firstTime = _configurationService.ReadSetting(ConfigurationKey.FirstTime);
         var apiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         var apiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
-
-        _messenger.Register<ApplicationMessage.RequestPage>(this, (_, msg) =>
-        {
-            CurrentPageViewModel = _pageFactory.GetPageViewModel(msg.Page);
-        });
 
         if (!string.IsNullOrEmpty(_firstTime) && !string.IsNullOrEmpty(apiHost) &&
             !string.IsNullOrEmpty(apiPort)) return;
@@ -77,12 +69,10 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task OpenHome()
+    public void OpenHome()
     {
-        await CheckOllamaStart();
-        var models = await _modelCacheService.GetCachedModelsAsync();
-        CurrentPageViewModel =
-            _pageFactory.GetPageViewModel(models.Count == 0 ? ApplicationPage.Scraper : ApplicationPage.Home);
+        CheckOllamaStart();
+        CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Home);
     }
 
     [RelayCommand]
@@ -92,9 +82,14 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void OpenModelManager()
+    public async Task OpenModelManager()
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
+        var models = await _modelCacheService.GetCachedModelsAsync();
+        if (models.Count == 0)
+        {
+            CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Scraper);
+        }
     }
 
     [RelayCommand]

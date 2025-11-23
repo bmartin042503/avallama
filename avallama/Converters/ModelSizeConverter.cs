@@ -18,7 +18,7 @@ public class ModelSizeConverter : IValueConverter
         {
             return string.Format(
                 LocalizationService.GetString("MODEL_SIZE"),
-                ConversionHelper.FormatSizeInGb(modelSize)
+                ConversionHelper.BytesToReadableSize(modelSize)
             );
         }
 

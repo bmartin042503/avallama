@@ -407,7 +407,6 @@ public class ModelCacheServiceTests : IAsyncDisposable
             Info = info,
             Size = 2048,
             DownloadStatus = ModelDownloadStatus.Downloaded,
-            DownloadProgress = 1.0,
             RunsSlow = false
         };
 
@@ -628,7 +627,6 @@ public class ModelCacheServiceTests : IAsyncDisposable
                     },
                     Size = 2048 + i,
                     DownloadStatus = ModelDownloadStatus.Downloaded,
-                    DownloadProgress = 1.0,
                     RunsSlow = false
                 };
                 await _modelCacheService.UpdateModelAsync(updated);

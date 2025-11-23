@@ -19,6 +19,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using avallama.Dtos;
+using avallama.Extensions;
 using avallama.Models;
 using avallama.Utilities;
 using avallama.Utilities.Scraper;
@@ -41,7 +42,7 @@ public interface IOllamaService
     Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync();
     IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(CancellationToken cancellationToken);
     Task<bool> DeleteModel(string modelName);
-    Task<ObservableCollection<OllamaModel>> ListDownloaded();
+    Task<IList<OllamaModel>> ListDownloadedModels();
     ServiceStatus? CurrentServiceStatus { get; }
     string? CurrentServiceMessage { get; }
     event ServiceStatusChangedHandler? ServiceStatusChanged;
@@ -54,6 +55,7 @@ public class OllamaService : IOllamaService
 
     private readonly IConfigurationService _configurationService;
     private readonly IDialogService _dialogService;
+    private readonly IModelCacheService _modelCacheService;
 
     // Maximum wait time for requests, currently 15 seconds for slower machines
     // but might need to be readjusted in the future
@@ -89,11 +91,13 @@ public class OllamaService : IOllamaService
     public OllamaService(
         IConfigurationService configurationService,
         IDialogService dialogService,
+        IModelCacheService modelCacheService,
         IAvaloniaDispatcher dispatcher
     )
     {
         _configurationService = configurationService;
         _dialogService = dialogService;
+        _modelCacheService = modelCacheService;
         _dispatcher = dispatcher;
         _httpClient = new HttpClient();
         LoadSettings();
@@ -517,7 +521,8 @@ public class OllamaService : IOllamaService
             return _cachedScrapeResult;
 
         EnsureStarted();
-        _cachedScrapeResult = await OllamaLibraryScraper.GetAllOllamaModelsAsync(_scraperCancellationToken ?? CancellationToken.None);
+        _cachedScrapeResult =
+            await OllamaLibraryScraper.GetAllOllamaModelsAsync(_scraperCancellationToken ?? CancellationToken.None);
         return _cachedScrapeResult;
     }
 
@@ -531,7 +536,8 @@ public class OllamaService : IOllamaService
         return result.Families;
     }
 
-    public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         _scraperCancellationToken ??= cancellationToken;
 
@@ -568,7 +574,7 @@ public class OllamaService : IOllamaService
         return response.StatusCode == HttpStatusCode.OK;
     }
 
-    public async Task<ObservableCollection<OllamaModel>> ListDownloaded()
+    public async Task<IList<OllamaModel>> ListDownloadedModels()
     {
         EnsureStarted();
         LoadSettings();
@@ -583,39 +589,114 @@ public class OllamaService : IOllamaService
         if (result?.Models == null)
             return [];
 
-        return new ObservableCollection<OllamaModel>(
-            result.Models.Select(m =>
+        var downloadedModels = new List<OllamaModel>();
+
+        foreach (var m in result.Models.Where(m => !string.IsNullOrEmpty(m.Name)))
+        {
+            var downloadedModel = new OllamaModel
             {
-                // parse parameter size ("3.2B" → 3.2, etc.)
-                double? parameters = null;
-                if (!string.IsNullOrWhiteSpace(m.Details?.Parameter_Size))
+                Name = m.Name ?? string.Empty
+            };
+            var modelInfo = new Dictionary<string, string>();
+            if (m.Details != null)
+            {
+                if (m.Details.Quantization_Level != null)
                 {
-                    var cleaned = m.Details.Parameter_Size.TrimEnd('B', 'M', 'K');
-                    if (double.TryParse(cleaned, out var parsed))
-                        parameters = parsed;
+                    modelInfo.Add("quantization_level", m.Details.Quantization_Level);
                 }
 
-                // quantization ("Q4_K_M" → 4)
-                int? quant = null;
-                if (!string.IsNullOrWhiteSpace(m.Details?.Quantization_Level))
+                if (m.Details.Format != null)
                 {
-                    var digits = new string(m.Details.Quantization_Level.TakeWhile(char.IsDigit).ToArray());
-                    if (int.TryParse(digits, out var q))
-                        quant = q;
+                    modelInfo.Add("format", m.Details.Format);
                 }
 
-                var detailsDict = new Dictionary<string, string>();
-                if (m.Details != null)
+                if (m.Size.HasValue)
                 {
-                    detailsDict["Format"] = m.Details.Format ?? "";
-                    detailsDict["Family"] = m.Details.Family ?? "";
-                    detailsDict["Quantization"] = m.Details.Quantization_Level ?? "";
-                    detailsDict["Parameter Size"] = m.Details.Parameter_Size ?? "";
+                    downloadedModel.Size = m.Size.Value;
+                }
+            }
+
+            var payload = new { model = m.Name };
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            var modelInfoRequest = new HttpRequestMessage(HttpMethod.Post, "/api/show")
+            {
+                Content = content
+            };
+
+            try
+            {
+                var modelInfoResponse = await _httpClient.SendAsync(modelInfoRequest,
+                    HttpCompletionOption.ResponseHeadersRead);
+
+                var showJson = await modelInfoResponse.Content.ReadAsStringAsync();
+
+                var showResponse = JsonSerializer.Deserialize<OllamaShowResponse>(showJson, options);
+
+                if (!string.IsNullOrEmpty(showResponse?.License))
+                {
+                    modelInfo.Add(ModelInfoKey.License, showResponse.License);
                 }
 
-                return new OllamaModel();
-            })
-        );
+                if (showResponse?.Model_Info != null)
+                {
+                    var info = showResponse.Model_Info;
+
+                    if (info.TryGetValue("general.architecture", out var archElem) &&
+                        archElem.TryGetString(out string? arch) &&
+                        !string.IsNullOrEmpty(arch))
+                    {
+                        modelInfo.Add(ModelInfoKey.Architecture, arch);
+
+                        if (info.TryGetValue("general.parameter_count", out var paramElem) &&
+                            paramElem.TryGetInt64(out long paramCount) && paramCount > 0)
+                        {
+                            downloadedModel.Parameters = paramCount;
+                        }
+
+                        var blockKey = $"{arch}.{ModelInfoKey.BlockCount}";
+                        var ctxKey = $"{arch}.{ModelInfoKey.ContextLength}";
+                        var embedKey = $"{arch}.{ModelInfoKey.EmbeddingLength}";
+
+                        if (info.TryGetValue(blockKey, out var blockElem) &&
+                            blockElem.TryGetInt32(out int blockCount) && blockCount > 0)
+                        {
+                            modelInfo.Add(ModelInfoKey.BlockCount, blockCount.ToString());
+                        }
+
+                        if (info.TryGetValue(ctxKey, out var ctxElem) &&
+                            ctxElem.TryGetInt32(out int ctxLength) && ctxLength > 0)
+                        {
+                            modelInfo.Add(ModelInfoKey.ContextLength, ctxLength.ToString());
+                        }
+
+                        if (info.TryGetValue(embedKey, out var embedElem) &&
+                            embedElem.TryGetInt32(out int embedLength) && embedLength > 0)
+                        {
+                            modelInfo.Add(ModelInfoKey.EmbeddingLength, embedLength.ToString());
+                        }
+                    }
+                }
+
+                downloadedModel.Info = modelInfo;
+                downloadedModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to get model info: " + ex.Message);
+                // TODO: proper logging
+            }
+
+            downloadedModels.Add(downloadedModel);
+        }
+
+        foreach (var m in downloadedModels)
+        {
+            await _modelCacheService.UpdateModelAsync(m);
+        }
+
+        return downloadedModels;
     }
 
     // We call the event, meaning the subscribed methods are also called

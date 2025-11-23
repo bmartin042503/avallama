@@ -31,6 +31,19 @@ public enum ModelDownloadAction
     Delete
 }
 
+public static class ModelInfoKey
+{
+    public const string Format = "format";
+    public const string Quantization = "quantization";
+    public const string Architecture = "architecture";
+    public const string BlockCount = "block_count";
+    public const string ContextLength = "context_length";
+    public const string EmbeddingLength = "embedding_length";
+    public const string PullCount = "pull_count";
+    public const string LastUpdated = "last-updated";
+    public const string License = "license";
+}
+
 public partial class OllamaModel : ObservableObject
 {
     [ObservableProperty] private string _name = string.Empty;
@@ -39,6 +52,5 @@ public partial class OllamaModel : ObservableObject
     [ObservableProperty] private OllamaModelFamily? _family;
     [ObservableProperty] private long _size; // byteokban
     [ObservableProperty] private ModelDownloadStatus _downloadStatus;
-    [ObservableProperty] private double _downloadProgress; // ha a status Downloading, 0.0 és 1.0 közötti érték
     [ObservableProperty] private bool _runsSlow;
 }
