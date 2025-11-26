@@ -148,7 +148,7 @@ public class ModelItem : TemplatedControl
             Family?.LastUpdated.ToString("yyyy-MM-dd") ?? string.Empty;
 
         // Add parameters to model info
-        if (Parameters.HasValue)
+        if (Parameters is > 0)
         {
             InformationSource[ModelInfoKey.Parameters] = ConversionHelper.FormatToAbbreviatedNumber(Parameters.Value);
         }
