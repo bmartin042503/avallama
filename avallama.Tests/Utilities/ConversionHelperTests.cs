@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System.Globalization;
 using avallama.Utilities;
 using Xunit;
 
@@ -26,10 +27,17 @@ public class ConversionHelperTests
     [Fact]
     public void BytesToReadableSize_OnePointFiveGB()
     {
+        CultureInfo.CurrentCulture = new CultureInfo("hu-HU");
         var gb = 1000L * 1000 * 1000;
         var size = gb * 3 / 2;
-        var result = ConversionHelper.BytesToReadableSize(size);
-        Assert.Equal("1.5 GB", result);
+        var conversion = ConversionHelper.BytesToReadableSize(size);
+
+        Assert.Equal("1,5 GB", conversion);
+
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        conversion = ConversionHelper.BytesToReadableSize(size);
+
+        Assert.Equal("1.5 GB", conversion);
     }
 }
 
