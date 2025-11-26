@@ -27,8 +27,8 @@ public class ModelItem : TemplatedControl
             (o, v) => o.Family = v
         );
 
-    public static readonly DirectProperty<ModelItem, double?> ParametersProperty =
-        AvaloniaProperty.RegisterDirect<ModelItem, double?>(
+    public static readonly DirectProperty<ModelItem, long?> ParametersProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, long?>(
             nameof(Parameters),
             o => o.Parameters,
             (o, v) => o.Parameters = v
@@ -78,9 +78,9 @@ public class ModelItem : TemplatedControl
         set => SetValue(InformationProperty, value);
     }
 
-    private double? _parameters;
+    private long? _parameters;
 
-    public double? Parameters
+    public long? Parameters
     {
         get => _parameters;
         set => SetAndRaise(ParametersProperty, ref _parameters, value);
@@ -136,21 +136,49 @@ public class ModelItem : TemplatedControl
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == InformationSourceProperty)
+        if (change.Property != InformationSourceProperty) return;
+        if (InformationSource == null) return;
+
+        // Add pull count from family to model info
+        InformationSource[ModelInfoKey.PullCount] =
+            ConversionHelper.FormatToAbbreviatedNumber(Family?.PullCount ?? 0);
+
+        // Add last updated date from family to model info
+        InformationSource[ModelInfoKey.LastUpdated] =
+            Family?.LastUpdated.ToString("yyyy-MM-dd") ?? string.Empty;
+
+        // Add parameters to model info
+        if (Parameters.HasValue)
         {
-            if (InformationSource != null)
-            {
-                // Add pull count from family to model info
-                InformationSource[LocalizationService.GetString("PULL_COUNT")] =
-                    ConversionHelper.FormatToAbbreviatedNumber(Family?.PullCount ?? 0);
-
-                // Add last updated date from family to model info
-                InformationSource[LocalizationService.GetString("LAST_UPDATED")] =
-                    Family?.LastUpdated.ToString("yyyy-MM-dd") ?? string.Empty;
-
-                Information = string.Join('\n', InformationSource.Select(kv => $"{kv.Key}: {kv.Value}"));
-            }
+            InformationSource[ModelInfoKey.Parameters] = ConversionHelper.FormatToAbbreviatedNumber(Parameters.Value);
         }
+
+        var licenseInfo = InformationSource.FirstOrDefault(kv => kv.Key == ModelInfoKey.License);
+        var sortedInfoWithoutLicense = InformationSource.Where(kv => kv.Key != ModelInfoKey.License)
+            .OrderBy(kv => kv.Key)
+            .ToList();
+
+        // Merging all information values into one string
+        Information = string.Join('\n', sortedInfoWithoutLicense.Select(kv =>
+        {
+            // localized text for information key
+            var localizedKey = kv.Key switch
+            {
+                ModelInfoKey.Format => LocalizationService.GetString("FORMAT"),
+                ModelInfoKey.Architecture => LocalizationService.GetString("GENERAL_ARCHITECTURE"),
+                ModelInfoKey.QuantizationLevel => LocalizationService.GetString("QUANTIZATION_LEVEL"),
+                ModelInfoKey.Parameters => LocalizationService.GetString("PARAMETERS"),
+                ModelInfoKey.BlockCount => LocalizationService.GetString("BLOCK_COUNT"),
+                ModelInfoKey.ContextLength => LocalizationService.GetString("CONTEXT_LENGTH"),
+                ModelInfoKey.EmbeddingLength => LocalizationService.GetString("EMBEDDING_LENGTH"),
+                ModelInfoKey.PullCount => LocalizationService.GetString("PULL_COUNT"),
+                ModelInfoKey.LastUpdated => LocalizationService.GetString("LAST_UPDATED"),
+                _ => kv.Key
+            };
+
+            return $"{localizedKey}: {kv.Value}";
+        }));
+
+        if (!string.IsNullOrWhiteSpace(licenseInfo.Value)) Information += $"\n{LocalizationService.GetString("LICENSE")}: {licenseInfo.Value}";
     }
 }
-

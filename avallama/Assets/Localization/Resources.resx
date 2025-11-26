@@ -116,7 +116,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="TECH_USED" xml:space="preserve">
         <value>Technologies used:</value>
     </data>
-    <data name="LICENSE" xml:space="preserve">
+    <data name="LICENSE_DETAILS" xml:space="preserve">
         <value>MIT License, see LICENSE file for details</value>
     </data>
     <data name="GITHUB_BUTTON" xml:space="preserve">
@@ -191,8 +191,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>Parameters: {0}B</value>
     </data>
-    <data name="QUANTIZATION" xml:space="preserve">
-        <value>Quantization</value>
+    <data name="QUANTIZATION_LEVEL" xml:space="preserve">
+        <value>Quantization level</value>
     </data>
     <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
         <value>Not enough space to download</value>
@@ -454,5 +454,14 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="MODEL_MANAGER_GUIDE" xml:space="preserve">
         <value>The Model Manager allows you to easily browse, download, and manage language models available through Ollama. The model list is obtained directly from the official Ollama website. All obtained models are saved into a local database.\n\nExplanation of the technical details shown for each model:\n\n- Format: The model's file and storage format.\n\n- Architecture: The model's underlying design (e.g., LLaMA, Mistral), which affects performance and capabilities.\n\n- Block count: The number of internal layers; more blocks generally mean higher capability but greater resource usage.\n\n- Context length: The number of tokens the model can consider in a single request, enabling longer conversations and documents.\n\n- Embedding length: The size of the vector representations produced by the model, useful for semantic search and similarity tasks.\n\n- Quantization level: The level of compression applied to the model; lower-bit quantization reduces memory use and increases speed, with minor accuracy trade-offs.</value>
+    </data>
+    <data name="TEST" xml:space="preserve">
+        <value>Testing localization values</value>
+    </data>
+    <data name="LICENSE" xml:space="preserve">
+        <value>License</value>
+    </data>
+    <data name="PARAMETERS" xml:space="preserve">
+        <value>Parameters</value>
     </data>
 </root>

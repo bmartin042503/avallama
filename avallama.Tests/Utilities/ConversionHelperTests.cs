@@ -29,9 +29,7 @@ public class ConversionHelperTests
         var gb = 1000L * 1000 * 1000;
         var size = gb * 3 / 2;
         var result = ConversionHelper.BytesToReadableSize(size);
-        // TODO Disabling this test for now as it is localization dependent and I think it would fail in a CI
-        // We can sort this out later
-        // Assert.Equal("1,5 GB", result);
+        Assert.Equal("1.5 GB", result);
     }
 }
 

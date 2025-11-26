@@ -109,7 +109,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="TECH_USED" xml:space="preserve">
         <value>Felhasznált technológiák:</value>
     </data>
-    <data name="LICENSE" xml:space="preserve">
+    <data name="LICENSE_DETAILS" xml:space="preserve">
         <value>MIT licensz, részletekért tekintsd meg a LICENSE fájlt</value>
     </data>
     <data name="GITHUB_BUTTON" xml:space="preserve">
@@ -184,8 +184,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="MODEL_PARAMETER_SIZE" xml:space="preserve">
         <value>{0} milliárd paraméter</value>
     </data>
-    <data name="QUANTIZATION" xml:space="preserve">
-        <value>Kvantálás</value>
+    <data name="QUANTIZATION_LEVEL" xml:space="preserve">
+        <value>Kvantálási szint</value>
     </data>
     <data name="NOT_ENOUGH_SPACE_DOWNLOAD" xml:space="preserve">
         <value>Nincs elég hely a letöltéshez</value>
@@ -447,5 +447,14 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="MODEL_MANAGER_GUIDE" xml:space="preserve">
         <value>A Modellkezelő segítségével könnyedén böngészheted, letöltheted és kezelheted az Ollama által elérhető nyelvi modelleket. A modellek listája közvetlenül a hivatalos Ollama weboldaláról kerül lekérésre, majd ezt követően a lokális adatbázisba lesznek lementve.\n\nAz egyes modelleknél megjelenő technikai adatok magyarázata:\n\n- Formátum: A modell fájl- és tárolási formátuma.\n\n- Architektúra: A modell felépítése (pl. LLaMA, Mistral), amely meghatározza a teljesítményt és a képességeket.\n\n- Blokkok száma: A modell belső rétegeinek száma; a több blokk általában nagyobb teljesítményt, de magasabb erőforrásigényt jelent.\n\n- Kontextus hossza: Az a tokenszám, amelyet a modell egyetlen kérés során figyelembe tud venni, lehetővé téve hosszabb beszélgetések és dokumentumok kezelését.\n\n- Beágyazási hossz: A modell által előállított vektorok mérete, amely hasznos szemantikus kereséshez és hasonlósági vizsgálatokhoz.\n\n- Kvantálási szint: A modell tömörítésének mértéke; az alacsonyabb bitrátájú modellek kevesebb memóriát használnak és gyorsabban futnak, kisebb pontosságvesztés mellett.</value>
+    </data>
+    <data name="TEST" xml:space="preserve">
+        <value>Lokalizált értékek tesztelése</value>
+    </data>
+    <data name="LICENSE" xml:space="preserve">
+        <value>Licensz</value>
+    </data>
+    <data name="PARAMETERS" xml:space="preserve">
+        <value>Paraméterek</value>
     </data>
 </root>

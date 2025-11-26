@@ -1,0 +1,123 @@
+<!--
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:templatedControls="using:avallama.Styles.TemplatedControls">
+    <Design.PreviewWith>
+
+        <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Background="{DynamicResource SurfaceContainer}">
+                <StackPanel Orientation="Vertical"
+                            Spacing="20" Margin="20"
+                            MaxWidth="350">
+
+                    <!-- Sample item 1 -->
+                    <templatedControls:ConversationItem
+                        Text="New conversation"
+                        SubText="llama-3.2:latest" />
+
+                    <!-- Sample item 2 -->
+                    <templatedControls:ConversationItem
+                        Text="Questions about C#"
+                        SubText="qwen:7b" />
+
+                    <!-- Sample item 3 - Selected conversation -->
+                    <templatedControls:ConversationItem
+                        Text="Talking lorem ipsum stuff"
+                        SubText="deepseek-r1:14b"
+                        Classes="selectedConversation" />
+
+                    <!-- Sample item 4 -->
+                    <templatedControls:ConversationItem
+                        Text="Generating that story for the 954344th time"
+                        SubText="gpt-oss:20b" />
+
+                    <!-- Sample item 5 - Long conversation title -->
+                    <templatedControls:ConversationItem
+                        Text="This is the longest conversation title that I have ever seen in my entire life, I am kidding, this is probably not the longest conversation title. But who knows."
+                        SubText="llama-3.2:latest" />
+
+                </StackPanel>
+            </Border>
+        </ThemeVariantScope>
+
+    </Design.PreviewWith>
+
+    <!-- Build of default ConversationItem -->
+    <Style Selector="templatedControls|ConversationItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{DynamicResource SurfaceContainerHighest}"
+                    Padding="14,12"
+                    CornerRadius="10"
+                    Cursor="Hand"
+                    ToolTip.Tip="{TemplateBinding Text}">
+                    <StackPanel Orientation="Vertical" Spacing="12">
+
+                        <!-- Conversation title -->
+                        <TextBlock
+                            Text="{TemplateBinding Text}"
+                            FontFamily="{StaticResource Manrope}"
+                            Foreground="{DynamicResource OnSurface}"
+                            FontSize="16"
+                            TextWrapping="NoWrap"
+                            TextTrimming="CharacterEllipsis"
+                            HorizontalAlignment="Left"
+                            MaxLines="1" />
+
+                        <!-- Conversation subtext -->
+                        <TextBlock
+                            Text="{TemplateBinding SubText}"
+                            FontFamily="{StaticResource Manrope}"
+                            Foreground="{DynamicResource OnSurface}"
+                            FontSize="12"
+                            HorizontalAlignment="Right"
+                            MaxLines="1" />
+                    </StackPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- Build of selected ConversationItem -->
+    <Style Selector="templatedControls|ConversationItem.selectedConversation">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{DynamicResource PrimaryContainer}"
+                    Padding="14,12"
+                    CornerRadius="10"
+                    Cursor="Hand"
+                    ToolTip.Tip="{TemplateBinding Text}">
+                    <StackPanel Orientation="Vertical" Spacing="12">
+
+                        <!-- Conversation title -->
+                        <TextBlock
+                            Text="{TemplateBinding Text}"
+                            FontFamily="{StaticResource Manrope}"
+                            Foreground="{DynamicResource OnPrimaryContainer}"
+                            FontSize="16"
+                            TextWrapping="NoWrap"
+                            TextTrimming="CharacterEllipsis"
+                            HorizontalAlignment="Left"
+                            MaxLines="1" />
+
+                        <!-- Conversation subtext -->
+                        <TextBlock
+                            Text="{TemplateBinding SubText}"
+                            FontFamily="{StaticResource Manrope}"
+                            Foreground="{DynamicResource OnPrimaryContainer}"
+                            FontSize="12"
+                            HorizontalAlignment="Right"
+                            MaxLines="1" />
+                    </StackPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

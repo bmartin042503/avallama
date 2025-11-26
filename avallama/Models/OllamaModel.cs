@@ -34,13 +34,14 @@ public enum ModelDownloadAction
 public static class ModelInfoKey
 {
     public const string Format = "format";
-    public const string Quantization = "quantization";
+    public const string QuantizationLevel = "quantization_level";
+    public const string Parameters = "parameters";
     public const string Architecture = "architecture";
     public const string BlockCount = "block_count";
     public const string ContextLength = "context_length";
     public const string EmbeddingLength = "embedding_length";
     public const string PullCount = "pull_count";
-    public const string LastUpdated = "last-updated";
+    public const string LastUpdated = "last_updated";
     public const string License = "license";
 }
 

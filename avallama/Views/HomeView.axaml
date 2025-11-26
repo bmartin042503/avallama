@@ -12,7 +12,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:services="clr-namespace:avallama.Services"
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:converters="clr-namespace:avallama.Converters"
-             xmlns:dualTextItem="clr-namespace:avallama.Controls.DualTextItem"
+             xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
              Background="{DynamicResource Surface}"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
@@ -20,7 +20,6 @@ Licensed under the MIT License. See LICENSE file for details.
 
     <UserControl.Resources>
         <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter" />
-        <converters:MessageItemSizeConverter x:Key="MessageItemSizeConverter" />
     </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" x:Name="MainGrid">
@@ -49,7 +48,7 @@ Licensed under the MIT License. See LICENSE file for details.
                          Background="{DynamicResource SurfaceContainerHighest}">
                     <TextBox.InnerRightContent>
                         <controls:DynamicSvg Path="/Assets/Svg/search.svg" Width="16"
-                                              Margin="0,0,10,0" StrokeColor="{DynamicResource Primary}" />
+                                             Margin="0,0,10,0" StrokeColor="{DynamicResource Primary}" />
                     </TextBox.InnerRightContent>
                 </TextBox>
 
@@ -60,7 +59,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <ItemsControl ItemsSource="{Binding Conversations}" VerticalAlignment="Stretch">
                     <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
-                            <dualTextItem:ConversationItem
+                            <templatedControls:ConversationItem
                                 Id="{Binding ConversationId}"
                                 SelectedId="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectedConversation.ConversationId}"
                                 Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectConversation}"
@@ -69,7 +68,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                 Margin="0,0,0,14">
 
                                 <!-- DeletePopup that appears at right click -->
-                                <dualTextItem:ConversationItem.ContextFlyout>
+                                <templatedControls:ConversationItem.ContextFlyout>
                                     <controls:DeletePopup>
                                         <Button
                                             Content="{services:LocalizationService Key='DELETE'}"
@@ -80,11 +79,11 @@ Licensed under the MIT License. See LICENSE file for details.
                                             BorderThickness="1"
                                             Foreground="{DynamicResource OnError}"
                                             HorizontalAlignment="Center"
-                                            Padding="12,6"/>
+                                            Padding="12,6" />
                                     </controls:DeletePopup>
-                                </dualTextItem:ConversationItem.ContextFlyout>
+                                </templatedControls:ConversationItem.ContextFlyout>
 
-                            </dualTextItem:ConversationItem>
+                            </templatedControls:ConversationItem>
                         </DataTemplate>
                     </ItemsControl.DataTemplates>
                 </ItemsControl>
@@ -130,7 +129,7 @@ Licensed under the MIT License. See LICENSE file for details.
                       VerticalAlignment="Center"
                       ItemsSource="{Binding AvailableModels}"
                       SelectedItem="{Binding SelectedModelName, Mode=TwoWay}"
-                      IsEnabled="{Binding IsModelsDropdownEnabled}" Name="ModelsComboBox"/>
+                      IsEnabled="{Binding IsModelsDropdownEnabled}" Name="ModelsComboBox" />
         </StackPanel>
 
         <!-- Informational messages -->
@@ -138,9 +137,10 @@ Licensed under the MIT License. See LICENSE file for details.
                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="6"
                     IsVisible="{Binding ShowInformationalMessages}">
 
-            <!-- Azért van ennyi Grid, mert ezzel lehet megoldani, hogy a bennük lévő TextBlock ne legyen levágva,
-            hanem ...-al trimmelje le a végét (CharacterEllipsis), pontosabban *-al megadva az oszlop szélességét
-            tudja a TextBlock trimmelni a szövegét -->
+            <!-- There are many Grids because this is the way to ensure that the TextBlock inside them
+            is not cut off, but instead trims its end with an ellipsis (CharacterEllipsis). More precisely,
+            by specifying the column width with *, the TextBlock is able to trim its text properly. -->
+
 
             <!-- Remote ollama connection text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" HorizontalAlignment="Center"
@@ -192,7 +192,7 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextAlignment="Center"
                            FontSize="14" Foreground="{DynamicResource OnSurface}" TextWrapping="Wrap" />
 
-                <!-- Retry gomb -->
+                <!-- Retry button -->
                 <Button Content="{services:LocalizationService Key='RETRY'}"
                         Padding="14, 4" CornerRadius="6"
                         Command="{Binding RetryOllamaConnection}"
@@ -200,53 +200,43 @@ Licensed under the MIT License. See LICENSE file for details.
                         IsVisible="{Binding IsRetryButtonVisible}" />
             </StackPanel>
 
-            <!-- Selected conversation -->
+            <!-- Messages of the selected conversation -->
             <Grid Grid.Row="0" HorizontalAlignment="Stretch" Margin="0, 15, 0, 0"
                   IsVisible="{Binding !IsRetryPanelVisible}">
                 <ScrollViewer ScrollChanged="ScrollViewer_OnScrollChanged" x:Name="ConversationScrollViewer">
                     <ItemsControl ItemsSource="{Binding SelectedConversation.Messages}">
+
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="20"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
                         <ItemsControl.DataTemplates>
 
                             <!-- Specific message types need to be defined first, so the base Message type won't catch all -->
                             <DataTemplate DataType="models:FailedMessage">
-                                <Border Background="{DynamicResource SurfaceContainerHighest}"
-                                        CornerRadius="20" Padding="15,8" HorizontalAlignment="Left"
-                                        MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource MessageItemSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}">
-                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Left">
-                                        <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
-                                                             FillColor="{DynamicResource Error}"
-                                                             Width="16" />
-
-                                        <TextBlock Grid.Column="1" Text="{Binding Content}"
-                                                   Foreground="{DynamicResource Error}"
-                                                   FontSize="14" TextAlignment="Left"
-                                                   TextWrapping="Wrap" />
-                                    </Grid>
-                                </Border>
+                                <templatedControls:MessageItem />
                             </DataTemplate>
 
                             <DataTemplate DataType="models:GeneratedMessage">
-                                <dualTextItem:MessageItem
+                                <templatedControls:MessageItem
                                     Classes="generatedMessage"
                                     Text="{Binding Content}"
-                                    SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
-                                    Background="{DynamicResource OutlineVariant}"
-                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource MessageItemSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}" />
                             </DataTemplate>
 
                             <DataTemplate DataType="models:Message">
-                                <dualTextItem:MessageItem
-                                    HorizontalAlignment="Right"
+                                <templatedControls:MessageItem
                                     Classes="userMessage"
-                                    Text="{Binding Content}"
-                                    MaxWidth="{Binding Path=Bounds.Width, Converter={StaticResource MessageItemSizeConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    Text="{Binding Content}" />
                             </DataTemplate>
 
                         </ItemsControl.DataTemplates>
                     </ItemsControl>
                 </ScrollViewer>
 
-                <!-- Scroll to bottom gomb árnyékkal együtt -->
+                <!-- Scroll to bottom button with a shadow -->
                 <Border Width="40" Height="40" x:Name="ScrollToBottomBtnShadow"
                         Background="Transparent"
                         CornerRadius="24"
@@ -263,7 +253,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
             </Grid>
 
-            <!-- Üzenet küldése gomb -->
+            <!-- Send message button -->
             <TextBox Grid.Row="1"
                      Watermark="{services:LocalizationService Key='SEND_MESSAGE'}"
                      Margin="0,30,0,20"

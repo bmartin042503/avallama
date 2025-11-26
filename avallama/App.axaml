@@ -9,9 +9,8 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:dataTemplates="using:avallama.DataTemplates"
              RequestedThemeVariant="Light"
              x:Name="Avallama">
-    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
-    <!-- Resources beállítása (színek, font stb.) -->
+    <!-- Resources settings (appcolors and font) -->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -22,12 +21,10 @@ Licensed under the MIT License. See LICENSE file for details.
     </Application.Resources>
 
     <Application.Styles>
-        <!-- Saját styleok használata globálisan -->
+        <!-- Styles to use globally -->
         <StyleInclude Source="Styles/Button.axaml" />
         <StyleInclude Source="Styles/TextBox.axaml" />
         <StyleInclude Source="Styles/TextBlock.axaml" />
-        <StyleInclude Source="Styles/MessageItem.axaml" />
-        <StyleInclude Source="Styles/ConversationItem.axaml" />
         <StyleInclude Source="Styles/ComboBox.axaml" />
         <StyleInclude Source="Styles/General.axaml" />
         <StyleInclude Source="Styles/ToggleSwitch.axaml" />
@@ -35,6 +32,8 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <!-- Templated Controls -->
         <StyleInclude Source="Styles/TemplatedControls/ModelItem.axaml" />
+        <StyleInclude Source="Styles/TemplatedControls/MessageItem.axaml" />
+        <StyleInclude Source="Styles/TemplatedControls/ConversationItem.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>
@@ -42,7 +41,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <dataTemplates:ModelDownloadStatusTemplateSelector />
     </Application.DataTemplates>
 
-    <!-- macOS menü -->
+    <!-- Menu for macOS -->
     <NativeMenu.Menu>
         <NativeMenu>
             <NativeMenuItem Header="About Avallama" Click="About_OnClick" />

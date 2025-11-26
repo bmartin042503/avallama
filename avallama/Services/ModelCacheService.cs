@@ -244,7 +244,7 @@ public class ModelCacheService : IModelCacheService
                 var info = new Dictionary<string, string>();
 
                 if (!reader.IsDBNull(4)) info[ModelInfoKey.Format] = reader.GetString(4);
-                if (!reader.IsDBNull(5)) info[ModelInfoKey.Quantization] = reader.GetString(5);
+                if (!reader.IsDBNull(5)) info[ModelInfoKey.QuantizationLevel] = reader.GetString(5);
                 if (!reader.IsDBNull(6)) info[ModelInfoKey.Architecture] = reader.GetString(6);
                 if (!reader.IsDBNull(7)) info[ModelInfoKey.BlockCount] = reader.GetInt32(7).ToString();
                 if (!reader.IsDBNull(8)) info[ModelInfoKey.ContextLength] = reader.GetInt32(8).ToString();
@@ -399,7 +399,7 @@ public class ModelCacheService : IModelCacheService
         if (info == null) return (null, null, null, null, null, null, null);
 
         var format = info.TryGetValue(ModelInfoKey.Format, out var fmt) ? fmt : null;
-        var quantization = info.TryGetValue(ModelInfoKey.Quantization, out var qntzn)
+        var quantization = info.TryGetValue(ModelInfoKey.QuantizationLevel, out var qntzn)
             ? qntzn
             : null;
         var architecture = info.TryGetValue(ModelInfoKey.Architecture, out var arch)
@@ -419,7 +419,7 @@ public class ModelCacheService : IModelCacheService
             : (int?)null;
 
         var additionalDetails = info
-            .Where(kvp => kvp.Key is not (ModelInfoKey.Format or ModelInfoKey.Quantization or ModelInfoKey.Architecture or ModelInfoKey.BlockCount
+            .Where(kvp => kvp.Key is not (ModelInfoKey.Format or ModelInfoKey.QuantizationLevel or ModelInfoKey.Architecture or ModelInfoKey.BlockCount
                 or ModelInfoKey.ContextLength or ModelInfoKey.EmbeddingLength or ModelInfoKey.PullCount or ModelInfoKey.LastUpdated))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
@@ -450,8 +450,8 @@ public class ModelCacheService : IModelCacheService
             return true;
         }
 
-        if (newModel.Info.TryGetValue(ModelInfoKey.Quantization, out var newQuant) !=
-            existingModel.Info.TryGetValue(ModelInfoKey.Quantization, out var oldQuant) ||
+        if (newModel.Info.TryGetValue(ModelInfoKey.QuantizationLevel, out var newQuant) !=
+            existingModel.Info.TryGetValue(ModelInfoKey.QuantizationLevel, out var oldQuant) ||
             !string.Equals(newQuant, oldQuant, StringComparison.Ordinal))
         {
             return true;
@@ -542,7 +542,7 @@ public class ModelCacheService : IModelCacheService
                 var info = new Dictionary<string, string>();
 
                 if (!reader.IsDBNull(4)) info[ModelInfoKey.Format] = reader.GetString(4);
-                if (!reader.IsDBNull(5)) info[ModelInfoKey.Quantization] = reader.GetString(5);
+                if (!reader.IsDBNull(5)) info[ModelInfoKey.QuantizationLevel] = reader.GetString(5);
                 if (!reader.IsDBNull(6)) info[ModelInfoKey.Architecture] = reader.GetString(6);
                 if (!reader.IsDBNull(7)) info[ModelInfoKey.BlockCount] = reader.GetInt32(7).ToString();
                 if (!reader.IsDBNull(8)) info[ModelInfoKey.ContextLength] = reader.GetInt32(8).ToString();

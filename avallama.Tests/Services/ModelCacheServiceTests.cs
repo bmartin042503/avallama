@@ -1,3 +1,6 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -214,8 +217,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
-                    { "quantization", "MPFX6" },
-                    { "format", "Test Format" }
+                    { ModelInfoKey.QuantizationLevel, "MPFX6" },
+                    { ModelInfoKey.Format, "Test Format" }
                 },
                 Size = 2048000
             }
@@ -255,8 +258,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
-                    { "quantization", "MPFX6" },
-                    { "format", "Test Format" }
+                    { ModelInfoKey.QuantizationLevel, "MPFX6" },
+                    { ModelInfoKey.Format, "Test Format" }
                 },
                 Size = 2048000
             }
@@ -272,8 +275,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 RunsSlow = true,
                 Info = new Dictionary<string, string>
                 {
-                    { "quantization", "MPFX6" },
-                    { "format", "Updated Format" }
+                    { ModelInfoKey.QuantizationLevel, "MPFX6" },
+                    { ModelInfoKey.Format, "Updated Format" }
                 },
                 Size = 4096000
             }
@@ -314,8 +317,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
-                    { "quantization", "MPFX6" },
-                    { "format", "Test Format" }
+                    { ModelInfoKey.QuantizationLevel, "MPFX6" },
+                    { ModelInfoKey.Format, "Test Format" }
                 },
                 Size = 4096000
             },
@@ -327,8 +330,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
-                    { "quantization", "MPFX6" },
-                    { "format", "Test Format" }
+                    { ModelInfoKey.QuantizationLevel, "MPFX6" },
+                    { ModelInfoKey.Format, "Test Format" }
                 },
                 Size = 4096000
             }
@@ -344,8 +347,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 RunsSlow = true,
                 Info = new Dictionary<string, string>
                 {
-                    { "quantization", "MPFX6" },
-                    { "format", "Test Format" }
+                    { ModelInfoKey.QuantizationLevel, "MPFX6" },
+                    { ModelInfoKey.Format, "Test Format" }
                 },
                 Size = 2048000
             }
@@ -382,8 +385,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
-                    { "quantization", "MPFX6" },
-                    { "format", "Test Format" }
+                    { ModelInfoKey.QuantizationLevel, "MPFX6" },
+                    { ModelInfoKey.Format, "Test Format" }
                 },
                 Size = 2048000
             }
@@ -392,12 +395,12 @@ public class ModelCacheServiceTests : IAsyncDisposable
 
         var info = new Dictionary<string, string>
         {
-            { "quantization", "MPFX6" },
-            { "format", "Test Format" },
-            { "architecture", "llama" },
-            { "context_length", "8192" },
-            { "block_count", "32" },
-            { "embedding_length", "4096" }
+            { ModelInfoKey.QuantizationLevel, "MPFX6" },
+            { ModelInfoKey.Format, "Test Format" },
+            { ModelInfoKey.Architecture, "llama" },
+            { ModelInfoKey.ContextLength, "8192" },
+            { ModelInfoKey.BlockCount, "32" },
+            { ModelInfoKey.EmbeddingLength, "4096" }
         };
 
         var modelToUpdate = new OllamaModel

@@ -148,7 +148,7 @@ public static class ConversionHelper
             unitIndex++;
         }
 
-        return $"{size:0.##} {units[unitIndex]}";
+        return $"{size.ToString("0.##", CultureInfo.InvariantCulture)} {units[unitIndex]}";
     }
 
     /// <summary>
