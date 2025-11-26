@@ -5,9 +5,15 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <!-- Versions -->
+    <PropertyGroup>
+        <AvaloniaVersion>11.3.9</AvaloniaVersion>
+        <DotNetLibVersion>10.0.0</DotNetLibVersion>
+    </PropertyGroup>
+
     <ItemGroup>
         <!-- Avalonia packages -->
-        <PackageReference Include="Avalonia.Headless.Xunit" Version="11.3.9"/>
+        <PackageReference Include="Avalonia.Headless.Xunit" Version="$(AvaloniaVersion)"/>
 
         <!-- .NET packages -->
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
