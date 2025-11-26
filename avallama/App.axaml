@@ -10,7 +10,7 @@ Licensed under the MIT License. See LICENSE file for details.
              RequestedThemeVariant="Light"
              x:Name="Avallama">
 
-    <!-- Resources settings (appcolors and font) -->
+    <!-- Resource settings (app colors and font) -->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -30,7 +30,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <StyleInclude Source="Styles/ToggleSwitch.axaml" />
         <FluentTheme />
 
-        <!-- Templated Controls -->
+        <!-- Templated controls -->
         <StyleInclude Source="Styles/TemplatedControls/ModelItem.axaml" />
         <StyleInclude Source="Styles/TemplatedControls/MessageItem.axaml" />
         <StyleInclude Source="Styles/TemplatedControls/ConversationItem.axaml" />
