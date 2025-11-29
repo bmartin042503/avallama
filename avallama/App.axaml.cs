@@ -14,6 +14,7 @@ using Avalonia.Markup.Xaml;
 using avallama.Services;
 using avallama.Utilities;
 using Avalonia.Controls;
+using Avalonia.Rendering;
 using Avalonia.Styling;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -138,7 +139,7 @@ public partial class App : Application
         _dialogService?.ShowInfoDialog(
             "Avallama - " + LocalizationService.GetString("VERSION")
                           + "\n\nCopyright (c) " + LocalizationService.GetString("DEVELOPER_NAMES")
-                          + "\n\n" + LocalizationService.GetString("LICENSE")
+                          + "\n\n" + LocalizationService.GetString("LICENSE_DETAILS")
                           + "\n\n" + LocalizationService.GetString("FROM_ORG") + " (github.com/4foureyes/avallama)"
         );
     }

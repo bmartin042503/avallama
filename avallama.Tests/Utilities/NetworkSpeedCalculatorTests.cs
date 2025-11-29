@@ -11,7 +11,7 @@ namespace avallama.Tests.Utilities;
 
 public class NetworkSpeedCalculatorTests
 {
-    // TODO: mock time duration so it can pass on github actions too
+    // TODO: mock time duration (TimeProvider) instead of using Thread.Sleep or Task.Dleay
     /*
     [Fact]
     public async Task CalculateSpeed_WithSampleSizeOfTenMillionBytes_ReturnsSpeedAroundTenMegabytesPerSecond()

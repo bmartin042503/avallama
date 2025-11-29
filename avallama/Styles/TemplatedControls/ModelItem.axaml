@@ -14,91 +14,98 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:dataTemplates="clr-namespace:avallama.DataTemplates"
         xmlns:controls="clr-namespace:avallama.Controls">
     <Design.PreviewWith>
-        <WrapPanel Orientation="Horizontal">
-            <templatedControls:ModelItem
-            Title="deepseek-r1:8b"
-            RunsSlow="True" Margin="40"
-            MaxWidth="600"
-            SizeInBytes="32000000">
 
-            <templatedControls:ModelItem.Family>
-                <models:OllamaModelFamily
-                    Name="DeepSeek"
-                    Description="DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro. "
-                    PullCount="1234"
-                    TagCount="4">
+        <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Background="{DynamicResource Surface}">
+                <WrapPanel Orientation="Horizontal">
+                    <!-- Sample item 1 - deepseek-r1:8b - Paused download state -->
+                    <templatedControls:ModelItem
+                        Title="deepseek-r1:8b"
+                        RunsSlow="False" Margin="40,40,0,40"
+                        MaxWidth="600"
+                        SizeInBytes="7200000000">
+                        <templatedControls:ModelItem.Family>
+                            <models:OllamaModelFamily
+                                Name="DeepSeek"
+                                Description="DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro. "
+                                PullCount="1234"
+                                TagCount="4">
 
-                    <models:OllamaModelFamily.Labels>
-                        <collections:List x:TypeArguments="x:String">
-                            <x:String>tools</x:String>
-                            <x:String>thinking</x:String>
-                            <x:String>1.5b</x:String>
-                        </collections:List>
-                    </models:OllamaModelFamily.Labels>
+                                <models:OllamaModelFamily.Labels>
+                                    <collections:List x:TypeArguments="x:String">
+                                        <x:String>tools</x:String>
+                                        <x:String>thinking</x:String>
+                                        <x:String>8b</x:String>
+                                    </collections:List>
+                                </models:OllamaModelFamily.Labels>
 
-                </models:OllamaModelFamily>
-            </templatedControls:ModelItem.Family>
+                            </models:OllamaModelFamily>
+                        </templatedControls:ModelItem.Family>
 
-            <templatedControls:ModelItem.DownloadStatus>
-                <models:ModelDownloadStatus>Paused</models:ModelDownloadStatus>
-            </templatedControls:ModelItem.DownloadStatus>
+                        <templatedControls:ModelItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Paused</models:ModelDownloadStatus>
+                        </templatedControls:ModelItem.DownloadStatus>
 
-            <templatedControls:ModelItem.InformationSource>
-                <collections:Dictionary x:TypeArguments="x:String, x:String">
-                    <x:String x:Key="Architecture">qwen3</x:String>
-                    <x:String x:Key="Parameters">8.19B</x:String>
-                    <x:String x:Key="Quantization">Q4_K_M</x:String>
-                    <x:String x:Key="Total downloads">66.6m</x:String>
-                    <x:String x:Key="Last updated">2 months ago</x:String>
-                    <x:String x:Key="License">MIT License Copyright (c) 2023 DeepSeek</x:String>
-                </collections:Dictionary>
-            </templatedControls:ModelItem.InformationSource>
+                        <templatedControls:ModelItem.InformationSource>
+                            <collections:Dictionary x:TypeArguments="x:String, x:String">
+                                <x:String x:Key="architecture">qwen3</x:String>
+                                <x:String x:Key="parameters">8.19B</x:String>
+                                <x:String x:Key="quantization_level">Q4_K_M</x:String>
+                                <x:String x:Key="pull_count">66.6m</x:String>
+                                <x:String x:Key="last_updated">2 months ago</x:String>
+                                <x:String x:Key="license">MIT License Copyright (c) 2023 DeepSeek</x:String>
+                            </collections:Dictionary>
+                        </templatedControls:ModelItem.InformationSource>
 
-        </templatedControls:ModelItem>
+                    </templatedControls:ModelItem>
 
-        <templatedControls:ModelItem
-            Title="llama-3.2:latest"
-            RunsSlow="True" Margin="40"
-            MaxWidth="600"
-            SizeInBytes="32000000">
+                    <!-- Sample item 2 - llama-3.2:latest - Downloaded download state -->
+                    <templatedControls:ModelItem
+                        Title="llama-3.2:latest"
+                        RunsSlow="True" Margin="40"
+                        MaxWidth="600"
+                        SizeInBytes="3200000000">
 
-            <templatedControls:ModelItem.Family>
-                <models:OllamaModelFamily
-                    Name="DeepSeek"
-                    Description="DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro. "
-                    PullCount="1234"
-                    TagCount="4">
+                        <templatedControls:ModelItem.Family>
+                            <models:OllamaModelFamily
+                                Name="llama:3.2"
+                                Description="The Meta Llama 3.2 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction-tuned generative models in 1B and 3B sizes (text in/text out). The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks. They outperform many of the available open source and closed chat models on common industry benchmarks."
+                                PullCount="47200000"
+                                TagCount="4">
 
-                    <models:OllamaModelFamily.Labels>
-                        <collections:List x:TypeArguments="x:String">
-                            <x:String>tools</x:String>
-                            <x:String>thinking</x:String>
-                            <x:String>1.5b</x:String>
-                        </collections:List>
-                    </models:OllamaModelFamily.Labels>
+                                <models:OllamaModelFamily.Labels>
+                                    <collections:List x:TypeArguments="x:String">
+                                        <x:String>tools</x:String>
+                                        <x:String>1b</x:String>
+                                        <x:String>3b</x:String>
+                                    </collections:List>
+                                </models:OllamaModelFamily.Labels>
 
-                </models:OllamaModelFamily>
-            </templatedControls:ModelItem.Family>
+                            </models:OllamaModelFamily>
+                        </templatedControls:ModelItem.Family>
 
-            <templatedControls:ModelItem.DownloadStatus>
-                <models:ModelDownloadStatus>Downloading</models:ModelDownloadStatus>
-            </templatedControls:ModelItem.DownloadStatus>
+                        <templatedControls:ModelItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Downloaded</models:ModelDownloadStatus>
+                        </templatedControls:ModelItem.DownloadStatus>
 
-            <templatedControls:ModelItem.InformationSource>
-                <collections:Dictionary x:TypeArguments="x:String, x:String">
-                    <x:String x:Key="Architecture">qwen3</x:String>
-                    <x:String x:Key="Parameters">8.19B</x:String>
-                    <x:String x:Key="Quantization">Q4_K_M</x:String>
-                    <x:String x:Key="Total downloads">66.6m</x:String>
-                    <x:String x:Key="Last updated">2 months ago</x:String>
-                    <x:String x:Key="License">MIT License Copyright (c) 2023 DeepSeek</x:String>
-                </collections:Dictionary>
-            </templatedControls:ModelItem.InformationSource>
+                        <templatedControls:ModelItem.InformationSource>
+                            <collections:Dictionary x:TypeArguments="x:String, x:String">
+                                <x:String x:Key="architecture">llama</x:String>
+                                <x:String x:Key="parameters">3.21B</x:String>
+                                <x:String x:Key="quantization_level">Q4_K_M</x:String>
+                                <x:String x:Key="license">LLAMA 3.2 COMMUNITY LICENSE AGREEMENT Llama 3.2</x:String>
+                            </collections:Dictionary>
+                        </templatedControls:ModelItem.InformationSource>
 
-        </templatedControls:ModelItem>
-        </WrapPanel>
+                    </templatedControls:ModelItem>
+                </WrapPanel>
+            </Border>
+        </ThemeVariantScope>
+
     </Design.PreviewWith>
 
+    <!-- Build of ModelItem -->
     <Style Selector="templatedControls|ModelItem">
 
         <Style.Resources>
@@ -115,17 +122,19 @@ Licensed under the MIT License. See LICENSE file for details.
                         Background="{DynamicResource SurfaceContainerLow}"
                         CornerRadius="10">
 
+                    <!-- Downloaded state templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
+                    <!-- Template creation logic found at: /DataTemplates/ModelDonwloadStatusTemplateSelector.cs -->
                     <Border.DataTemplates>
                         <dataTemplates:ModelDownloadStatusTemplateSelector>
 
                             <!-- Not enough space template -->
                             <DataTemplate x:Key="NotEnoughSpace" DataType="models:ModelDownloadStatus">
-                                <TextBlock Text="{services:LocalizationService Key='NOT_ENOUGH_SPACE_DOWNLOAD'}"/>
+                                <TextBlock Text="{services:LocalizationService Key='NOT_ENOUGH_SPACE_DOWNLOAD'}" />
                             </DataTemplate>
 
                             <!-- No connection template -->
                             <DataTemplate x:Key="NoConnection" DataType="models:ModelDownloadStatus">
-                                <TextBlock Text="{services:LocalizationService Key='NO_CONNECTION_DOWNLOAD'}"/>
+                                <TextBlock Text="{services:LocalizationService Key='NO_CONNECTION_DOWNLOAD'}" />
                             </DataTemplate>
 
                             <!-- Ready template -->
@@ -143,13 +152,16 @@ Licensed under the MIT License. See LICENSE file for details.
                             <DataTemplate x:Key="Downloading" DataType="models:ModelDownloadStatus">
                                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                                     <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" Margin="0,0,8,0">
-                                        <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadStatusText}"
-                                                   FontFamily="{StaticResource Manrope}"
-                                                   VerticalAlignment="Center" FontSize="12" FontWeight="Medium"/>
+                                        <TextBlock
+                                            Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadStatusText}"
+                                            FontFamily="{StaticResource Manrope}"
+                                            VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
 
-                                        <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadSpeedText}"
-                                                   FontFamily="{StaticResource Manrope}"
-                                                   VerticalAlignment="Center" FontSize="12" FontWeight="Medium" HorizontalAlignment="Right"/>
+                                        <TextBlock
+                                            Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadSpeedText}"
+                                            FontFamily="{StaticResource Manrope}"
+                                            VerticalAlignment="Center" FontSize="12" FontWeight="Medium"
+                                            HorizontalAlignment="Right" />
                                     </StackPanel>
 
                                     <!-- Pause button -->
@@ -160,7 +172,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                             <models:ModelDownloadAction>Pause</models:ModelDownloadAction>
                                         </Button.CommandParameter>
                                         <controls:DynamicSvg Path="/Assets/Svg/pause.svg" Height="12"
-                                                             FillColor="{DynamicResource OnPrimary}"/>
+                                                             FillColor="{DynamicResource OnPrimary}" />
                                     </Button>
 
                                     <!-- Cancel button -->
@@ -171,7 +183,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                             <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
                                         </Button.CommandParameter>
                                         <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
-                                                             StrokeColor="{DynamicResource OnPrimary}"/>
+                                                             StrokeColor="{DynamicResource OnPrimary}" />
                                     </Button>
                                 </Grid>
                             </DataTemplate>
@@ -179,8 +191,9 @@ Licensed under the MIT License. See LICENSE file for details.
                             <!-- Paused template -->
                             <DataTemplate x:Key="Paused" DataType="models:ModelDownloadStatus">
                                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                    <TextBlock Grid.Column="0" Text="{services:LocalizationService Key='DOWNLOAD_PAUSED'}"
-                                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="0"
+                                               Text="{services:LocalizationService Key='DOWNLOAD_PAUSED'}"
+                                               VerticalAlignment="Center" Margin="0,0,8,0" />
 
                                     <!-- Resume button -->
                                     <Button Grid.Column="1" Cursor="Hand"
@@ -190,7 +203,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                             <models:ModelDownloadAction>Resume</models:ModelDownloadAction>
                                         </Button.CommandParameter>
                                         <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="12"
-                                                             FillColor="{DynamicResource OnPrimary}"/>
+                                                             FillColor="{DynamicResource OnPrimary}" />
                                     </Button>
 
                                     <!-- Close button -->
@@ -201,7 +214,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                             <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
                                         </Button.CommandParameter>
                                         <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
-                                                             StrokeColor="{DynamicResource OnPrimary}"/>
+                                                             StrokeColor="{DynamicResource OnPrimary}" />
                                     </Button>
                                 </Grid>
                             </DataTemplate>
@@ -220,7 +233,8 @@ Licensed under the MIT License. See LICENSE file for details.
                         </dataTemplates:ModelDownloadStatusTemplateSelector>
                     </Border.DataTemplates>
 
-                    <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="32" RowSpacing="20">
+                    <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="32"
+                          RowSpacing="20">
 
                         <!-- Title -->
                         <SelectableTextBlock Grid.Row="0" Grid.Column="0" Text="{TemplateBinding Title}" FontSize="26"
@@ -284,7 +298,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                         Text="{Binding Family.Description, RelativeSource={RelativeSource TemplatedParent}}"
                                         FontSize="14" Foreground="{DynamicResource OnSurface}"
                                         FontFamily="{StaticResource Manrope}"
-                                        TextWrapping="Wrap"/>
+                                        TextWrapping="Wrap" />
 
                                     <!-- All information combined -->
                                     <SelectableTextBlock Grid.Row="1" Text="{TemplateBinding Information}"
@@ -300,25 +314,30 @@ Licensed under the MIT License. See LICENSE file for details.
                                         Cursor="Hand"
                                         Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ForwardToOllama}"
                                         CommandParameter="{TemplateBinding Title}"
-                                        FontFamily="{StaticResource Manrope}" FontWeight="Bold"/>
+                                        FontFamily="{StaticResource Manrope}" FontWeight="Bold" />
 
                                     <!-- TODO: Token/sec speed block (+row) -->
                                 </Grid>
                             </ScrollViewer>
                         </Border>
 
-                        <Grid ColumnDefinitions="Auto,*" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="32">
-                            <Border Grid.Column="0"  Padding="12,5"
+                        <Grid ColumnDefinitions="Auto,*" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnSpacing="32">
+                            <!-- Model size -->
+                            <Border Grid.Column="0" Padding="12,5"
                                     Background="{DynamicResource SurfaceContainerHighest}"
                                     BorderBrush="{DynamicResource OutlineVariant}"
                                     BorderThickness="0.75"
                                     CornerRadius="6">
-                                <TextBlock Text="{Binding Path=SizeInBytes, Converter={StaticResource ModelSizeConverter}, RelativeSource={RelativeSource TemplatedParent}}"
-                                           FontFamily="{StaticResource Manrope}"
-                                           FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock
+                                    Text="{Binding Path=SizeInBytes, Converter={StaticResource ModelSizeConverter}, RelativeSource={RelativeSource TemplatedParent}}"
+                                    FontFamily="{StaticResource Manrope}"
+                                    FontSize="12" VerticalAlignment="Center" />
                             </Border>
+
+                            <!-- DownloadStatus template which is received from ModelDownloadStatusTemplateSelector.cs -->
                             <ContentControl Grid.Column="1" Content="{TemplateBinding DownloadStatus}"
-                                            HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            HorizontalAlignment="Right" VerticalAlignment="Center" />
                         </Grid>
                     </Grid>
                 </Border>
