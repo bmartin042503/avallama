@@ -68,9 +68,8 @@ public partial class ScraperViewModel : PageViewModel
             var models = new List<OllamaModel>();
             await foreach (var model in _ollamaService.StreamAllScrapedModelsAsync(_cancellationToken))
             {
-                _cancellationToken.ThrowIfCancellationRequested();
-
                 _receivedModels++;
+
                 ProgressText = string.Format(
                     LocalizationService.GetString("SCRAPER_MODELS_FOUND"),
                     _receivedModels
@@ -87,12 +86,13 @@ public partial class ScraperViewModel : PageViewModel
             await _modelCacheService.CacheModelsAsync(models);
 
             _dialogService.ShowInfoDialog(LocalizationService.GetString("SCRAPING_FINISHED_DESC"));
-            _configurationService.SaveSetting(ConfigurationKey.LastUpdatedCache, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+            _configurationService.SaveSetting(ConfigurationKey.LastUpdatedCache,
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
             _messenger.Send(new ApplicationMessage.RequestPage(ApplicationPage.ModelManager));
         }
         catch (OperationCanceledException)
         {
-            Console.WriteLine("Scraping cancelled.");
+            Console.WriteLine("Scraping cancelled from ViewModel");
             // TODO: proper logging
         }
         catch (Exception ex)

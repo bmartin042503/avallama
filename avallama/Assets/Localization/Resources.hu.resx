@@ -440,7 +440,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Testreszabhatod az élményt: válthatsz világos és sötét mód között, csatlakozhatsz más Ollama szerverekhez, frissítheted a teljes modell könyvtárad, és sok más opció amikkel a saját igényeidhez igazíthatod az alkalmazást.</value>
     </data>
     <data name="GUIDE_COMPLETION_MESSAGE" xml:space="preserve">
-        <value>Az avallama még fejlesztés alatt áll, és előfordulhatnak problémák a használata során. Kérjük, jelentsd ay előforduló hibákat a GitHubon.</value>
+        <value>Az avallama még fejlesztés alatt áll, és előfordulhatnak problémák a használata során. Kérjük, jelentsd az előforduló hibákat a GitHubon.</value>
     </data>
     <data name="NEVER" xml:space="preserve">
         <value>Soha</value>

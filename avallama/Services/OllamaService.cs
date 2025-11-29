@@ -68,9 +68,8 @@ public class OllamaService : IOllamaService
     private string? _apiPort = DefaultApiPort.ToString();
     private string OllamaPath { get; set; } = "";
     private bool _started;
-    private OllamaLibraryScraper.OllamaLibraryScraperResult? _cachedScrapeResult;
 
-    private CancellationToken? _scraperCancellationToken;
+    private OllamaLibraryScraper.OllamaLibraryScraperResult? _currentScrapeSession;
 
     public ServiceStatus? CurrentServiceStatus { get; private set; }
     public string? CurrentServiceMessage { get; private set; }
@@ -355,46 +354,6 @@ public class OllamaService : IOllamaService
         return 0;
     }
 
-    public async Task<IDictionary<string, string>> GetModelInformation(string modelName)
-    {
-        EnsureStarted();
-        LoadSettings();
-
-        var payload = new
-        {
-            model = modelName
-        };
-
-        var jsonPayload = JsonSerializer.Serialize(payload);
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        var infoDict = new Dictionary<string, string>();
-
-        try
-        {
-            var response = await _httpClient.PostAsync("/api/show", content);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var json = JsonNode.Parse(responseContent);
-            // return (json?["details"]?["parameter_size"] == null ? "" : ":") +
-            // json?["details"]?["parameter_size"]?.ToString().ToLower();
-            // TODO: fix and replace this
-            return new Dictionary<string, string>();
-        }
-        catch (JsonException ex)
-        {
-            _dialogService.ShowErrorDialog(ex.Message, false);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
-            );
-        }
-
-        return new Dictionary<string, string>();
-    }
-
     public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName)
     {
         EnsureStarted();
@@ -515,37 +474,24 @@ public class OllamaService : IOllamaService
         }
     }
 
-    private async Task<OllamaLibraryScraper.OllamaLibraryScraperResult> EnsureScrapeResultAsync()
+    public Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync()
     {
-        if (_cachedScrapeResult is not null)
-            return _cachedScrapeResult;
-
-        EnsureStarted();
-        _cachedScrapeResult =
-            await OllamaLibraryScraper.GetAllOllamaModelsAsync(_scraperCancellationToken ?? CancellationToken.None);
-        return _cachedScrapeResult;
-    }
-
-    public async Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync()
-    {
-        var result = await EnsureScrapeResultAsync();
-
-        // Clear the cached result after getting families so if a scrape is started again within the same OllamaService instance
-        // it fetches fresh data
-        _cachedScrapeResult = null;
-        return result.Families;
+        if (_currentScrapeSession?.Families is not { } families) return Task.FromResult<IList<OllamaModelFamily>>([]);
+        _currentScrapeSession = null;
+        return Task.FromResult(families);
     }
 
     public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        _scraperCancellationToken ??= cancellationToken;
+        _currentScrapeSession = null;
 
-        var result = await EnsureScrapeResultAsync();
+        var result = await OllamaLibraryScraper.GetAllOllamaModelsAsync(cancellationToken);
+
+        _currentScrapeSession = result;
 
         await foreach (var model in result.Models.WithCancellation(cancellationToken))
         {
-            cancellationToken.ThrowIfCancellationRequested();
             yield return model;
         }
     }

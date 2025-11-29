@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.RateLimiting;
@@ -18,67 +19,75 @@ public static class OllamaLibraryScraper
 {
     private const string OllamaUrl = "https://www.ollama.com";
     private static readonly HttpClient HttpClient;
-    private static readonly SemaphoreSlim Throttler;
 
     private static readonly TokenBucketRateLimiterOptions RateLimiterOptions = new()
     {
         TokenLimit = 5,
         TokensPerPeriod = 1,
         ReplenishmentPeriod = TimeSpan.FromSeconds(1),
-        QueueLimit = 15,
+        QueueLimit = 100,
         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
         AutoReplenishment = true
     };
 
     static OllamaLibraryScraper()
     {
-        Throttler = new SemaphoreSlim(10);
         HttpClient = new HttpClient(
             handler: new OllamaRateLimitedHandler(
                 new TokenBucketRateLimiter(RateLimiterOptions)
             )
         );
+        HttpClient.Timeout = TimeSpan.FromSeconds(30);
     }
 
-    public static async Task<OllamaLibraryScraperResult> GetAllOllamaModelsAsync(CancellationToken cancellationToken)
+    public static async Task<OllamaLibraryScraperResult> GetAllOllamaModelsAsync(
+        CancellationToken cancellationToken)
     {
-        var families = await GetOllamaFamiliesAsync();
-        var channel = Channel.CreateUnbounded<OllamaModel>();
+        var families = await GetOllamaFamiliesAsync(cancellationToken);
 
-        var tasks = families.Select(async family =>
+        var channel = Channel.CreateBounded<OllamaModel>(new BoundedChannelOptions(20)
         {
-            await Throttler.WaitAsync(cancellationToken);
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleWriter = false,
+            SingleReader = true,
+        });
+
+        var producerTask = Task.Run(async () =>
+        {
             try
             {
-                await foreach (var model in GetOllamaModelsFromFamilyAsync(family).WithCancellation(cancellationToken))
+                var parallelOptions = new ParallelOptions
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await channel.Writer.WriteAsync(model, cancellationToken);
-                }
-            }
-            finally
-            {
-                Throttler.Release();
-            }
-        }).ToList();
+                    CancellationToken = cancellationToken,
+                    MaxDegreeOfParallelism = 8
+                };
 
-        // this uses fire and forget on purpose, if we awaited this task, streaming would not work because it would wait for all producers to finish
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Task.WhenAll(tasks);
+                await Parallel.ForEachAsync(families, parallelOptions, async (family, ct) =>
+                {
+                    await foreach (var model in GetOllamaModelsFromFamilyAsync(family, ct))
+                    {
+                        await channel.Writer.WriteAsync(model, ct);
+                    }
+                });
             }
-            finally
+            catch (OperationCanceledException)
             {
-                channel.Writer.Complete();
+                Console.WriteLine("Scraping cancelled from Scraper");
+                // TODO: proper logging
             }
+            catch (Exception ex)
+            {
+                channel.Writer.Complete(ex);
+                return;
+            }
+
+            channel.Writer.Complete();
         }, cancellationToken);
 
         return new OllamaLibraryScraperResult
         {
-            Models = StreamModels(),
-            Families = families
+            Families = families,
+            Models = StreamModels()
         };
 
         async IAsyncEnumerable<OllamaModel> StreamModels()
@@ -87,100 +96,111 @@ public static class OllamaLibraryScraper
             {
                 yield return model;
             }
+
+            await producerTask;
         }
     }
 
-    private static async Task<List<OllamaModelFamily>> GetOllamaFamiliesAsync()
+    private static async Task<List<OllamaModelFamily>> GetOllamaFamiliesAsync(CancellationToken ct = default)
     {
-        HttpResponseMessage response;
         try
         {
-            response = await HttpClient.GetAsync(OllamaUrl + "/library");
-        }
-        catch (HttpRequestException)
-        {
-            return [];
-        }
+            using var response = await HttpClient.GetAsync(OllamaUrl + "/library", ct);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            return [];
-        }
+            if (!response.IsSuccessStatusCode) return [];
 
-        var html = await response.Content.ReadAsStringAsync();
-        var doc = new HtmlDocument();
-        doc.LoadHtml(html);
+            var html = await response.Content.ReadAsStringAsync(ct);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
 
-        var result = new List<OllamaModelFamily>();
+            var result = new List<OllamaModelFamily>();
 
-        var nodeSelector = doc.DocumentNode.SelectNodes("//*[@id='repo']/ul/li/a");
+            var nodeSelector = doc.DocumentNode.SelectNodes("//*[@id='repo']/ul/li/a");
 
-        foreach (var aNode in nodeSelector)
-        {
-            try
+            foreach (var aNode in nodeSelector)
             {
-                var family = new OllamaModelFamily();
+                try
+                {
+                    var family = new OllamaModelFamily();
 
-                var nameNode = aNode.SelectSingleNode("div/h2/div/span");
-                family.Name = nameNode.InnerText.Trim();
+                    var nameNode = aNode.SelectSingleNode("div/h2/div/span");
+                    family.Name = nameNode.InnerText.Trim();
 
-                var descNode = aNode.SelectSingleNode("div/p");
-                family.Description = descNode.InnerText.Trim();
+                    var descNode = aNode.SelectSingleNode("div/p");
+                    family.Description = descNode.InnerText.Trim();
 
-                // Pull count: “div:nth-of-type(2) > p > span:first-of-type > span:first-of-type”
-                var secondDiv = aNode.SelectSingleNode("div[2]");
-                var pInSecondDiv = secondDiv.SelectSingleNode("p");
-                var span1 = pInSecondDiv.SelectSingleNode("span");
-                var span1Inner = span1.SelectSingleNode("span");
-                var pullText = span1Inner.InnerText.Trim();
+                    // Pull count: “div:nth-of-type(2) > p > span:first-of-type > span:first-of-type”
+                    var secondDiv = aNode.SelectSingleNode("div[2]");
+                    var pInSecondDiv = secondDiv.SelectSingleNode("p");
+                    var span1 = pInSecondDiv.SelectSingleNode("span");
+                    var span1Inner = span1.SelectSingleNode("span");
+                    var pullText = span1Inner.InnerText.Trim();
 
-                family.PullCount = ConversionHelper.ParseAbbreviatedNumber(pullText);
+                    family.PullCount = ConversionHelper.ParseAbbreviatedNumber(pullText);
 
-                var spanTagCount = pInSecondDiv.SelectSingleNode("span[2]/span");
-                if (int.TryParse(spanTagCount.InnerText.Trim(), out var tagCount))
-                    family.TagCount = tagCount;
+                    var spanTagCount = pInSecondDiv.SelectSingleNode("span[2]/span");
+                    if (int.TryParse(spanTagCount.InnerText.Trim(), out var tagCount))
+                        family.TagCount = tagCount;
 
-                // Last updated: third span etc.
-                var lastUpdatedNode = pInSecondDiv.SelectSingleNode("span[3]");
-                var lastUpdated = lastUpdatedNode.GetAttributeValue("title", string.Empty);
-                family.LastUpdated = ConversionHelper.ParseUtcDate(lastUpdated);
+                    // Last updated: third span etc.
+                    var lastUpdatedNode = pInSecondDiv.SelectSingleNode("span[3]");
+                    var lastUpdated = lastUpdatedNode.GetAttributeValue("title", string.Empty);
+                    family.LastUpdated = ConversionHelper.ParseUtcDate(lastUpdated);
 
-                // Popular tags: list of span under div > div > span
-                // e.g., tags are shown in some nested span set
-                var labelSpanNodes = aNode.SelectNodes("div/div/span");
+                    // Popular tags: list of span under div > div > span
+                    // e.g., tags are shown in some nested span set
+                    HtmlNodeCollection? labelSpanNodes = aNode.SelectNodes("div/div/span");
 
-                var labels = labelSpanNodes.Select(labelSpan => labelSpan.InnerText.Trim())
-                    .Where(t => !string.IsNullOrEmpty(t)).ToList();
+                    var labels = (labelSpanNodes ?? Enumerable.Empty<HtmlNode>())
+                        .Select(labelSpan => labelSpan.InnerText.Trim())
+                        .Where(t => !string.IsNullOrEmpty(t))
+                        .ToList();
 
-                family.Labels = labels;
-                result.Add(family);
+                    family.Labels = labels;
+                    result.Add(family);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[GetOllamaFamiliesAsync - SKIP ITEM] Error parsing a family node: {ex.Message}");
+                    // TODO: proper logging
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[GetOllamaFamiliesAsync - ERROR] {ex.Message}");
-                // TODO: proper logging
-            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[GetOllamaFamiliesAsync - ERROR] {ex.Message}");
+            // TODO: proper logging
         }
 
-        return result;
+        return [];
     }
 
-    private static async IAsyncEnumerable<OllamaModel> GetOllamaModelsFromFamilyAsync(OllamaModelFamily family)
+    private static async IAsyncEnumerable<OllamaModel> GetOllamaModelsFromFamilyAsync(
+        OllamaModelFamily family,
+        [EnumeratorCancellation] CancellationToken ct = default)
     {
         var familyUrl = $"{OllamaUrl}/library/{family.Name}/tags";
         HtmlNodeCollection? tagNodes = null;
+
         try
         {
-            var tagsResponse = await HttpClient.GetAsync(familyUrl);
+            using var tagsResponse = await HttpClient.GetAsync(familyUrl, ct);
+
             if (tagsResponse.IsSuccessStatusCode)
             {
-                var tagsHtml = await tagsResponse.Content.ReadAsStringAsync();
+                var tagsHtml = await tagsResponse.Content.ReadAsStringAsync(ct);
                 var tagsDoc = new HtmlDocument();
                 tagsDoc.LoadHtml(tagsHtml);
 
                 // body/div/section/div/div/all divs starting from 2
                 tagNodes = tagsDoc.DocumentNode.SelectNodes("//section/div/div/div");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -193,9 +213,13 @@ public static class OllamaLibraryScraper
         // first one is skipped, because they're column names
         for (var i = 1; i < tagNodes.Count; i++)
         {
+            if (ct.IsCancellationRequested) yield break;
+
             // name, size, context (available only from /library/{family_name}/tags) iterating through a list of models (as div elements)
             HtmlNode? tagNameNode = tagNodes[i].SelectSingleNode("a/div/div/div/span");
-            var tagName = tagNameNode.InnerText.Trim() ?? string.Empty;
+            var tagName = tagNameNode?.InnerText.Trim() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(tagName)) continue;
 
             HtmlNode? tagSizeNode = tagNodes[i].SelectSingleNode("div/div[1]/p[1]");
             var tagSize = tagSizeNode.InnerText.Trim() ?? "0";
