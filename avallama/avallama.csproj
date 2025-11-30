@@ -15,7 +15,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**"/>
+        <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,7 +25,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </ItemGroup>
 
     <ItemGroup>
-        <AvaloniaResource Remove="Assets\Localization\Resources.resx"/>
+        <AvaloniaResource Remove="Assets\Localization\Resources.resx" />
     </ItemGroup>
 
     <!-- Versions -->
@@ -36,26 +36,27 @@ Licensed under the MIT License. See LICENSE file for details.
 
     <ItemGroup>
         <!-- Avalonia packages -->
-        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
         <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)">
             <!-- This condition is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Svg.Controls.Avalonia" Version="11.3.6.2"/>
+        <PackageReference Include="Svg.Controls.Avalonia" Version="11.3.6.2" />
 
         <!-- .NET packages -->
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="$(DotNetLibVersion)"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(DotNetLibVersion)"/>
-        <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="$(DotNetLibVersion)"/>
-        <PackageReference Include="System.Threading.RateLimiting" Version="$(DotNetLibVersion)"/>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0"/>
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="$(DotNetLibVersion)" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(DotNetLibVersion)" />
+        <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="$(DotNetLibVersion)" />
+        <PackageReference Include="System.Threading.RateLimiting" Version="$(DotNetLibVersion)" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="$(DotNetLibVersion)" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 
         <!-- third party and other packages -->
-        <PackageReference Include="HtmlAgilityPack" Version="1.12.4"/>
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     </ItemGroup>
 
     <ItemGroup>
@@ -74,7 +75,7 @@ Licensed under the MIT License. See LICENSE file for details.
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Assets\Images\"/>
+        <Folder Include="Assets\Images\" />
     </ItemGroup>
 
 </Project>

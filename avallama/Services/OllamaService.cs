@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -22,7 +21,6 @@ using avallama.Dtos;
 using avallama.Extensions;
 using avallama.Models;
 using avallama.Utilities;
-using avallama.Utilities.Scraper;
 
 namespace avallama.Services;
 
@@ -56,6 +54,7 @@ public class OllamaService : IOllamaService
     private readonly IConfigurationService _configurationService;
     private readonly IDialogService _dialogService;
     private readonly IModelCacheService _modelCacheService;
+    private readonly IOllamaScraperService _ollamaScraperService;
 
     // Maximum wait time for requests, currently 15 seconds for slower machines
     // but might need to be readjusted in the future
@@ -69,7 +68,7 @@ public class OllamaService : IOllamaService
     private string OllamaPath { get; set; } = "";
     private bool _started;
 
-    private OllamaLibraryScraper.OllamaLibraryScraperResult? _currentScrapeSession;
+    private OllamaScraperResult? _currentScrapeSession;
 
     public ServiceStatus? CurrentServiceStatus { get; private set; }
     public string? CurrentServiceMessage { get; private set; }
@@ -91,12 +90,14 @@ public class OllamaService : IOllamaService
         IConfigurationService configurationService,
         IDialogService dialogService,
         IModelCacheService modelCacheService,
+        IOllamaScraperService ollamaScraperService,
         IAvaloniaDispatcher dispatcher
     )
     {
         _configurationService = configurationService;
         _dialogService = dialogService;
         _modelCacheService = modelCacheService;
+        _ollamaScraperService = ollamaScraperService;
         _dispatcher = dispatcher;
         _httpClient = new HttpClient();
         LoadSettings();
@@ -486,7 +487,7 @@ public class OllamaService : IOllamaService
     {
         _currentScrapeSession = null;
 
-        var result = await OllamaLibraryScraper.GetAllOllamaModelsAsync(cancellationToken);
+        var result = await _ollamaScraperService.GetAllOllamaModelsAsync(cancellationToken);
 
         _currentScrapeSession = result;
 

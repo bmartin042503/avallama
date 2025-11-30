@@ -146,7 +146,7 @@ This is a list of issues we are aware of that will be fixed in a subsequent rele
 - When starting the app from a terminal, killing the app prints a stack trace to the terminal.
 
 **macOS**:
-- The installation process is missing the inclusion of the `native/macos/libFullScreenCheck.dylib` file, which causes the application to launch with a black screen. For Avallama to function correctly, this file must be placed in the `Avallama.app/Contents/macOS` directory.
+- The installed application is missing the `native/macos/libFullScreenCheck.dylib` file. This causes the application to launch with a black screen. A temporary fix is to place this file in the `Avallama.app/Contents/macOS` directory.
 
 ## License
 

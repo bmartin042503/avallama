@@ -9,38 +9,33 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
-using System.Threading.RateLimiting;
 using System.Threading.Tasks;
+using avallama.Utilities;
 using HtmlAgilityPack;
 
-namespace avallama.Utilities.Scraper;
+namespace avallama.Services;
 
-public static class OllamaLibraryScraper
+public sealed class OllamaScraperResult
 {
-    private const string OllamaUrl = "https://www.ollama.com";
-    private static readonly HttpClient HttpClient;
+    public required IAsyncEnumerable<OllamaModel> Models { get; init; }
+    public required IList<OllamaModelFamily> Families { get; init; }
+}
 
-    private static readonly TokenBucketRateLimiterOptions RateLimiterOptions = new()
-    {
-        TokenLimit = 5,
-        TokensPerPeriod = 1,
-        ReplenishmentPeriod = TimeSpan.FromSeconds(1),
-        QueueLimit = 100,
-        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-        AutoReplenishment = true
-    };
+public interface IOllamaScraperService
+{
+    Task<OllamaScraperResult> GetAllOllamaModelsAsync(CancellationToken cancellationToken);
+}
 
-    static OllamaLibraryScraper()
+public class OllamaScraperService : IOllamaScraperService
+{
+    private readonly HttpClient _httpClient;
+
+    public OllamaScraperService(HttpClient httpClient)
     {
-        HttpClient = new HttpClient(
-            handler: new OllamaRateLimitedHandler(
-                new TokenBucketRateLimiter(RateLimiterOptions)
-            )
-        );
-        HttpClient.Timeout = TimeSpan.FromSeconds(30);
+        _httpClient = httpClient;
     }
 
-    public static async Task<OllamaLibraryScraperResult> GetAllOllamaModelsAsync(
+    public async Task<OllamaScraperResult> GetAllOllamaModelsAsync(
         CancellationToken cancellationToken)
     {
         var families = await GetOllamaFamiliesAsync(cancellationToken);
@@ -84,7 +79,7 @@ public static class OllamaLibraryScraper
             channel.Writer.Complete();
         }, cancellationToken);
 
-        return new OllamaLibraryScraperResult
+        return new OllamaScraperResult
         {
             Families = families,
             Models = StreamModels()
@@ -101,11 +96,11 @@ public static class OllamaLibraryScraper
         }
     }
 
-    private static async Task<List<OllamaModelFamily>> GetOllamaFamiliesAsync(CancellationToken ct = default)
+    private async Task<List<OllamaModelFamily>> GetOllamaFamiliesAsync(CancellationToken ct = default)
     {
         try
         {
-            using var response = await HttpClient.GetAsync(OllamaUrl + "/library", ct);
+            using var response = await _httpClient.GetAsync("/library", ct);
 
             if (!response.IsSuccessStatusCode) return [];
 
@@ -149,9 +144,9 @@ public static class OllamaLibraryScraper
 
                     // Popular tags: list of span under div > div > span
                     // e.g., tags are shown in some nested span set
-                    HtmlNodeCollection? labelSpanNodes = aNode.SelectNodes("div/div/span");
+                    var labelSpanNodes = aNode.SelectNodes("div/div/span");
 
-                    var labels = (labelSpanNodes ?? Enumerable.Empty<HtmlNode>())
+                    var labels = labelSpanNodes
                         .Select(labelSpan => labelSpan.InnerText.Trim())
                         .Where(t => !string.IsNullOrEmpty(t))
                         .ToList();
@@ -177,16 +172,16 @@ public static class OllamaLibraryScraper
         return [];
     }
 
-    private static async IAsyncEnumerable<OllamaModel> GetOllamaModelsFromFamilyAsync(
+    private async IAsyncEnumerable<OllamaModel> GetOllamaModelsFromFamilyAsync(
         OllamaModelFamily family,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var familyUrl = $"{OllamaUrl}/library/{family.Name}/tags";
+        var familyUrl = $"/library/{family.Name}/tags";
         HtmlNodeCollection? tagNodes = null;
 
         try
         {
-            using var tagsResponse = await HttpClient.GetAsync(familyUrl, ct);
+            using var tagsResponse = await _httpClient.GetAsync(familyUrl, ct);
 
             if (tagsResponse.IsSuccessStatusCode)
             {
@@ -216,13 +211,13 @@ public static class OllamaLibraryScraper
             if (ct.IsCancellationRequested) yield break;
 
             // name, size, context (available only from /library/{family_name}/tags) iterating through a list of models (as div elements)
-            HtmlNode? tagNameNode = tagNodes[i].SelectSingleNode("a/div/div/div/span");
-            var tagName = tagNameNode?.InnerText.Trim() ?? string.Empty;
+            var tagNameNode = tagNodes[i].SelectSingleNode("a/div/div/div/span");
+            var tagName = tagNameNode.InnerText.Trim();
 
             if (string.IsNullOrEmpty(tagName)) continue;
 
-            HtmlNode? tagSizeNode = tagNodes[i].SelectSingleNode("div/div[1]/p[1]");
-            var tagSize = tagSizeNode.InnerText.Trim() ?? "0";
+            var tagSizeNode = tagNodes[i].SelectSingleNode("div/div[1]/p[1]");
+            var tagSize = tagSizeNode.InnerText.Trim();
 
             var model = new OllamaModel
             {
@@ -234,11 +229,5 @@ public static class OllamaLibraryScraper
 
             yield return model;
         }
-    }
-
-    public sealed class OllamaLibraryScraperResult
-    {
-        public required IAsyncEnumerable<OllamaModel> Models { get; init; }
-        public required IList<OllamaModelFamily> Families { get; init; }
     }
 }

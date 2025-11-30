@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
+using System.Threading.RateLimiting;
 using avallama.Constants;
 using avallama.ViewModels;
 using avallama.Factories;
@@ -43,6 +44,25 @@ public static class ServiceCollectionExtensions
 
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
+
+        collection.AddSingleton<RateLimiter>(_ => new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 5,
+            TokensPerPeriod = 1,
+            ReplenishmentPeriod = TimeSpan.FromSeconds(1),
+            QueueLimit = 100,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            AutoReplenishment = true
+        }));
+
+        collection.AddTransient<OllamaRateLimitedHandler>();
+
+        collection.AddHttpClient<IOllamaScraperService, OllamaScraperService>(client =>
+            {
+                client.BaseAddress = new Uri("https://www.ollama.com");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
+            .AddHttpMessageHandler<OllamaRateLimitedHandler>();
 
         collection.AddSingleton<ModelCacheService>();
         collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());

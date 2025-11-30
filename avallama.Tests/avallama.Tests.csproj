@@ -29,6 +29,8 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+
+        <EmbeddedResource Include="Fixtures/Assets/*.html" />
     </ItemGroup>
 
     <ItemGroup>
