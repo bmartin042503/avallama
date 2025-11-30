@@ -97,11 +97,6 @@ public partial class ModelManagerViewModel : PageViewModel
     {
         await LoadModelsData();
         SelectedSortingOption = SortingOption.Downloaded;
-        if (HasModelsToDisplay && (string.IsNullOrEmpty(SelectedModelName) || SelectedModel == null))
-        {
-            SelectedModelName = Models[0].Name;
-            SelectedModel = Models[0];
-        }
     }
 
     private async Task LoadModelsData()
