@@ -48,18 +48,16 @@ public class ConversationItem : TemplatedControl
         set => SetValue(SubTextProperty, value);
     }
 
-    private Guid? _id;
     public Guid? Id
     {
-        get => _id;
-        set => SetAndRaise(IdProperty, ref _id, value);
+        get;
+        set => SetAndRaise(IdProperty, ref field, value);
     }
 
-    private Guid? _selectedId;
     public Guid? SelectedId
     {
-        get => _selectedId;
-        set => SetAndRaise(SelectedIdProperty, ref _selectedId, value);
+        get;
+        set => SetAndRaise(SelectedIdProperty, ref field, value);
     }
 
     public ICommand? Command

@@ -43,6 +43,7 @@ public interface IOllamaService
     IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(CancellationToken cancellationToken);
     Task<bool> DeleteModel(string modelName);
     Task<IList<OllamaModel>> ListDownloadedModels();
+    Task<OllamaModel> GetModelDetailsAsync(string modelName);
     ServiceStatus? CurrentServiceStatus { get; }
     string? CurrentServiceMessage { get; }
     event ServiceStatusChangedHandler? ServiceStatusChanged;
@@ -70,6 +71,11 @@ public class OllamaService : IOllamaService
     private bool _started;
 
     private OllamaLibraryScraper.OllamaLibraryScraperResult? _currentScrapeSession;
+
+    public Task<OllamaModel> GetModelDetailsAsync(string modelName)
+    {
+        throw new NotImplementedException();
+    }
 
     public ServiceStatus? CurrentServiceStatus { get; private set; }
     public string? CurrentServiceMessage { get; private set; }
@@ -519,6 +525,91 @@ public class OllamaService : IOllamaService
 
         return response.StatusCode == HttpStatusCode.OK;
     }
+
+    private async Task<OllamaShowResponse?> FetchModelShowResponseAsync(string modelName)
+    {
+        var payload = new { model = modelName };
+        var jsonPayload = JsonSerializer.Serialize(payload);
+        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/show") { Content = content };
+
+        try
+        {
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            return JsonSerializer.Deserialize<OllamaShowResponse>(json, options);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /*
+    private void EnrichModelWithShowInfo(OllamaModel model, OllamaShowResponse showResponse)
+    {
+        // Ha a Show válaszban is vannak részletek (pl. format), frissíthetjük vagy hozzáadhatjuk
+        if (showResponse.Model_Info != null)
+        {
+             if (!string.IsNullOrEmpty(showResponse.Details.Quantization_Level))
+                model.Info.TryAdd("quantization_level", showResponse.Details.Quantization_Level);
+
+             if (!string.IsNullOrEmpty(showResponse.Details.Format))
+                model.Info.TryAdd("format", showResponse.Details.Format);
+        }
+
+        // Licenc
+        if (!string.IsNullOrEmpty(showResponse.License))
+        {
+            model.Info[ModelInfoKey.License] = showResponse.License;
+        }
+
+        // Dinamikus paraméterek kinyerése
+        if (showResponse.Model_Info != null)
+        {
+            var info = showResponse.Model_Info;
+
+            if (info.TryGetValue("general.architecture", out var archElem) &&
+                archElem.TryGetString(out string? arch) &&
+                !string.IsNullOrEmpty(arch))
+            {
+                model.Info[ModelInfoKey.Architecture] = arch;
+
+                if (info.TryGetValue("general.parameter_count", out var paramElem) &&
+                    paramElem.TryGetInt64(out long paramCount) && paramCount > 0)
+                {
+                    model.Parameters = paramCount;
+                }
+
+                // Kulcsok generálása az architektúra alapján
+                var blockKey = $"{arch}.{ModelInfoKey.BlockCount}";
+                var ctxKey = $"{arch}.{ModelInfoKey.ContextLength}";
+                var embedKey = $"{arch}.{ModelInfoKey.EmbeddingLength}";
+
+                if (info.TryGetValue(blockKey, out var blockElem) &&
+                    blockElem.TryGetInt32(out int blockCount) && blockCount > 0)
+                {
+                    model.Info[ModelInfoKey.BlockCount] = blockCount.ToString();
+                }
+
+                if (info.TryGetValue(ctxKey, out var ctxElem) &&
+                    ctxElem.TryGetInt32(out int ctxLength) && ctxLength > 0)
+                {
+                    model.Info[ModelInfoKey.ContextLength] = ctxLength.ToString();
+                }
+
+                if (info.TryGetValue(embedKey, out var embedElem) &&
+                    embedElem.TryGetInt32(out int embedLength) && embedLength > 0)
+                {
+                    model.Info[ModelInfoKey.EmbeddingLength] = embedLength.ToString();
+                }
+            }
+        }
+    }*/
 
     public async Task<IList<OllamaModel>> ListDownloadedModels()
     {

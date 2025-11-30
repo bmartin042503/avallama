@@ -17,30 +17,28 @@ Licensed under the MIT License. See LICENSE file for details.
     <Grid RowDefinitions="2*,Auto,*,Auto,*">
         <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="6" VerticalAlignment="Center">
 
-            <!-- progress svg -->
-            <controls:DynamicSvg x:Name="Spinner" Path="/Assets/Svg/spinner.svg" FillColor="{DynamicResource Primary}"
-                                 Height="64" Margin="0,0,0,30">
-                <controls:DynamicSvg.RenderTransform>
-                    <RotateTransform Angle="0" />
-                </controls:DynamicSvg.RenderTransform>
-            </controls:DynamicSvg>
+            <!-- Progress svg -->
+            <controls:DynamicSvg Path="/Assets/Svg/spinner.svg"
+                                 FillColor="{DynamicResource Primary}"
+                                 Height="64" Margin="0,0,0,30"
+                                 Classes="spinnerAnimation" />
 
-            <!-- title -->
+            <!-- Title -->
             <TextBlock Text="{services:LocalizationService Key='SCRAPER_TITLE'}"
                        FontSize="20" FontWeight="Medium" TextAlignment="Center" />
 
-            <!-- progress text -->
+            <!-- Progress text -->
             <TextBlock Text="{Binding ProgressText}"
                        FontSize="14" FontWeight="Medium" TextAlignment="Center" />
 
-            <!-- cancel button -->
+            <!-- Cancel button -->
             <Button IsEnabled="{Binding IsCancelEnabled}"
                     Content="{services:LocalizationService Key='CANCEL'}" HorizontalAlignment="Center"
                     Margin="0,30,0,0" Cursor="Hand"
                     Command="{Binding CancelScraping}" />
         </StackPanel>
 
-        <!-- description -->
+        <!-- Description -->
         <TextBlock Grid.Row="3" Text="{services:LocalizationService Key='SCRAPER_DESCRIPTION'}"
                    FontSize="14" Opacity="0.5" MaxWidth="500" TextWrapping="Wrap" TextAlignment="Center" />
     </Grid>

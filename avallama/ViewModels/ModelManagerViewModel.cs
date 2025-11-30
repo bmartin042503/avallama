@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +39,7 @@ public partial class ModelManagerViewModel : PageViewModel
     [ObservableProperty] private bool _hasDownloadedModels;
     [ObservableProperty] private bool _hasModelsToDisplay;
     [ObservableProperty] private string _selectedModelName = string.Empty;
-    [ObservableProperty] private OllamaModel? _selectedModel;
+    [ObservableProperty] private OllamaModel? _selectedModel = new();
     [ObservableProperty] private bool _isModelInfoBlockVisible;
     [ObservableProperty] private bool _isPaginationButtonVisible;
 
@@ -52,8 +51,6 @@ public partial class ModelManagerViewModel : PageViewModel
 
     [ObservableProperty] private string _downloadStatusText = string.Empty;
     [ObservableProperty] private string _downloadSpeedText = "0 MB/s";
-
-    private SortingOption _selectedSortingOption;
 
     // ez tudja észlelni ha egy task cancellelve van, kell egy tokenSource és annak a tokenjét beállítani a taskra
     // aztán kivételt dobva fogja megszakítani a taskot
@@ -67,27 +64,25 @@ public partial class ModelManagerViewModel : PageViewModel
 
     public SortingOption SelectedSortingOption
     {
-        get => _selectedSortingOption;
+        get;
         set
         {
-            _selectedSortingOption = value;
+            field = value;
             SortModels();
             OnPropertyChanged();
         }
     }
 
-    private string _searchBoxText = string.Empty;
-
     public string SearchBoxText
     {
-        get => _searchBoxText;
+        get;
         set
         {
-            _searchBoxText = value;
+            field = value;
             FilterModels();
             OnPropertyChanged();
         }
-    }
+    } = string.Empty;
 
     public ModelManagerViewModel(IDialogService dialogService, IOllamaService ollamaService,
         IModelCacheService modelCacheService)
@@ -96,19 +91,17 @@ public partial class ModelManagerViewModel : PageViewModel
         _dialogService = dialogService;
         _ollamaService = ollamaService;
         _modelCacheService = modelCacheService;
-
-        SelectedSortingOption = SortingOption.Downloaded;
-
-        if (HasModelsToDisplay && (string.IsNullOrEmpty(SelectedModelName) || SelectedModel == null))
-        {
-            SelectedModelName = Models[0].Name;
-            SelectedModel = Models[0];
-        }
     }
 
     public async Task InitializeAsync()
     {
         await LoadModelsData();
+        SelectedSortingOption = SortingOption.Downloaded;
+        if (HasModelsToDisplay && (string.IsNullOrEmpty(SelectedModelName) || SelectedModel == null))
+        {
+            SelectedModelName = Models[0].Name;
+            SelectedModel = Models[0];
+        }
     }
 
     private async Task LoadModelsData()
@@ -198,7 +191,11 @@ public partial class ModelManagerViewModel : PageViewModel
         }
 
         var search = SearchBoxText.Trim();
-        if (string.IsNullOrEmpty(search)) return;
+        if (string.IsNullOrEmpty(search))
+        {
+            ResetPagination(_modelsData);
+            return;
+        }
 
         _filteredModelsData = _modelsData
             .Select(m => new
@@ -434,7 +431,7 @@ public partial class ModelManagerViewModel : PageViewModel
 
             IsModelInfoBlockVisible = true;
 
-            var modelFromName = _modelsData.FirstOrDefault(m => m.Name == SelectedModelName);
+            var modelFromName = Models.FirstOrDefault(m => m.Name == SelectedModelName);
             if (modelFromName != null) SelectedModel = modelFromName;
         }
     }
@@ -442,7 +439,6 @@ public partial class ModelManagerViewModel : PageViewModel
     [RelayCommand]
     public void ShowInfo()
     {
-        // TODO: tájékoztató a modelmanager működéséről, modellek információiról stb.
         _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
     }
 

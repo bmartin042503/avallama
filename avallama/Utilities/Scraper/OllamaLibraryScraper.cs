@@ -170,7 +170,7 @@ public static class OllamaLibraryScraper
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[GetOllamaFamiliesAsync - ERROR] {ex.Message}");
+            Console.WriteLine($"[GetOllamaFamiliesAsync] {ex.Message}");
             // TODO: proper logging
         }
 

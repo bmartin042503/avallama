@@ -32,13 +32,13 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <!-- Templated controls -->
         <StyleInclude Source="Styles/TemplatedControls/ModelItem.axaml" />
+        <StyleInclude Source="Styles/TemplatedControls/ModelListItem.axaml" />
         <StyleInclude Source="Styles/TemplatedControls/MessageItem.axaml" />
         <StyleInclude Source="Styles/TemplatedControls/ConversationItem.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>
         <dataTemplates:ViewLocator />
-        <dataTemplates:ModelDownloadStatusTemplateSelector />
     </Application.DataTemplates>
 
     <!-- Menu for macOS -->

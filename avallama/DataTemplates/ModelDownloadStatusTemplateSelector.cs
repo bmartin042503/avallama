@@ -12,17 +12,14 @@ namespace avallama.DataTemplates;
 
 public class ModelDownloadStatusTemplateSelector : IDataTemplate
 {
+
     [Content]
     public Dictionary<string, IDataTemplate> AvailableTemplates { get; } = new();
 
     public Control? Build(object? param)
     {
         var key = param?.ToString();
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(param));
-        }
-        return AvailableTemplates[key].Build(param);
+        return key is null ? throw new ArgumentNullException(nameof(param)) : AvailableTemplates[key].Build(param);
     }
 
     public bool Match(object? data)

@@ -78,52 +78,40 @@ public class ModelItem : TemplatedControl
         set => SetValue(InformationProperty, value);
     }
 
-    private long? _parameters;
-
     public long? Parameters
     {
-        get => _parameters;
-        set => SetAndRaise(ParametersProperty, ref _parameters, value);
+        get;
+        set => SetAndRaise(ParametersProperty, ref field, value);
     }
-
-    private OllamaModelFamily? _family;
 
     public OllamaModelFamily? Family
     {
-        get => _family;
-        set => SetAndRaise(FamilyProperty, ref _family, value);
+        get;
+        set => SetAndRaise(FamilyProperty, ref field, value);
     }
-
-    private IDictionary<string, string>? _informationSource;
 
     public IDictionary<string, string>? InformationSource
     {
-        get => _informationSource;
-        set => SetAndRaise(InformationSourceProperty, ref _informationSource, value);
+        get;
+        set => SetAndRaise(InformationSourceProperty, ref field, value);
     }
-
-    private long _sizeInBytes;
 
     public long SizeInBytes
     {
-        get => _sizeInBytes;
-        set => SetAndRaise(SizeInBytesProperty, ref _sizeInBytes, value);
+        get;
+        set => SetAndRaise(SizeInBytesProperty, ref field, value);
     }
-
-    private ModelDownloadStatus _downloadStatus;
 
     public ModelDownloadStatus DownloadStatus
     {
-        get => _downloadStatus;
-        set => SetAndRaise(DownloadStatusProperty, ref _downloadStatus, value);
+        get;
+        set => SetAndRaise(DownloadStatusProperty, ref field, value);
     }
-
-    private bool? _runsSlow;
 
     public bool? RunsSlow
     {
-        get => _runsSlow;
-        set => SetAndRaise(RunsSlowProperty, ref _runsSlow, value);
+        get;
+        set => SetAndRaise(RunsSlowProperty, ref field, value);
     }
 
     public ICommand Command
