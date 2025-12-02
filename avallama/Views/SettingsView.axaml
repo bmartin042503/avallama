@@ -16,10 +16,11 @@ Licensed under the MIT License. See LICENSE file for details.
              Background="{DynamicResource Surface}">
     <Grid RowDefinitions="*,Auto">
         <ScrollViewer Grid.Row="0" Margin="22,22,8,22" AllowAutoHide="True">
-            <Grid RowDefinitions="Auto,Auto,*,Auto,*">
+            <Grid RowDefinitions="Auto,Auto,Auto" MaxWidth="900" Margin="14">
                 <TextBlock x:Name="PageTitle" Grid.Row="0" Text="{services:LocalizationService Key='SETTINGS'}"
                            Classes="H1" Margin="0,0,0,20" />
 
+                <!-- Setting items -->
                 <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="24"
                       ColumnDefinitions="500, *"
                       Margin="0,0,26,0">

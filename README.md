@@ -146,7 +146,7 @@ This is a list of issues we are aware of that will be fixed in a subsequent rele
 - When starting the app from a terminal, killing the app prints a stack trace to the terminal.
 
 **macOS**:
-- The application installation process is not ideal, as it requires manual extraction from a ZIP file.
+- The installed application is missing the `native/macos/libFullScreenCheck.dylib` file. This causes the application to launch with a black screen. A temporary fix is to place this file in the `Avallama.app/Contents/macOS` directory.
 
 ## License
 

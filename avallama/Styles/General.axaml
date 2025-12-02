@@ -7,9 +7,9 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:avallama.Controls">
 
-    <!-- Egyéb stílusdefiníciók, amiknek nincs értelme külön fájlt létrehozni -->
+    <!-- General style definitions for which it makes no sense to create a separate file -->
 
-    <!-- Ezzel megadjuk hogy az IndexedItemsControl az ItemsControl-hoz hasonlóan jelenítse meg az elemeket -->
+    <!-- This specifies that the IndexedItemsControl should display elements similarly to the ItemsControl -->
     <Style Selector="controls|IndexedItemsControl">
         <Setter Property="Template">
             <ControlTemplate>
@@ -22,8 +22,27 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="SelectionBrush" Value="{DynamicResource Selection}"/>
     </Style>
 
+    <!-- Hyperlink Pointerover style -->
     <Style Selector="HyperlinkButton:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource Secondary}" />
+    </Style>
+
+    <!-- Spinner animation -->
+    <Style Selector="controls|DynamicSvg.spinnerAnimation">
+        <Style.Animations>
+            <Animation Duration="0:0:1"
+                       IterationCount="Infinite"
+                       PlaybackDirection="Normal">
+
+                <KeyFrame Cue="0%">
+                    <Setter Property="RotateTransform.Angle" Value="0"/>
+                </KeyFrame>
+
+                <KeyFrame Cue="100%">
+                    <Setter Property="RotateTransform.Angle" Value="360"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
     </Style>
 </Styles>

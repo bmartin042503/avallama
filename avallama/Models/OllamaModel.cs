@@ -52,6 +52,7 @@ public partial class OllamaModel : ObservableObject
     [ObservableProperty] private IDictionary<string, string> _info = new Dictionary<string, string>();
     [ObservableProperty] private OllamaModelFamily? _family;
     [ObservableProperty] private long _size; // byteokban
-    [ObservableProperty] private ModelDownloadStatus _downloadStatus;
     [ObservableProperty] private bool _runsSlow;
+    [ObservableProperty] private ModelDownloadStatus _downloadStatus;
+    [ObservableProperty] private int _downloadPartCount;
 }

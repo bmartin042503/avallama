@@ -5,12 +5,13 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- A színkódok a SolidColorBrush és a Color tag-ben adhatóak meg A Color tag képes átlátszóságra is. (#00000000) -->
+    <!-- Color codes can be specified in the SolidColorBrush and Color tags. The Color tag also supports transparency. (#AA000000) -->
     <ResourceDictionary.ThemeDictionaries>
         <!-- Seed: #623079 -->
-        <!-- Világos téma színei -->
+
+        <!-- Light theme colors -->
         <ResourceDictionary x:Key="Light">
-            <Color x:Key="Selection">#80755085</Color> <!-- 50% opacity -->
+            <Color x:Key="Selection">#80E4B7F3</Color> <!-- 50% opacity -->
             <SolidColorBrush x:Key="Primary">#755085</SolidColorBrush>
             <SolidColorBrush x:Key="SurfaceTint">#755085</SolidColorBrush>
             <SolidColorBrush x:Key="OnPrimary">#FFFFFF</SolidColorBrush>
@@ -63,9 +64,10 @@ Licensed under the MIT License. See LICENSE file for details.
             <SolidColorBrush x:Key="SurfaceContainerHigh">#EFE5ED</SolidColorBrush>
             <SolidColorBrush x:Key="SurfaceContainerHighest">#E9E0E7</SolidColorBrush>
         </ResourceDictionary>
-        <!-- Sötét téma színei -->
+
+        <!-- Dark theme colors -->
         <ResourceDictionary x:Key="Dark">
-            <Color x:Key="Selection">#80E4B7F3</Color> <!-- 50% opacity -->
+            <Color x:Key="Selection">#80755085</Color> <!-- 50% opacity -->
             <SolidColorBrush x:Key="Primary">#E4B7F3</SolidColorBrush>
             <SolidColorBrush x:Key="SurfaceTint">#E4B7F3</SolidColorBrush>
             <SolidColorBrush x:Key="OnPrimary">#442253</SolidColorBrush>

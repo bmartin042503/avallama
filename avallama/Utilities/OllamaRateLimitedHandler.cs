@@ -9,20 +9,24 @@ using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 
-namespace avallama.Utilities.Scraper;
+namespace avallama.Utilities;
 
-internal sealed class OllamaRateLimitedHandler(
-    RateLimiter limiter)
-    : DelegatingHandler(new HttpClientHandler()), IAsyncDisposable
+internal sealed class OllamaRateLimitedHandler : DelegatingHandler
 {
+    private readonly RateLimiter _rateLimiter;
     private static DateTime? _lastRequestTime;
+
+    public OllamaRateLimitedHandler(RateLimiter rateLimiter)
+    {
+        _rateLimiter = rateLimiter;
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken
     )
     {
-        using RateLimitLease lease = await limiter.AcquireAsync(
+        using RateLimitLease lease = await _rateLimiter.AcquireAsync(
             permitCount: 1,
             cancellationToken
         );
@@ -64,18 +68,5 @@ internal sealed class OllamaRateLimitedHandler(
         }
 
         return tooMany;
-    }
-
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        await limiter.DisposeAsync().ConfigureAwait(false);
-
-        Dispose(disposing: false);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-        if (disposing) limiter.Dispose();
     }
 }

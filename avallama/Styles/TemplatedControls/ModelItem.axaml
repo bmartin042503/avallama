@@ -110,6 +110,115 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <Style.Resources>
             <converters:ModelSizeConverter x:Key="ModelSizeConverter" />
+
+            <!-- Downloaded state templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
+            <!-- Template creation logic found at: /DataTemplates/ModelDownloadStatusTemplateSelector.cs -->
+            <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelItemDownloadStatusTemplateSelector">
+
+                <!-- Not enough space template -->
+                <DataTemplate x:Key="NotEnoughSpace" DataType="models:ModelDownloadStatus">
+                    <TextBlock Text="{services:LocalizationService Key='NOT_ENOUGH_SPACE_DOWNLOAD'}" />
+                </DataTemplate>
+
+                <!-- No connection template -->
+                <DataTemplate x:Key="NoConnection" DataType="models:ModelDownloadStatus">
+                    <TextBlock Text="{services:LocalizationService Key='NO_CONNECTION_DOWNLOAD'}" />
+                </DataTemplate>
+
+                <!-- Ready template -->
+                <DataTemplate x:Key="Ready" DataType="models:ModelDownloadStatus">
+                    <Button Content="{services:LocalizationService Key='DOWNLOAD'}"
+                            Cursor="Hand"
+                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                        <Button.CommandParameter>
+                            <models:ModelDownloadAction>Start</models:ModelDownloadAction>
+                        </Button.CommandParameter>
+                    </Button>
+                </DataTemplate>
+
+                <!-- Downloading template -->
+                <DataTemplate x:Key="Downloading" DataType="models:ModelDownloadStatus">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                        <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" Margin="0,0,8,0">
+                            <TextBlock
+                                Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadStatusText}"
+                                FontFamily="{StaticResource Manrope}"
+                                VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
+
+                            <TextBlock
+                                Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadSpeedText}"
+                                FontFamily="{StaticResource Manrope}"
+                                VerticalAlignment="Center" FontSize="12" FontWeight="Medium"
+                                HorizontalAlignment="Right" />
+                        </StackPanel>
+
+                        <!-- Pause button -->
+                        <Button Grid.Column="1" Cursor="Hand"
+                                Padding="10"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                            <Button.CommandParameter>
+                                <models:ModelDownloadAction>Pause</models:ModelDownloadAction>
+                            </Button.CommandParameter>
+                            <controls:DynamicSvg Path="/Assets/Svg/pause.svg" Height="12"
+                                                 FillColor="{DynamicResource OnPrimary}" />
+                        </Button>
+
+                        <!-- Cancel button -->
+                        <Button Grid.Column="2" Cursor="Hand"
+                                Padding="10"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                            <Button.CommandParameter>
+                                <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
+                            </Button.CommandParameter>
+                            <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
+                                                 StrokeColor="{DynamicResource OnPrimary}" />
+                        </Button>
+                    </Grid>
+                </DataTemplate>
+
+                <!-- Paused template -->
+                <DataTemplate x:Key="Paused" DataType="models:ModelDownloadStatus">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                        <TextBlock Grid.Column="0"
+                                   Text="{services:LocalizationService Key='DOWNLOAD_PAUSED'}"
+                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+
+                        <!-- Resume button -->
+                        <Button Grid.Column="1" Cursor="Hand"
+                                Padding="8"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                            <Button.CommandParameter>
+                                <models:ModelDownloadAction>Resume</models:ModelDownloadAction>
+                            </Button.CommandParameter>
+                            <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="16"
+                                                 FillColor="{DynamicResource OnPrimary}" />
+                        </Button>
+
+                        <!-- Close button -->
+                        <Button Grid.Column="2" Cursor="Hand"
+                                Padding="10"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                            <Button.CommandParameter>
+                                <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
+                            </Button.CommandParameter>
+                            <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
+                                                 StrokeColor="{DynamicResource OnPrimary}" />
+                        </Button>
+                    </Grid>
+                </DataTemplate>
+
+                <!-- Downloaded template -->
+                <DataTemplate x:Key="Downloaded" DataType="models:ModelDownloadStatus">
+                    <Button Cursor="Hand" Classes="errorButton"
+                            Content="{services:LocalizationService Key='DELETE'}"
+                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
+                        <Button.CommandParameter>
+                            <models:ModelDownloadAction>Delete</models:ModelDownloadAction>
+                        </Button.CommandParameter>
+                    </Button>
+                </DataTemplate>
+
+            </dataTemplates:ModelDownloadStatusTemplateSelector>
         </Style.Resources>
 
         <Setter Property="Template">
@@ -121,117 +230,6 @@ Licensed under the MIT License. See LICENSE file for details.
                         BorderThickness="0.75"
                         Background="{DynamicResource SurfaceContainerLow}"
                         CornerRadius="10">
-
-                    <!-- Downloaded state templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
-                    <!-- Template creation logic found at: /DataTemplates/ModelDonwloadStatusTemplateSelector.cs -->
-                    <Border.DataTemplates>
-                        <dataTemplates:ModelDownloadStatusTemplateSelector>
-
-                            <!-- Not enough space template -->
-                            <DataTemplate x:Key="NotEnoughSpace" DataType="models:ModelDownloadStatus">
-                                <TextBlock Text="{services:LocalizationService Key='NOT_ENOUGH_SPACE_DOWNLOAD'}" />
-                            </DataTemplate>
-
-                            <!-- No connection template -->
-                            <DataTemplate x:Key="NoConnection" DataType="models:ModelDownloadStatus">
-                                <TextBlock Text="{services:LocalizationService Key='NO_CONNECTION_DOWNLOAD'}" />
-                            </DataTemplate>
-
-                            <!-- Ready template -->
-                            <DataTemplate x:Key="Ready" DataType="models:ModelDownloadStatus">
-                                <Button Content="{services:LocalizationService Key='DOWNLOAD'}"
-                                        Cursor="Hand"
-                                        Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                                    <Button.CommandParameter>
-                                        <models:ModelDownloadAction>Start</models:ModelDownloadAction>
-                                    </Button.CommandParameter>
-                                </Button>
-                            </DataTemplate>
-
-                            <!-- Downloading template -->
-                            <DataTemplate x:Key="Downloading" DataType="models:ModelDownloadStatus">
-                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                    <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" Margin="0,0,8,0">
-                                        <TextBlock
-                                            Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadStatusText}"
-                                            FontFamily="{StaticResource Manrope}"
-                                            VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
-
-                                        <TextBlock
-                                            Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadSpeedText}"
-                                            FontFamily="{StaticResource Manrope}"
-                                            VerticalAlignment="Center" FontSize="12" FontWeight="Medium"
-                                            HorizontalAlignment="Right" />
-                                    </StackPanel>
-
-                                    <!-- Pause button -->
-                                    <Button Grid.Column="1" Cursor="Hand"
-                                            Padding="10"
-                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                                        <Button.CommandParameter>
-                                            <models:ModelDownloadAction>Pause</models:ModelDownloadAction>
-                                        </Button.CommandParameter>
-                                        <controls:DynamicSvg Path="/Assets/Svg/pause.svg" Height="12"
-                                                             FillColor="{DynamicResource OnPrimary}" />
-                                    </Button>
-
-                                    <!-- Cancel button -->
-                                    <Button Grid.Column="2" Cursor="Hand"
-                                            Padding="10"
-                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                                        <Button.CommandParameter>
-                                            <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
-                                        </Button.CommandParameter>
-                                        <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
-                                                             StrokeColor="{DynamicResource OnPrimary}" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-
-                            <!-- Paused template -->
-                            <DataTemplate x:Key="Paused" DataType="models:ModelDownloadStatus">
-                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                    <TextBlock Grid.Column="0"
-                                               Text="{services:LocalizationService Key='DOWNLOAD_PAUSED'}"
-                                               VerticalAlignment="Center" Margin="0,0,8,0" />
-
-                                    <!-- Resume button -->
-                                    <Button Grid.Column="1" Cursor="Hand"
-                                            Padding="10"
-                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                                        <Button.CommandParameter>
-                                            <models:ModelDownloadAction>Resume</models:ModelDownloadAction>
-                                        </Button.CommandParameter>
-                                        <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="12"
-                                                             FillColor="{DynamicResource OnPrimary}" />
-                                    </Button>
-
-                                    <!-- Close button -->
-                                    <Button Grid.Column="2" Cursor="Hand"
-                                            Padding="10"
-                                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                                        <Button.CommandParameter>
-                                            <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
-                                        </Button.CommandParameter>
-                                        <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
-                                                             StrokeColor="{DynamicResource OnPrimary}" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-
-                            <!-- Downloaded template -->
-                            <DataTemplate x:Key="Downloaded" DataType="models:ModelDownloadStatus">
-                                <Button Cursor="Hand" Classes="errorButton"
-                                        Content="{services:LocalizationService Key='DELETE'}"
-                                        Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                                    <Button.CommandParameter>
-                                        <models:ModelDownloadAction>Delete</models:ModelDownloadAction>
-                                    </Button.CommandParameter>
-                                </Button>
-                            </DataTemplate>
-
-                        </dataTemplates:ModelDownloadStatusTemplateSelector>
-                    </Border.DataTemplates>
 
                     <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="32"
                           RowSpacing="20">
@@ -336,8 +334,12 @@ Licensed under the MIT License. See LICENSE file for details.
                             </Border>
 
                             <!-- DownloadStatus template which is received from ModelDownloadStatusTemplateSelector.cs -->
-                            <ContentControl Grid.Column="1" Content="{TemplateBinding DownloadStatus}"
-                                            HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <ContentControl
+                                Grid.Column="1"
+                                Content="{TemplateBinding DownloadStatus}"
+                                ContentTemplate="{StaticResource ModelItemDownloadStatusTemplateSelector}"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center" />
                         </Grid>
                     </Grid>
                 </Border>

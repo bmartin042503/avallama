@@ -1,0 +1,198 @@
+<!--
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:avallama.Models"
+        xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
+        xmlns:controls="clr-namespace:avallama.Controls"
+        xmlns:dataTemplates="clr-namespace:avallama.DataTemplates">
+    <Design.PreviewWith>
+
+        <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Background="{DynamicResource SurfaceContainer}">
+                <StackPanel Orientation="Vertical"
+                            Spacing="20" Margin="20"
+                            MaxWidth="350">
+
+                    <!-- Sample item 1 - Downloaded ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="llama-3.2:latest">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Downloaded</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 2 - Downloaded ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="deepseek-r1:8b-llama-distill-q4_K_M">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Downloaded</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 3 - Downloading ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="gpt-oss:20b"
+                        Classes="selectedListItem">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Downloading</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 4 - Paused ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="qwen:14b">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Paused</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 5 - Downloading ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="deepseek-r1:70b-llama-distill-q4_K_M">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Downloading</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 6 - Ready ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="qwen3-coder:480b-a35b-q4_K_M">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>Ready</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 7 - NoConnection ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="llava:34b">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>NoConnection</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 8 - NotEnoughSpace ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="mistral:7b-instruct-q3_K_S">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <models:ModelDownloadStatus>NotEnoughSpace</models:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                </StackPanel>
+            </Border>
+        </ThemeVariantScope>
+    </Design.PreviewWith>
+
+    <!-- Style definitions for selected ModelListItem -->
+    <Style Selector="templatedControls|ModelListItem.selectedListItem">
+
+        <!-- Model name style -->
+        <Style Selector="^ /template/ TextBlock#ModelNameTextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
+        </Style>
+
+        <!-- Model background (border) style -->
+        <Style Selector="^ /template/ Border#ModelBorder">
+            <Setter Property="Background" Value="{DynamicResource Primary}" />
+        </Style>
+
+        <!-- Model download status text style -->
+        <Style Selector="^ TextBlock.downloadStatusText">
+            <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
+        </Style>
+
+        <!-- Model download status svg style (separated for downloaded svg and other due to need of StrokeColor and FillColor styles) -->
+        <Style Selector="^ controls|DynamicSvg.downloadedSvg">
+            <Setter Property="StrokeColor" Value="{DynamicResource OnPrimary}" />
+        </Style>
+        <Style Selector="^ controls|DynamicSvg:not(.downloadedSvg)">
+            <Setter Property="FillColor" Value="{DynamicResource OnPrimary}" />
+        </Style>
+
+    </Style>
+
+    <!-- Build of ModelListItem -->
+    <Style Selector="templatedControls|ModelListItem">
+        <Style.Resources>
+            <!-- Downloaded state templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
+            <!-- Template creation logic found at: /DataTemplates/ModelDownloadStatusTemplateSelector.cs -->
+            <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelListItemDownloadStatusTemplateSelector">
+
+                <!-- Downloaded template -->
+                <DataTemplate x:Key="Downloaded" DataType="models:ModelDownloadStatus">
+                    <controls:DynamicSvg
+                        Path="/Assets/Svg/download.svg"
+                        Height="16"
+                        Classes="downloadedSvg"
+                        StrokeColor="{DynamicResource OnSurface}" />
+                </DataTemplate>
+
+                <!-- Downloading template -->
+                <DataTemplate x:Key="Downloading" DataType="models:ModelDownloadStatus">
+                    <controls:DynamicSvg Path="/Assets/Svg/spinner.svg"
+                                         Height="16"
+                                         FillColor="{DynamicResource OnSurface}"
+                                         Classes="spinnerAnimation">
+                        <controls:DynamicSvg.RenderTransform>
+                            <RotateTransform Angle="0" />
+                        </controls:DynamicSvg.RenderTransform>
+                    </controls:DynamicSvg>
+                </DataTemplate>
+
+                <!-- Paused template -->
+                <DataTemplate x:Key="Paused" DataType="models:ModelDownloadStatus">
+                    <controls:DynamicSvg
+                        Path="/Assets/Svg/pause.svg"
+                        Height="12"
+                        Margin="4,0"
+                        FillColor="{DynamicResource OnSurface}" />
+                </DataTemplate>
+
+                <!-- Empty templates for Ready, NotEnoughSpace, NoConnection status -->
+                <DataTemplate x:Key="Ready" DataType="models:ModelDownloadStatus" />
+                <DataTemplate x:Key="NotEnoughSpace" DataType="models:ModelDownloadStatus" />
+                <DataTemplate x:Key="NoConnection" DataType="models:ModelDownloadStatus" />
+
+            </dataTemplates:ModelDownloadStatusTemplateSelector>
+        </Style.Resources>
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    x:Name="ModelBorder"
+                    Background="{DynamicResource SurfaceContainerHighest}"
+                    CornerRadius="6"
+                    Padding="10,8"
+                    Cursor="Hand">
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+
+                        <!-- Model name -->
+                        <TextBlock
+                            x:Name="ModelNameTextBlock"
+                            Grid.Column="0"
+                            Text="{TemplateBinding Title}"
+                            TextTrimming="CharacterEllipsis"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left"
+                            TextAlignment="Left"
+                            Foreground="{DynamicResource OnSurface}" />
+
+                        <!-- DownloadStatus template which is received from ModelDownloadStatusTemplateSelector.cs -->
+                        <ContentControl
+                            Grid.Column="1"
+                            Content="{TemplateBinding DownloadStatus}"
+                            ContentTemplate="{StaticResource ModelListItemDownloadStatusTemplateSelector}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

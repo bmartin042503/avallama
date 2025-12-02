@@ -35,7 +35,6 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         await vm.InitializeAsync();
 
         Assert.Equal(string.Empty, vm.SelectedModelName);
-        Assert.Null(vm.SelectedModel);
         Assert.False(vm.IsModelInfoBlockVisible);
         Assert.Equal(models.Count, vm.Models.Count);
         Assert.True(vm.HasModelsToDisplay);
