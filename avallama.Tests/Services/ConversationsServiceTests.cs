@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using avallama.Models;
@@ -22,8 +23,8 @@ public class ConversationServiceTests : IDisposable
 
     public ConversationServiceTests()
     {
-
-        _connection = new SqliteConnection("Data Source=:memory:");
+        var tempDbPath = Path.Combine(Path.GetTempPath(), $"avallama_test_{Guid.NewGuid()}.db");
+        _connection = new SqliteConnection($"Data Source={tempDbPath}");
         _connection.Open();
 
         InitializeTestSchema(_connection);
@@ -308,7 +309,22 @@ public class ConversationServiceTests : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
+        var dbPath = _connection.DataSource;
+
+        _connection.Close();
         _connection.Dispose();
+
+        try
+        {
+            if (File.Exists(dbPath)) File.Delete(dbPath);
+            if (File.Exists(dbPath + "-wal")) File.Delete(dbPath + "-wal");
+            if (File.Exists(dbPath + "-shm")) File.Delete(dbPath + "-shm");
+        }
+        catch
+        {
+            // ignore
+        }
+
+        GC.SuppressFinalize(this);
     }
 }

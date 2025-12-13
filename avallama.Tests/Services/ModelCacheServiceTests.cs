@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using avallama.Models;
@@ -22,7 +23,8 @@ public class ModelCacheServiceTests : IAsyncDisposable
 
     public ModelCacheServiceTests()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
+        var tempDbPath = Path.Combine(Path.GetTempPath(), $"avallama_test_{Guid.NewGuid()}.db");
+        _connection = new SqliteConnection($"Data Source={tempDbPath}");
         _connection.Open();
 
         InitializeTestSchema(_connection);
@@ -34,6 +36,11 @@ public class ModelCacheServiceTests : IAsyncDisposable
     {
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
+                          PRAGMA foreign_keys = ON;
+                          PRAGMA journal_mode = WAL;
+                          PRAGMA synchronous = NORMAL;
+                          PRAGMA temp_store = MEMORY;
+                          PRAGMA cache_size = 32000;
 
                           CREATE TABLE IF NOT EXISTS model_families (
                           name TEXT PRIMARY KEY,
@@ -772,10 +779,22 @@ public class ModelCacheServiceTests : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await Task.Delay(100);
+        var dbPath = _connection.DataSource;
 
         await _connection.CloseAsync();
         await _connection.DisposeAsync();
+
+        try
+        {
+            if (File.Exists(dbPath)) File.Delete(dbPath);
+            if (File.Exists(dbPath + "-wal")) File.Delete(dbPath + "-wal");
+            if (File.Exists(dbPath + "-shm")) File.Delete(dbPath + "-shm");
+        }
+        catch
+        {
+            // ignore
+        }
+
         GC.SuppressFinalize(this);
     }
 }
