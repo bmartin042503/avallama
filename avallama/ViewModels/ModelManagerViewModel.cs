@@ -127,7 +127,6 @@ public partial class ModelManagerViewModel : PageViewModel
         UpdateDownloadedModelsInfo();
     }
 
-    // A rendezés beállítása alapján rendezi a modelleket
     private void SortModels()
     {
         var search = SearchBoxText.Trim();
@@ -254,7 +253,7 @@ public partial class ModelManagerViewModel : PageViewModel
         IsPaginationButtonVisible = _paginationIndex < dataToPaginate.Count;
     }
 
-    // ez akkor hívódik meg ha a felhasználó valamelyik letöltéssel kapcsolatos interaktálható gombra kattint
+    // executes when the user interacts with a ModelItem (download, delete, pause, ...)
     [RelayCommand]
     public async Task ModelAction(object parameter)
     {
@@ -375,6 +374,14 @@ public partial class ModelManagerViewModel : PageViewModel
                         if (_downloadingModel != null)
                         {
                             _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                            var downloadedModels = await _ollamaService.GetDownloadedModels(forceRefresh: true);
+                            var downloadedModel = downloadedModels.FirstOrDefault(m => m.Name == _downloadingModel.Name);
+                            if (downloadedModel != null)
+                            {
+                                _downloadingModel.Info = downloadedModel.Info;
+                                _downloadingModel.Size = downloadedModel.Size;
+                                _downloadingModel.Parameters = downloadedModel.Parameters;
+                            }
                             await _modelCacheService.UpdateModelAsync(_downloadingModel);
                         }
 
@@ -442,6 +449,7 @@ public partial class ModelManagerViewModel : PageViewModel
         DownloadSpeedText = $"{_downloadSpeed:0.##} MB/s";
     }
 
+    // TODO: extract search logic so it can be reused
     private static int LevenshteinDistance(string s, string t)
     {
         if (string.IsNullOrEmpty(s))

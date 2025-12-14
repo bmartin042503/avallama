@@ -7,14 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
-using avallama.Tests.Extensions;
 using avallama.Tests.Fixtures;
 using Moq;
 using Moq.Protected;
@@ -30,6 +27,14 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     public OllamaServiceTests(TestServicesFixture fixture)
     {
         _fixture = fixture;
+
+        _fixture.ConfigMock
+            .Setup(x => x.ReadSetting(ConfigurationKey.ApiHost))
+            .Returns("localhost");
+
+        _fixture.ConfigMock
+            .Setup(x => x.ReadSetting(ConfigurationKey.ApiPort))
+            .Returns("11434");
 
         // Create a mock HttpMessageHandler
         _handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -56,164 +61,90 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             });
     }
 
-    [Fact]
-    public async Task CallingOllamaServiceMethod_BeforeStart_Throws()
+    private Mock<IHttpClientFactory> CreateMockHttpClientFactory(HttpClient httpClient)
     {
-        var ol = new OllamaService(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher());
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => { await ol.GetModelParamNum("testllama"); });
-    }
+        var mockFactory = new Mock<IHttpClientFactory>();
 
-    [Fact]
-    public async Task CallingOllamaServiceMethod_AfterStart_DoesNotThrow()
-    {
-        var httpClient = new HttpClient(_handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
+        mockFactory
+            .Setup(x => x.CreateClient("OllamaServiceHttpClient"))
+            .Returns(httpClient);
 
-        var ol = new OllamaService(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
-        {
-            StartProcessFunc = _ => new Process()
-        };
-        typeof(OllamaService)
-            .GetField("_httpClient",
-                BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
-
-        await ol.Start();
-
-        await AsyncAssertExtensions.DoesNotThrowAsync(async () => { await ol.GetModelParamNum("testllama"); });
-    }
-
-    // Start() tests
-
-    [Fact]
-    public async Task StartingOllamaService_DoesNotThrow()
-    {
-        var httpClient = new HttpClient(_handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
-
-        var ol = new OllamaService(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
-        {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
-        };
-        typeof(OllamaService)
-            .GetField("_httpClient",
-                BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
-
-        await AsyncAssertExtensions.DoesNotThrowAsync(async () => { await ol.Start(); });
+        return mockFactory;
     }
 
     [Fact]
     public async Task StartingOllamaService_WhenMockedRunning_SetsRunning()
     {
-        var httpClient = new HttpClient(_handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
+        var httpClient = new HttpClient(_handlerMock.Object);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
+            new SynchronousAvaloniaDispatcher(),
+            mockHttpClientFactory.Object)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
         };
-        typeof(OllamaService)
-            .GetField("_httpClient",
-                BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
 
-        ServiceStatus? reportedStatus = null;
-        ol.ServiceStatusChanged += (status, _) => reportedStatus = status;
-
+        var reportedState = new ServiceState(ServiceStatus.Stopped);
+        ol.ServiceStateChanged += status => reportedState = status;
         await ol.Start();
 
-        Assert.Equal(ServiceStatus.Running, reportedStatus);
+        Assert.Equal(ServiceStatus.Running, reportedState.Status);
     }
 
     [Fact]
     public async Task StartingOllamaService_WhenProcessIsNull_SetsNotInstalled()
     {
-        var httpClient = new HttpClient(_handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
+        var httpClient = new HttpClient(_handlerMock.Object);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
+            new SynchronousAvaloniaDispatcher(),
+            mockHttpClientFactory.Object)
         {
             StartProcessFunc = _ => null,
             GetProcessCountFunc = () => 0
         };
-        typeof(OllamaService)
-            .GetField("_httpClient",
-                BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
 
-        ServiceStatus? reportedStatus = null;
-        ol.ServiceStatusChanged += (status, _) => reportedStatus = status;
-
+        var reportedState = new ServiceState(ServiceStatus.Stopped);
+        ol.ServiceStateChanged += status => reportedState = status;
         await ol.Start();
 
-        Assert.Equal(ServiceStatus.NotInstalled, reportedStatus);
+        Assert.Equal(ServiceStatus.NotInstalled, reportedState.Status);
     }
 
     [Fact]
     public async Task StartingOllamaService_WithProcessRunning_SetsRunning()
     {
-        var httpClient = new HttpClient(_handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
+        var httpClient = new HttpClient(_handlerMock.Object);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
+            new SynchronousAvaloniaDispatcher(),
+            mockHttpClientFactory.Object)
         {
             StartProcessFunc = _ => null,
             GetProcessCountFunc = () => 1
         };
-        typeof(OllamaService)
-            .GetField("_httpClient",
-                BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
 
-        ServiceStatus? reportedStatus = null;
-        ol.ServiceStatusChanged += (status, _) => reportedStatus = status;
-
+        var reportedState = new ServiceState(ServiceStatus.Stopped);
+        ol.ServiceStateChanged += status => reportedState = status;
         await ol.Start();
 
-        Assert.Equal(ServiceStatus.Running, reportedStatus);
+        Assert.Equal(ServiceStatus.Running, reportedState.Status);
     }
 
     [Fact]
@@ -233,52 +164,142 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             {
                 return Task.Run(async () =>
                 {
-                    if (request.RequestUri!.AbsolutePath == "/api/version")
+                    if (request.RequestUri!.AbsolutePath != "/api/version")
+                        return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+                    Interlocked.Increment(ref callCount);
+
+                    // simulate network delay
+                    await Task.Delay(100, token);
+
+                    if (callCount < 4)
+                        return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+                    return new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Interlocked.Increment(ref callCount);
-                        // simulate network delay
-                        await Task.Delay(500, token);
-
-                        if (callCount < 4)
-                            return new HttpResponseMessage(HttpStatusCode.NotFound);
-
-                        return new HttpResponseMessage(HttpStatusCode.OK)
-                        {
-                            Content = new StringContent("{\"version\":\"1.0.0\"}")
-                        };
-                    }
-
-                    return new HttpResponseMessage(HttpStatusCode.NotFound);
+                        Content = new StringContent("{\"version\":\"1.0.0\"}")
+                    };
                 }, token);
             });
 
-        var httpClient = new HttpClient(_handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
+        var httpClient = new HttpClient(_handlerMock.Object);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
+            new SynchronousAvaloniaDispatcher(),
+            mockHttpClientFactory.Object)
         {
             StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
+            GetProcessCountFunc = () => 0,
+            RetryDelay = TimeSpan.FromMilliseconds(50)
         };
-        typeof(OllamaService)
-            .GetField("_httpClient",
-                BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
 
-        ol.ServiceStatusChanged += (status, _) => { statusEvents.Add(status); };
+        ol.ServiceStateChanged += state => { statusEvents.Add(state?.Status); };
 
         await ol.Start();
 
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Running));
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Retrying));
         Assert.Equal(4, callCount);
+    }
+
+    [Fact]
+    public async Task Start_WhenServerNeverResponds_StopsAfterMaxRetries()
+    {
+        var callCount = 0;
+
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                throw new HttpRequestException("Connection refused");
+            });
+
+        var httpClient = new HttpClient(_handlerMock.Object);
+        var mockFactory = CreateMockHttpClientFactory(httpClient);
+
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
+            _fixture.ScraperMock.Object,
+            new SynchronousAvaloniaDispatcher(),
+            mockFactory.Object)
+        {
+            StartProcessFunc = _ => new Process(),
+            GetProcessCountFunc = () => 0,
+            RetryDelay = TimeSpan.FromMilliseconds(1)
+        };
+
+        var statusEvents = new List<ServiceStatus>();
+        ol.ServiceStateChanged += s => { if (s?.Status != null) statusEvents.Add(s.Status); };
+
+        await ol.Start();
+
+        Assert.Contains(ServiceStatus.Retrying, statusEvents);
+        Assert.Equal(ServiceStatus.Stopped, ol.OllamaServiceState?.Status);
+        Assert.Equal(6, callCount);
+    }
+
+    [Fact]
+    public async Task Start_WhenServerIsTooSlow_TreatsAsErrorAndRetries()
+    {
+        var callCount = 0;
+
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .Returns(async (HttpRequestMessage request, CancellationToken token) =>
+            {
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    // TaskCanceledException to simulate a timeout
+                    await Task.Delay(50, token);
+                    throw new TaskCanceledException("Request timed out");
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"version\":\"1.0.0\"}")
+                };
+            });
+
+        var httpClient = new HttpClient(_handlerMock.Object);
+        var mockFactory = CreateMockHttpClientFactory(httpClient);
+
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
+            _fixture.ScraperMock.Object,
+            new SynchronousAvaloniaDispatcher(),
+            mockFactory.Object)
+        {
+            StartProcessFunc = _ => new Process(),
+            GetProcessCountFunc = () => 0,
+            RetryDelay = TimeSpan.FromMilliseconds(10)
+        };
+
+        await ol.Start();
+
+        Assert.Equal(2, callCount);
+        Assert.Equal(ServiceStatus.Running, ol.OllamaServiceState?.Status);
     }
 
     [Fact]
@@ -322,29 +343,32 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
                 Content = new StringContent(responseContent)
             });
 
-        var httpClient = new HttpClient(mockHandler.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.Contains("/api/version")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
+            new SynchronousAvaloniaDispatcher(),
+            mockHttpClientFactory.Object)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
         };
 
-        // Inject mocked HttpClient
-        typeof(OllamaService)
-            .GetField("_httpClient", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
-
         var statusEvents = new List<(ServiceStatus? status, string? message)>();
-        ol.ServiceStatusChanged += (s, m) => statusEvents.Add((s, m));
+        ol.ServiceStateChanged += s => statusEvents.Add((s?.Status, s?.Message));
 
         await ol.Start();
 
@@ -368,7 +392,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     {
         var mockHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-        string responseContent =
+        const string responseContent =
             "INVALID_JSON\n{\"model\": \"llama3.2\",\"created_at\": \"2023-08-04T08:52:19.385406455-07:00\",\"message\": {\"role\": \"assistant\", \"content\": \"hello\"},\"done\": false}";
 
         mockHandler
@@ -383,25 +407,29 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
                 Content = new StringContent(responseContent)
             });
 
-        var httpClient = new HttpClient(mockHandler.Object)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.Contains("/api/version")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
-            new SynchronousAvaloniaDispatcher())
+            new SynchronousAvaloniaDispatcher(),
+            mockHttpClientFactory.Object)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
         };
-
-        typeof(OllamaService)
-            .GetField("_httpClient", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(ol, httpClient);
 
         await ol.Start();
 
@@ -414,5 +442,54 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         // Only the valid JSON line should be returned
         Assert.Single(results);
         Assert.Equal("hello", results[0].Message?.Content);
+    }
+
+    [Fact]
+    public async Task GenerateMessage_WhenConnectionLost_UpdatesStateToStopped()
+    {
+        var mockHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.Contains("/api/version")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
+
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.Contains("/api/chat")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ThrowsAsync(new HttpRequestException("Connection reset by peer"));
+
+        var httpClient = new HttpClient(mockHandler.Object);
+        var mockFactory = CreateMockHttpClientFactory(httpClient);
+
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
+            _fixture.ScraperMock.Object,
+            new SynchronousAvaloniaDispatcher(),
+            mockFactory.Object)
+        {
+            StartProcessFunc = _ => new Process(),
+            GetProcessCountFunc = () => 0
+        };
+
+        var statusEvents = new List<ServiceStatus>();
+        ol.ServiceStateChanged += s => { if (s?.Status != null) statusEvents.Add(s.Status); };
+
+        await ol.Start();
+
+        await foreach (var _ in ol.GenerateMessage([], "model")) { }
+
+        Assert.Equal(ServiceStatus.Stopped, ol.OllamaServiceState?.Status);
+        Assert.Contains(ServiceStatus.Stopped, statusEvents);
     }
 }

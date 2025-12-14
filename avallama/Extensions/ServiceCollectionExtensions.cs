@@ -64,6 +64,11 @@ public static class ServiceCollectionExtensions
             })
             .AddHttpMessageHandler<OllamaRateLimitedHandler>();
 
+        collection.AddHttpClient("OllamaServiceHttpClient", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
+
         collection.AddSingleton<ModelCacheService>();
         collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());
 

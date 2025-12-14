@@ -11,658 +11,753 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using avallama.Constants;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
+using System.Threading.Tasks;
 using avallama.Dtos;
 using avallama.Extensions;
 using avallama.Models;
 using avallama.Utilities;
 
-namespace avallama.Services;
-
-// A delegate where we provide the method definition that subscribers must conform to
-public delegate void ServiceStatusChangedHandler(ServiceStatus? status, string? message);
-
-public interface IOllamaService
+namespace avallama.Services
 {
-    Task Start();
-    void Stop();
-    Task Retry();
-    Task<bool> IsModelDownloaded();
-    Task<long> GetModelParamNum(string modelName);
-    IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
-    IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName);
-    Task<bool> IsOllamaServerRunning();
-    Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync();
-    IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(CancellationToken cancellationToken);
-    Task<bool> DeleteModel(string modelName);
-    Task<IList<OllamaModel>> ListDownloadedModels();
-    ServiceStatus? CurrentServiceStatus { get; }
-    string? CurrentServiceMessage { get; }
-    event ServiceStatusChangedHandler? ServiceStatusChanged;
-}
+    #region Supporting Types
 
-public class OllamaService : IOllamaService
-{
-    public const int DefaultApiPort = 11434;
-    public const string DefaultApiHost = "localhost";
-
-    private readonly IConfigurationService _configurationService;
-    private readonly IDialogService _dialogService;
-    private readonly IModelCacheService _modelCacheService;
-    private readonly IOllamaScraperService _ollamaScraperService;
-
-    // Maximum wait time for requests, currently 15 seconds for slower machines
-    // but might need to be readjusted in the future
-    private readonly TimeSpan _timeout = TimeSpan.FromSeconds(15);
-
-    private Process? _ollamaProcess;
-    private HttpClient _httpClient;
-    private readonly IAvaloniaDispatcher _dispatcher;
-    private string? _apiHost = DefaultApiHost;
-    private string? _apiPort = DefaultApiPort.ToString();
-    private string OllamaPath { get; set; } = "";
-    private bool _started;
-
-    private OllamaScraperResult? _currentScrapeSession;
-
-    public ServiceStatus? CurrentServiceStatus { get; private set; }
-    public string? CurrentServiceMessage { get; private set; }
-
-    private string ApiBaseUrl => $"http://{_apiHost}:{_apiPort}";
-
-    // Delegate for subscribers (MainViewModel subscribes here)
-    public event ServiceStatusChangedHandler? ServiceStatusChanged;
-
-    // Delegate for the start process function to allow mocking in tests
-    public Func<ProcessStartInfo, Process?> StartProcessFunc { get; init; } = Process.Start;
-
-    // Delegate for getting ollama processes
-    // This is needed because for some godforsaken reason the method started ollama on my local during testing
-    // so we mock it
-    public Func<int> GetProcessCountFunc { get; init; } = () => Process.GetProcessesByName("ollama").Length;
-
-    public OllamaService(
-        IConfigurationService configurationService,
-        IDialogService dialogService,
-        IModelCacheService modelCacheService,
-        IOllamaScraperService ollamaScraperService,
-        IAvaloniaDispatcher dispatcher
-    )
+    /// <summary>
+    /// Represents the various operational states of the Ollama service.
+    /// </summary>
+    public enum ServiceStatus
     {
-        _configurationService = configurationService;
-        _dialogService = dialogService;
-        _modelCacheService = modelCacheService;
-        _ollamaScraperService = ollamaScraperService;
-        _dispatcher = dispatcher;
-        _httpClient = new HttpClient();
-        LoadSettings();
+        /// <summary>The Ollama executable was not found on the system.</summary>
+        NotInstalled,
+
+        /// <summary>The service is currently not running.</summary>
+        Stopped,
+
+        /// <summary>The service is attempting to establish a connection.</summary>
+        Retrying,
+
+        /// <summary>The service is up, running, and responding to requests.</summary>
+        Running,
+
+        /// <summary>The service encountered a critical error and could not start.</summary>
+        Failed
     }
 
-    // This method is called during every API call so the app has up-to-date settings in memory
-    // without having to restart the service after every settings change
-    private void LoadSettings()
+    /// <summary>
+    /// Represents the current state of the service, including the status enum and a descriptive message.
+    /// </summary>
+    /// <param name="Status">The current operational status.</param>
+    /// <param name="Message">An optional localized message describing the state.</param>
+    public record ServiceState(ServiceStatus Status, string? Message = null);
+
+    /// <summary>
+    /// Delegate for handling service state change events.
+    /// </summary>
+    /// <param name="state">The new state of the service.</param>
+    public delegate void ServiceStateChangedHandler(ServiceState? state);
+
+    #endregion
+
+    /// <summary>
+    /// Defines the contract for managing the local Ollama process and interacting with its API.
+    /// </summary>
+    public interface IOllamaService
     {
-        var hostSetting = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
-        _apiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
+        #region Interface
 
-        var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
-        _apiPort = string.IsNullOrEmpty(portSetting) ? "11434" : portSetting;
+        // Properties & Events
 
-        // Setting BaseAddress so all requests are directed towards this address by default
-        var newBaseUri = new Uri($"http://{_apiHost}:{_apiPort}");
-        if (_httpClient.BaseAddress == null || _httpClient.BaseAddress != newBaseUri)
-        {
-            _httpClient.Dispose();
-            _httpClient = new HttpClient { BaseAddress = newBaseUri };
-            _httpClient.Timeout = _timeout;
-        }
+        /// <summary>
+        /// Gets the current state of the Ollama service.
+        /// </summary>
+        ServiceState? OllamaServiceState { get; }
+
+        /// <summary>
+        /// Event triggered when the service state changes (e.g., from Starting to Running).
+        /// </summary>
+        event ServiceStateChangedHandler? ServiceStateChanged;
+
+        // Lifecycle
+
+        /// <summary>
+        /// Attempts to start the Ollama process and establish a connection.
+        /// Thread-safe and prevents multiple concurrent start attempts.
+        /// </summary>
+        Task Start();
+
+        /// <summary>
+        /// Stops the local Ollama process and disposes of resources.
+        /// </summary>
+        void Stop();
+
+        /// <summary>
+        /// Retries the connection logic with an exponential backoff strategy.
+        /// </summary>
+        Task Retry();
+
+        /// <summary>
+        /// Checks if the Ollama API is reachable without modifying the internal service state.
+        /// </summary>
+        /// <returns>True if the server responds with HTTP 200 OK; otherwise, false.</returns>
+        Task<bool> CheckConnectionAsync();
+
+        // Model Management
+
+        /// <summary>
+        /// Retrieves the list of models currently downloaded to the local machine.
+        /// </summary>
+        /// <param name="forceRefresh">If true, bypasses the in-memory cache and fetches fresh data from the API.</param>
+        /// <returns>A list of downloaded Ollama models.</returns>
+        Task<IList<OllamaModel>> GetDownloadedModels(bool forceRefresh = false);
+
+        /// <summary>
+        /// Deletes a specific model from the local storage.
+        /// </summary>
+        /// <param name="modelName">The tag name of the model to delete.</param>
+        /// <returns>True if the deletion was successful.</returns>
+        Task<bool> DeleteModel(string modelName);
+
+        /// <summary>
+        /// Downloads (pulls) a model from the Ollama library.
+        /// </summary>
+        /// <param name="modelName">The name of the model to pull.</param>
+        /// <returns>An async stream of download progress responses.</returns>
+        IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
+
+        // Chat & Scraper
+
+        /// <summary>
+        /// Generates a chat response from the specified model based on the message history.
+        /// </summary>
+        /// <param name="messageHistory">The history of messages in the conversation.</param>
+        /// <param name="modelName">The model to use for generation.</param>
+        /// <returns>An async stream of response chunks.</returns>
+        IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName);
+
+        /// <summary>
+        /// Retrieves model families scraped from the Ollama website.
+        /// </summary>
+        Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync();
+
+        /// <summary>
+        /// Streams all available models scraped from the Ollama website.
+        /// </summary>
+        IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(CancellationToken cancellationToken);
+
+        #endregion
     }
 
-    public async Task Start()
+    /// <summary>
+    /// Implementation of the Ollama service. Manages the local 'ollama serve' process,
+    /// handles HTTP communication, and manages application state related to the LLM backend.
+    /// </summary>
+    public class OllamaService : IOllamaService, IDisposable
     {
-        if (_started)
-        {
-            return;
-        }
+        #region Constants & Fields
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            OllamaPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Programs\Ollama\ollama"
-            );
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            // same path on Mac and Linux
-            OllamaPath = @"/usr/local/bin/ollama";
-        }
+        public const int DefaultApiPort = 11434;
+        public const string DefaultApiHost = "localhost";
+        private const int MaxConnectionTries = 6;
 
-        var ollamaProcessCount = GetProcessCountFunc();
-        switch (ollamaProcessCount)
-        {
-            case 1:
-                OnServiceStatusChanged(
-                    ServiceStatus.Running,
-                    LocalizationService.GetString("OLLAMA_ALREADY_RUNNING")
-                );
-                _started = true;
-                return;
-            case >= 2:
-                // TODO: Automatically handling these processes instead of having to manually restart
-                OnServiceStatusChanged(
-                    ServiceStatus.Failed,
-                    LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR")
-                );
-                return;
-        }
+        // Dependencies
+        private readonly IConfigurationService _configurationService;
+        private readonly IDialogService _dialogService;
+        private readonly IModelCacheService _modelCacheService;
+        private readonly IOllamaScraperService _ollamaScraperService;
+        private readonly IAvaloniaDispatcher _dispatcher;
+        private readonly HttpClient _httpClient;
 
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = OllamaPath,
-            Arguments = "serve",
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+        // Internal State
+        private Process? _ollamaProcess;
+        private bool _started;
 
-        try
-        {
-            _ollamaProcess = StartProcessFunc(startInfo);
-        }
-        catch (Win32Exception)
-        {
-            // This is the exception that is thrown when an Ollama process cant be started on the specified path
-            // This is the first exception caught if Ollama isn't installed
-            OnServiceStatusChanged(ServiceStatus.NotInstalled);
-        }
-        catch (Exception ex)
-        {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                string.Format(LocalizationService.GetString("OLLAMA_FAILED"), ex.Message)
-            );
-            return;
-        }
+        /// <summary>
+        /// Semaphore to ensure thread safety during the Start sequence.
+        /// </summary>
+        private readonly SemaphoreSlim _startLock = new(1, 1);
 
-        // If an 'ollama' process can't be started then it's null, so it isn't installed
-        // I don't think it could otherwise be null
-        if (_ollamaProcess == null)
-        {
-            OnServiceStatusChanged(ServiceStatus.NotInstalled);
-            return;
-        }
+        // Caching
+        private OllamaScraperResult? _currentScrapeSession;
+        private IList<OllamaModel>? _downloadedModels;
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
-        var isServerRunning = await IsOllamaServerRunning();
-        if (isServerRunning)
-        {
-            OnServiceStatusChanged(
-                ServiceStatus.Running,
-                LocalizationService.GetString("OLLAMA_STARTED")
-            );
-            _started = true;
-        }
-        else
-        {
-            // Retries connection
-            // This is necessary on macOS, because the server starts later than the IsOllamaServerRunning() call
-            await Retry();
-        }
-    }
+        #endregion
 
-    // Method to guard api calls against being called before the Ollama process is started
-    // Within methods that perform API calls this method should be called before any API call
-    // Consumers must call Start() before calling an API method, or else an exception is thrown
-    private void EnsureStarted()
-    {
-        if (!_started)
+        #region Properties & Events
+
+        /// <summary>
+        /// Gets the current operational state of the service.
+        /// Setting this property automatically triggers the <see cref="ServiceStateChanged"/> event on the UI thread.
+        /// </summary>
+        public ServiceState? OllamaServiceState
         {
-            throw new InvalidOperationException("OllamaService has not been started yet. Call Start() first.");
-        }
-    }
-
-    public async Task<bool> IsOllamaServerRunning()
-    {
-        LoadSettings();
-        try
-        {
-            var response = await _httpClient.GetAsync("/api/version");
-            return response.StatusCode == HttpStatusCode.OK;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    public void Stop()
-    {
-        var ollamaProcessList = Process.GetProcessesByName("ollama");
-        foreach (var process in ollamaProcessList)
-        {
-            KillProcess(process);
-        }
-
-        _httpClient.Dispose();
-    }
-
-    public async Task Retry()
-    {
-        // Sending Retrying event (for the HomeViewModel, so it shows the status on the UI)
-        OnServiceStatusChanged(ServiceStatus.Retrying);
-
-        var maxTotalWait = TimeSpan.FromSeconds(30); // Max full time while it retries
-        var delay = TimeSpan.FromMilliseconds(200); // Starting delay
-        var maxDelay = TimeSpan.FromSeconds(5); // Maximum delay
-        var stopwatch = Stopwatch.StartNew();
-
-        while (stopwatch.Elapsed < maxTotalWait)
-        {
-            if (await IsOllamaServerRunning())
+            get;
+            private set
             {
-                OnServiceStatusChanged(
-                    ServiceStatus.Running,
-                    LocalizationService.GetString("OLLAMA_STARTED")
-                );
-                _started = true;
-                return;
-            }
-
-            await Task.Delay(delay);
-
-            // Increases the delay every time, but stays under the maximum
-            delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, maxDelay.TotalMilliseconds));
-        }
-
-        OnServiceStatusChanged(
-            ServiceStatus.Failed,
-            LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
-        );
-    }
-
-    private static void KillProcess(Process? process)
-    {
-        if (process == null || process.HasExited) return;
-        process.Kill();
-        process.Dispose();
-    }
-
-    public async Task<bool> IsModelDownloaded()
-    {
-        EnsureStarted();
-        LoadSettings();
-
-        try
-        {
-            var response = await _httpClient.GetAsync("/api/tags");
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var json = JsonNode.Parse(responseContent);
-            return json?["models"]?.AsArray().Any(m => m?["name"]?.ToString() == "llama3.2:latest" ||
-                                                       m?["name"]?.ToString() == "llama3.2")
-                   ?? false;
-        }
-        catch (JsonException ex)
-        {
-            _dialogService.ShowErrorDialog(ex.Message, false);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
-            );
-        }
-
-        return false;
-    }
-
-    public async Task<long> GetModelParamNum(string modelName)
-    {
-        EnsureStarted();
-        LoadSettings();
-
-        var payload = new
-        {
-            model = modelName
-        };
-
-        var jsonPayload = JsonSerializer.Serialize(payload);
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        try
-        {
-            var response = await _httpClient.PostAsync("/api/show", content);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var json = JsonNode.Parse(responseContent);
-            return long.Parse(json?["model_info"]?["general.parameter_count"]?.ToString() ?? "0");
-        }
-        catch (JsonException ex)
-        {
-            _dialogService.ShowErrorDialog(ex.Message, false);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
-            );
-        }
-
-        return 0;
-    }
-
-    public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName)
-    {
-        EnsureStarted();
-        LoadSettings();
-
-        var chatRequest = new ChatRequest(messageHistory, modelName);
-        var jsonPayload = chatRequest.ToJson();
-
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/api/chat")
-        {
-            Content = content
-        };
-
-        HttpResponseMessage response;
-        try
-        {
-            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                // Upon a successful message send it also sends Ollama is running
-                // If the host were to change then the HomeViewModel can display accordingly
-                OnServiceStatusChanged(ServiceStatus.Running);
+                if (field == value) return;
+                field = value;
+                NotifyStatusChanged(value);
             }
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+
+        public event ServiceStateChangedHandler? ServiceStateChanged;
+
+        // Mockable delegates for testing
+
+        /// <summary>Delegate used to start the process. Can be mocked for unit testing.</summary>
+        public Func<ProcessStartInfo, Process?> StartProcessFunc { get; init; } = Process.Start;
+
+        /// <summary>Delegate used to check running processes. Can be mocked for unit testing.</summary>
+        public Func<int> GetProcessCountFunc { get; init; } = () => Process.GetProcessesByName("ollama").Length;
+
+        /// <summary>The delay between connection retry attempts.</summary>
+        public TimeSpan RetryDelay { get; init; }
+
+        private string OllamaPath { get; set; } = "";
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OllamaService"/> class.
+        /// </summary>
+        /// <param name="configurationService">Service for reading app settings.</param>
+        /// <param name="dialogService">Service for showing UI dialogs.</param>
+        /// <param name="modelCacheService">Service for caching model details.</param>
+        /// <param name="ollamaScraperService">Service for scraping online models.</param>
+        /// <param name="dispatcher">Dispatcher to marshal events to the UI thread.</param>
+        /// <param name="httpClientFactory">Factory to create a named HttpClient instance.</param>
+        public OllamaService(
+            IConfigurationService configurationService,
+            IDialogService dialogService,
+            IModelCacheService modelCacheService,
+            IOllamaScraperService ollamaScraperService,
+            IAvaloniaDispatcher dispatcher,
+            IHttpClientFactory httpClientFactory)
         {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
-            );
-            yield break;
+            _configurationService = configurationService;
+            _dialogService = dialogService;
+            _modelCacheService = modelCacheService;
+            _ollamaScraperService = ollamaScraperService;
+            _dispatcher = dispatcher;
+
+            _httpClient = httpClientFactory.CreateClient("OllamaServiceHttpClient");
+
+            RetryDelay = TimeSpan.FromMilliseconds(500);
+            OllamaServiceState = new ServiceState(ServiceStatus.Stopped);
         }
 
-        await using var stream = await response.Content.ReadAsStreamAsync();
-        using var reader = new StreamReader(stream);
-        while (await reader.ReadLineAsync() is { } line)
+        #endregion
+
+        #region Lifecycle Methods
+
+        /// <summary>
+        /// Orchestrates the startup of the Ollama service.
+        /// Checks for existing instances, attempts to start the process if needed, and verifies connectivity.
+        /// </summary>
+        public async Task Start()
         {
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            OllamaResponse? json = null;
+            await _startLock.WaitAsync();
+
             try
             {
-                json = JsonSerializer.Deserialize<OllamaResponse>(line);
-            }
-            catch (JsonException e)
-            {
-                _dialogService.ShowErrorDialog(e.Message, false);
-            }
+                if (_started) return;
 
-            if (json != null)
+                ConfigureOllamaPath();
+
+                // Check for existing instances
+                var ollamaProcessCount = GetProcessCountFunc();
+                switch (ollamaProcessCount)
+                {
+                    case 1:
+                        OllamaServiceState = new ServiceState(ServiceStatus.Running,
+                            LocalizationService.GetString("OLLAMA_ALREADY_RUNNING"));
+                        _started = true;
+                        return;
+                    case >= 2:
+                        OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
+                            LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR"));
+                        return;
+                }
+
+                // Attempt to start process
+                if (!TryStartOllamaProcess()) return;
+
+                // Verify connection
+                if (await CheckConnectionAsync())
+                {
+                    OllamaServiceState =
+                        new ServiceState(ServiceStatus.Running, LocalizationService.GetString("OLLAMA_STARTED"));
+                    _started = true;
+                }
+                else
+                {
+                    // Fallback retry for slower systems
+                    await Retry();
+                }
+            }
+            finally
             {
-                yield return json;
+                _startLock.Release();
             }
         }
-    }
 
-    public async IAsyncEnumerable<DownloadResponse> PullModel(string modelName)
-    {
-        EnsureStarted();
-        LoadSettings();
-
-        var payload = new
+        /// <summary>
+        /// Stops the managed Ollama process and resets the internal state.
+        /// </summary>
+        public void Stop()
         {
-            model = modelName,
-            stream = true
-        };
-
-        var jsonPayload = JsonSerializer.Serialize(payload);
-
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/api/pull")
-        {
-            Content = content
-        };
-
-        HttpResponseMessage response;
-        try
-        {
-            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            if (response.StatusCode == HttpStatusCode.OK)
+            var ollamaProcessList = Process.GetProcessesByName("ollama");
+            foreach (var process in ollamaProcessList)
             {
-                // Sends that Ollama is running upon an OK response
-                // If the host were to change then the HomeViewModel can display accordingly
-                OnServiceStatusChanged(ServiceStatus.Running);
+                KillProcess(process);
             }
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            OnServiceStatusChanged(
-                ServiceStatus.Failed,
-                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR")
-            );
-            yield break;
+
+            _started = false;
+            OllamaServiceState = new ServiceState(ServiceStatus.Stopped);
         }
 
-        await using var stream = await response.Content.ReadAsStreamAsync();
-        using var reader = new StreamReader(stream);
-
-        while (await reader.ReadLineAsync() is { } line)
+        /// <summary>
+        /// Retries the connection to the Ollama API with an exponential backoff strategy.
+        /// </summary>
+        public async Task Retry()
         {
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            DownloadResponse? json = null;
+            OllamaServiceState = new ServiceState(ServiceStatus.Retrying);
+
+            var totalTries = 1;
+            var delay = RetryDelay;
+
+            // Backoff logic:
+            // 1st try (Start method) -> Fail
+            // 2nd try (Here) -> Wait delay -> Check
+            // 3rd try -> Wait delay*2 -> Check ...
+            do
+            {
+                totalTries++;
+                if (totalTries > 1)
+                {
+                    await Task.Delay(delay);
+
+                    var nextDelay = delay + delay;
+                    // Cap the max delay to 3 seconds to keep UI responsive
+                    delay = nextDelay > TimeSpan.FromSeconds(3) ? TimeSpan.FromSeconds(3) : nextDelay;
+                }
+
+                if (!await CheckConnectionAsync()) continue;
+
+                OllamaServiceState = new ServiceState(ServiceStatus.Running,
+                    LocalizationService.GetString("OLLAMA_STARTED"));
+
+                return;
+            } while (totalTries != MaxConnectionTries);
+
+            OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
+        }
+
+        /// <summary>
+        /// Performs a lightweight check against the /api/version endpoint to see if the server is responsive.
+        /// This method does not alter the service state.
+        /// </summary>
+        /// <returns>True if the server responds with 200 OK; otherwise, false.</returns>
+        public async Task<bool> CheckConnectionAsync()
+        {
             try
             {
-                json = JsonSerializer.Deserialize<DownloadResponse>(line);
+                using var request = CreateRequest(HttpMethod.Get, "/api/version");
+                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                return response.StatusCode == HttpStatusCode.OK;
             }
-            catch (JsonException e)
+            catch
             {
-                _dialogService.ShowErrorDialog(e.Message, false);
-            }
-
-            if (json != null)
-            {
-                yield return json;
+                return false;
             }
         }
-    }
 
-    public Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync()
-    {
-        if (_currentScrapeSession?.Families is not { } families) return Task.FromResult<IList<OllamaModelFamily>>([]);
-        _currentScrapeSession = null;
-        return Task.FromResult(families);
-    }
+        #endregion
 
-    public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        _currentScrapeSession = null;
+        #region API Methods
 
-        var result = await _ollamaScraperService.GetAllOllamaModelsAsync(cancellationToken);
-
-        _currentScrapeSession = result;
-
-        await foreach (var model in result.Models.WithCancellation(cancellationToken))
+        /// <inheritdoc />
+        public async Task<IList<OllamaModel>> GetDownloadedModels(bool forceRefresh = false)
         {
-            yield return model;
-        }
-    }
-
-    public async Task<bool> DeleteModel(string modelName)
-    {
-        EnsureStarted();
-        LoadSettings();
-
-        var payload = new
-        {
-            model = modelName
-        };
-
-        var jsonPayload = JsonSerializer.Serialize(payload);
-
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Delete, "/api/delete")
-        {
-            Content = content
-        };
-
-        var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
-        return response.StatusCode == HttpStatusCode.OK;
-    }
-
-
-    public async Task<IList<OllamaModel>> ListDownloadedModels()
-    {
-        EnsureStarted();
-        LoadSettings();
-
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/tags");
-        var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-        var json = await response.Content.ReadAsStringAsync();
-
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var result = JsonSerializer.Deserialize<OllamaTagsResponse>(json, options);
-
-        if (result?.Models == null)
-            return [];
-
-        var downloadedModels = new List<OllamaModel>();
-
-        foreach (var m in result.Models.Where(m => !string.IsNullOrEmpty(m.Name)))
-        {
-            var downloadedModel = new OllamaModel
+            if (!await CheckConnectionAsync())
             {
-                Name = m.Name ?? string.Empty
-            };
-            var modelInfo = new Dictionary<string, string>();
-            if (m.Details != null)
-            {
-                if (m.Details.Quantization_Level != null)
-                {
-                    modelInfo.Add("quantization_level", m.Details.Quantization_Level);
-                }
-
-                if (m.Details.Format != null)
-                {
-                    modelInfo.Add("format", m.Details.Format);
-                }
-
-                if (m.Size.HasValue)
-                {
-                    downloadedModel.Size = m.Size.Value;
-                }
+                HandleConnectionError();
+                return new List<OllamaModel>();
             }
 
-            var payload = new { model = m.Name };
+            if (!forceRefresh && _downloadedModels != null && _downloadedModels.Any())
+            {
+                return _downloadedModels;
+            }
+
+            var tagsResponse = await FetchOllamaTagsAsync();
+            if (tagsResponse?.Models == null) return [];
+
+            var downloadedModels = new List<OllamaModel>();
+
+            foreach (var tag in tagsResponse.Models.Where(m => !string.IsNullOrEmpty(m.Name)))
+            {
+                var downloadedModel = CreateModelFromTag(tag);
+                try
+                {
+                    var showResponse = await FetchModelInfoAsync(downloadedModel.Name);
+                    EnrichModelWithInfo(downloadedModel, showResponse);
+                    downloadedModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                }
+                catch (Exception ex)
+                {
+                    // TODO: proper logging
+                    Console.WriteLine($"Failed to get model info for {downloadedModel.Name}: {ex.Message}");
+                }
+
+                downloadedModels.Add(downloadedModel);
+            }
+
+            foreach (var model in downloadedModels)
+            {
+                await _modelCacheService.UpdateModelAsync(model);
+            }
+
+            _downloadedModels = downloadedModels;
+            return downloadedModels;
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<DownloadResponse> PullModel(string modelName)
+        {
+            if (!await CheckConnectionAsync())
+            {
+                HandleConnectionError();
+                yield break;
+            }
+
+            var payload = new { model = modelName, stream = true };
             var jsonPayload = JsonSerializer.Serialize(payload);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var modelInfoRequest = new HttpRequestMessage(HttpMethod.Post, "/api/show")
+            using var request = CreateRequest(HttpMethod.Post, "/api/pull");
+            request.Content = content;
+
+            HttpResponseMessage response;
+            try
             {
-                Content = content
+                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    OllamaServiceState = new ServiceState(ServiceStatus.Running);
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                HandleConnectionError();
+                yield break;
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            using var reader = new StreamReader(stream);
+
+            while (await reader.ReadLineAsync() is { } line)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                DownloadResponse? json = null;
+                try
+                {
+                    json = JsonSerializer.Deserialize<DownloadResponse>(line);
+                }
+                catch (JsonException e)
+                {
+                    _dialogService.ShowErrorDialog(e.Message, false);
+                }
+
+                if (json != null) yield return json;
+            }
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<OllamaResponse> GenerateMessage(List<Message> messageHistory, string modelName)
+        {
+            if (!await CheckConnectionAsync())
+            {
+                HandleConnectionError();
+                yield break;
+            }
+
+            var chatRequest = new ChatRequest(messageHistory, modelName);
+            var jsonPayload = chatRequest.ToJson();
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            using var request = CreateRequest(HttpMethod.Post, "/api/chat");
+            request.Content = content;
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    OllamaServiceState = new ServiceState(ServiceStatus.Running);
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                HandleConnectionError();
+                yield break;
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            using var reader = new StreamReader(stream);
+            while (await reader.ReadLineAsync() is { } line)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                OllamaResponse? json = null;
+                try
+                {
+                    json = JsonSerializer.Deserialize<OllamaResponse>(line);
+                }
+                catch (JsonException e)
+                {
+                    _dialogService.ShowErrorDialog(e.Message, false);
+                }
+
+                if (json != null) yield return json;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> DeleteModel(string modelName)
+        {
+            if (!await CheckConnectionAsync())
+            {
+                HandleConnectionError();
+                return false;
+            }
+
+            var payload = new { model = modelName };
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            using var request = CreateRequest(HttpMethod.Delete, "/api/delete");
+            request.Content = content;
+
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+
+        /// <inheritdoc />
+        public Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync()
+        {
+            if (_currentScrapeSession?.Families is not { } families)
+                return Task.FromResult<IList<OllamaModelFamily>>([]);
+            _currentScrapeSession = null;
+            return Task.FromResult(families);
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            _currentScrapeSession = null;
+            var result = await _ollamaScraperService.GetAllOllamaModelsAsync(cancellationToken);
+            _currentScrapeSession = result;
+
+            await foreach (var model in result.Models.WithCancellation(cancellationToken))
+            {
+                yield return model;
+            }
+        }
+
+        #endregion
+
+        #region Private Helpers
+
+        /// <summary>
+        /// Determines the appropriate path for the Ollama executable based on the operating system.
+        /// </summary>
+        private void ConfigureOllamaPath()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                OllamaPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    @"Programs\Ollama\ollama");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                OllamaPath = @"/usr/local/bin/ollama";
+            }
+        }
+
+        /// <summary>
+        /// Attempts to launch the Ollama process with the 'serve' argument.
+        /// </summary>
+        /// <returns>True if the process started successfully; otherwise, false.</returns>
+        private bool TryStartOllamaProcess()
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = OllamaPath,
+                Arguments = "serve",
+                UseShellExecute = false,
+                CreateNoWindow = true
             };
 
             try
             {
-                var modelInfoResponse = await _httpClient.SendAsync(modelInfoRequest,
-                    HttpCompletionOption.ResponseHeadersRead);
-
-                var showJson = await modelInfoResponse.Content.ReadAsStringAsync();
-
-                var showResponse = JsonSerializer.Deserialize<OllamaShowResponse>(showJson, options);
-
-                if (!string.IsNullOrEmpty(showResponse?.License))
-                {
-                    modelInfo.Add(ModelInfoKey.License, showResponse.License);
-                }
-
-                if (showResponse?.Model_Info != null)
-                {
-                    var info = showResponse.Model_Info;
-
-                    if (info.TryGetValue("general.architecture", out var archElem) &&
-                        archElem.TryGetString(out string? arch) &&
-                        !string.IsNullOrEmpty(arch))
-                    {
-                        modelInfo.Add(ModelInfoKey.Architecture, arch);
-
-                        if (info.TryGetValue("general.parameter_count", out var paramElem) &&
-                            paramElem.TryGetInt64(out long paramCount) && paramCount > 0)
-                        {
-                            downloadedModel.Parameters = paramCount;
-                        }
-
-                        var blockKey = $"{arch}.{ModelInfoKey.BlockCount}";
-                        var ctxKey = $"{arch}.{ModelInfoKey.ContextLength}";
-                        var embedKey = $"{arch}.{ModelInfoKey.EmbeddingLength}";
-
-                        if (info.TryGetValue(blockKey, out var blockElem) &&
-                            blockElem.TryGetInt32(out int blockCount) && blockCount > 0)
-                        {
-                            modelInfo.Add(ModelInfoKey.BlockCount, blockCount.ToString());
-                        }
-
-                        if (info.TryGetValue(ctxKey, out var ctxElem) &&
-                            ctxElem.TryGetInt32(out int ctxLength) && ctxLength > 0)
-                        {
-                            modelInfo.Add(ModelInfoKey.ContextLength, ctxLength.ToString());
-                        }
-
-                        if (info.TryGetValue(embedKey, out var embedElem) &&
-                            embedElem.TryGetInt32(out int embedLength) && embedLength > 0)
-                        {
-                            modelInfo.Add(ModelInfoKey.EmbeddingLength, embedLength.ToString());
-                        }
-                    }
-                }
-
-                downloadedModel.Info = modelInfo;
-                downloadedModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                _ollamaProcess = StartProcessFunc(startInfo);
+                if (_ollamaProcess != null) return true;
+                OllamaServiceState = new ServiceState(ServiceStatus.NotInstalled);
+                return false;
+            }
+            catch (Win32Exception)
+            {
+                OllamaServiceState = new ServiceState(ServiceStatus.NotInstalled);
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed to get model info: " + ex.Message);
-                // TODO: proper logging
+                OllamaServiceState = new ServiceState(ServiceStatus.Failed,
+                    string.Format(LocalizationService.GetString("OLLAMA_FAILED"), ex.Message));
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Creates an HttpRequestMessage with the correct base URI derived from the configuration.
+        /// </summary>
+        private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint)
+        {
+            var host = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
+            if (string.IsNullOrEmpty(host)) host = "localhost";
+
+            var port = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
+            if (string.IsNullOrEmpty(port)) port = "11434";
+
+            var builder = new UriBuilder("http", host, int.Parse(port), endpoint);
+
+            return new HttpRequestMessage(method, builder.Uri);
+        }
+
+        private async Task<OllamaTagsResponse?> FetchOllamaTagsAsync()
+        {
+            using var request = CreateRequest(HttpMethod.Get, "/api/tags");
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<OllamaTagsResponse>(json, _jsonSerializerOptions);
+        }
+
+        private async Task<OllamaShowResponse?> FetchModelInfoAsync(string modelName)
+        {
+            var payload = new { model = modelName };
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            using var request = CreateRequest(HttpMethod.Post, "/api/show");
+            request.Content = content;
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<OllamaShowResponse>(json, _jsonSerializerOptions);
+        }
+
+        private OllamaModel CreateModelFromTag(OllamaModelDto tag)
+        {
+            var model = new OllamaModel { Name = tag.Name ?? string.Empty };
+
+            if (tag.Size.HasValue) model.Size = tag.Size.Value;
+            if (tag.Details == null) return model;
+
+            if (tag.Details.QuantizationLevel != null)
+                model.Info.TryAdd("quantization_level", tag.Details.QuantizationLevel);
+            if (tag.Details.Format != null) model.Info.TryAdd("format", tag.Details.Format);
+
+            return model;
+        }
+
+        private void EnrichModelWithInfo(OllamaModel model, OllamaShowResponse? showResponse)
+        {
+            if (showResponse?.ModelInfo == null) return;
+
+            if (!string.IsNullOrEmpty(showResponse.License))
+            {
+                model.Info.TryAdd(ModelInfoKey.License, showResponse.License);
             }
 
-            downloadedModels.Add(downloadedModel);
+            var info = showResponse.ModelInfo;
+            if (!info.TryGetValue("general.architecture", out var archElem) ||
+                !archElem.TryGetString(out var arch) ||
+                string.IsNullOrEmpty(arch))
+            {
+                return;
+            }
+
+            model.Info.TryAdd(ModelInfoKey.Architecture, arch);
+
+            if (info.TryGetValue("general.parameter_count", out var paramElem) &&
+                paramElem.TryGetInt64(out var paramCount) && paramCount > 0)
+            {
+                model.Parameters = paramCount;
+            }
+
+            string[] keys = [ModelInfoKey.BlockCount, ModelInfoKey.ContextLength, ModelInfoKey.EmbeddingLength];
+            foreach (var key in keys)
+            {
+                var searchKey = $"{arch}.{key}";
+                if (info.TryGetValue(searchKey, out var element) && element.TryGetInt32(out var value) && value > 0)
+                {
+                    model.Info.TryAdd(key, value.ToString());
+                }
+            }
         }
 
-        foreach (var m in downloadedModels)
+        /// <summary>
+        /// Updates the service state to Stopped/ConnectionError when an API call fails.
+        /// </summary>
+        private void HandleConnectionError()
         {
-            await _modelCacheService.UpdateModelAsync(m);
+            OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
+                LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
         }
 
-        return downloadedModels;
-    }
-
-    // We call the event, meaning the subscribed methods are also called
-    // One method subscribed to this in the HomeViewModel
-    private void OnServiceStatusChanged(ServiceStatus? status, string? message = null)
-    {
-        CurrentServiceStatus = status;
-        CurrentServiceMessage = message;
-
-        // I added this because during testing an 'NSWindow should only be instantiated on the main thread!' exception was thrown
-        // This is a macOS specific error I guess but let the UI calls be on the UI thread
-        if (_dispatcher.CheckAccess())
+        private static void KillProcess(Process? process)
         {
-            ServiceStatusChanged?.Invoke(status, message);
+            if (process == null || process.HasExited) return;
+            process.Kill();
+            process.Dispose();
         }
-        else
+
+        /// <summary>
+        /// Marshals the state change event to the UI thread using the Dispatcher.
+        /// </summary>
+        private void NotifyStatusChanged(ServiceState? state)
         {
-            _dispatcher.Post(() => { ServiceStatusChanged?.Invoke(status, message); });
+            if (_dispatcher.CheckAccess())
+            {
+                ServiceStateChanged?.Invoke(state);
+            }
+            else
+            {
+                _dispatcher.Post(() => ServiceStateChanged?.Invoke(state));
+            }
         }
+
+        #endregion
+
+        #region Dispose
+
+        /// <summary>
+        /// Disposes of the semaphore and suppresses finalization.
+        /// </summary>
+        public void Dispose()
+        {
+            _startLock.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

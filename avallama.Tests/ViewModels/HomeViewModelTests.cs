@@ -35,7 +35,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             new() { Name = "model2" }
         };
         fixture.OllamaMock
-            .Setup(o => o.ListDownloadedModels())
+            .Setup(o => o.GetDownloadedModels())
             .ReturnsAsync(models);
         DbMock();
 
@@ -65,7 +65,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
     {
         fixture.OllamaMock.Reset();
         fixture.OllamaMock
-            .Setup(o => o.ListDownloadedModels())
+            .Setup(o => o.GetDownloadedModels())
             .ReturnsAsync([]);
         DbMock();
 
@@ -87,7 +87,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
     [AvaloniaFact]
     public async Task View_WhenEmptyModelsList_DisablesComboBox()
     {
-        fixture.OllamaMock.Setup(o => o.ListDownloadedModels())
+        fixture.OllamaMock.Setup(o => o.GetDownloadedModels())
             .ReturnsAsync([]);
         DbMock();
 
