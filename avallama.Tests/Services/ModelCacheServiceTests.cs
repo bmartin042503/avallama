@@ -24,10 +24,16 @@ public class ModelCacheServiceTests : IAsyncDisposable
     public ModelCacheServiceTests()
     {
         var tempDbPath = Path.Combine(Path.GetTempPath(), $"avallama_test_{Guid.NewGuid()}.db");
-        _connection = new SqliteConnection($"Data Source={tempDbPath}");
+        var connectionString = $"Data Source={tempDbPath};Pooling=false;Default Timeout=30";
+
+        _connection = new SqliteConnection(connectionString);
         _connection.Open();
 
         InitializeTestSchema(_connection);
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "PRAGMA busy_timeout = 5000;";
+        cmd.ExecuteNonQuery();
 
         _modelCacheService = new ModelCacheService(_connection);
     }

@@ -60,7 +60,7 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private bool _isResourceWarningVisible;
     [ObservableProperty] private bool _isNoModelsWarningVisible;
     [ObservableProperty] private bool _isMessageBoxEnabled;
-    [ObservableProperty] private Conversation _selectedConversation = null!;
+    [ObservableProperty] private Conversation? _selectedConversation;
     [ObservableProperty] private string _remoteConnectionText = string.Empty;
     [ObservableProperty] private bool _isRemoteConnectionTextVisible;
     [ObservableProperty] private bool _isRetryPanelVisible;
@@ -84,7 +84,7 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     private async Task SendMessage()
     {
-        if (NewMessageText.Length == 0) return;
+        if (NewMessageText.Length == 0 || SelectedConversation == null) return;
         NewMessageText = NewMessageText.Trim();
         var message = new Message(NewMessageText);
         SelectedConversation.AddMessage(message);
@@ -116,7 +116,7 @@ public partial class HomeViewModel : PageViewModel
     {
         if (parameter is not Guid guid) return;
 
-        if (guid == SelectedConversation.ConversationId) return;
+        if (guid == SelectedConversation?.ConversationId) return;
 
         var selectedConversation = Conversations.FirstOrDefault(x => x.ConversationId == guid);
         if (selectedConversation == null) return;
@@ -133,7 +133,7 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     public async Task DeleteConversation(object parameter)
     {
-        if (parameter is not Guid guid) return;
+        if (parameter is not Guid guid || SelectedConversation == null) return;
 
         var res = await _dialogService.ShowConfirmationDialog(
             LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"), LocalizationService.GetString("DELETE"),
@@ -164,6 +164,7 @@ public partial class HomeViewModel : PageViewModel
 
     private async Task AddGeneratedMessage()
     {
+        if (SelectedConversation == null) return;
         var generatedMessage = new GeneratedMessage("", 0.0);
         SelectedConversation.AddMessage(generatedMessage);
         var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
@@ -198,6 +199,7 @@ public partial class HomeViewModel : PageViewModel
 
     private async Task RegenerateConversationTitle()
     {
+        if (SelectedConversation == null) return;
         SelectedConversation.Title = string.Empty;
 
         // TODO: better solution for title generation (not working for thinking models etc.)
@@ -344,7 +346,7 @@ public partial class HomeViewModel : PageViewModel
             case ServiceStatus.Stopped or ServiceStatus.Failed:
 
                 // if the last message meant to be a generated one, then we'll replace it to a FailedMessage
-                if (SelectedConversation.Messages.Count > 0)
+                if (SelectedConversation is { Messages.Count: > 0 })
                 {
                     if (SelectedConversation.Messages.Last() is GeneratedMessage generatedMessage)
                     {

@@ -159,7 +159,6 @@ namespace avallama.Services
 
         public const int DefaultApiPort = 11434;
         public const string DefaultApiHost = "localhost";
-        private const int MaxConnectionTries = 6;
 
         // Dependencies
         private readonly IConfigurationService _configurationService;
@@ -167,7 +166,8 @@ namespace avallama.Services
         private readonly IModelCacheService _modelCacheService;
         private readonly IOllamaScraperService _ollamaScraperService;
         private readonly IAvaloniaDispatcher _dispatcher;
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _checkHttpClient;
+        private readonly HttpClient _heavyHttpClient;
 
         // Internal State
         private Process? _ollamaProcess;
@@ -212,8 +212,8 @@ namespace avallama.Services
         /// <summary>Delegate used to check running processes. Can be mocked for unit testing.</summary>
         public Func<int> GetProcessCountFunc { get; init; } = () => Process.GetProcessesByName("ollama").Length;
 
-        /// <summary>The delay between connection retry attempts.</summary>
-        public TimeSpan RetryDelay { get; init; }
+        public TimeSpan MaxRetryingTime { get; init; } = TimeSpan.FromSeconds(15);
+        public TimeSpan ConnectionCheckInterval { get; init; } = TimeSpan.FromMilliseconds(500);
 
         private string OllamaPath { get; set; } = "";
 
@@ -244,9 +244,9 @@ namespace avallama.Services
             _ollamaScraperService = ollamaScraperService;
             _dispatcher = dispatcher;
 
-            _httpClient = httpClientFactory.CreateClient("OllamaServiceHttpClient");
+            _checkHttpClient = httpClientFactory.CreateClient("OllamaCheckHttpClient");
+            _heavyHttpClient = httpClientFactory.CreateClient("OllamaHeavyHttpClient");
 
-            RetryDelay = TimeSpan.FromMilliseconds(500);
             OllamaServiceState = new ServiceState(ServiceStatus.Stopped);
         }
 
@@ -321,38 +321,25 @@ namespace avallama.Services
         }
 
         /// <summary>
-        /// Retries the connection to the Ollama API with an exponential backoff strategy.
+        /// Retries the connection to the Ollama API.
         /// </summary>
         public async Task Retry()
         {
             OllamaServiceState = new ServiceState(ServiceStatus.Retrying);
 
-            var totalTries = 1;
-            var delay = RetryDelay;
+            var stopwatch = Stopwatch.StartNew();
 
-            // Backoff logic:
-            // 1st try (Start method) -> Fail
-            // 2nd try (Here) -> Wait delay -> Check
-            // 3rd try -> Wait delay*2 -> Check ...
-            do
+            while (stopwatch.Elapsed < MaxRetryingTime)
             {
-                totalTries++;
-                if (totalTries > 1)
+                if (await CheckConnectionAsync())
                 {
-                    await Task.Delay(delay);
-
-                    var nextDelay = delay + delay;
-                    // Cap the max delay to 3 seconds to keep UI responsive
-                    delay = nextDelay > TimeSpan.FromSeconds(3) ? TimeSpan.FromSeconds(3) : nextDelay;
+                    OllamaServiceState = new ServiceState(ServiceStatus.Running,
+                        LocalizationService.GetString("OLLAMA_STARTED"));
+                    return;
                 }
 
-                if (!await CheckConnectionAsync()) continue;
-
-                OllamaServiceState = new ServiceState(ServiceStatus.Running,
-                    LocalizationService.GetString("OLLAMA_STARTED"));
-
-                return;
-            } while (totalTries != MaxConnectionTries);
+                await Task.Delay(ConnectionCheckInterval);
+            }
 
             OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
                 LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
@@ -368,7 +355,7 @@ namespace avallama.Services
             try
             {
                 using var request = CreateRequest(HttpMethod.Get, "/api/version");
-                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                using var response = await _checkHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 return response.StatusCode == HttpStatusCode.OK;
             }
             catch
@@ -446,7 +433,7 @@ namespace avallama.Services
             HttpResponseMessage response;
             try
             {
-                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     OllamaServiceState = new ServiceState(ServiceStatus.Running);
@@ -497,7 +484,7 @@ namespace avallama.Services
             HttpResponseMessage response;
             try
             {
-                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     OllamaServiceState = new ServiceState(ServiceStatus.Running);
@@ -544,7 +531,7 @@ namespace avallama.Services
             using var request = CreateRequest(HttpMethod.Delete, "/api/delete");
             request.Content = content;
 
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             return response.StatusCode == HttpStatusCode.OK;
         }
 
@@ -645,7 +632,7 @@ namespace avallama.Services
         private async Task<OllamaTagsResponse?> FetchOllamaTagsAsync()
         {
             using var request = CreateRequest(HttpMethod.Get, "/api/tags");
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<OllamaTagsResponse>(json, _jsonSerializerOptions);
         }
@@ -658,7 +645,7 @@ namespace avallama.Services
 
             using var request = CreateRequest(HttpMethod.Post, "/api/show");
             request.Content = content;
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             var json = await response.Content.ReadAsStringAsync();
 
             return JsonSerializer.Deserialize<OllamaShowResponse>(json, _jsonSerializerOptions);

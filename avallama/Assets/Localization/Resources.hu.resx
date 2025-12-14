@@ -74,7 +74,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Generálás folyamatban...</value>
     </data>
     <data name="NOT_DOWNLOADED_WARNING" xml:space="preserve">
-        <value>Nincs letöltött modell, tölts le modellt a Modellkezelő felületen</value>
+        <value>Nincs letöltött modell</value>
     </data>
     <data name="LOADING_MODELS" xml:space="preserve">
         <value>Modellek töltése...</value>

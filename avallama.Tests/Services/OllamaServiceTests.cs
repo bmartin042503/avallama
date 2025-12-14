@@ -61,13 +61,17 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             });
     }
 
-    private Mock<IHttpClientFactory> CreateMockHttpClientFactory(HttpClient httpClient)
+    private Mock<IHttpClientFactory> CreateMockHttpClientFactory(HttpClient checkClient, HttpClient heavyClient)
     {
         var mockFactory = new Mock<IHttpClientFactory>();
 
         mockFactory
-            .Setup(x => x.CreateClient("OllamaServiceHttpClient"))
-            .Returns(httpClient);
+            .Setup(x => x.CreateClient("OllamaCheckHttpClient"))
+            .Returns(checkClient);
+
+        mockFactory
+            .Setup(x => x.CreateClient("OllamaHeavyHttpClient"))
+            .Returns(heavyClient);
 
         return mockFactory;
     }
@@ -76,7 +80,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     public async Task StartingOllamaService_WhenMockedRunning_SetsRunning()
     {
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -101,7 +105,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     public async Task StartingOllamaService_WhenProcessIsNull_SetsNotInstalled()
     {
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -126,7 +130,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     public async Task StartingOllamaService_WithProcessRunning_SetsRunning()
     {
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -183,7 +187,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             });
 
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -195,7 +199,8 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0,
-            RetryDelay = TimeSpan.FromMilliseconds(50)
+            MaxRetryingTime = TimeSpan.FromSeconds(2),
+            ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
         };
 
         ol.ServiceStateChanged += state => { statusEvents.Add(state?.Status); };
@@ -226,7 +231,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             });
 
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockFactory = CreateMockHttpClientFactory(httpClient);
+        var mockFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -238,17 +243,23 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0,
-            RetryDelay = TimeSpan.FromMilliseconds(1)
+            MaxRetryingTime = TimeSpan.FromMilliseconds(100),
+            ConnectionCheckInterval = TimeSpan.FromMilliseconds(10)
         };
 
         var statusEvents = new List<ServiceStatus>();
-        ol.ServiceStateChanged += s => { if (s?.Status != null) statusEvents.Add(s.Status); };
+        ol.ServiceStateChanged += s =>
+        {
+            if (s?.Status != null) statusEvents.Add(s.Status);
+        };
 
         await ol.Start();
 
-        Assert.Contains(ServiceStatus.Retrying, statusEvents);
+        Assert.Equal(ServiceStatus.Retrying, statusEvents[0]);
+        Assert.Equal(ServiceStatus.Stopped, statusEvents[1]);
+        Assert.Equal(2, statusEvents.Count);
         Assert.Equal(ServiceStatus.Stopped, ol.OllamaServiceState?.Status);
-        Assert.Equal(6, callCount);
+        Assert.True(callCount > 1, $"Expected multiple calls, but got {callCount}");
     }
 
     [Fact]
@@ -263,7 +274,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
-            .Returns(async (HttpRequestMessage request, CancellationToken token) =>
+            .Returns(async (HttpRequestMessage _, CancellationToken token) =>
             {
                 callCount++;
 
@@ -281,7 +292,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             });
 
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockFactory = CreateMockHttpClientFactory(httpClient);
+        var mockFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -292,13 +303,19 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             mockFactory.Object)
         {
             StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0,
-            RetryDelay = TimeSpan.FromMilliseconds(10)
+            GetProcessCountFunc = () => 0
+        };
+
+        var statusEvents = new List<ServiceStatus>();
+        ol.ServiceStateChanged += s =>
+        {
+            if (s?.Status != null) statusEvents.Add(s.Status);
         };
 
         await ol.Start();
 
         Assert.Equal(2, callCount);
+        Assert.Equal(ServiceStatus.Retrying, statusEvents[0]);
         Assert.Equal(ServiceStatus.Running, ol.OllamaServiceState?.Status);
     }
 
@@ -353,7 +370,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
         var httpClient = new HttpClient(mockHandler.Object);
-        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -417,7 +434,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
         var httpClient = new HttpClient(mockHandler.Object);
-        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -468,7 +485,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             .ThrowsAsync(new HttpRequestException("Connection reset by peer"));
 
         var httpClient = new HttpClient(mockHandler.Object);
-        var mockFactory = CreateMockHttpClientFactory(httpClient);
+        var mockFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -483,13 +500,107 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var statusEvents = new List<ServiceStatus>();
-        ol.ServiceStateChanged += s => { if (s?.Status != null) statusEvents.Add(s.Status); };
+        ol.ServiceStateChanged += s =>
+        {
+            if (s?.Status != null) statusEvents.Add(s.Status);
+        };
 
         await ol.Start();
 
-        await foreach (var _ in ol.GenerateMessage([], "model")) { }
+        await foreach (var _ in ol.GenerateMessage([], "model"))
+        {
+        }
 
         Assert.Equal(ServiceStatus.Stopped, ol.OllamaServiceState?.Status);
         Assert.Contains(ServiceStatus.Stopped, statusEvents);
+    }
+
+    [Fact]
+    public async Task GenerateMessage_WhenModelLoadIsSlow_ShouldNotTimeout()
+    {
+        var mockHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        var msg = new MessageContent { Content = "Finally loaded!" };
+        var responseJson = JsonSerializer.Serialize(new OllamaResponse
+        {
+            Model = "HeavyModel",
+            Message = msg,
+            Done = true
+        });
+
+        mockHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.Contains("/api/version")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
+
+        // slow chat response
+        mockHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.Contains("/api/chat")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .Returns(async (HttpRequestMessage _, CancellationToken token) =>
+            {
+                // simulating a network delay
+                await Task.Delay(200, token);
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(responseJson)
+                };
+            });
+
+        // Create CheckClient with short timeout (simulating fast ping requirement)
+        var checkClient = new HttpClient(mockHandler.Object);
+        checkClient.Timeout = TimeSpan.FromMilliseconds(50);
+
+        // Create HeavyClient with long timeout (simulating patience for model loading)
+        var heavyClient = new HttpClient(mockHandler.Object);
+        heavyClient.Timeout = TimeSpan.FromMilliseconds(500);
+
+        var mockFactory = CreateMockHttpClientFactory(checkClient, heavyClient);
+
+        var ol = new OllamaService(
+            _fixture.ConfigMock.Object,
+            _fixture.DialogMock.Object,
+            _fixture.ModelCacheMock.Object,
+            _fixture.ScraperMock.Object,
+            new SynchronousAvaloniaDispatcher(),
+            mockFactory.Object)
+        {
+            StartProcessFunc = _ => new Process(),
+            GetProcessCountFunc = () => 0
+        };
+
+        /*
+        var statusEvents = new List<ServiceStatus>();
+        ol.ServiceStateChanged += s =>
+        {
+            if (s?.Status != null) statusEvents.Add(s.Status);
+        };
+        */
+
+        await ol.Start();
+
+        var results = new List<OllamaResponse>();
+
+        try
+        {
+            await foreach (var r in ol.GenerateMessage([], "heavy-model"))
+            {
+                results.Add(r);
+            }
+        }
+        catch (Exception)
+        {
+            // should not happen if heavyclient is used correctly
+        }
+
+        Assert.Single(results);
+        Assert.Equal("Finally loaded!", results[0].Message?.Content);
+        Assert.NotEqual(ServiceStatus.Stopped, ol.OllamaServiceState?.Status);
     }
 }
