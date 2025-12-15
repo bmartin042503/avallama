@@ -4,7 +4,6 @@
 using Avalonia;
 using avallama.Tests.Fixtures;
 using Avalonia.Headless;
-using Avalonia.Media;
 
 [assembly: AvaloniaTestApplication(typeof(TestAppBuilder))]
 

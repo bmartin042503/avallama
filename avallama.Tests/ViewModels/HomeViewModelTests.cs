@@ -79,8 +79,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         await vm.InitializeModels(test: true);
 
-        Assert.Single(vm.AvailableModels);
-        Assert.Equal(LocalizationService.GetString("NO_MODELS_FOUND"), vm.SelectedModelName);
+        Assert.Empty(vm.AvailableModels);
         Assert.False(vm.IsModelsDropdownEnabled);
     }
 

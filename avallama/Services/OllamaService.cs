@@ -19,6 +19,7 @@ using avallama.Dtos;
 using avallama.Extensions;
 using avallama.Models;
 using avallama.Utilities;
+using avallama.Utilities.Time;
 
 namespace avallama.Services
 {
@@ -41,7 +42,7 @@ namespace avallama.Services
         /// <summary>The service is up, running, and responding to requests.</summary>
         Running,
 
-        /// <summary>The service encountered a critical error and could not start.</summary>
+        /// <summary>The service encountered a critical error and could not function.</summary>
         Failed
     }
 
@@ -168,6 +169,8 @@ namespace avallama.Services
         private readonly IAvaloniaDispatcher _dispatcher;
         private readonly HttpClient _checkHttpClient;
         private readonly HttpClient _heavyHttpClient;
+        private readonly ITimeProvider _timeProvider;
+        private readonly ITaskDelayer _taskDelayer;
 
         // Internal State
         private Process? _ollamaProcess;
@@ -230,13 +233,17 @@ namespace avallama.Services
         /// <param name="ollamaScraperService">Service for scraping online models.</param>
         /// <param name="dispatcher">Dispatcher to marshal events to the UI thread.</param>
         /// <param name="httpClientFactory">Factory to create a named HttpClient instance.</param>
+        /// <param name="timeProvider">Time provider to use for time measurements.</param>
+        /// <param name="taskDelayer">Task delayer to use for adding delays.</param>
         public OllamaService(
             IConfigurationService configurationService,
             IDialogService dialogService,
             IModelCacheService modelCacheService,
             IOllamaScraperService ollamaScraperService,
             IAvaloniaDispatcher dispatcher,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ITimeProvider? timeProvider = null,
+            ITaskDelayer? taskDelayer = null)
         {
             _configurationService = configurationService;
             _dialogService = dialogService;
@@ -246,6 +253,9 @@ namespace avallama.Services
 
             _checkHttpClient = httpClientFactory.CreateClient("OllamaCheckHttpClient");
             _heavyHttpClient = httpClientFactory.CreateClient("OllamaHeavyHttpClient");
+
+            _timeProvider = timeProvider ?? new RealTimeProvider();
+            _taskDelayer = taskDelayer ?? new RealTaskDelayer();
 
             OllamaServiceState = new ServiceState(ServiceStatus.Stopped);
         }
@@ -326,10 +336,10 @@ namespace avallama.Services
         public async Task Retry()
         {
             OllamaServiceState = new ServiceState(ServiceStatus.Retrying);
+            _timeProvider.Start();
+            var startTime = _timeProvider.Elapsed;
 
-            var stopwatch = Stopwatch.StartNew();
-
-            while (stopwatch.Elapsed < MaxRetryingTime)
+            while (_timeProvider.Elapsed - startTime < MaxRetryingTime)
             {
                 if (await CheckConnectionAsync())
                 {
@@ -338,8 +348,10 @@ namespace avallama.Services
                     return;
                 }
 
-                await Task.Delay(ConnectionCheckInterval);
+                await _taskDelayer.Delay(ConnectionCheckInterval);
             }
+
+            // TODO: check if ollama process is available and if not start one
 
             OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
                 LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));

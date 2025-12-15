@@ -38,9 +38,9 @@ public partial class HomeViewModel : PageViewModel
 
     public string ScrollSetting = string.Empty;
 
-    private ObservableStack<Conversation> _conversations = null!;
+    private ObservableStack<Conversation>? _conversations;
 
-    public ObservableStack<Conversation> Conversations
+    public ObservableStack<Conversation>? Conversations
     {
         get => _conversations;
         set => SetProperty(ref _conversations, value);
@@ -78,13 +78,15 @@ public partial class HomeViewModel : PageViewModel
         {
             field = value;
             OnPropertyChanged();
+
+            IsMessageBoxEnabled = !string.IsNullOrEmpty(value);
         }
     } = string.Empty;
 
     [RelayCommand]
     private async Task SendMessage()
     {
-        if (NewMessageText.Length == 0 || SelectedConversation == null) return;
+        if (NewMessageText.Length == 0 || SelectedConversation == null || Conversations == null) return;
         NewMessageText = NewMessageText.Trim();
         var message = new Message(NewMessageText);
         SelectedConversation.AddMessage(message);
@@ -102,6 +104,7 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     public async Task CreateNewConversation()
     {
+        Conversations ??= [];
         var newConversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
             string.Empty
@@ -114,7 +117,7 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     public async Task SelectConversation(object parameter)
     {
-        if (parameter is not Guid guid) return;
+        if (parameter is not Guid guid || Conversations == null) return;
 
         if (guid == SelectedConversation?.ConversationId) return;
 
@@ -133,7 +136,7 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     public async Task DeleteConversation(object parameter)
     {
-        if (parameter is not Guid guid || SelectedConversation == null) return;
+        if (parameter is not Guid guid || SelectedConversation == null || Conversations == null) return;
 
         var res = await _dialogService.ShowConfirmationDialog(
             LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"), LocalizationService.GetString("DELETE"),
@@ -239,13 +242,9 @@ public partial class HomeViewModel : PageViewModel
         LoadSettings();
 
         _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
-        if (_ollamaService.OllamaServiceState != null)
-        {
-            OllamaServiceStateChanged(_ollamaService.OllamaServiceState);
-        }
     }
 
-    public async Task InitializeAsync()
+    public virtual async Task InitializeAsync(bool test = false)
     {
         try
         {
@@ -255,7 +254,7 @@ public partial class HomeViewModel : PageViewModel
 
             if (!_isInitializedAsync) await InitializeConversations();
 
-            await InitializeModels();
+            await InitializeModels(test);
 
             _isInitializedAsync = true;
         }
@@ -321,6 +320,9 @@ public partial class HomeViewModel : PageViewModel
                 if (_ollamaServerStarted.Task.Status != TaskStatus.RanToCompletion)
                     _ollamaServerStarted.SetResult(true);
                 IsRetryPanelVisible = false;
+                IsRetryButtonVisible = false;
+
+                if (AvailableModels.Any() && !string.IsNullOrEmpty(SelectedModelName)) IsMessageBoxEnabled = true;
                 break;
             case ServiceStatus.NotInstalled:
                 _dialogService.ShowActionDialog(
@@ -359,6 +361,7 @@ public partial class HomeViewModel : PageViewModel
                 IsRemoteConnectionTextVisible = false;
                 IsRetryPanelVisible = true;
                 IsRetryButtonVisible = true;
+                IsMessageBoxEnabled = false;
                 break;
         }
     }
@@ -366,7 +369,7 @@ public partial class HomeViewModel : PageViewModel
     private async Task InitializeConversations()
     {
         Conversations = await _conversationService.GetConversations();
-        if (_conversations.Count <= 0)
+        if (_conversations is not { Count: > 0 })
         {
             await CreateNewConversation();
             return;
@@ -405,8 +408,6 @@ public partial class HomeViewModel : PageViewModel
         if (downloadedModels.Count == 0)
         {
             AvailableModels.Clear();
-            AvailableModels.Add(LocalizationService.GetString("NO_MODELS_FOUND"));
-            SelectedModelName = AvailableModels[0];
             IsModelsDropdownEnabled = false;
             IsNoModelsWarningVisible = true;
             IsMessageBoxEnabled = false;

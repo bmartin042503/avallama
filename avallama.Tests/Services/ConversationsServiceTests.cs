@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Services;
-using avallama.Tests.Fixtures;
 using Microsoft.Data.Sqlite;
 using Xunit;
 
@@ -164,7 +163,8 @@ public class ConversationServiceTests : IDisposable
         stopwatch.Stop();
 
         Assert.NotEmpty(conversations);
-        Assert.True(stopwatch.ElapsedMilliseconds < 1000, $"Operation took too long: {stopwatch.ElapsedMilliseconds}ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 1000,
+            $"Operation took too long: {stopwatch.ElapsedMilliseconds}ms");
     }
 
     [Fact]

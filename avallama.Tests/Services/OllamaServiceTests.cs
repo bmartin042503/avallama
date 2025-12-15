@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Services;
+using avallama.Tests.Fakes;
 using avallama.Tests.Fixtures;
 using Moq;
 using Moq.Protected;
@@ -79,6 +80,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task StartingOllamaService_WhenMockedRunning_SetsRunning()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var httpClient = new HttpClient(_handlerMock.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
@@ -88,7 +92,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockHttpClientFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
@@ -104,6 +110,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task StartingOllamaService_WhenProcessIsNull_SetsNotInstalled()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var httpClient = new HttpClient(_handlerMock.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
@@ -113,7 +122,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockHttpClientFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => null,
             GetProcessCountFunc = () => 0
@@ -129,6 +140,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task StartingOllamaService_WithProcessRunning_SetsRunning()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var httpClient = new HttpClient(_handlerMock.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
@@ -138,7 +152,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockHttpClientFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => null,
             GetProcessCountFunc = () => 1
@@ -154,6 +170,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task Start_WithDelayedResponse_RetriesUntilRunning()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var callCount = 0;
         var statusEvents = new List<ServiceStatus?>();
 
@@ -164,26 +183,20 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
-            .Returns((HttpRequestMessage request, CancellationToken token) =>
+            .ReturnsAsync((HttpRequestMessage request, CancellationToken token) =>
             {
-                return Task.Run(async () =>
+                if (request.RequestUri!.AbsolutePath != "/api/version")
+                    return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+                callCount++; // doesn't need interlocked because it runs synchronously with fake time
+
+                if (callCount < 4)
+                    return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    if (request.RequestUri!.AbsolutePath != "/api/version")
-                        return new HttpResponseMessage(HttpStatusCode.NotFound);
-
-                    Interlocked.Increment(ref callCount);
-
-                    // simulate network delay
-                    await Task.Delay(100, token);
-
-                    if (callCount < 4)
-                        return new HttpResponseMessage(HttpStatusCode.NotFound);
-
-                    return new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("{\"version\":\"1.0.0\"}")
-                    };
-                }, token);
+                    Content = new StringContent("{\"version\":\"1.0.0\"}")
+                };
             });
 
         var httpClient = new HttpClient(_handlerMock.Object);
@@ -195,7 +208,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockHttpClientFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0,
@@ -210,11 +225,15 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Running));
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Retrying));
         Assert.Equal(4, callCount);
+        Assert.True(fakeTime.Elapsed.TotalMilliseconds >= 100);
     }
 
     [Fact]
     public async Task Start_WhenServerNeverResponds_StopsAfterMaxRetries()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var callCount = 0;
 
         _handlerMock
@@ -231,7 +250,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             });
 
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockFactory = CreateMockHttpClientFactory(httpClient, httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -239,12 +258,14 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0,
-            MaxRetryingTime = TimeSpan.FromMilliseconds(100),
-            ConnectionCheckInterval = TimeSpan.FromMilliseconds(10)
+            MaxRetryingTime = TimeSpan.FromSeconds(2),
+            ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
         };
 
         var statusEvents = new List<ServiceStatus>();
@@ -267,6 +288,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     {
         var callCount = 0;
 
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         _handlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -274,25 +298,28 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
-            .Returns(async (HttpRequestMessage _, CancellationToken token) =>
+            .Returns((HttpRequestMessage _, CancellationToken token) =>
             {
                 callCount++;
 
                 if (callCount == 1)
                 {
-                    // TaskCanceledException to simulate a timeout
-                    await Task.Delay(50, token);
+                    fakeTime.Advance(TimeSpan.FromMilliseconds(50));
+
+                    // simulating a timeout
                     throw new TaskCanceledException("Request timed out");
                 }
 
-                return new HttpResponseMessage(HttpStatusCode.OK)
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent("{\"version\":\"1.0.0\"}")
                 };
+
+                return Task.FromResult(response);
             });
 
         var httpClient = new HttpClient(_handlerMock.Object);
-        var mockFactory = CreateMockHttpClientFactory(httpClient, httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -300,7 +327,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
@@ -322,7 +351,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task GenerateMessage_ReturnsResponses_AndSetsRunningStatus()
     {
-        // Arrange
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var mockHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
         var msg1 = new MessageContent
@@ -378,7 +409,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockHttpClientFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
@@ -407,6 +440,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task GenerateMessage_InvalidJson_OnlyShowsValid()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var mockHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
         const string responseContent =
@@ -442,7 +478,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockHttpClientFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
@@ -464,6 +502,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task GenerateMessage_WhenConnectionLost_UpdatesStateToStopped()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var mockHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
         mockHandler
@@ -485,7 +526,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             .ThrowsAsync(new HttpRequestException("Connection reset by peer"));
 
         var httpClient = new HttpClient(mockHandler.Object);
-        var mockFactory = CreateMockHttpClientFactory(httpClient, httpClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -493,7 +534,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0
@@ -518,6 +561,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
     [Fact]
     public async Task GenerateMessage_WhenModelLoadIsSlow_ShouldNotTimeout()
     {
+        var fakeTime = new FakeTimeProvider();
+        var fakeDelayer = new FakeTaskDelayer(fakeTime);
+
         var mockHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         var msg = new MessageContent { Content = "Finally loaded!" };
         var responseJson = JsonSerializer.Serialize(new OllamaResponse
@@ -542,15 +588,17 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
                 ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.Contains("/api/chat")),
                 ItExpr.IsAny<CancellationToken>()
             )
-            .Returns(async (HttpRequestMessage _, CancellationToken token) =>
+            .Returns((HttpRequestMessage _, CancellationToken token) =>
             {
                 // simulating a network delay
-                await Task.Delay(200, token);
+                fakeTime.Advance(TimeSpan.FromMilliseconds(200));
 
-                return new HttpResponseMessage(HttpStatusCode.OK)
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(responseJson)
                 };
+
+                return Task.FromResult(response);
             });
 
         // Create CheckClient with short timeout (simulating fast ping requirement)
@@ -561,7 +609,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         var heavyClient = new HttpClient(mockHandler.Object);
         heavyClient.Timeout = TimeSpan.FromMilliseconds(500);
 
-        var mockFactory = CreateMockHttpClientFactory(checkClient, heavyClient);
+        var mockHttpClientFactory = CreateMockHttpClientFactory(checkClient, heavyClient);
 
         var ol = new OllamaService(
             _fixture.ConfigMock.Object,
@@ -569,7 +617,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
             new SynchronousAvaloniaDispatcher(),
-            mockFactory.Object)
+            mockHttpClientFactory.Object,
+            fakeTime,
+            fakeDelayer)
         {
             StartProcessFunc = _ => new Process(),
             GetProcessCountFunc = () => 0

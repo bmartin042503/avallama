@@ -1,0 +1,14 @@
+// Copyright (c) Márk Csörgő and Martin Bartos
+// Licensed under the MIT License. See LICENSE file for details.
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace avallama.Utilities.Time;
+
+public class RealTaskDelayer : ITaskDelayer
+{
+    public Task Delay(TimeSpan delay, CancellationToken token = default)
+        => Task.Delay(delay, token);
+}

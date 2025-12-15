@@ -91,6 +91,8 @@ public partial class ModelManagerViewModel : PageViewModel
         _dialogService = dialogService;
         _ollamaService = ollamaService;
         _modelCacheService = modelCacheService;
+
+        _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
     }
 
     public async Task InitializeAsync()
@@ -195,7 +197,7 @@ public partial class ModelManagerViewModel : PageViewModel
             .Select(m => new
             {
                 Model = m,
-                Score = GetSearchMatchScore(m.Name, search)
+                Score = SearchUtilities.CalculateMatchScore(m.Name, search)
             })
             .Where(x => x.Score >= 25)
             .OrderByDescending(x => x.Score)
@@ -449,64 +451,21 @@ public partial class ModelManagerViewModel : PageViewModel
         DownloadSpeedText = $"{_downloadSpeed:0.##} MB/s";
     }
 
-    // TODO: extract search logic so it can be reused
-    private static int LevenshteinDistance(string s, string t)
+    // TODO: proper logging
+    private void OllamaServiceStateChanged(ServiceState? state)
     {
-        if (string.IsNullOrEmpty(s))
-            return t.Length;
-        if (string.IsNullOrEmpty(t))
-            return s.Length;
-
-        var d = new int[s.Length + 1, t.Length + 1];
-
-        for (var i = 0; i <= s.Length; i++)
-            d[i, 0] = i;
-
-        for (var j = 0; j <= t.Length; j++)
-            d[0, j] = j;
-
-        for (var i = 1; i <= s.Length; i++)
+        if (state == null) return;
+        switch (state.Status)
         {
-            for (var j = 1; j <= t.Length; j++)
-            {
-                var cost = s[i - 1] == t[j - 1] ? 0 : 1;
-
-                d[i, j] = Math.Min(
-                    Math.Min(
-                        d[i - 1, j] + 1,
-                        d[i, j - 1] + 1),
-                    d[i - 1, j - 1] + cost
-                );
-            }
+            case ServiceStatus.Running:
+                Console.WriteLine("Running..");
+                break;
+            case ServiceStatus.Retrying:
+                Console.WriteLine("Retrying..");
+                break;
+            case ServiceStatus.Stopped or ServiceStatus.Failed:
+                Console.WriteLine("Stopped..");
+                break;
         }
-
-        return d[s.Length, t.Length];
-    }
-
-
-    private static int GetSearchMatchScore(string name, string search)
-    {
-        if (string.IsNullOrWhiteSpace(search))
-            return 0;
-
-        name = name.ToLowerInvariant();
-        search = search.ToLowerInvariant();
-
-        var score = 0;
-
-        if (name.StartsWith(search))
-            score += 100;
-
-        if (name.Contains(search))
-            score += 40;
-
-        // fuzzy, looks for typos
-        int lev = LevenshteinDistance(name, search);
-
-        // the least the distance the better it is (max 30 score)
-        var fuzzyScore = Math.Max(0, 30 - lev);
-        score += fuzzyScore;
-
-        return score;
     }
 }
