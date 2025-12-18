@@ -352,26 +352,52 @@ namespace avallama.Services
 
         /// <summary>
         /// Retries the connection to the Ollama API.
+        /// If the connection fails initially, it checks if the Ollama process is running.
+        /// If not, it attempts to start it and retries the connection.
         /// </summary>
         public async Task Retry()
         {
             OllamaServiceState = new ServiceState(ServiceStatus.Retrying);
             _timeProvider.Start();
-            var startTime = _timeProvider.Elapsed;
 
-            while (_timeProvider.Elapsed - startTime < MaxRetryingTime)
+            async Task<bool> WaitForConnection(TimeSpan timeout)
             {
-                if (await CheckConnectionAsync())
+                var loopStartTime = _timeProvider.Elapsed;
+                while (_timeProvider.Elapsed - loopStartTime < timeout)
                 {
-                    OllamaServiceState = new ServiceState(ServiceStatus.Running,
-                        LocalizationService.GetString("OLLAMA_STARTED"));
-                    return;
+                    if (await CheckConnectionAsync()) return true;
+                    await _taskDelayer.Delay(ConnectionCheckInterval);
                 }
 
-                await _taskDelayer.Delay(ConnectionCheckInterval);
+                return false;
             }
 
-            // TODO: check if ollama process is running and if not start one
+            if (await WaitForConnection(MaxRetryingTime))
+            {
+                OllamaServiceState = new ServiceState(ServiceStatus.Running,
+                    LocalizationService.GetString("OLLAMA_STARTED"));
+                return;
+            }
+
+            var processCount = GetProcessCountFunc();
+
+            // if there is no ollama process start one and restart connection checks
+            if (processCount == 0)
+            {
+                ConfigureOllamaPath();
+
+                if (TryStartOllamaProcess())
+                {
+                    _started = true;
+
+                    if (await WaitForConnection(MaxRetryingTime))
+                    {
+                        OllamaServiceState = new ServiceState(ServiceStatus.Running,
+                            LocalizationService.GetString("OLLAMA_STARTED"));
+                        return;
+                    }
+                }
+            }
 
             OllamaServiceState = new ServiceState(ServiceStatus.Failed,
                 LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
@@ -387,7 +413,8 @@ namespace avallama.Services
             try
             {
                 using var request = CreateRequest(HttpMethod.Get, "/api/version");
-                using var response = await _checkHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                using var response =
+                    await _checkHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 return response.StatusCode == HttpStatusCode.OK;
             }
             catch
@@ -434,31 +461,39 @@ namespace avallama.Services
             var tagsResponse = await FetchOllamaTagsAsync();
             if (tagsResponse?.Models == null) return;
 
-            var downloadedModels = new List<OllamaModel>();
+            var downloadedModels = new System.Collections.Concurrent.ConcurrentBag<OllamaModel>();
 
-            foreach (var tag in tagsResponse.Models.Where(m => !string.IsNullOrEmpty(m.Name)))
+            var parallelOptions = new ParallelOptions
             {
-                var downloadedModel = CreateModelFromTag(tag);
-                try
-                {
-                    var showResponse = await FetchModelInfoAsync(downloadedModel.Name);
-                    EnrichModelWithInfo(downloadedModel, showResponse);
-                    downloadedModel.DownloadStatus = ModelDownloadStatus.Downloaded;
-                }
-                catch (Exception ex)
-                {
-                    // TODO: proper logging
-                }
+                MaxDegreeOfParallelism = 5
+            };
 
-                downloadedModels.Add(downloadedModel);
-            }
+            await Parallel.ForEachAsync(tagsResponse.Models.Where(m => !string.IsNullOrEmpty(m.Name)), parallelOptions,
+                async (tag, _) =>
+                {
+                    var downloadedModel = CreateModelFromTag(tag);
+                    try
+                    {
+                        var showResponse = await FetchModelInfoAsync(downloadedModel.Name);
+                        EnrichModelWithInfo(downloadedModel, showResponse);
+                        downloadedModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO: proper logging
+                    }
 
-            foreach (var model in downloadedModels)
+                    downloadedModels.Add(downloadedModel);
+                });
+
+            var sortedModels = downloadedModels.OrderBy(m => m.Name).ToList();
+
+            foreach (var model in sortedModels)
             {
                 await _modelCacheService.UpdateModelAsync(model);
             }
 
-            _downloadedModels = downloadedModels;
+            _downloadedModels = sortedModels;
         }
 
         /// <inheritdoc />
@@ -666,7 +701,11 @@ namespace avallama.Services
         private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint)
         {
             var host = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
-            if (string.IsNullOrEmpty(host)) host = "localhost";
+            if (string.IsNullOrEmpty(host) || host == "localhost")
+            {
+                // use IPv4 since Windows may resolve 'localhost' to IPv6
+                host = "127.0.0.1";
+            }
 
             var port = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
             if (string.IsNullOrEmpty(port)) port = "11434";
@@ -765,7 +804,6 @@ namespace avallama.Services
             switch (state?.Status)
             {
                 case ServiceStatus.Running:
-                    Console.WriteLine("Task set to completed (Running)");
                     _serverStartedTcs.TrySetResult(true);
                     break;
                 case ServiceStatus.Stopped or ServiceStatus.Failed:
@@ -774,6 +812,7 @@ namespace avallama.Services
                     {
                         _serverStartedTcs.TrySetResult(false);
                     }
+
                     _serverStartedTcs = new TaskCompletionSource<bool>();
                     break;
             }

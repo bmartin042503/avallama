@@ -279,6 +279,11 @@ public partial class HomeViewModel : PageViewModel
     public async Task RetryOllamaConnection()
     {
         await _ollamaService.Retry();
+
+        if (_ollamaService.OllamaServiceState?.Status == ServiceStatus.Running)
+        {
+            await InitializeModels();
+        }
     }
 
     #endregion

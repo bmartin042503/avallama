@@ -101,7 +101,6 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void StartScraper()
     {
-
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Scraper);
     }
 }
