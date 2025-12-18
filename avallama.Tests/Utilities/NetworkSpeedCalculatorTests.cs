@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
-using avallama.Tests.Fakes;
+using avallama.Tests.Mocks;
 using avallama.Utilities;
 using Xunit;
 
@@ -14,7 +14,7 @@ public class NetworkSpeedCalculatorTests
     [Fact]
     public void CalculateSpeed_WithSampleSizeOfTenMillionBytes_ReturnsSpeedAroundTenMegabytesPerSecond()
     {
-        var fakeTimer = new FakeTimeProvider();
+        var fakeTimer = new TimeProviderMock();
         var networkSpeedCalculator = new NetworkSpeedCalculator(fakeTimer);
 
         const int chunks = 5;
@@ -36,7 +36,7 @@ public class NetworkSpeedCalculatorTests
     [Fact]
     public void CalculateSpeed_WithSampleSizeOfTenBillionBytes_ReturnsSpeedAroundThousandMegabytesPerSecond()
     {
-        var fakeTimer = new FakeTimeProvider();
+        var fakeTimer = new TimeProviderMock();
         var networkSpeedCalculator = new NetworkSpeedCalculator(fakeTimer);
 
         const int chunks = 10;

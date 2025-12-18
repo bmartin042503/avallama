@@ -6,20 +6,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using avallama.Utilities.Time;
 
-namespace avallama.Tests.Fakes;
+namespace avallama.Tests.Mocks;
 
-public class FakeTaskDelayer : ITaskDelayer
+public class TaskDelayerMock : ITaskDelayer
 {
-    private readonly FakeTimeProvider _timeProvider;
+    private readonly TimeProviderMock _timeProviderMock;
 
-    public FakeTaskDelayer(FakeTimeProvider timeProvider)
+    public TaskDelayerMock(TimeProviderMock timeProviderMock)
     {
-        _timeProvider = timeProvider;
+        _timeProviderMock = timeProviderMock;
     }
 
     public Task Delay(TimeSpan delay, CancellationToken token = default)
     {
-        _timeProvider.Advance(delay);
+        _timeProviderMock.Advance(delay);
         return Task.CompletedTask;
     }
 }

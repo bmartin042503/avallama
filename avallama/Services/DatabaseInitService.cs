@@ -107,8 +107,8 @@ public class DatabaseInitService : IDatabaseInitService
 
         if (!hasRequiredTables)
         {
-            //TODO: LoggingService
-            Console.WriteLine("Database file is missing required tables. Reinitializing schema.");
+            // TODO: proper logging
+            // Console.WriteLine("Database file is missing required tables. Reinitializing schema.");
             await InitializeSchemaAsync(connection);
             return connection;
         }
@@ -116,9 +116,9 @@ public class DatabaseInitService : IDatabaseInitService
         var needsMigration = await NeedsMigrationAsync(connection);
 
         if (!needsMigration) return connection;
-        Console.WriteLine("Database schema is outdated. Migrating...");
+        // Console.WriteLine("Database schema is outdated. Migrating...");
         await MigrateSchemaAsync(connection);
-        Console.WriteLine("Database migration completed.");
+        // Console.WriteLine("Database migration completed.");
 
         return connection;
     }

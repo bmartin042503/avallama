@@ -95,6 +95,7 @@ public partial class ModelManagerViewModel : PageViewModel
         _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
     }
 
+    [RelayCommand]
     public async Task InitializeAsync()
     {
         await LoadModelsData();
@@ -320,7 +321,7 @@ public partial class ModelManagerViewModel : PageViewModel
                                 false);
                         }
 
-                        await _modelCacheService.UpdateModelAsync(SelectedModel);
+                        await _ollamaService.UpdateDownloadedModels();
 
                         _downloadedBytes = 0;
                         SortModels();
@@ -371,12 +372,14 @@ public partial class ModelManagerViewModel : PageViewModel
                     DownloadStatusText +=
                         $" - {ConversionHelper.BytesToReadableSize(_downloadedBytes)}/{ConversionHelper.BytesToReadableSize(_bytesToDownload)}";
 
+                    // download is finished
                     if (chunk.Status == "success")
                     {
                         if (_downloadingModel != null)
                         {
                             _downloadingModel.DownloadStatus = ModelDownloadStatus.Downloaded;
-                            var downloadedModels = await _ollamaService.GetDownloadedModels(forceRefresh: true);
+                            await _ollamaService.UpdateDownloadedModels();
+                            var downloadedModels = await _ollamaService.GetDownloadedModels();
                             var downloadedModel = downloadedModels.FirstOrDefault(m => m.Name == _downloadingModel.Name);
                             if (downloadedModel != null)
                             {
@@ -384,7 +387,6 @@ public partial class ModelManagerViewModel : PageViewModel
                                 _downloadingModel.Size = downloadedModel.Size;
                                 _downloadingModel.Parameters = downloadedModel.Parameters;
                             }
-                            await _modelCacheService.UpdateModelAsync(_downloadingModel);
                         }
 
                         await _downloadSpeedUpdateTimer.DisposeAsync();
@@ -451,20 +453,17 @@ public partial class ModelManagerViewModel : PageViewModel
         DownloadSpeedText = $"{_downloadSpeed:0.##} MB/s";
     }
 
-    // TODO: proper logging
+    // TODO: proper logging and implementation of status changes
     private void OllamaServiceStateChanged(ServiceState? state)
     {
         if (state == null) return;
         switch (state.Status)
         {
             case ServiceStatus.Running:
-                Console.WriteLine("Running..");
                 break;
             case ServiceStatus.Retrying:
-                Console.WriteLine("Retrying..");
                 break;
             case ServiceStatus.Stopped or ServiceStatus.Failed:
-                Console.WriteLine("Stopped..");
                 break;
         }
     }

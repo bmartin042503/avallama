@@ -4,9 +4,9 @@
 using System;
 using avallama.Utilities.Time;
 
-namespace avallama.Tests.Fakes;
+namespace avallama.Tests.Mocks;
 
-public class FakeTimeProvider : ITimeProvider
+public class TimeProviderMock : ITimeProvider
 {
     public TimeSpan Elapsed { get; private set; } = TimeSpan.Zero;
     public void Start() { /* it's a fake so it starts nothing */ }

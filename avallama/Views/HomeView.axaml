@@ -13,10 +13,12 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:converters="clr-namespace:avallama.Converters"
              xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
+             xmlns:utilities="clr-namespace:avallama.Utilities"
              Background="{DynamicResource Surface}"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
-             x:DataType="vm:HomeViewModel">
+             x:DataType="vm:HomeViewModel"
+             utilities:ViewInitialization.Command="{Binding InitializeAsync}">
 
     <UserControl.Resources>
         <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter" />
@@ -140,7 +142,6 @@ Licensed under the MIT License. See LICENSE file for details.
             <!-- There are many Grids because this is the way to ensure that the TextBlock inside them
             is not cut off, but instead trims its end with an ellipsis (CharacterEllipsis). More precisely,
             by specifying the column width with *, the TextBlock is able to trim its text properly. -->
-
 
             <!-- Remote ollama connection text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" HorizontalAlignment="Center"

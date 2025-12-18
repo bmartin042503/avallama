@@ -13,10 +13,12 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:models="clr-namespace:avallama.Models"
              xmlns:converters="clr-namespace:avallama.Converters"
              xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
+             xmlns:utilities="clr-namespace:avallama.Utilities"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
-             Background="{DynamicResource Surface}">
+             Background="{DynamicResource Surface}"
+             utilities:ViewInitialization.Command="{Binding InitializeAsync}">
 
     <UserControl.Resources>
         <converters:SortingOptionConverter x:Key="SortingOptionConverter" />

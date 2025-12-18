@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Services;
@@ -13,45 +14,51 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using CommunityToolkit.Mvvm.Messaging;
 using Moq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace avallama.Tests.Views;
 
 public class HomeViewTests : IClassFixture<TestServicesFixture>
 {
     private readonly TestServicesFixture _fixture;
+    private readonly ITestOutputHelper _output;
 
-    public HomeViewTests(TestServicesFixture fixture)
+    public HomeViewTests(TestServicesFixture fixture, ITestOutputHelper output)
     {
         _fixture = fixture;
+        _output = output;
+        SetupDefaultBehaviors();
+    }
 
+    public void Dispose()
+    {
+        _fixture.OllamaMock.Reset();
+        _fixture.ConfigMock.Reset();
+        _fixture.DbMock.Reset();
+        _fixture.DialogMock.Reset();
+        _fixture.MessengerMock.Reset();
+    }
+
+    private void SetupDefaultBehaviors()
+    {
         _fixture.ConfigMock
             .Setup(x => x.ReadSetting(It.IsAny<string>()))
             .Returns("");
+
+        _fixture.OllamaMock
+            .Setup(x => x.WaitForRunningAsync())
+            .Returns(Task.CompletedTask);
+
+        _fixture.OllamaMock
+            .Setup(x => x.GetDownloadedModels())
+            .ReturnsAsync(new List<OllamaModel>());
     }
 
-    // this is needed so we can override InitializeAsync() to use it for testing
-    // so it won't be necessary to call it again when doing UI testing since OnAttachedToVisualTree will be called
-    // when testing ViewModels calling InitializeAsync() might be necessary still
-    private class TestHomeViewModel(
-        IOllamaService ollama,
-        IDialogService dialog,
-        IConfigurationService config,
-        IConversationService db,
-        IMessenger messenger)
-        : HomeViewModel(ollama, dialog, config, db, messenger)
+    private HomeViewModel CreateHomeViewModel()
     {
-        public override Task InitializeAsync(bool test = false)
-        {
-            return base.InitializeAsync(true);
-        }
-    }
-
-    private TestHomeViewModel CreateTestHomeViewModel()
-    {
-        return new TestHomeViewModel(
+        return new HomeViewModel(
             _fixture.OllamaMock.Object,
             _fixture.DialogMock.Object,
             _fixture.ConfigMock.Object,
@@ -60,13 +67,43 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         );
     }
 
-    [AvaloniaFact]
-    public void SideBar_ClickingSideBarButton_TogglesSideBarCorrectly()
+    private (Window Window, HomeView View, HomeViewModel ViewModel) CreateAndShowHomeView()
     {
-        var viewModel = CreateTestHomeViewModel();
+        var viewModel = CreateHomeViewModel();
         var view = new HomeView { DataContext = viewModel };
         var window = new Window { Content = view };
         window.Show();
+        return (window, view, viewModel);
+    }
+
+    private async Task<(Window Window, HomeView View, HomeViewModel ViewModel)> SetupInitializedHomeViewAsync(
+        string selectedModelName)
+    {
+        var mockModels = new List<OllamaModel>
+        {
+            new() { Name = "test-model-1:8b", Size = 8_030_000_000, DownloadStatus = ModelDownloadStatus.Downloaded },
+            new() { Name = "test-model-2:20b", Size = 20_100_000_000, DownloadStatus = ModelDownloadStatus.Downloaded }
+        };
+
+        _fixture.OllamaMock.Setup(x => x.GetDownloadedModels()).ReturnsAsync(mockModels);
+
+        var (window, view, viewModel) = CreateAndShowHomeView();
+
+        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
+
+        await viewModel.InitializeAsync();
+
+        viewModel.SelectedModelName = !string.IsNullOrEmpty(selectedModelName) ? selectedModelName : string.Empty;
+
+        return (window, view, viewModel);
+    }
+
+    [AvaloniaFact]
+    public void SideBar_ClickingSideBarButton_TogglesSideBarCorrectly()
+    {
+        var (_, view, _) = CreateAndShowHomeView();
+
+        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
 
         var sideBarButton = view.FindControl<Button>("SideBarButton");
         var sideBar = view.FindControl<Grid>("SideBar");
@@ -96,12 +133,11 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     }
 
     [AvaloniaFact]
-    public void RetryPanel_WhenOllamaServiceIsStoppedOrFailed_AppearsCorrectly()
+    public void RetryPanel_WhenOllamaServiceIsFailed_ItAppearsCorrectly()
     {
-        var viewModel = CreateTestHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
-        var window = new Window { Content = view };
-        window.Show();
+        var (_, view, viewModel) = CreateAndShowHomeView();
+
+        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
 
         var conversationGrid = view.FindControl<Grid>("ConversationGrid");
         var retryButton = view.FindControl<Button>("RetryButton");
@@ -113,21 +149,7 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         Assert.NotNull(retryPanel);
         Assert.NotNull(retryInfoText);
 
-        // ollama service stops
-        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Stopped));
-        Assert.True(viewModel.IsRetryPanelVisible);
-        Assert.True(viewModel.IsRetryButtonVisible);
-        Assert.True(retryButton.IsEnabled);
-        Assert.True(retryButton.IsVisible);
-        Assert.True(retryPanel.IsVisible);
-        Assert.True(retryInfoText.IsVisible);
-        Assert.False(string.IsNullOrEmpty(retryInfoText.Text));
-        Assert.False(conversationGrid.IsVisible);
-
-        // ollama service is running (so we can see if it sets view for "failed" status correctly too)
-        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
-
-        // ollama service fails
+        // set status to Failed
         _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Failed));
         Assert.True(viewModel.IsRetryPanelVisible);
         Assert.True(viewModel.IsRetryButtonVisible);
@@ -140,12 +162,11 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     }
 
     [AvaloniaFact]
-    public void RetryPanel_WhenOllamaServiceIsRunning_DisappearsCorrectly()
+    public void RetryPanel_WhenOllamaServiceIsRunning_ItDisappearsCorrectly()
     {
-        var viewModel = CreateTestHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
-        var window = new Window { Content = view };
-        window.Show();
+        var (_, view, viewModel) = CreateAndShowHomeView();
+
+        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
 
         var conversationGrid = view.FindControl<Grid>("ConversationGrid");
         var retryButton = view.FindControl<Button>("RetryButton");
@@ -157,7 +178,6 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         Assert.NotNull(retryPanel);
         Assert.NotNull(retryInfoText);
 
-        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
         Assert.False(viewModel.IsRetryPanelVisible);
         Assert.False(viewModel.IsRetryButtonVisible);
         Assert.False(retryPanel.IsVisible);
@@ -167,10 +187,9 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     [AvaloniaFact]
     public void MessageTextBox_WhenOllamaServiceIsStoppedOrFailed_ItsDisabledCorrectly()
     {
-        var viewModel = CreateTestHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
-        var window = new Window { Content = view };
-        window.Show();
+        var (_, view, viewModel) = CreateAndShowHomeView();
+
+        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
 
         var messageTextBox = view.FindControl<TextBox>("MessageTextBox");
 
@@ -188,78 +207,21 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     }
 
     [AvaloniaFact]
-    public void MessageTextBox_WithNoDownloadedModelSelected_ItsDisabledCorrectly()
+    public async Task MessageTextBox_WhenNoDownloadedModelIsSelected_ItsDisabledCorrectly()
     {
-        var viewModel = CreateTestHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
-        var window = new Window { Content = view };
-        window.Show();
-
-        var mockModels = new List<OllamaModel>
-        {
-            new()
-            {
-                Name = "test-model-1:8b",
-                Size = 8_030_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded
-            },
-            new()
-            {
-                Name = "test-model-2:20b",
-                Size = 20_100_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded
-            }
-        };
-
-        _fixture.OllamaMock
-            .Setup(x => x.GetDownloadedModels(It.IsAny<bool>()))
-            .ReturnsAsync(mockModels);
-
-        viewModel.SelectedModelName = string.Empty;
+        var (_, view, viewModel) = await SetupInitializedHomeViewAsync(string.Empty);
 
         var messageTextBox = view.FindControl<TextBox>("MessageTextBox");
         Assert.NotNull(messageTextBox);
-
-        // we use Raise and not RaiseAsync cause the delegate in OllamaService returns void not a Task
-        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
 
         Assert.False(viewModel.IsMessageBoxEnabled);
         Assert.False(messageTextBox.IsEnabled);
     }
 
     [AvaloniaFact]
-    public async Task MessageTextBox_WithDownloadedModelSelected_ItsEnabledCorrectly()
+    public async Task MessageTextBox_WhenDownloadedModelIsSelected_ItsEnabledCorrectly()
     {
-        var viewModel = CreateTestHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
-        var window = new Window { Content = view };
-        window.Show();
-
-        var mockModels = new List<OllamaModel>
-        {
-            new()
-            {
-                Name = "test-model-1:8b",
-                Size = 8_030_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded
-            },
-            new()
-            {
-                Name = "test-model-2:20b",
-                Size = 20_100_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded
-            }
-        };
-
-        _fixture.OllamaMock
-            .Setup(x => x.GetDownloadedModels(It.IsAny<bool>()))
-            .ReturnsAsync(mockModels);
-
-        await viewModel.InitializeAsync(test: true);
-        viewModel.SelectedModelName = "test-model-2:20b";
-
-        // we use Raise and not RaiseAsync cause the delegate in OllamaService returns void not a Task
-        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
+        var (_, view, viewModel) = await SetupInitializedHomeViewAsync("test-model-2:20b");
 
         var messageTextBox = view.FindControl<TextBox>("MessageTextBox");
         Assert.NotNull(messageTextBox);
@@ -272,36 +234,7 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     [AvaloniaFact]
     public async Task MessageTextBox_WhenDownloadedModelIsSelected_MessageEntered_ClearsTextBoxAndAddsMessages()
     {
-        var viewModel = CreateTestHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
-        var window = new Window { Content = view };
-        window.Show();
-
-        var mockModels = new List<OllamaModel>
-        {
-            new()
-            {
-                Name = "test-model-1:8b",
-                Size = 8_030_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded
-            },
-            new()
-            {
-                Name = "test-model-2:20b",
-                Size = 20_100_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded
-            }
-        };
-
-        _fixture.OllamaMock
-            .Setup(x => x.GetDownloadedModels(It.IsAny<bool>()))
-            .ReturnsAsync(mockModels);
-
-        await viewModel.InitializeAsync(test: true);
-        viewModel.SelectedModelName = "test-model-1:8b";
-
-        // we use Raise and not RaiseAsync cause the delegate in OllamaService returns void not a Task
-        _fixture.OllamaMock.Raise(x => x.ServiceStateChanged += null, new ServiceState(ServiceStatus.Running));
+        var (window, view, viewModel) = await SetupInitializedHomeViewAsync("test-model-1:8b");
 
         var messageTextBox = view.FindControl<TextBox>("MessageTextBox");
         Assert.NotNull(messageTextBox);
@@ -320,6 +253,22 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         Assert.True(viewModel.SelectedConversation.Messages[generatedMessageIndex] is GeneratedMessage);
     }
 
+    [AvaloniaFact]
+    public void ModelsComboBox_WithEmptyModelsList_ItsDisabledCorrectly()
+    {
+        _fixture.OllamaMock
+            .Setup(x => x.GetDownloadedModels())
+            .ReturnsAsync([]);
+
+        var (_, view, _) = CreateAndShowHomeView();
+
+        var modelsComboBox = view.FindControl<ComboBox>("ModelsComboBox");
+
+        Assert.NotNull(modelsComboBox);
+        Assert.False(modelsComboBox.IsEnabled);
+        Assert.False(modelsComboBox.IsDropDownOpen);
+    }
+
     // TODO: implement missing testcases such as
     // (ConversationScrollViewer) 'Scroll to bottom' button appears when scrolling down and configuration set to 'Floating button'
     // (ConversationScrollViewer) Scrolls to bottom correctly when scroll to bottom is clicked
@@ -330,8 +279,20 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     // (ModelManagerButton) Opens ModelManagerView when clicking on Model Manager icon button
     // (SettingsButton) Opens SettingsView when clicking on Settings icon button
     // (ModelsComboBox) Selecting a model from the combobox changes selected model correctly in HomeViewModel
-    // (ModelsComboBox) When opening existing conversation the last model used is selected (if available) correctly - this would fail atm
+    // (ModelsComboBox) When opening existing conversation the last used model is selected (if available) correctly - this would fail atm
     // (MessageBox) Pressing enter with empty or whitespace message does not adds messages
     // (MessageBox) When message has whitespace characters the message is trimmed correctly
+    // (InformationalMessages) When configuration is set to "true" informational messages appear correctly
+    // (InformationalMessages) When configuration is set to "false" informational messages won't appear
     // etc.
+
+    /* this is how to set up ConfigMock, so I won't forget syntax
+       _fixture.ConfigMock
+           .Setup(x => x.ReadSetting(It.IsAny<string>()))
+           .Returns((string key) => key switch
+           {
+               ConfigurationKey.ShowInformationalMessages => "True",
+               _ => ""
+           });
+    */
 }

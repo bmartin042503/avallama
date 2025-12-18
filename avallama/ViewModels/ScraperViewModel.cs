@@ -46,9 +46,17 @@ public partial class ScraperViewModel : PageViewModel
         _messenger = messenger;
     }
 
+    [RelayCommand]
     public async Task InitializeAsync()
     {
         await ScrapeModels();
+    }
+
+    [RelayCommand]
+    public void CancelScraping()
+    {
+        _cancellationTokenSource?.Cancel();
+        _messenger.Send(new ApplicationMessage.RequestPage(ApplicationPage.Settings));
     }
 
     private async Task ScrapeModels()
@@ -92,20 +100,11 @@ public partial class ScraperViewModel : PageViewModel
         }
         catch (OperationCanceledException)
         {
-            Console.WriteLine("Scraping cancelled from ViewModel");
             // TODO: proper logging
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error while loading the models data: {ex.Message}");
             // TODO: proper logging
         }
-    }
-
-    [RelayCommand]
-    public void CancelScraping()
-    {
-        _cancellationTokenSource?.Cancel();
-        _messenger.Send(new ApplicationMessage.RequestPage(ApplicationPage.Settings));
     }
 }

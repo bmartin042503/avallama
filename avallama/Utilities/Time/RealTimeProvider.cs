@@ -7,6 +7,24 @@ using System.Diagnostics;
 namespace avallama.Utilities.Time;
 
 /// <summary>
+/// Defines an abstraction for time measurement.
+/// This interface allows decoupling time-dependent logic from the system clock,
+/// enabling deterministic unit testing by injecting fake time providers.
+/// </summary>
+public interface ITimeProvider
+{
+    /// <summary>
+    /// Gets the total elapsed time measured by the provider since it was started.
+    /// </summary>
+    TimeSpan Elapsed { get; }
+
+    /// <summary>
+    /// Starts, or resumes, measuring elapsed time.
+    /// </summary>
+    void Start();
+}
+
+/// <summary>
 /// A concrete implementation of <see cref="ITimeProvider"/> for production use.
 /// It wraps the system's high-resolution <see cref="Stopwatch"/> to measure real-time execution.
 /// </summary>

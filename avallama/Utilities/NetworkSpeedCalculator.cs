@@ -23,7 +23,7 @@ namespace avallama.Utilities
 
         public NetworkSpeedCalculator(ITimeProvider? timeProvider = null)
         {
-            // Ha null, akkor az igazi órát használjuk (default behavior)
+            // if it's null we initialize with a real stopwatch
             _timeProvider = timeProvider ?? new RealTimeProvider();
             _timeProvider.Start();
         }

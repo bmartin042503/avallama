@@ -104,17 +104,33 @@ namespace avallama.Services
         /// <returns>True if the server responds with HTTP 200 OK; otherwise, false.</returns>
         Task<bool> CheckConnectionAsync();
 
-        // Model Management
-
         /// <summary>
-        /// Retrieves the list of models currently downloaded to the local machine.
+        /// Asynchronously waits until the Ollama service enters the <see cref="ServiceStatus.Running"/> state.
+        /// If the service is already running, the task completes immediately.
         /// </summary>
-        /// <param name="forceRefresh">If true, bypasses the in-memory cache and fetches fresh data from the API.</param>
-        /// <returns>A list of downloaded Ollama models.</returns>
-        Task<IList<OllamaModel>> GetDownloadedModels(bool forceRefresh = false);
+        Task WaitForRunningAsync();
 
         /// <summary>
-        /// Deletes a specific model from the local storage.
+        /// Retrieves the list of downloaded models.
+        /// <para>
+        /// This method uses the in-memory cache if available. If the cache is empty,
+        /// it automatically triggers a synchronization via <see cref="UpdateDownloadedModels"/>.
+        /// </para>
+        /// </summary>
+        /// <returns>A list of models available locally, or an empty list if the service is unreachable.</returns>
+        Task<IList<OllamaModel>> GetDownloadedModels();
+
+        /// <summary>
+        /// Forces a synchronization with the local Ollama API.
+        /// <para>
+        /// This method fetches fresh data from the API, enriches it with model details,
+        /// and updates both the persistent storage and the in-memory cache.
+        /// </para>
+        /// </summary>
+        Task UpdateDownloadedModels();
+
+        /// <summary>
+        /// Deletes a specific model from the local Ollama.
         /// </summary>
         /// <param name="modelName">The tag name of the model to delete.</param>
         /// <returns>True if the deletion was successful.</returns>
@@ -220,6 +236,8 @@ namespace avallama.Services
 
         private string OllamaPath { get; set; } = "";
 
+        private TaskCompletionSource<bool> _serverStartedTcs = new();
+
         #endregion
 
         #region Constructor
@@ -288,7 +306,7 @@ namespace avallama.Services
                         _started = true;
                         return;
                     case >= 2:
-                        OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
+                        OllamaServiceState = new ServiceState(ServiceStatus.Failed,
                             LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR"));
                         return;
                 }
@@ -323,7 +341,9 @@ namespace avallama.Services
             var ollamaProcessList = Process.GetProcessesByName("ollama");
             foreach (var process in ollamaProcessList)
             {
-                KillProcess(process);
+                if (process.HasExited) return;
+                process.Kill();
+                process.Dispose();
             }
 
             _started = false;
@@ -351,9 +371,9 @@ namespace avallama.Services
                 await _taskDelayer.Delay(ConnectionCheckInterval);
             }
 
-            // TODO: check if ollama process is available and if not start one
+            // TODO: check if ollama process is running and if not start one
 
-            OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
+            OllamaServiceState = new ServiceState(ServiceStatus.Failed,
                 LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
         }
 
@@ -376,12 +396,17 @@ namespace avallama.Services
             }
         }
 
+        public Task WaitForRunningAsync()
+        {
+            return OllamaServiceState?.Status == ServiceStatus.Running ? Task.CompletedTask : _serverStartedTcs.Task;
+        }
+
         #endregion
 
         #region API Methods
 
         /// <inheritdoc />
-        public async Task<IList<OllamaModel>> GetDownloadedModels(bool forceRefresh = false)
+        public async Task<IList<OllamaModel>> GetDownloadedModels()
         {
             if (!await CheckConnectionAsync())
             {
@@ -389,13 +414,25 @@ namespace avallama.Services
                 return new List<OllamaModel>();
             }
 
-            if (!forceRefresh && _downloadedModels != null && _downloadedModels.Any())
+            if (_downloadedModels == null || _downloadedModels.Count == 0)
             {
-                return _downloadedModels;
+                await UpdateDownloadedModels();
+            }
+
+            return _downloadedModels ?? new List<OllamaModel>();
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateDownloadedModels()
+        {
+            if (!await CheckConnectionAsync())
+            {
+                HandleConnectionError();
+                return;
             }
 
             var tagsResponse = await FetchOllamaTagsAsync();
-            if (tagsResponse?.Models == null) return [];
+            if (tagsResponse?.Models == null) return;
 
             var downloadedModels = new List<OllamaModel>();
 
@@ -411,7 +448,6 @@ namespace avallama.Services
                 catch (Exception ex)
                 {
                     // TODO: proper logging
-                    Console.WriteLine($"Failed to get model info for {downloadedModel.Name}: {ex.Message}");
                 }
 
                 downloadedModels.Add(downloadedModel);
@@ -423,7 +459,6 @@ namespace avallama.Services
             }
 
             _downloadedModels = downloadedModels;
-            return downloadedModels;
         }
 
         /// <inheritdoc />
@@ -718,15 +753,8 @@ namespace avallama.Services
         /// </summary>
         private void HandleConnectionError()
         {
-            OllamaServiceState = new ServiceState(ServiceStatus.Stopped,
+            OllamaServiceState = new ServiceState(ServiceStatus.Failed,
                 LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
-        }
-
-        private static void KillProcess(Process? process)
-        {
-            if (process == null || process.HasExited) return;
-            process.Kill();
-            process.Dispose();
         }
 
         /// <summary>
@@ -734,6 +762,22 @@ namespace avallama.Services
         /// </summary>
         private void NotifyStatusChanged(ServiceState? state)
         {
+            switch (state?.Status)
+            {
+                case ServiceStatus.Running:
+                    Console.WriteLine("Task set to completed (Running)");
+                    _serverStartedTcs.TrySetResult(true);
+                    break;
+                case ServiceStatus.Stopped or ServiceStatus.Failed:
+                    // reset server started Task
+                    if (!_serverStartedTcs.Task.IsCompleted)
+                    {
+                        _serverStartedTcs.TrySetResult(false);
+                    }
+                    _serverStartedTcs = new TaskCompletionSource<bool>();
+                    break;
+            }
+
             if (_dispatcher.CheckAccess())
             {
                 ServiceStateChanged?.Invoke(state);

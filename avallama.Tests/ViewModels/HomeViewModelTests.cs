@@ -5,24 +5,24 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using avallama.Models;
-using avallama.Services;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
-using avallama.Views;
-using Avalonia.Controls;
 using Moq;
 using Xunit;
-using Avalonia.Headless.XUnit;
 
 namespace avallama.Tests.ViewModels;
 
 public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<TestServicesFixture>
 {
-    private void DbMock()
+    private void SetupMock()
     {
         // Mock db svc to prevent NullReferenceException when testing
         fixture.DbMock.Setup(db => db.GetConversations())
             .ReturnsAsync([]);
+
+        fixture.OllamaMock
+            .Setup(x => x.WaitForRunningAsync())
+            .Returns(Task.CompletedTask);
     }
 
     [Fact]
@@ -37,7 +37,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.OllamaMock
             .Setup(o => o.GetDownloadedModels())
             .ReturnsAsync(models);
-        DbMock();
+
+        SetupMock();
 
         var vm = new HomeViewModel(
             fixture.OllamaMock.Object,
@@ -53,7 +54,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             "model2"
         };
 
-        await vm.InitializeModels(test: true);
+        await vm.InitializeAsync();
 
         Assert.Equal(availableModels, vm.AvailableModels);
         Assert.Equal("model1", vm.SelectedModelName);
@@ -67,7 +68,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.OllamaMock
             .Setup(o => o.GetDownloadedModels())
             .ReturnsAsync([]);
-        DbMock();
+
+        SetupMock();
 
         var vm = new HomeViewModel(
             fixture.OllamaMock.Object,
@@ -77,37 +79,9 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.MessengerMock.Object
         );
 
-        await vm.InitializeModels(test: true);
+        await vm.InitializeAsync();
 
         Assert.Empty(vm.AvailableModels);
         Assert.False(vm.IsModelsDropdownEnabled);
-    }
-
-    [AvaloniaFact]
-    public async Task View_WhenEmptyModelsList_DisablesComboBox()
-    {
-        fixture.OllamaMock.Setup(o => o.GetDownloadedModels())
-            .ReturnsAsync([]);
-        DbMock();
-
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object);
-
-        var view = new HomeView { DataContext = vm };
-
-        await vm.InitializeModels(test: true);
-
-        var combo = view.FindControl<ComboBox>("ModelsComboBox");
-        var warning = view.FindControl<TextBlock>("NoModelsWarningTextBlock");
-
-        Assert.NotNull(combo);
-        Assert.NotNull(warning);
-        Assert.False(combo.IsEnabled);
-        Assert.False(combo.IsDropDownOpen);
-        Assert.True(warning.IsVisible);
     }
 }

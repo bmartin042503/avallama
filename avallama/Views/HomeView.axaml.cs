@@ -209,11 +209,4 @@ public partial class HomeView : UserControl
                 break;
         }
     }
-
-    protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        if (DataContext is HomeViewModel homeViewModel)
-            await homeViewModel.InitializeAsync();
-    }
 }
