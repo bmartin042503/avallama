@@ -9,8 +9,9 @@ namespace avallama.Dtos;
 
 public sealed class OllamaShowResponse
 {
+    [JsonPropertyName("license")]
     public string? License { get; set; }
 
     [JsonPropertyName("model_info")]
-    public Dictionary<string, JsonElement>? Model_Info { get; set; }
+    public Dictionary<string, JsonElement>? ModelInfo { get; set; }
 }

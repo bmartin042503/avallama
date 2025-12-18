@@ -20,10 +20,4 @@ public partial class ModelManagerView : UserControl
             PageTitle.Margin = new Thickness(0,10,0,20);
         }
     }
-
-    protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        if (DataContext is ModelManagerViewModel modelManagerViewModel)
-            await modelManagerViewModel.InitializeAsync();
-    }
 }

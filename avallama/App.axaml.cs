@@ -109,8 +109,7 @@ public partial class App : Application
             }
             catch (Exception ex)
             {
-                // TODO: ehelyett majd logolás
-                Console.WriteLine(ex);
+                // TODO: proper logging
             }
         });
     }

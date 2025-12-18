@@ -67,7 +67,6 @@ public class OllamaScraperService : IOllamaScraperService
             }
             catch (OperationCanceledException)
             {
-                Console.WriteLine("Scraping cancelled from Scraper");
                 // TODO: proper logging
             }
             catch (Exception ex)
@@ -156,7 +155,6 @@ public class OllamaScraperService : IOllamaScraperService
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[GetOllamaFamiliesAsync - SKIP ITEM] Error parsing a family node: {ex.Message}");
                     // TODO: proper logging
                 }
             }
@@ -165,7 +163,6 @@ public class OllamaScraperService : IOllamaScraperService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[GetOllamaFamiliesAsync] {ex.Message}");
             // TODO: proper logging
         }
 
@@ -199,7 +196,6 @@ public class OllamaScraperService : IOllamaScraperService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[GetOllamaModelsFromFamilyAsync - ERROR] {ex.Message}");
             // TODO: proper logging
         }
 

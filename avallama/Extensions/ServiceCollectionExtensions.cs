@@ -64,6 +64,18 @@ public static class ServiceCollectionExtensions
             })
             .AddHttpMessageHandler<OllamaRateLimitedHandler>();
 
+        // httpClient for quick connection verifications with a timeout of 2 seconds
+        collection.AddHttpClient("OllamaCheckHttpClient", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(2);
+        });
+
+        // httpClient for heavy operations (model initialization, message generation etc.) with a timeout of 5 minutes
+        collection.AddHttpClient("OllamaHeavyHttpClient", client =>
+        {
+            client.Timeout = TimeSpan.FromMinutes(5);
+        });
+
         collection.AddSingleton<ModelCacheService>();
         collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());
 

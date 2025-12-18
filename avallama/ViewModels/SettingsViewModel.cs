@@ -1,7 +1,6 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -22,24 +21,17 @@ public partial class SettingsViewModel : PageViewModel
     private const string Url = @"https://github.com/4foureyes/avallama/";
 
     private int _selectedLanguageIndex;
-    private int _selectedThemeIndex;
-    private int _selectedScrollIndex;
     private int _defaultLanguageIndex;
-    private string _apiHost = "localhost";
-    private string _apiPort = OllamaService.DefaultApiPort.ToString();
-    private bool _isChangesSavedTextVisible;
-    private bool _restartNeeded;
-    private bool _showInformationalMessages;
 
     [ObservableProperty] private string _lastModelUpdate = string.Empty;
 
     // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et
     public bool RestartNeeded
     {
-        get => _restartNeeded;
+        get;
         set
         {
-            _restartNeeded = value;
+            field = value;
             if (value)
             {
                 // restart dialog megjelenítése aszinkron UI szálon
@@ -76,60 +68,60 @@ public partial class SettingsViewModel : PageViewModel
 
     public int SelectedThemeIndex
     {
-        get => _selectedThemeIndex;
+        get;
         set
         {
-            _selectedThemeIndex = value;
+            field = value;
             OnPropertyChanged();
         }
     }
 
     public int SelectedScrollIndex
     {
-        get => _selectedScrollIndex;
+        get;
         set
         {
-            _selectedScrollIndex = value;
+            field = value;
             OnPropertyChanged();
         }
     }
 
     public bool IsChangesSavedTextVisible
     {
-        get => _isChangesSavedTextVisible;
+        get;
         set
         {
-            _isChangesSavedTextVisible = value;
+            field = value;
             OnPropertyChanged();
         }
     }
 
     public string ApiHost
     {
-        get => _apiHost;
+        get;
         set
         {
-            _apiHost = value;
+            field = value;
             OnPropertyChanged();
         }
-    }
+    } = "localhost";
 
     public string ApiPort
     {
-        get => _apiPort;
+        get;
         set
         {
-            _apiPort = value;
+            field = value;
             OnPropertyChanged();
         }
-    }
+    } = OllamaService.DefaultApiPort.ToString();
 
     public bool ShowInformationalMessages
     {
-        get => _showInformationalMessages;
+        get;
         set
         {
-            _showInformationalMessages = value;
+            field = value;
             OnPropertyChanged();
         }
     }

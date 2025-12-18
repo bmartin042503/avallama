@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using avallama.Utilities.Time;
 
 namespace avallama.Utilities
 {
-
     /// <summary>
     /// Provides functionality to calculate the network download speed in megabytes per second (MB/s)
     /// over a short moving time window. This is useful for smoothing out fluctuations in instantaneous
@@ -16,15 +15,17 @@ namespace avallama.Utilities
     /// </summary>
     public class NetworkSpeedCalculator
     {
-        private readonly Stopwatch _stopwatch = new();
+        private readonly ITimeProvider _timeProvider;
         private long _lastBytes;
 
         private readonly TimeSpan _timeWindow = TimeSpan.FromMilliseconds(500);
         private readonly Queue<(double Time, double Speed)> _samples = new();
 
-        public NetworkSpeedCalculator()
+        public NetworkSpeedCalculator(ITimeProvider? timeProvider = null)
         {
-            _stopwatch.Start();
+            // if it's null we initialize with a real stopwatch
+            _timeProvider = timeProvider ?? new RealTimeProvider();
+            _timeProvider.Start();
         }
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace avallama.Utilities
         /// </remarks>
         public double CalculateSpeed(long completedBytes)
         {
-            var now = _stopwatch.Elapsed.TotalSeconds;
+            var now = _timeProvider.Elapsed.TotalSeconds;
 
             if (_lastBytes == 0)
             {
@@ -48,9 +49,10 @@ namespace avallama.Utilities
             }
 
             var downloaded = completedBytes - _lastBytes;
-            var dt = now - _samples.LastOrDefault().Time;
+            var lastTime = _samples.Count > 0 ? _samples.Last().Time : 0;
+            var dt = now - lastTime;
 
-            if (dt <= 0) dt = 0.000001;
+            if (dt <= 0.000001) dt = 0.000001;
 
             _lastBytes = completedBytes;
 

@@ -13,7 +13,6 @@ namespace avallama.Tests.Services;
 [Collection("Database Tests")]
 public class DatabaseInitServiceTests
 {
-
     [Fact]
     public async Task InitializeSchemaAsync_DoesNotThrow()
     {
@@ -51,17 +50,18 @@ public class DatabaseInitServiceTests
         await using (var insertCmd = conn.CreateCommand())
         {
             insertCmd.CommandText = """
-                              INSERT INTO conversations (id, title, created_at, last_message_sent_at)
-                              VALUES ('conv-1', 'Test', '2024-01-01T00:00:00Z', '2024-01-01T01:00:00Z');
+                                    INSERT INTO conversations (id, title, created_at, last_message_sent_at)
+                                    VALUES ('conv-1', 'Test', '2024-01-01T00:00:00Z', '2024-01-01T01:00:00Z');
 
-                              INSERT INTO messages (conversation_id, role, message, timestamp)
-                              VALUES ('conv-1', 'user', 'Test', '2024-01-01T00:00:00Z');
-                              """;
+                                    INSERT INTO messages (conversation_id, role, message, timestamp)
+                                    VALUES ('conv-1', 'user', 'Test', '2024-01-01T00:00:00Z');
+                                    """;
             await insertCmd.ExecuteNonQueryAsync();
         }
 
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "EXPLAIN QUERY PLAN SELECT * FROM messages WHERE conversation_id = 'conv-1' ORDER BY timestamp";
+        cmd.CommandText =
+            "EXPLAIN QUERY PLAN SELECT * FROM messages WHERE conversation_id = 'conv-1' ORDER BY timestamp";
         await using var reader = await cmd.ExecuteReaderAsync();
 
         var queryPlan = new List<string>();
@@ -90,7 +90,8 @@ public class DatabaseInitServiceTests
         }
 
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "EXPLAIN QUERY PLAN SELECT * FROM conversations WHERE last_message_sent_at IS NOT NULL ORDER BY last_message_sent_at DESC";
+        cmd.CommandText =
+            "EXPLAIN QUERY PLAN SELECT * FROM conversations WHERE last_message_sent_at IS NOT NULL ORDER BY last_message_sent_at DESC";
         await using var reader = await cmd.ExecuteReaderAsync();
 
         var queryPlan = new List<string>();

@@ -13,10 +13,12 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:controls="clr-namespace:avallama.Controls"
              xmlns:converters="clr-namespace:avallama.Converters"
              xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
+             xmlns:utilities="clr-namespace:avallama.Utilities"
              Background="{DynamicResource Surface}"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.HomeView"
-             x:DataType="vm:HomeViewModel">
+             x:DataType="vm:HomeViewModel"
+             utilities:ViewInitialization.Command="{Binding InitializeAsync}">
 
     <UserControl.Resources>
         <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter" />
@@ -129,7 +131,7 @@ Licensed under the MIT License. See LICENSE file for details.
                       VerticalAlignment="Center"
                       ItemsSource="{Binding AvailableModels}"
                       SelectedItem="{Binding SelectedModelName, Mode=TwoWay}"
-                      IsEnabled="{Binding IsModelsDropdownEnabled}" Name="ModelsComboBox" />
+                      IsEnabled="{Binding IsModelsDropdownEnabled}" x:Name="ModelsComboBox" />
         </StackPanel>
 
         <!-- Informational messages -->
@@ -140,7 +142,6 @@ Licensed under the MIT License. See LICENSE file for details.
             <!-- There are many Grids because this is the way to ensure that the TextBlock inside them
             is not cut off, but instead trims its end with an ellipsis (CharacterEllipsis). More precisely,
             by specifying the column width with *, the TextBlock is able to trim its text properly. -->
-
 
             <!-- Remote ollama connection text -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" HorizontalAlignment="Center"
@@ -184,16 +185,20 @@ Licensed under the MIT License. See LICENSE file for details.
         <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="3" RowDefinitions="*,Auto" Margin="18,0">
 
             <!-- Restart Ollama (if it's unable to connect)  -->
-            <StackPanel Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center"
+            <StackPanel x:Name="RetryPanel" Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         Spacing="12" ZIndex="10" Margin="40, 0" IsVisible="{Binding IsRetryPanelVisible}">
 
                 <!-- Error message -->
-                <TextBlock Text="{Binding RetryInfoText}"
-                           TextAlignment="Center"
-                           FontSize="14" Foreground="{DynamicResource OnSurface}" TextWrapping="Wrap" />
+                <TextBlock
+                    x:Name="RetryInfoText"
+                    Text="{Binding RetryInfoText}"
+                    TextAlignment="Center"
+                    FontSize="14" Foreground="{DynamicResource OnSurface}" TextWrapping="Wrap" />
 
                 <!-- Retry button -->
-                <Button Content="{services:LocalizationService Key='RETRY'}"
+                <Button x:Name="RetryButton"
+                        Content="{services:LocalizationService Key='RETRY'}"
                         Padding="14, 4" CornerRadius="6"
                         Command="{Binding RetryOllamaConnection}"
                         Cursor="Hand" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -201,14 +206,14 @@ Licensed under the MIT License. See LICENSE file for details.
             </StackPanel>
 
             <!-- Messages of the selected conversation -->
-            <Grid Grid.Row="0" HorizontalAlignment="Stretch" Margin="0, 15, 0, 0"
+            <Grid x:Name="ConversationGrid" Grid.Row="0" HorizontalAlignment="Stretch" Margin="0, 15, 0, 0"
                   IsVisible="{Binding !IsRetryPanelVisible}">
                 <ScrollViewer ScrollChanged="ScrollViewer_OnScrollChanged" x:Name="ConversationScrollViewer">
                     <ItemsControl ItemsSource="{Binding SelectedConversation.Messages}">
 
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Vertical" Spacing="20"/>
+                                <StackPanel Orientation="Vertical" Spacing="20" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
 
@@ -255,6 +260,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
             <!-- Send message button -->
             <TextBox Grid.Row="1"
+                     x:Name="MessageTextBox"
                      Watermark="{services:LocalizationService Key='SEND_MESSAGE'}"
                      Margin="0,30,0,20"
                      Padding="20, 10"
