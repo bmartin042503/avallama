@@ -19,16 +19,16 @@ public partial class MainWindow : Window
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            // Windows specifikus beállítások
+            // Windows specific settings
 
-            // Title bar eltüntetése
+            // Remove title bar
             ExtendClientAreaToDecorationsHint = true;
             ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.NoChrome;
             ExtendClientAreaTitleBarHeightHint = 0;
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            // Title bar eltüntetése macOS-en, viszont az ablakkezelő gombok megmaradnak a bal felső sarokban
+            // Remove title bar on macOS, but keep window control buttons in the top left corner
             ExtendClientAreaToDecorationsHint = true;
             ReplaceCanvasWithGrid();
         }
@@ -40,7 +40,7 @@ public partial class MainWindow : Window
 
     private void ReplaceCanvasWithGrid()
     {
-        // új grid, ami a Window contentje lesz, egyetlen gyermeke pedig a MainWindow.axamlben lévő ContentControl
+        // new grid, which will be the Window content, and its only child is the ContentControl in MainWindow.axaml
         var grid = new Grid();
         var contentControl = MainCanvas.Children[1];
         MainCanvas.Children.Clear();
@@ -56,7 +56,7 @@ public partial class MainWindow : Window
             if (args == null) return;
             var positionY = args.GetPosition(this).Y;
 
-            // ablakot csak Y:30 alatt lehet mozgatni, vagyis az ablak felső részén
+            // the window can only be moved under Y:30, so the top part of the window
             if (positionY < 30) BeginMoveDrag((PointerPressedEventArgs)e);
         }
     }

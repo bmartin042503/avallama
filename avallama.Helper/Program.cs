@@ -12,12 +12,12 @@ internal static class Program
 {
     private static void Main(string[] args)
     {
-        // avallama elindítja ezt a processt ha újra kell indítani az alkalmazást
-        // miután elindította bezárja magát, majd ez a process ismét elindítja az avallamát
-        // később akár frissítésnél is használható
+        // avallama starts this process when it needs to restart the application
+        // after starting it closes itself, then this process restarts avallama
+        // later it can be used for updates as well
 
-        // első argumentum: processId
-        // második argumentum: processPath
+        // first argument: processId
+        // second argument: processPath
         if (args.Length < 2) return;
 
         var processId = int.Parse(args[0]);
@@ -27,10 +27,10 @@ internal static class Program
         {
             var avallamaProcess = Process.GetProcessById(processId);
 
-            // megvárja amíg bezárul az avallama
+            // waits for avallama to close
             avallamaProcess.WaitForExit();
 
-            // avallama indítása
+            // start avallama
             Process.Start(new ProcessStartInfo
             {
                 FileName = avallamaPath,

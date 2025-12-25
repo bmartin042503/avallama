@@ -1,4 +1,4 @@
-﻿<!-- 
+﻿<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -6,7 +6,7 @@ Licensed under the MIT License. See LICENSE file for details.
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
-        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <!-- To change between Dark/Light mode in the Preview, change the RequestedThemeVariant value-->
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="16">
@@ -30,7 +30,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="FontFamily" Value="{StaticResource Manrope}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
     </Style>
-    
+
     <Style Selector="TextBox:focus, TextBox:pointerover">
         <Style Selector="^ /template/ TextBlock#PART_Watermark">
             <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}" />
@@ -41,12 +41,12 @@ Licensed under the MIT License. See LICENSE file for details.
             <Setter Property="BorderThickness" Value="0" />
         </Style>
     </Style>
-    
+
     <Style Selector="TextBox:not(:focus)">
         <Setter Property="CaretBrush" Value="Transparent"/>
     </Style>
-    
-    <!-- Külön textbox beállításokhoz, hogy egységesebb legyen a corner radius -->
+
+    <!-- For separate textbox settings, so the corner radius is more unified -->
     <Style Selector="TextBox.settingTextBox">
         <Setter Property="CornerRadius" Value="6"/>
     </Style>

@@ -14,7 +14,7 @@ public partial class ModelManagerView : UserControl
     {
         InitializeComponent();
 
-        // traffic light window gombok miatt lentebb kell tolni macen
+        // needs to be pushed down on macOS because of the traffic light window buttons
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             PageTitle.Margin = new Thickness(0,10,0,20);

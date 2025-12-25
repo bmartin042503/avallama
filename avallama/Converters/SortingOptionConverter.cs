@@ -10,7 +10,7 @@ using Avalonia.Data.Converters;
 
 namespace avallama.Converters;
 
-// rendező enum típust alakítja lokalizált szövegre, hogy ne ezeket kelljen használni a háttérben
+// Converts the sorting option enum to localized string, so that these don't have to be used in the background
 public class SortingOptionConverter : IValueConverter
 {
 

@@ -14,7 +14,7 @@ namespace avallama.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    // PageFactory amivel elérhető az App.axaml.cs-ben létrehozott delegate, vagyis adott PageViewModel visszaadása
+    // PageFactory which can reach the delegate created in App.axaml.cs, i.e. returns the given PageViewModel
     private readonly PageFactory _pageFactory;
     private readonly ConfigurationService _configurationService;
     private readonly IModelCacheService _modelCacheService;
@@ -64,7 +64,7 @@ public partial class MainViewModel : ViewModelBase
 
         _configurationService.SaveSetting(ConfigurationKey.FirstTime, "false");
 
-        // ha új felhasználó akkor AppService-t megkérjük arra hogy villantsa fel azt a mindent tudó dialogját
+        // if the user is new, we request the AppService to show its all-knowing dialog
         _messenger.Send(new ApplicationMessage.AskOllamaStart());
     }
 

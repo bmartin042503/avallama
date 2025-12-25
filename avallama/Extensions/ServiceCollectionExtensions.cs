@@ -17,14 +17,14 @@ public static class ServiceCollectionExtensions
 {
     public static void AddCommonServices(this IServiceCollection collection)
     {
-        // Dependencyk létrehozása
-        // Singleton - Memóriában folytonosan jelen van
-        // Transient - Csak akkor hozza létre amikor szükség van rá és ha nincs akkor törli
+        // Instantiate dependencies here
+        // Singleton - Available in memory for the lifetime of the application
+        // Transient - Created when needed, disposed when no longer in use
 
-        // ciklikus függőségre vigyázni kell, mert megeshet hogy nem dob kivételt, nem hoz létre semmit de mégis fut az alkalmazás
-        // és nehezen lehet debuggolni, pl. AppService -> MainViewModel -> PageFactory -> Func<...> -> HomeViewModel -> AppService
+        // Take caution with cyclic dependencies, as they may not throw exceptions, but fail to instantiate anything while the application continues to run,
+        // making debugging difficult, e.g., AppService -> MainViewModel -> PageFactory -> Func<...> -> HomeViewModel -> AppService
 
-        // gyenge referenciás messenger, ami azt jelenti hogy nem kell manuálisan törölni őket
+        // Weak reference messenger, which means they do not need to be manually deleted
         collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
         collection.AddSingleton<IAvaloniaDispatcher, AvaloniaDispatcher>();
@@ -93,9 +93,9 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<PageFactory>();
         collection.AddSingleton<DialogViewModelFactory>();
 
-        // PageFactoryba injektálandó delegate dependency
-        // ez biztosítja hogy az App.axaml.cs-ben lesz minden dependency kezelve a factory pattern szerint
-        // Func<ApplicationPage, PageViewModel> - adott ApplicationPage-re vissza ad egy PageViewModelt
+        // Delegate dependency injection for PageFactory
+        // This ensures that all dependencies are handled in App.axaml.cs according to the factory pattern
+        // Func<ApplicationPage, PageViewModel> - returns a PageViewModel for a given ApplicationPage
         collection.AddSingleton<Func<ApplicationPage, PageViewModel>>(serviceProvider => page => page switch
         {
             ApplicationPage.Greeting => serviceProvider.GetRequiredService<GreetingViewModel>(),
@@ -104,16 +104,16 @@ public static class ServiceCollectionExtensions
             ApplicationPage.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
             ApplicationPage.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
             ApplicationPage.Scraper => serviceProvider.GetRequiredService<ScraperViewModel>(),
-            _ => throw new InvalidOperationException() // ha még nincs adott Page regisztrálva akkor kivétel
+            _ => throw new InvalidOperationException() // if there is no Page registered yet, throw an exception
         });
 
 
         collection.AddSingleton<Func<ApplicationDialog, DialogViewModel>>(serviceProvider => content => content switch
         {
-            // mivel a dialogok át lettek helyezve ezért kivételt dob, de ezt nem törölném hisz lehet még később olyan view
-            // ami személyre szabott és külön ablakban kell megjelennie dialogként
+            // since dialogs have been moved, this throws an exception, but I won't delete it as there may be views later
+            // that are personalized and need to appear in a separate window as a dialog
             _ => throw new NotSupportedException()
-            // Info, Error és a többi dialog nem kell, mert azok nem hívják meg ezt
+            // Info, Error and the other dialogs are not needed, as they do not call this
         });
     }
 }

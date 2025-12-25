@@ -27,7 +27,7 @@ public interface IApplicationService
     void Restart();
 }
 
-// segéd osztály az alkalmazással kapcsolatos műveletek (indítás, leállítás) személyre szabásához
+// helper class for customizing application operations (start, stop)
 public class ApplicationService : IApplicationService
 {
     private bool _isMainWindowInitialized;
@@ -62,7 +62,7 @@ public class ApplicationService : IApplicationService
 
     public async Task AskOllamaStart()
     {
-        // ollama indítás confirmation dialog megjelenítése
+        // show ollama start confirmation dialog
         var result = await _dialogService.ShowConfirmationDialog(
             title: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_TITLE"),
             positiveButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_LOCAL"),
@@ -70,10 +70,10 @@ public class ApplicationService : IApplicationService
             description: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_DESC")
         );
 
-        // ha remote lett kiválasztva
+        // if remote was selected
         if (result is ConfirmationResult { Confirmation: ConfirmationType.Negative })
         {
-            // input dialog megjelenítése inputfieldekkel megadva
+            // show input dialog with input fields specified
             var dialogResult = await _dialogService.ShowInputDialog(
                 title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
                 description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"),
@@ -93,7 +93,7 @@ public class ApplicationService : IApplicationService
                 }
             );
 
-            // ha inputresult érkezik akkor kinyerjük belőle az adatokat
+            // if an inputresult arrives, we extract the data from it
             if (dialogResult is InputResult inputResult)
             {
                 var remoteServerInfo = inputResult.Results.ToList();
@@ -101,7 +101,7 @@ public class ApplicationService : IApplicationService
                 _configurationService.SaveSetting(ConfigurationKey.ApiPort, remoteServerInfo[1]!);
             }
         }
-        // ha local lett kiválasztva
+        // if local was selected
         else
         {
             _configurationService.SaveSetting(ConfigurationKey.ApiHost, "localhost");
@@ -116,17 +116,17 @@ public class ApplicationService : IApplicationService
     }
 
     // TODO:
-    // ez egyelőre nehezen tesztelhető, ami nekem működött hogy megnyitottam az avallamát bin/Debug/net9.0 mappából
-    // majd megnyitottam a helper processt az argumentumaival (átadtam neki külön-külön kikeresve az avallama process id-t, meg a path-et)
-    // találni kell rá egy optimális módot hogy a dev stageben könnyen használható legyen de prod-ra is együtt publisholja a kettőt
+    // This is currently hard to test, what worked for me was to open avallama from the bin/Debug/net10.0 folder
+    // then open the helper process with its arguments (passing it separately the avallama process id and the path)
+    // we need to find an optimal way so that it can be easily used in dev stage but also publish both for prod
     public void Restart()
     {
-        // avallama helper process indítása
-        // ez a helper process megvárja amíg az alkalmazás bezárul, majd elindít egy teljesen új avallamát
+        // start avallama helper process
+        // this helper process waits until the application closes, then starts a completely new avallama
         var processPath = Environment.ProcessPath;
         var processId = Environment.ProcessId;
 
-        // ez egyelőre most a helper könyvtárban keresi a processt, tehát devnél ez a bin/Debug/net9.0/helper lenne
+        // this currently searches for the process in the helper folder, so in dev this would be bin/Debug/net10.0/helper
         var helperPath = Path.Combine(AppContext.BaseDirectory, "helper", "avallama.helper");
 
         if (!File.Exists(helperPath))
@@ -147,7 +147,7 @@ public class ApplicationService : IApplicationService
             CreateNoWindow = false
         };
 
-        // helper process indítása
+        // start the helper process
         Process.Start(psi);
         Environment.Exit(0);
     }

@@ -6,12 +6,12 @@ using Avalonia.Controls;
 
 namespace avallama.Controls;
 
-// ItemsControl aminek az elemei rendelkeznek index-el
-// létrehoztam de mégsem kellett, viszont elképzelhető, hogy a jövőben kelleni fog
+// ItemsControl in which the items have an index
+// I created it, but it was not needed, however, it might be needed in the future
 public class IndexedItemsControl : ItemsControl
 {
-    // attached property, ezt megkapja minden ContentPresenter elem
-    // amit IndexedItemsControl.ItemIndex típusként lehet elérni
+    // attached property, every ContentPresenter element gets this
+    // which can be reached as IndexedItemsControl.ItemIndex type
     public static readonly AttachedProperty<int> ItemIndexProperty =
         AvaloniaProperty.RegisterAttached<IndexedItemsControl, Control, int>(
             "ItemIndex");

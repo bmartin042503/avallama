@@ -25,7 +25,7 @@ public partial class SettingsViewModel : PageViewModel
 
     [ObservableProperty] private string _lastModelUpdate = string.Empty;
 
-    // OnPropertyChanged metódusokkal most ObservableProperty helyett, csak hogy kezelni lehessen a set-et
+    // OnPropertyChanges methods instead of ObservableProperty, so that we can handle the set
     public bool RestartNeeded
     {
         get;
@@ -34,7 +34,7 @@ public partial class SettingsViewModel : PageViewModel
             field = value;
             if (value)
             {
-                // restart dialog megjelenítése aszinkron UI szálon
+                // asynchronously show restart dialog on the UI thread
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     var dialogResult = await _dialogService.ShowConfirmationDialog(
@@ -46,7 +46,7 @@ public partial class SettingsViewModel : PageViewModel
 
                     if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
                     {
-                        // kérés az alkalmazás újraindítására
+                        // request to restart the application
                         _messenger.Send(new ApplicationMessage.Restart());
                     }
                 });
@@ -250,16 +250,16 @@ public partial class SettingsViewModel : PageViewModel
     [RelayCommand]
     public void ResetSettingsToDefault()
     {
-        // alapértelmezett beállítások
+        // default settings
 
-        // rendszer nyelvének lekérése, ha ez magyar akkor arra állítja be, ha nem akkor pedig defaultra (angol)
+        // get the system language, if it is hungarian set to that, otherwise set to default (english)
         var systemUiCultureName = CultureInfo.CurrentUICulture.Name;
         SelectedLanguageIndex = systemUiCultureName == "hu-HU" ? 0 : 1;
-        SelectedThemeIndex = 0; // rendszer témája
-        SelectedScrollIndex = 1; // floating button scroll beállítás
+        SelectedThemeIndex = 0; // system theme
+        SelectedScrollIndex = 1; // floating button scroll setting
         ApiHost = OllamaService.DefaultApiHost;
         ApiPort = OllamaService.DefaultApiPort.ToString();
-        ShowInformationalMessages = true; // tájékoztató üzenetek megjelenítése
+        ShowInformationalMessages = true; // show informational messages
     }
 
     private static bool IsValidHost(string host)

@@ -18,7 +18,7 @@ Licensed under the MIT License. See LICENSE file for details.
         MinWidth="800"
         MinHeight="600"
         Title="avallama">
-    <!-- Linuxon és macOS-en a Canvas lecserélődik Grid elemre melynek egyetlen gyermeke a ContentControl -->
+    <!-- The Canvas is swapped for Grid elements on Linux and macOS, which has only one ContentControl child -->
     <Canvas x:Name="MainCanvas">
         <StackPanel ZIndex="100" Canvas.Right="0" Canvas.Top="0" Margin="10" Orientation="Horizontal"
                     HorizontalAlignment="Right" Spacing="5">

@@ -9,7 +9,7 @@ public partial class GreetingViewModel : PageViewModel
 {
     public GreetingViewModel()
     {
-        // beállítás, hogy a viewmodel milyen paget kezel
+        // setting the page type that this viewmodel handles
         Page = ApplicationPage.Greeting;
     }
 }

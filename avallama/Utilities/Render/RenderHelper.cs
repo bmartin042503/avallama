@@ -34,9 +34,9 @@ public static class RenderHelper
     {
         if (brush is not ImmutableSolidColorBrush solid) return null;
         var color = solid.Color;
-        // 'X' azt jelenti hogy hexadecimális formátumban írja ki
-        // és a 2-es hogy mindig két számjegyet használ, ha kell nullával előtölti
-        // ha átlátszatlan, akkor #RRGGBB
+        // 'X' means hexadecimal format
+        // and 2 means always use two digits, pad with zero if necessary
+        // if opaque, then #RRGGBB
         return color.A == 255
             ? $"#{color.R:X2}{color.G:X2}{color.B:X2}"
             :
@@ -45,10 +45,10 @@ public static class RenderHelper
     }
 
 
-    // svg betöltése megadott szín, áttetszőség, körvonal alapján
-    // renderelésre készíti elő, az svg pozícióját Matrix eltolásokban lehet megadni, ezt a drawingcontext-re kell alkalmazni (context.PushTransform())
-    // ahhoz hogy rajzolható legyen meg kell hívni ezt: AvaloniaPicture.Record(svgPicture) ez visszaad egy AvaloniaPicturet amin van Draw metódus
-    // a színt úgy kell megadni ahogyan az az svg fájlban van (stroke vagy fill attól függően mit használ)
+    // load svg with given color, opacity and stroke
+    // it prepares it for rendering, the svg position can be given in Matrix translations, which should be applied to the drawingcontext (context.PushTransform())
+    // to make it drawable, you have to call this: AvaloniaPicture.Record(svgPicture) which returns an AvaloniaPicture that has a Draw method
+    // the color should be given as it is in the svg file (stroke or fill depending on what it uses)
     public static SKPicture? LoadSvg(
         string path,
         IBrush? fillColor = null,
@@ -57,10 +57,10 @@ public static class RenderHelper
         double opacity = 1.0
     )
     {
-        // szín és opacity beállítása css-el, úgy hogy a megadott színt átalakítjuk hex-re hogy css-nek át tudjuk adni
-        // opacity-nél invariantculture kell, különben máshogy nem működik, vagyis vesszővel nem jó, pont kell a tizedesjegy elé
+        // color and opacity setting with css, converting the given color to hex so we can pass it to css
+        // opacity needs invariantculture, otherwise it doesn't work properly, meaning comma is not good, dot is needed before the decimal
 
-        // css felépítése
+        // css construction
         var css = "* { ";
         if (fillColor is not null)
         {
@@ -83,7 +83,7 @@ public static class RenderHelper
 
         var parameters = new SvgParameters(null, css);
 
-        // svg betöltése
+        // svg loading
         using var stream = AssetLoader.Open(new Uri($"avares://avallama/{path}"));
 
         var svgPicture = SvgSource.LoadPicture(stream, parameters);

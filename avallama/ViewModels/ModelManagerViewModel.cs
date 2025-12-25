@@ -52,8 +52,8 @@ public partial class ModelManagerViewModel : PageViewModel
     [ObservableProperty] private string _downloadStatusText = string.Empty;
     [ObservableProperty] private string _downloadSpeedText = "0 MB/s";
 
-    // ez tudja észlelni ha egy task cancellelve van, kell egy tokenSource és annak a tokenjét beállítani a taskra
-    // aztán kivételt dobva fogja megszakítani a taskot
+    // this can notice if a task is canceled, a tokenSource is needed and its token should be set to the task
+    // then it will cancel the task by throwing an exception
     private CancellationTokenSource _downloadCancellationTokenSource = new();
 
     // currently downloading model
@@ -143,9 +143,9 @@ public partial class ModelManagerViewModel : PageViewModel
 
         switch (SelectedSortingOption)
         {
-            // ha nincs letöltött státuszban lévő model akkor visszaadja a simát
-            // ha pedig van akkor külön veszi a letöltött modelleket a Models-ből majd összevonja egy olyan Models-el (amiből ki vannak véve a Downloaded elemek)
-            // így előre kerülnek a letöltött státuszban lévők
+            // if there is no model in downloaded status then it returns the normal one
+            // if there is then it takes the downloaded ones separately from the rest and then concatenates them with a Models that has the Downloaded ones removed
+            // thus the downloaded ones will be in the front
             case SortingOption.Downloaded:
                 sortResult = models.Any(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
                     ? models.Where(m => m.DownloadStatus == ModelDownloadStatus.Downloaded)
