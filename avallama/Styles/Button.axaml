@@ -8,7 +8,7 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:controls="clr-namespace:avallama.Controls">
     <!-- Preview -->
     <Design.PreviewWith>
-        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <!-- To change between Dark/Light mode in the Preview, change the RequestedThemeVariant value-->
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="15" Background="{DynamicResource Surface}">
@@ -16,7 +16,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     <Button Content="Default Button" />
                     <Button Classes="large" Content="Large Button" />
                     <Button Classes="secondaryButton" Content="Secondary Button" />
-                    <!-- lessSecondaryButton: olyan gombok amik olyanok mint a secondary csak még inkább elbújnak a primary elől -->
+                    <!-- lessSecondaryButton: buttons that are like secondary, but are even more hidden from the primary -->
                     <Button Classes="lessSecondaryButton" Content="Less Secondary Button" />
                     <Button Content="Disabled Button" IsEnabled="False" />
                     <Button Classes="windowManager hide">
@@ -42,7 +42,7 @@ Licensed under the MIT License. See LICENSE file for details.
         </ThemeVariantScope>
     </Design.PreviewWith>
 
-    <!-- Alapértelmezett gombok -->
+    <!-- Default buttons -->
     <Style Selector="Button">
         <Setter Property="Background" Value="{DynamicResource Primary}" />
         <Setter Property="Foreground" Value="{DynamicResource OnPrimary}" />
@@ -68,21 +68,21 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}" />
     </Style>
 
-    <!-- Kicsi gomb -->
+    <!-- Small button -->
     <Style Selector="Button.small">
         <Setter Property="CornerRadius" Value="6" />
         <Setter Property="FontSize" Value="10" />
         <Setter Property="Padding" Value="20, 4" />
     </Style>
 
-    <!-- Nagy gombok -->
+    <!-- Big button -->
     <Style Selector="Button.large">
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Padding" Value="32.5, 8.5" />
     </Style>
 
-    <!-- Ablakkezelő gombok -->
+    <!-- Window manager buttons -->
     <Style Selector="Button.windowManager">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="CornerRadius" Value="6" />

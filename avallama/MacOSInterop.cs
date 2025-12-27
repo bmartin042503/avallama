@@ -3,16 +3,16 @@ using System.Runtime.InteropServices;
 
 namespace avallama;
 
-// Osztály ami betölti a macOS-hez kapcsolódó natív könyvtárakat
-// így például kezelhetőek natívan bizonyos elemek, melyet az Avalonia nem támogat
+// Class that loads native libraries related to macOS
+// thus certain elements can be handled natively that Avalonia does not support
 public static class MacOSInterop
 {
-    // ez egy saját, rövid Objective-C fájl amit xcodeban lebuildeltem és így használni tudja az Avalonia
-    // csak annyi van benne hogy visszaad egy bool értéket hogy az aktív ablak fullscreenben van-e vagy sem
-    // a WindowState.Maximized erre nem működik
-    // macOS release csomagba mindenképp be kell tenni ezt a fájlt a többi dll közé különben kivételt kap
-    // fejlesztésre meg hogy működjön bin/Debug/net9.0-ba és kiszedni a quarantine flaget 'xattr -d com.apple.quarantine' paranccsal
-    
+    // this is a short Objective-C file that I built in xcode so Avalonia can use it.
+    // it only contains a method that returns a bool value indicating whether the active window is in fullscreen or not
+    // WindowState.Maximized does not work for this
+    // in macOS release package this file must be placed among the other dlls otherwise an exception will be thrown
+    // for development to work it must be placed in bin/Debug/net9.0 and the quarantine flag must be removed with the command 'xattr -d com.apple.quarantine'
+
     [DllImport("libFullScreenCheck.dylib", CallingConvention = CallingConvention.Cdecl)]
     public static extern bool isKeyWindowInFullScreen();
 }

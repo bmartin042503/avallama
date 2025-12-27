@@ -35,18 +35,18 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // Az összes dependency létrehozása és eltárolása egy ServiceCollectionben
+        // Create all dependencies and store them in a ServiceCollection
         var collection = new ServiceCollection();
         collection.AddCommonServices();
 
-        // ServiceProvider ami biztosítja a létrehozott dependencyket
+        // ServiceProvider which provides the created dependencies
         var services = collection.BuildServiceProvider();
 
-        // nem lehet semmilyen dependency lekérés a ConfigurationService előtt
-        // különben nem lesznek jól megjelenítve a lokalizált szövegek, színek
-        // a lokalizáció a rendszer nyelve alapján állítódik be, ezt kell felülírni a ConfigurationService-el
+        // there cannot be any dependency requests before ConfigurationService
+        // otherwise localized texts, colors will not be displayed correctly
+        // localization is set based on the system language, this needs to be overridden by ConfigurationService
 
-        // nyelv és színséma lekérdezése, beállítása
+        // language and theme query, setting
         var configurationService = services.GetRequiredService<ConfigurationService>();
 
         var colorScheme = configurationService.ReadSetting(ConfigurationKey.ColorScheme);
@@ -54,7 +54,7 @@ public partial class App : Application
 
         var showInformationalMessages = configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages);
 
-        // új felhasználóknak alapértelmezetten bekapcsoljuk a tájékoztató üzeneteket
+        // the information message is enabled by default for new users
         if (string.IsNullOrWhiteSpace(showInformationalMessages))
         {
             configurationService.SaveSetting(ConfigurationKey.ShowInformationalMessages, true.ToString());
@@ -83,7 +83,7 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            //feliratkozunk az OnStartup-ra és az OnExitre
+            // subscribe to OnStartup and OnExit events
             desktop.Startup += OnStartup;
             desktop.Exit += OnExit;
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -99,8 +99,8 @@ public partial class App : Application
 
     private void OnStartup(object? sender, ControlledApplicationLifetimeStartupEventArgs e)
     {
-        // külön szálon, aszinkron fut le elvileg
-        // nem valószínű hogy elkapna valaha is bármilyen kivételt de biztos ami biztos
+        // runs on a separate thread, asynchronously in theory
+        // not likely that any exception would be caught but just in case
         Task.Run(async () =>
         {
             try
@@ -134,7 +134,7 @@ public partial class App : Application
 
     private void About_OnClick(object? sender, EventArgs e)
     {
-        // ezt később majd vmi fancy dialogra
+        // this is for later for some fancy dialog
         _dialogService?.ShowInfoDialog(
             "Avallama - " + LocalizationService.GetString("VERSION")
                           + "\n\nCopyright (c) " + LocalizationService.GetString("DEVELOPER_NAMES")

@@ -20,13 +20,13 @@ public partial class HomeView : UserControl
     {
         InitializeComponent();
 
-        // focusable, hogy ha a messageblockban van kijelölés akkor átadhassa a homeviewnak a fókuszt ha kikattintanak a messageblockból
-        // és így a kijelölés törölhető
+        // focusable, so that if the messageblock has a selection, it can pass the focus to the homeview when clicking outside the messageblock
+        // allowing the selection to be cleared
         Focusable = true;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            // margin beállítás hogy legyen az ablakkezelő gomboknak helye macOS-en
+            // set margin so the window control buttons have space on macOS
             SetMacOSMargin();
         }
         else
@@ -35,8 +35,8 @@ public partial class HomeView : UserControl
             SideBarButton.Margin = new Thickness(0,-10,0,0);
         }
 
-        // globálisan figyelünk a pointerwheeles görgetésre, különben a scrollviewer elkapná
-        // és ha nem lenne erre külön figyelve akkor új üzenet hozzáadásnál is mivel scrollbar növekszik megjelenne a scroll-to-bottom gomb
+        // we handle pointerwheel scrolls globally, if not the scrollviewer would catch it
+        // and if not handled separately, the scroll-to-bottom would appear when a new message is added as the scrollbar grows
         AddHandler(PointerWheelChangedEvent, OnGlobalPointerWheelChanged, RoutingStrategies.Tunnel);
     }
 
@@ -46,16 +46,16 @@ public partial class HomeView : UserControl
     private string _scrollSetting = string.Empty;
     private bool _userScrolledWithWheel;
 
-    // megnézi hogy milyen állapotban van az ablak és a sidebar
-    // majd eszerint beállítja a marginjukat, hogy macOS-en az ablakkezelő gombok használhatóak legyenek
+    // checks what state the window and sidebar are in
+    // and sets their margins accordingly so that on macOS the window control buttons are usable
 
     // ReSharper disable once InconsistentNaming
     private void SetMacOSMargin()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return;
 
-        // ha a natív macOS ablak full screenben van
-        // Avaloniával ezt nem lehet elérni szóval natív külső könyvtár kellett hozzá (lásd: MacOSInterop.cs)
+        // if the native macOS window is in full screen
+        // this can't be reached through Avalonia, so a native external library was needed (see: MacOSInterop.cs)
         if (MacOSInterop.isKeyWindowInFullScreen())
         {
             SideBarTopGrid.Margin = new Thickness(14,14,14,0);
@@ -103,7 +103,7 @@ public partial class HomeView : UserControl
         }
         else if (_scrollSetting == "float")
         {
-            // legörgetésnél megjelenik a scroll to bottom gomb
+            // scroll to bottom button appears when scrolling down
             if (e.OffsetDelta.Y > 10 && !ScrollToBottomBtn.IsVisible && _userScrolledWithWheel)
             {
                 ScrollToBottomBtn.IsVisible = true;
@@ -119,7 +119,7 @@ public partial class HomeView : UserControl
                     }
                 );
             }
-            // felgörgetés valamennyit VAGY teljesen legörgetés az aljára ÉS felhasználói görgetés tehát nem üzenet generálás mozdítja a scrollbart
+            // scroll up somewhat OR scroll down to the bottom AND user scrolled with wheel, so message generation didn't move the scrollbar
             else if (e.OffsetDelta.Y < 0 || scrollViewer?.Offset.Y + scrollViewer?.Viewport.Height >=
                      scrollViewer?.Extent.Height - 1
                      && _userScrolledWithWheel && ScrollToBottomBtn.IsVisible)
@@ -156,9 +156,9 @@ public partial class HomeView : UserControl
                 new ColumnDefinition(new GridLength(0, GridUnitType.Pixel)),
                 // gridsplitter
                 new ColumnDefinition(new GridLength(0, GridUnitType.Pixel)),
-                // sidebar expand/hide gomb
+                // sidebar expand/hide button
                 new ColumnDefinition(new GridLength(50, GridUnitType.Pixel)),
-                // chat rész
+                // chat part
                 new ColumnDefinition(new GridLength(7, GridUnitType.Star))
             };
 
@@ -177,9 +177,9 @@ public partial class HomeView : UserControl
                     { MinWidth = 250, MaxWidth = 400 },
                 // gridsplitter
                 new ColumnDefinition(new GridLength(8, GridUnitType.Pixel)),
-                // sidebar expand/hide gomb
+                // sidebar expand/hide button
                 new ColumnDefinition(new GridLength(50, GridUnitType.Pixel)),
-                // chat rész
+                // chat part
                 new ColumnDefinition(new GridLength(7, GridUnitType.Star))
             };
             MainGrid.ColumnDefinitions = columnDefinitions;
@@ -192,10 +192,10 @@ public partial class HomeView : UserControl
 
     private void SideBar_OnSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        // ha átméretezi a sidebart akkor beállítjuk reszponzívan az új csevegés gomb szövegét
+        // if the sidebar size is changed, then responsively set the new conversation button text
         _sideBarWidth = SideBar.Bounds.Width;
 
-        // textblock lekérése közvetlenül hogy tudjuk módosítani a láthatóságot és így középre tud igazodni az ikon
+        // get textblock explicitly so we can change its visibility and the icon can be centered
         var buttonTextBlock = NewConversationBtn.GetTemplateChildren().FirstOrDefault(c => c is TextBlock) as TextBlock;
         switch (_sideBarWidth)
         {

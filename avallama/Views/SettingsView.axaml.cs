@@ -13,12 +13,12 @@ namespace avallama.Views;
 public partial class SettingsView : UserControl
 {
     private int _selectedThemeIndex;
-    
+
     public SettingsView()
     {
         InitializeComponent();
-        
-        // traffic light window gombok miatt lentebb kell tolni macen
+
+        // needs to be pushed down on macOS because of the traffic light window buttons
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             PageTitle.Margin = new Thickness(0,10,0,20);
@@ -27,16 +27,16 @@ public partial class SettingsView : UserControl
 
     protected override void OnInitialized()
     {
-        // ha a SettingsView végzett az inicializálásnál akkor elmentjük a jelenleg kiválasztott színséma indexét
-        // ezt azért kell meghívni itt, mert az inicializálás végén lesz beállítva a SettingsView DataContextje, vagyis a SettingsViewModel
-        // és a SettingsViewModelből kérjük le az indexet
-        // lehetne amúgy simán a UI elemről is lekérni, de mivel Binding van így úgy gondoltam a viewmodelből lekérve naprakészebb
+        // if SettingsView initialization is complete, then we save the currently selected theme index
+        // this needs to be called here, because at the end of the initialization the DataContext of the SettingsView will be set, i.e. the SettingsViewModel
+        // and we get the index from the SettingsViewModel
+        // it could be queried from the UI element as well, but since there is Binding, I thought it would be more up-to-date if queried from the viewmodel
         _selectedThemeIndex = GetThemeIndex();
     }
 
     private void SaveBtn_OnClick(object? sender, RoutedEventArgs e)
     {
-        // ha változott a kiválasztott színséma, akkor datacontext frissítés, ezzel lehet váltani a színeket újraindítás nélkül
+        // if the selected theme changes, then refresh datacontext, so the colors can be updated without restarting the app
         var vmThemeIndex = GetThemeIndex();
         if (_selectedThemeIndex == vmThemeIndex) return;
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime applicationLifetime) return;

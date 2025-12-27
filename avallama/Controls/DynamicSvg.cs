@@ -9,7 +9,7 @@ using Avalonia.Media;
 namespace avallama.Controls;
 
 /// <summary>
-/// Svg megjelenítésére használható. A FillColor és a StrokeColor propertykkel megadható az SVG színe.
+/// Can be used to display an SVG. The FillColor and StrokeColor properties can be used to set the SVG colors.
 /// </summary>
 
 // TODO:
@@ -17,16 +17,15 @@ namespace avallama.Controls;
 // és akkor teljesen dinamikusan működne minden svg színezés
 public class DynamicSvg : Avalonia.Svg.Svg
 {
-    /* SVG-t a következőképp lehet színezni megfelelően ezzel az osztállyal:
-     * - Az SVG fájl tartalmát módosítani kell úgy, hogy azok a részek, amiket színezni szeretnénk külön fill és stroke attribútumban legyenek.
-     * - Ez azt jelenti hogy ha pl. style="fill:none;stroke:none;" formátumban van akkor le kell cserélni úgy hogy style helyett
-     * fill="none" stroke="none"
-     * - Ha pedig valamelyik elemet ki akarjuk hagyni a színezésből vagy statikusan meg akarunk adni neki valamit akkor fordítva,
-     * tehát style-ba szervezzük úgy hogy a DynamicSvg ne használja
+    /* An SVG can be colored properly with this class by:
+     * - Modifying the content of the SVG file so that the parts we want to color are in separate fill and stroke attributes.
+     * - This means that if it is in the format style="fill:none;stroke:none;", it should be replaced so that instead of style
+     * it is fill="none" stroke="none".
+     * - If we want to exclude any element from coloring or set it statically, then it can be defined in a style so that
+     * the DynamicSvg does not use it.
      */
 
-    // 'fill-opacity' property hozzáadása esetleg később
-
+    // Maybe add 'fill-opacity' property later
     public static readonly StyledProperty<IBrush?> FillColorProperty =
         AvaloniaProperty.Register<DynamicSvg, IBrush?>("FillColor");
 
@@ -52,10 +51,10 @@ public class DynamicSvg : Avalonia.Svg.Svg
     private static string ConvertColorToHex(IBrush? propertyColor)
     {
         var colorParse = Color.TryParse(propertyColor?.ToString(), out var color);
-        if (!colorParse) return "000000"; // fekete szín ha a parse sikertelen
+        if (!colorParse) return "000000"; // black color if parsing fails
         var rgb = color.ToUInt32();
-        var result = $"{rgb.ToString("x8", CultureInfo.InvariantCulture)}"; // hex-re parsolja
-        return result[2..]; // az első 2 karaktert leviszi, különben nem állítható be a szín
+        var result = $"{rgb.ToString("x8", CultureInfo.InvariantCulture)}"; // parsed to hexadecimal
+        return result[2..]; // removes the first 2 characters, otherwise the color cannot be set
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

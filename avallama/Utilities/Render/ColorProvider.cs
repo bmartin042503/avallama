@@ -9,8 +9,7 @@ using Avalonia.Styling;
 
 namespace avallama.Utilities.Render;
 
-
-// a témának megfelelő színt adja vissza a szín kulcsának alapján
+// returns the color for the given color key based on the current theme
 public static class ColorProvider
 {
     public static ImmutableSolidColorBrush GetColor(AppColor appColor)
@@ -21,20 +20,20 @@ public static class ColorProvider
         var themes = Application.Current?.Resources.ThemeDictionaries;
         if (themes is null) return defaultColorBrush;
 
-        // az app themei közül kiszedi a Lightot és a Darkot majd a theme-ben visszaadja azt amelyik használatban van
+        // gets the Light and Dark themes from the application's themes and returns the one in use
         themes.TryGetValue(
             Application.Current?.ActualThemeVariant ?? ThemeVariant.Default,
             out var theme
         );
 
-        // a themeből kiszedi a színt
+        // gets the color from the theme
         theme?.TryGetResource(
             appColor.ToString(),
             Application.Current?.ActualThemeVariant ?? ThemeVariant.Default,
             out color
         );
 
-        // ha Color típusban van megadva SolidColorBrush helyett AppColors.axaml-ben akkor eszerint adja vissza
+        // if the AppColors.axaml has a Color value instead of SolidColorBrush it returns accordingly
         if (color is Color extractedColor)
         {
             return new ImmutableSolidColorBrush(extractedColor);

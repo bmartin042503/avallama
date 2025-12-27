@@ -1,4 +1,4 @@
-﻿<!-- 
+﻿<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -6,7 +6,7 @@ Licensed under the MIT License. See LICENSE file for details.
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
-        <!-- Dark/Light mód váltáshoz a Previewben írd át a RequestedThemeVariant értékét -->
+        <!-- To change between Dark/Light mode in the Preview, change the RequestedThemeVariant value-->
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Padding="20" Background="{DynamicResource Surface}">
                 <StackPanel Orientation="Vertical" Spacing="13">
@@ -30,7 +30,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </Border>
         </ThemeVariantScope>
     </Design.PreviewWith>
-    
+
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource Manrope}"/>
     </Style>
@@ -39,19 +39,19 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="FontSize" Value="40"/>
         <Setter Property="FontWeight" Value="Medium"/>
     </Style>
-    
+
     <Style Selector="TextBlock.subText">
         <Setter Property="FontSize" Value="16"/>
     </Style>
-    
+
     <Style Selector="TextBlock.H1">
         <Setter Property="FontSize" Value="26"/>
     </Style>
-    
+
     <Style Selector="TextBlock.H2">
         <Setter Property="FontSize" Value="20"/>
     </Style>
-    
+
     <Style Selector="TextBlock.H3">
         <Setter Property="FontSize" Value="14"/>
     </Style>

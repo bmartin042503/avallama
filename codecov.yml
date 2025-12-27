@@ -21,7 +21,7 @@ ignore:
   - "**/bin/**"
   - "**/obj/**"
   - "avallama/Assets/**"
-  - "nativelibs/**"
+  - "native/**"
   - "**/*.g.cs"
 
 comment:

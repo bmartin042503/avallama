@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -19,21 +19,21 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="OffContent" Value="{services:LocalizationService Key='OFF'}"/>
         <Setter Property="OnContent" Value="{services:LocalizationService Key='ON'}"/>
         <Setter Property="FlowDirection" Value="RightToLeft"/>
-        
-        <!-- Checked stílusok -->
+
+        <!-- Checked styles -->
         <Style Selector="^:checked  /template/ Border#SwitchKnobBounds">
             <Setter Property="Background" Value="{DynamicResource Primary}" />
         </Style>
-        
+
         <Style Selector="^:checked /template/ Ellipse#SwitchKnobOn">
             <Setter Property="Fill" Value="{DynamicResource OnPrimary}" />
         </Style>
-        
-        <!-- Unchecked stílusok -->
+
+        <!-- Unchecked styles -->
         <Style Selector="^:unchecked /template/ Border#OuterBorder">
             <Setter Property="BorderBrush" Value="{DynamicResource OnSurface}" />
         </Style>
-        
+
         <Style Selector="^:unchecked /template/ Ellipse#SwitchKnobOff">
             <Setter Property="Fill" Value="{DynamicResource OnSurface}" />
         </Style>

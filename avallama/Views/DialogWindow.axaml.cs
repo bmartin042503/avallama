@@ -17,17 +17,17 @@ public partial class DialogWindow : Window
         InitializeComponent();
         SizeToContent = SizeToContent.WidthAndHeight;
     }
-    
+
     private void Window_PointerPressed(object? sender, RoutedEventArgs e)
     {
-        // Linuxon még nem vagyok benne biztos hogy eltűnne az ablak felső része
+        // I'm not sure if the title bar would be hidden on Linux
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             var args = e as PointerPressedEventArgs;
             if (args == null) return;
             var positionY = args.GetPosition(this).Y;
 
-            // ablakot csak Y:30 alatt lehet mozgatni, vagyis az ablak felső részén
+            // window can only be moved under Y:30, so on the top part of the window
             if (positionY < 30) BeginMoveDrag((PointerPressedEventArgs)e);
         }
     }

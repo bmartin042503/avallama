@@ -6,19 +6,19 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace avallama.Models;
 
-// NoConnection jelezné azt ha nincs internetkapcsolat és nem letölthető a model
-// ez egyértelműnek tűnik, és talán felesleges is lenne külön minden modelblock részére beállítani ezt az állapotot
-// de arra gondoltam hogy ez így maradna ha esetleg később több forrásból (nem csak ollama) lehetne modelt letölteni
-// és ha nem elérhető a szerver a letöltéshez akkor így legalább külön választhatóak
-// tehát amit le tud tölteni azt letöltheti, amit nem az nem (de ez majd később)
+// NoConnection would indicate that there is no internet connection and the model cannot be downloaded.
+// This seems obvious, and it might even be unnecessary to set this state separately for each model block,
+// but I thought it would remain this way in case later on models could be downloaded from multiple sources (not just Ollama)
+// and if the server is not reachable for downloading then at least they can be chosen separately
+// so what it can download it can download, what it can't, it can't (but this will be later)
 
 public enum ModelDownloadStatus
 {
-    NotEnoughSpace, // nincs elég hely a letöltéshez
-    NoConnection, // nincs kapcsolat a letöltéshez
-    Ready, // letölthető
+    NotEnoughSpace, // not enough space to download
+    NoConnection, // no connection to download
+    Ready, // can be downloaded
     Downloading,
-    Paused, // letöltés szünetelés alatt áll
+    Paused, // download is paused
     Downloaded
 }
 
@@ -51,7 +51,7 @@ public partial class OllamaModel : ObservableObject
     [ObservableProperty] private long _parameters;
     [ObservableProperty] private IDictionary<string, string> _info = new Dictionary<string, string>();
     [ObservableProperty] private OllamaModelFamily? _family;
-    [ObservableProperty] private long _size; // byteokban
+    [ObservableProperty] private long _size; // in bytes
     [ObservableProperty] private bool _runsSlow;
     [ObservableProperty] private ModelDownloadStatus _downloadStatus;
     [ObservableProperty] private int _downloadPartCount;

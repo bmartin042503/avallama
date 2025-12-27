@@ -37,10 +37,10 @@ public class InputField(
     public string InputValue { get; set; } = inputValue;
     public bool IsPassword { get; set; } = isPassword;
 
-    // a validatorban megadhatjuk, hogy mikor van egy érték helyesen megadva (pl. value => value.Contains("@")) ha emailre néznénk
+    // we can provide when a value is valid in the validator, e.g. value => value.Contains("@") if we would check for email
     public Func<string, bool>? Validator { get; set; } = validator;
 
-    // error üzenet ami akkor fog megjelenni ha a validálás nem járt sikerrel
+    // error message that will be shown if the validation fails
     public string ValidationErrorMessage { get; set; } = validationErrorMessage;
 
     public bool IsValid => Validator == null || Validator(InputValue);
@@ -110,19 +110,19 @@ public class DialogService(
     private Stack<DialogWindow> _dialogStack = new();
 
     /// <summary>
-    /// Megjelenít egy egyedi, személyre szabott dialogot.
-    /// A megadott <see cref="ApplicationDialog"/> típushoz tartozó nézet alapján készíti el a dialogablakot.
+    /// Shows a custom, personalized dialog.
+    /// For the specified <see cref="ApplicationDialog"/> type, it creates the dialog window based on the corresponding view.
     /// </summary>
-    /// <param name="dialog">A megjelenítendő dialog típusa. Csak egyedi típus engedélyezett.</param>
-    /// <param name="resizable">A dialog átméretezhetősége (opcionális)</param>
-    /// <param name="width">A dialog ablakának szélessége (opcionális)</param>
-    /// <param name="height">A dialog ablakának magassága (opcionális)</param>
-    /// <param name="minWidth">A dialog ablakának minimális szélessége (ha átméretezhető)</param>
-    /// <param name="minHeight">A dialog ablakának minimális magassága (ha átméretezhető)</param>
-    /// <param name="maxWidth">A dialog ablakának maximális szélessége (ha átméretezhető)</param>
-    /// <param name="maxHeight">A dialog ablakának maximális magassága (ha átméretezhető)</param>
+    /// <param name="dialog">The type of dialog to show. Only unique types are allowed</param>
+    /// <param name="resizable">The resizability of the dialog (optional)</param>
+    /// <param name="width">The width of the dialog window (optional)</param>
+    /// <param name="height">The height of the dialog window (optional)</param>
+    /// <param name="minWidth">The minimum width of the dialog window (if it is resizable)</param>
+    /// <param name="minHeight"> The minimum height of the dialog window (if it is resizable)</param>
+    /// <param name="maxWidth">The maximum width of the dialog window (if it is resizable)</param>
+    /// <param name="maxHeight"> The maximum height of the dialog window (if it is resizable)</param>
     /// <exception cref="InvalidOperationException">
-    /// Ha a dialog típusa nem megfelelő (pl. Information, Error, Confirmation, Input), kivételt dob.
+    /// If the dialog type is not appropriate (e.g., Information, Error, Confirmation, Input), an exception is thrown.
     /// </exception>
     public void ShowDialog(
         ApplicationDialog dialog,
@@ -154,8 +154,8 @@ public class DialogService(
         dialogWindow.Content = control;
         dialogWindow.CanResize = resizable;
 
-        // ha külön megadjuk a height vagy width értéket akkor az átméretezést eszerint állítja be
-        // tehát ha csak width-et adunk meg akkor a magasságot a tartalomhoz igazítja és fordítva
+        // if we provide a height or width value, it will set the resizing accordingly
+        // so if we only provide width, it will adjust the height to the content and vice versa
         if (double.IsNaN(width) && !double.IsNaN(height))
         {
             dialogWindow.SizeToContent = SizeToContent.Width;
@@ -185,9 +185,9 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Megjelenít egy információs dialogot, amely csak egy szöveges üzenetet tartalmaz.
+    /// Shows an informational dialog, which only contains a text message.
     /// </summary>
-    /// <param name="informationMessage">A megjelenítendő információs üzenet.</param>
+    /// <param name="informationMessage">The informational message to be shown.</param>
     public void ShowInfoDialog(string informationMessage)
     {
         var dialogWindow = new DialogWindow();
@@ -204,10 +204,10 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Megjelenít egy hibaüzenetet tartalmazó dialogot, amely figyelmezteti a felhasználót valamilyen problémára.
+    /// Show a dialog containing an error message, which alerts the user to some problem.
     /// </summary>
-    /// <param name="errorMessage">A megjelenítendő hibaüzenet.</param>
-    /// <param name="shutdownApp">Az alkalmazás leállítása a dialog bezárását követően (opcionális).</param>
+    /// <param name="errorMessage">The error message to be shown.</param>
+    /// <param name="shutdownApp">Shut down the application after closing the dialog (optional).</param>
     public void ShowErrorDialog(
         string errorMessage,
         bool shutdownApp = false
@@ -236,29 +236,29 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Megjelenít egy cselekvésre felszólító dialogot, egy megadható <see cref="Action"/> metódussal, ami lefut, ha a
-    /// dialogban lévő action (bal oldali) gombra kattintanak.
+    /// Shows an action dialog with a customizable <see cref="Action"/> method that is executed when the
+    /// action (left) button in the dialog is clicked.
     /// </summary>
     /// <param name="title">
-    /// A dialog címe vagy kérdés szövege.
+    /// The title or question text of the dialog.
     /// </param>
     /// <param name="actionButtonText">
-    /// A bal oldali gomb szövege.
+    /// The text of the left button.
     /// </param>
     /// <param name="action">
-    /// A metódus ami lefut az action gomb megnyomása esetén.
+    /// The method that is invoked when the action button is clicked.
     /// </param>
     /// <param name="closeAction">
-    /// A metódus ami lefut a bezárás gomb megnyomása esetén (opcionális).
+    /// The method that is invoked when the close button is clicked (optional).
     /// </param>
     /// <param name="description">
-    /// A dialog leírása (opcionális).
+    /// The description of the dialog (optional).
     /// </param>
     /// <param name="actionButtonOnly">
-    /// Csak az action button jelenjen meg-e, tehát a bezárás gomb nélkül (opcionális).
+    /// Only show the action button, without the close button (optional).
     /// </param>
     /// <example>
-    /// Példa használatra:
+    /// Example usage:
     /// <code>
     /// _dialogService.ShowActionDialog(
     ///     title: LocalizationService.GetString("OLLAMA_NOT_INSTALLED"),
@@ -279,7 +279,7 @@ public class DialogService(
     )
     {
         var dialogWindow = new DialogWindow();
-        // szándékosan ConfirmationView, hisz annak a View-ja újrafelhasználható
+        // ConfirmationView on purpose, as its View is reusable
         var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ConfirmationView");
         if (type is null) return;
         var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
@@ -324,43 +324,42 @@ public class DialogService(
 
         ShowDialogWindow(dialogWindow);
     }
-
-    // azért kell hogy async legyenek ezek a metódusok, mert resulttal rendelkeznek és ezeket megfelelően be kell várni
-    // ha nem async lenne akkor a UI szálon próbálná bevárni a resultot, ezáltal az lefagyna és nem lehetne beállítani resultot TrySetResult-al hiszen a UI szál már foglalt
+    // these methods have to be async because they have results that need to be awaited properly
+    // if they were not async, they would try to await the result on the UI thread, causing it to freeze and preventing the result from being set with TrySetResult as the UI thread would already be busy
 
     /// <summary>
-    /// Megjelenít egy megerősítésre váró dialogot a felhasználónak, két választható gombbal.
-    /// A metódus aszinkron módon várja meg, míg a felhasználó valamelyik gombra kattint,
-    /// majd visszatér a választott eredménnyel egy <see cref="DialogResult"/> típusban.
+    /// Shows a confirmation dialog to the user with two selectable buttons.
+    /// The method asynchronously waits for the user to click one of the buttons,
+    /// then returns the selected result in a <see cref="DialogResult"/> type.
     /// </summary>
     /// <param name="title">
-    /// A dialog címe vagy kérdés szövege.
+    /// The title or question text of the dialog.
     /// </param>
     /// <param name="positiveButtonText">
-    /// A bal oldali gomb szövege.
+    /// The text of the left button.
     /// </param>
     /// <param name="negativeButtonText">
-    /// A jobb oldali gomb szövege.
+    /// The text of the right button.
     /// </param>
     /// <param name="description">
-    /// A dialog leírása (opcionális).
+    /// The description of the dialog (optional).
     /// </param>
     /// <param name="highlight">
-    /// A kiemelendő gomb típusa, amely vizuálisan hangsúlyosabb lesz.
+    /// The type of button to be highlighted, making it visually more prominent.
     /// </param>
     /// <returns>
-    /// Egy <see cref="Task{DialogResult}"/>, amely tartalmazza a felhasználó választását.
-    /// A visszatérési érték lehet <see cref="ConfirmationResult"/>, amely tartalmazza a választott <see cref="ConfirmationType"/> értéket.
+    /// A <see cref="Task{DialogResult}"/>, which contains the user's choice.
+    /// The return value can be a <see cref="ConfirmationResult"/>, which contains the selected <see cref="ConfirmationType"/> value.
     /// </returns>
     /// <example>
-    /// Példa használatra:
+    /// Example usage:
     /// <code>
-    /// var result = await _dialogService.ShowConfirmationDialog("Biztosan törölni szeretnéd ...?", "Törlés", "Mégsem", ConfirmationType.Negative);
+    /// var result = await _dialogService.ShowConfirmationDialog("Are you sure you want to delete ...?", "Delete", "Cancel", ConfirmationType.Negative);
     /// if (result is ConfirmationResult confRes)
     /// {
     ///     if (confRes.Confirmation == ConfirmationType.Positive)
     ///     {
-    ///         // a felhasználó a pozitív (törlés) gombra nyomott
+    ///         // the user clicked the positive (delete) button
     ///     }
     /// }
     /// </code>
@@ -392,8 +391,8 @@ public class DialogService(
         control.PositiveButton.Content = positiveButtonText;
         control.NegativeButton.Content = negativeButtonText;
 
-        // ha a positivet akarjuk kiemelni, akkor a negativera adunk egy kevésbé hatásosabb megjelenést, és fordítva
-        // ez a class a stylesban már definiálva van
+        // if we want to highlight the positive button, then we give the negative button a less prominent appearance, and vice versa
+        // this class is already defined in styles
         if (highlight == ConfirmationType.Positive)
         {
             control.NegativeButton.Classes.Add("secondaryButton");
@@ -421,7 +420,7 @@ public class DialogService(
             DialogType = ApplicationDialog.Confirmation
         };
 
-        // pl. ha a felhasználó valahogy más módon bezárja a dialogot akkor lekezeljük a taskot
+        // if a user closes the dialog in some other way, we handle the task
         dialogWindow.Closing += (_, _) =>
         {
             if (!dialogResult.Task.IsCompleted)
@@ -435,18 +434,18 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Megjelenít TextBox mező(ke)t tartalmazó dialogot a felhasználónak, amely lehetővé teszi több szöveg megadását beviteli mezőkön keresztül, mint <see cref="InputField"/> típus.
-    /// A dialog két gombot tartalmaz: mentés és bezárás. A felhasználó válasza alapján visszatér egy <see cref="DialogResult"/>-tel.
+    /// Shows a dialog containing TextBox field(s) that allow the user to input multiple text values as <see cref="InputField"/> types.
+    /// The dialog contains two buttons: save and close. Based on the user's response, it returns a <see cref="DialogResult"/>.
     /// </summary>
-    /// <param name="title">A dialog címe.</param>
-    /// <param name="description">Kiegészítő leírás a dialoghoz (opcionális).</param>
-    /// <param name="inputFields">Beviteli mezők</param>
+    /// <param name="title">The title of the dialog</param>
+    /// <param name="description">Additional description for the dialog (optional).</param>
+    /// <param name="inputFields">Input fields</param>
     /// <returns>
-    /// Egy <see cref="Task{DialogResult}"/> amely tartalmazza a felhasználó által megadott szöveget <see cref="InputResult"/> formájában,
-    /// vagy <see cref="NullResult"/>-ot, ha a dialog bezárásra került válasz nélkül.
+    /// A <see cref="Task{DialogResult}"/> which contains the text provided by the user in the form of <see cref="InputResult"/>,
+    /// or <see cref="NullResult"/> if the dialog was closed without a response.
     /// </returns>
     /// <example>
-    /// Példa használatra:
+    /// Example usage:
     /// <code>
     /// var dialogResult = await _dialogService.ShowInputDialog(
     ///     title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
@@ -522,7 +521,7 @@ public class DialogService(
 
         control.CloseButton.Click += (_, _) =>
         {
-            // bezárás esetén nem ad vissza resultot, hisz a felhasználó nem akart menteni semmit
+            // when closing the dialog without saving it does not return a result, as the user did not want to save anything
             dialogResult.TrySetResult(new NullResult());
             CloseDialog(ApplicationDialog.Input);
         };
@@ -537,7 +536,7 @@ public class DialogService(
             {
                 if (control.InputFieldsStackPanel.Children[i] is TextBox fieldTextBox)
                 {
-                    // frissítjük az inputfieldek tartalmát hogy lehessen újravalidálni
+                    // we update the content of the input fields, so we can revalidate them
                     fields[i].InputValue = fieldTextBox.Text ?? string.Empty;
                 }
 
@@ -549,7 +548,7 @@ public class DialogService(
                 }
             }
 
-            // a textboxok, vagyis a beviteli mezők szövegeit összevonja egy List<string>-be
+            // the textboxes, or the input fields' texts are combined into a List<string>
             var inputList = control.InputFieldsStackPanel.Children.Select(item =>
                     item as TextBox
                 )
@@ -567,7 +566,7 @@ public class DialogService(
             DialogType = ApplicationDialog.Input
         };
 
-        // pl. ha a felhasználó valahogy más módon bezárja a dialogot akkor lekezeljük a taskot
+        // if the user closes the dialog in some other way, we handle the task
         dialogWindow.Closing += (_, _) =>
         {
             if (!dialogResult.Task.IsCompleted)
@@ -581,10 +580,10 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Megjelenít egy dialogot, amely a dialog stack tetejére kerül.
-    /// Ha nincs nyitott dialog, akkor a MainWindow-hoz csatolja.
+    /// Displays a dialog that is pushed onto the top of the dialog stack.
+    /// If there is no open dialog, it attaches to the MainWindow.
     /// </summary>
-    /// <param name="dialogWindow">A megjelenítendő dialog ablak.</param>
+    /// <param name="dialogWindow">The dialog window to be displayed.</param>
     private void ShowDialogWindow(DialogWindow dialogWindow)
     {
         var parent = _dialogStack.Count > 0
@@ -612,12 +611,12 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Aszinkron módon jelenít meg egy dialogot, amely a dialog stack tetejére kerül.
-    /// Ha nincs nyitott dialog, akkor a MainWindow-hoz csatolja. A metódus megvárja, míg a dialog bezárul.
+    /// Asynchronously displays a dialog that is pushed onto the top of the dialog stack.
+    /// If there is no open dialog, it attaches to the MainWindow. The method waits until the dialog is closed.
     /// </summary>
-    /// <param name="dialogWindow">A megjelenítendő dialog ablak.</param>
+    /// <param name="dialogWindow">The dialog to be displayed.</param>
     /// <returns>
-    /// Egy <see cref="Task"/> amely akkor fejeződik be, amikor a dialog bezárásra kerül.
+    /// A <see cref="Task"/> that completes when the dialog is closed.
     /// </returns>
     private async Task ShowDialogWindowAsync(DialogWindow dialogWindow)
     {
@@ -635,8 +634,8 @@ public class DialogService(
             else
                 _dialogStack = new Stack<DialogWindow>(_dialogStack.Where(w => w != dialogWindow));
         };
-        // fontos hogy az await-os dialog megjelenítés legutoljára legyen, mert az await-al egészen várni fog addig amíg be nem zárul a dialog
-        // és ha nem állítjuk be a dialogot előtte (hozzáadni stackhez, closinghoz műveletek hozzáadása) akkor nem is lehet bezárni
+        // it's important that the dialog display with await is the last thing, because with await it will wait until the dialog is closed
+        // and if we do not set up the dialog before (adding to stack, adding closing operations) then it cannot be closed
         if (parent == null)
         {
             dialogWindow.Show();
@@ -648,9 +647,9 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Bezárja a megadott típusú dialogot, ha megtalálható a stackben.
+    /// Closes the dialog of the specified type, if found in the stack.
     /// </summary>
-    /// <param name="dialog">A bezárandó dialog típusa.</param>
+    /// <param name="dialog">The type of dialog to close.</param>
     public void CloseDialog(ApplicationDialog dialog)
     {
         var dialogWindow = _dialogStack.FirstOrDefault(d => d.DataContext is DialogViewModel viewModel
@@ -661,7 +660,7 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Bezárja a legutóbb megnyitott dialogot a stack tetejéről.
+    /// Closes the most recently opened dialog from the top of the stack.
     /// </summary>
     public void CloseDialog()
     {
@@ -671,7 +670,7 @@ public class DialogService(
     }
 
     /// <summary>
-    /// Bezárja az összes nyitott dialogot és kiüríti a dialog stacket.
+    /// Closes all open dialogs and clears the dialog stack.
     /// </summary>
     public void CloseAllDialogs()
     {
