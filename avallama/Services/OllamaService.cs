@@ -301,6 +301,7 @@ namespace avallama.Services
                 switch (ollamaProcessCount)
                 {
                     case 1:
+                        // If ollama is running as a systemd service under Linux, it should be counted here
                         OllamaServiceState = new ServiceState(ServiceStatus.Running,
                             LocalizationService.GetString("OLLAMA_ALREADY_RUNNING"));
                         _started = true;
@@ -338,6 +339,12 @@ namespace avallama.Services
         /// </summary>
         public void Stop()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && IsOllamaRunningAsSystemdService())
+            {
+                // ollama is running as a systemd service, so it should not be killed
+                return;
+            }
+
             var ollamaProcessList = Process.GetProcessesByName("ollama");
             foreach (var process in ollamaProcessList)
             {
@@ -658,6 +665,78 @@ namespace avallama.Services
                      RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 OllamaPath = @"/usr/local/bin/ollama";
+            }
+        }
+
+        /// <summary>
+        /// Determines whether Ollama is running as a systemd service or not
+        /// </summary>
+        /// <returns>True if running as systemd service, false otherwise</returns>
+        /// <exception cref="InvalidOperationException">Thrown if called on a platform that is not Linux</exception>
+        private static bool IsOllamaRunningAsSystemdService()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                throw new InvalidOperationException("This method should only be called on Linux");
+            }
+
+            var psiRoot = new ProcessStartInfo
+            {
+                FileName = "systemctl",
+                Arguments = "is-active ollama",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var psiUser = new ProcessStartInfo
+            {
+                FileName = "systemctl",
+                Arguments = "--user is-active ollama",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            try
+            {
+                using var processRoot = Process.Start(psiRoot);
+                if (processRoot == null)
+                {
+                    return false;
+                }
+
+                processRoot.WaitForExit();
+
+                var outputRoot = processRoot.StandardOutput.ReadToEnd().Trim();
+                if (outputRoot == "active")
+                {
+                    return true;
+                }
+
+                // retry with user level check if root check failed
+                using var processUser = Process.Start(psiUser);
+                if (processUser == null)
+                {
+                    return false;
+                }
+
+                processUser.WaitForExit();
+
+                var outputUser = processUser.StandardOutput.ReadToEnd().Trim();
+                return outputUser == "active";
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
+            {
+                // systemctl command failed because it does not exist, system does not use systemd
+                return false;
+            }
+            catch (Win32Exception)
+            {
+                // other errors such as permission denied, should be handled in a different manner in the future
+                return false;
             }
         }
 
