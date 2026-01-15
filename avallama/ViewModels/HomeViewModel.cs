@@ -199,7 +199,7 @@ public partial class HomeViewModel : PageViewModel
             Conversations.Push(SelectedConversation);
         }
 
-        await AddGeneratedMessage();
+        await AddGeneratedMessage(SelectedConversation);
     }
 
     /// <summary>
@@ -294,13 +294,12 @@ public partial class HomeViewModel : PageViewModel
     /// Orchestrates the generation of the model response, handling streaming chunks,
     /// calculation of generation speed, and potential title regeneration.
     /// </summary>
-    private async Task AddGeneratedMessage()
+    private async Task AddGeneratedMessage(Conversation conversation)
     {
-        if (SelectedConversation == null) return;
         var generatedMessage = new GeneratedMessage("", 0.0);
-        SelectedConversation.AddMessage(generatedMessage);
+        conversation.AddMessage(generatedMessage);
 
-        var messageHistory = new List<Message>(SelectedConversation.Messages.ToList());
+        var messageHistory = new List<Message>(conversation.Messages.ToList());
         messageHistory.RemoveAt(messageHistory.Count - 1);
 
         // Remove failed messages from history before generation
@@ -317,41 +316,49 @@ public partial class HomeViewModel : PageViewModel
                 generatedMessage.GenerationSpeed = tokensPerSecond;
                 IsResourceWarningVisible = tokensPerSecond < 20;
 
-                SelectedConversation.MessageCountToRegenerateTitle++;
-                if (SelectedConversation.MessageCountToRegenerateTitle == 3)
+                // Regenerate title after the first 2 messages and then every 6 messages (1 & 3 exchanges)
+                if ((conversation.Messages.Count - 2) % 6 == 0 || conversation.Messages.Count == 2)
                 {
-                    await RegenerateConversationTitle();
+                    Console.WriteLine(2 % 6);
+                    await RegenerateConversationTitle(conversation);
+                }
+
+                // Also regenerate if the title is still "New Conversation", but it was not updated after the first message exchange,
+                // this can happen if the application is closed while a new conversation is being generated.
+                // Let's just hope they didn't also switch their localization settings in the meantime :)
+                if (conversation.Title == LocalizationService.GetString("NEW_CONVERSATION") &&
+                    conversation.Messages.Count == 4)
+                {
+                    await RegenerateConversationTitle(conversation);
                 }
             }
         }
 
-        await _conversationService.InsertMessage(SelectedConversation.ConversationId, generatedMessage,
+        await _conversationService.InsertMessage(conversation.ConversationId, generatedMessage,
             SelectedModelName, generatedMessage.GenerationSpeed);
 
-        SelectedConversation.Model = SelectedModelName;
+        conversation.Model = SelectedModelName;
     }
 
     /// <summary>
     /// Generates a short title for the conversation based on the message history.
     /// </summary>
-    private async Task RegenerateConversationTitle()
+    private async Task RegenerateConversationTitle(Conversation conversation)
     {
-        if (SelectedConversation == null) return;
-        SelectedConversation.Title = string.Empty;
+        conversation.Title = string.Empty;
 
         // TODO: better solution for title generation (not working for all models)
         const string request =
             "Generate only a single short title for this conversation with no use of quotation marks.";
 
         var tmpMessage = new Message(request);
-        var messageHistory = new List<Message>(SelectedConversation.Messages.ToList()) { tmpMessage };
+        var messageHistory = new List<Message>(conversation.Messages.ToList()) { tmpMessage };
         await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, SelectedModelName))
         {
-            if (chunk.Message != null) SelectedConversation.Title += chunk.Message.Content;
+            if (chunk.Message != null) conversation.Title += chunk.Message.Content;
         }
 
-        SelectedConversation.MessageCountToRegenerateTitle = 0;
-        await _conversationService.UpdateConversationTitle(SelectedConversation);
+        await _conversationService.UpdateConversationTitle(conversation);
     }
 
     /// <summary>
