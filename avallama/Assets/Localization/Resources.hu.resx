@@ -1,4 +1,4 @@
-﻿<!-- 
+﻿<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -456,5 +456,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="PARAMETERS" xml:space="preserve">
         <value>Paraméterek</value>
+    </data>
+    <data name="NO_INTERNET_WARNING" xml:space="preserve">
+        <value>Nincs internetkapcsolat. Kérlek próbáld meg újra.</value>
+    </data>
+    <data name="LOST_INTERNET_WARNING" xml:space="preserve">
+        <value>Az internetkapcsolat megszakadt. Kérlek próbáld meg újra.</value>
     </data>
 </root>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
+using avallama.Utilities.Network;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -21,6 +22,7 @@ public partial class ScraperViewModel : PageViewModel
     private readonly IDialogService _dialogService;
     private readonly IConfigurationService _configurationService;
     private readonly IMessenger _messenger;
+    private readonly INetworkManager _networkManager;
 
     private CancellationTokenSource? _cancellationTokenSource;
     private CancellationToken _cancellationToken;
@@ -35,7 +37,8 @@ public partial class ScraperViewModel : PageViewModel
         IModelCacheService modelCacheService,
         IDialogService dialogService,
         IConfigurationService configurationService,
-        IMessenger messenger
+        IMessenger messenger,
+        INetworkManager networkManager
     )
     {
         Page = ApplicationPage.Scraper;
@@ -44,11 +47,18 @@ public partial class ScraperViewModel : PageViewModel
         _dialogService = dialogService;
         _configurationService = configurationService;
         _messenger = messenger;
+        _networkManager = networkManager;
     }
 
     [RelayCommand]
     public async Task InitializeAsync()
     {
+        if (!await _networkManager.IsInternetAvailableAsync())
+        {
+            _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_WARNING"), false);
+            CancelScraping();
+            return;
+        }
         await ScrapeModels();
     }
 
@@ -65,6 +75,8 @@ public partial class ScraperViewModel : PageViewModel
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
+
+            var monitorTask = MonitorInternetAsync(_cancellationToken);
 
             var tmpModels = await _modelCacheService.GetCachedModelsAsync();
             if (tmpModels.Count == 0)
@@ -97,6 +109,8 @@ public partial class ScraperViewModel : PageViewModel
             _configurationService.SaveSetting(ConfigurationKey.LastUpdatedCache,
                 DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
             _messenger.Send(new ApplicationMessage.RequestPage(ApplicationPage.ModelManager));
+
+            await monitorTask;
         }
         catch (OperationCanceledException)
         {
@@ -106,5 +120,24 @@ public partial class ScraperViewModel : PageViewModel
         {
             // TODO: proper logging
         }
+    }
+
+    private async Task MonitorInternetAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3), token);
+
+                if (!await _networkManager.IsInternetAvailableAsync())
+                {
+                    _dialogService.ShowErrorDialog(LocalizationService.GetString("LOST_INTERNET_WARNING"), false);
+                    CancelScraping();
+                    return;
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
     }
 }

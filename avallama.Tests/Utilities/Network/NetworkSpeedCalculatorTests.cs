@@ -3,10 +3,10 @@
 
 using System;
 using avallama.Tests.Mocks;
-using avallama.Utilities;
+using avallama.Utilities.Network;
 using Xunit;
 
-namespace avallama.Tests.Utilities;
+namespace avallama.Tests.Utilities.Network;
 
 public class NetworkSpeedCalculatorTests
 {
