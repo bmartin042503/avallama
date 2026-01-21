@@ -4,8 +4,10 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Services;
+using avallama.Utilities.Network;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -18,6 +20,7 @@ public partial class SettingsViewModel : PageViewModel
     private readonly DialogService _dialogService;
     private readonly ConfigurationService _configurationService;
     private readonly IMessenger _messenger;
+    private readonly INetworkManager _networkManager;
     private const string Url = @"https://github.com/4foureyes/avallama/";
 
     private int _selectedLanguageIndex;
@@ -127,12 +130,13 @@ public partial class SettingsViewModel : PageViewModel
     }
 
     public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService,
-        IMessenger messenger)
+        IMessenger messenger, INetworkManager networkManager)
     {
         Page = ApplicationPage.Settings;
         _dialogService = dialogService;
         _configurationService = configurationService;
         _messenger = messenger;
+        _networkManager = networkManager;
         IsChangesSavedTextVisible = false;
         LoadSettings();
     }
@@ -232,8 +236,13 @@ public partial class SettingsViewModel : PageViewModel
     }
 
     [RelayCommand]
-    public void OnHyperlinkClicked()
+    public async Task OnHyperlinkClicked()
     {
+        if (!await _networkManager.IsInternetAvailableAsync())
+        {
+            _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_WARNING"));
+            return;
+        }
         Process.Start(new ProcessStartInfo
         {
             FileName = Url,

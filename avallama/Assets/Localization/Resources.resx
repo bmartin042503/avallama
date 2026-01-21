@@ -464,4 +464,10 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="PARAMETERS" xml:space="preserve">
         <value>Parameters</value>
     </data>
+    <data name="NO_INTERNET_WARNING" xml:space="preserve">
+        <value>No internet connection. Please try again.</value>
+    </data>
+    <data name="LOST_INTERNET_WARNING" xml:space="preserve">
+        <value>Internet connection lost. Please try again.</value>
+    </data>
 </root>

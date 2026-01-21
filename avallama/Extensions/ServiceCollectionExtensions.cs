@@ -8,6 +8,7 @@ using avallama.ViewModels;
 using avallama.Factories;
 using avallama.Services;
 using avallama.Utilities;
+using avallama.Utilities.Network;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,6 +45,9 @@ public static class ServiceCollectionExtensions
 
         collection.AddSingleton<OllamaService>();
         collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
+
+        collection.AddSingleton<NetworkManager>();
+        collection.AddSingleton<INetworkManager>(sp => sp.GetRequiredService<NetworkManager>());
 
         collection.AddSingleton<RateLimiter>(_ => new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
         {

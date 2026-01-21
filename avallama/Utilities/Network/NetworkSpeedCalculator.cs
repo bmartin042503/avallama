@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using avallama.Utilities.Time;
 
-namespace avallama.Utilities
+namespace avallama.Utilities.Network
 {
     /// <summary>
     /// Provides functionality to calculate the network download speed in megabytes per second (MB/s)

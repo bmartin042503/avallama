@@ -12,6 +12,7 @@ using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
 using avallama.Utilities;
+using avallama.Utilities.Network;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -22,6 +23,7 @@ public partial class ModelManagerViewModel : PageViewModel
     private readonly IDialogService _dialogService;
     private readonly IOllamaService _ollamaService;
     private readonly IModelCacheService _modelCacheService;
+    private readonly INetworkManager _networkManager;
 
     // all loaded models (stays in the memory)
     private IEnumerable<OllamaModel> _modelsData = [];
@@ -85,12 +87,13 @@ public partial class ModelManagerViewModel : PageViewModel
     } = string.Empty;
 
     public ModelManagerViewModel(IDialogService dialogService, IOllamaService ollamaService,
-        IModelCacheService modelCacheService)
+        IModelCacheService modelCacheService, INetworkManager networkManager)
     {
         Page = ApplicationPage.ModelManager;
         _dialogService = dialogService;
         _ollamaService = ollamaService;
         _modelCacheService = modelCacheService;
+        _networkManager = networkManager;
 
         _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
     }
@@ -220,8 +223,14 @@ public partial class ModelManagerViewModel : PageViewModel
     }
 
     [RelayCommand]
-    public void ForwardToOllama(object parameter)
+    public async Task ForwardToOllama(object parameter)
     {
+        if (!await _networkManager.IsInternetAvailableAsync())
+        {
+            _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_WARNING"), false);
+            return;
+        }
+
         if (parameter is string modelName)
         {
             const string libraryUrl = @"https://ollama.com/library/";
@@ -266,6 +275,11 @@ public partial class ModelManagerViewModel : PageViewModel
             switch (downloadAction)
             {
                 case ModelDownloadAction.Start:
+                    if (!await _networkManager.IsInternetAvailableAsync())
+                    {
+                        _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_WARNING"), false);
+                        return;
+                    }
                     if (_downloadingModel != null)
                     {
                         _dialogService.ShowInfoDialog(LocalizationService.GetString("MULTIPLE_DOWNLOADS_WARNING"));
@@ -281,6 +295,11 @@ public partial class ModelManagerViewModel : PageViewModel
                     await _downloadCancellationTokenSource.CancelAsync();
                     break;
                 case ModelDownloadAction.Resume:
+                    if (!await _networkManager.IsInternetAvailableAsync())
+                    {
+                        _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_WARNING"), false);
+                        return;
+                    }
                     if (_downloadingModel != null && _downloadingModel != SelectedModel)
                     {
                         _dialogService.ShowInfoDialog(LocalizationService.GetString("MULTIPLE_DOWNLOADS_WARNING"));
@@ -338,6 +357,8 @@ public partial class ModelManagerViewModel : PageViewModel
         if (SelectedModel == null) return;
 
         _downloadCancellationTokenSource = new CancellationTokenSource();
+
+        var monitorTask = MonitorInternetAsync(_downloadCancellationTokenSource.Token);
 
         try
         {
@@ -407,6 +428,8 @@ public partial class ModelManagerViewModel : PageViewModel
         }
         finally
         {
+            try { await monitorTask; } catch (OperationCanceledException) { }
+
             _downloadCancellationTokenSource.Dispose();
         }
     }
@@ -451,6 +474,36 @@ public partial class ModelManagerViewModel : PageViewModel
     private void UpdateDownloadSpeedText(object? state)
     {
         DownloadSpeedText = $"{_downloadSpeed:0.##} MB/s";
+    }
+
+    private async Task MonitorInternetAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3), token);
+
+                if (!await _networkManager.IsInternetAvailableAsync())
+                {
+                    _dialogService.ShowErrorDialog(LocalizationService.GetString("LOST_INTERNET_WARNING"), false);
+
+                    // Pause the download, since we lost internet, but it can be resumed later
+                    if (SelectedModel != null)
+                    {
+                        SelectedModel.DownloadStatus = ModelDownloadStatus.Paused;
+                        await _modelCacheService.UpdateModelAsync(SelectedModel);
+                        await _downloadCancellationTokenSource.CancelAsync();
+                    }
+
+                    return;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // expected when download stops
+        }
     }
 
     // TODO: proper logging and implementation of status changes

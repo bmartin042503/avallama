@@ -29,7 +29,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -55,7 +56,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -78,7 +80,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -101,7 +104,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -140,7 +144,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -187,7 +192,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -219,7 +225,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -258,7 +265,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -290,7 +298,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -334,7 +343,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
@@ -378,7 +388,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
         var vm = new ModelManagerViewModel(
             fixture.DialogMock.Object,
             fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object
         );
 
         await vm.InitializeAsync();
