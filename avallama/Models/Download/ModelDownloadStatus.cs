@@ -5,4 +5,17 @@ using avallama.Constants;
 
 namespace avallama.Models.Download;
 
-public record ModelDownloadStatus(DownloadState DownloadState = DownloadState.Downloadable, string? Message = null);
+public class ModelDownloadStatus
+{
+    // Kell egy üres konstruktor a XAML-nek
+    public ModelDownloadStatus() { }
+
+    public ModelDownloadStatus(DownloadState state, string? message = null)
+    {
+        DownloadState = state;
+        Message = message;
+    }
+
+    public DownloadState DownloadState { get; set; } = DownloadState.Downloadable;
+    public string? Message { get; set; }
+}

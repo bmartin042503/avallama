@@ -9,7 +9,6 @@ using avallama.Exceptions;
 using avallama.Models.Download;
 using avallama.Services.Ollama;
 using avallama.Utilities;
-using avallama.Utilities.Network;
 
 namespace avallama.Services.Queue;
 
@@ -27,6 +26,7 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
 
     protected override async Task ProcessItemAsync(ModelDownloadRequest request, CancellationToken ct)
     {
+        request.DownloadPartCount = 1;
         await foreach (var chunk in _ollamaService.PullModelAsync(request.ModelName, ct))
         {
             if (chunk is { Total: not null, Completed: not null })
@@ -42,8 +42,8 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
                     request.Status = new ModelDownloadStatus(DownloadState.Downloading);
                 }
 
-                request.DownloadedBytes += chunk.Completed.Value;
-                request.TotalBytes += chunk.Total.Value;
+                request.DownloadedBytes = chunk.Completed.Value;
+                request.TotalBytes = chunk.Total.Value;
                 request.DownloadSpeed = speed;
             }
 
@@ -65,6 +65,7 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
                 errorKey = "NO_INTERNET_CONNECTION";
                 break;
 
+            // TODO: set model status to 'Paused' so the user can resume to the download when they have internet connection again
             case LostInternetConnectionException:
                 errorKey = "LOST_INTERNET_CONNECTION";
                 break;

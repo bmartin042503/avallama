@@ -10,7 +10,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using avallama.Constants;
 using avallama.Models;
+using avallama.Models.Dtos;
 using avallama.Services.Ollama;
 using avallama.Services.Persistence;
 using avallama.Tests.Mocks;
@@ -92,6 +94,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -122,6 +125,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -152,6 +156,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -208,6 +213,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -258,6 +264,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -327,6 +334,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -409,6 +417,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -478,6 +487,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -534,6 +544,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,
@@ -617,6 +628,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ModelCacheMock.Object,
             _fixture.ScraperMock.Object,
+            _fixture.NetworkManagerMock.Object,
             new SynchronousAvaloniaDispatcher(),
             mockHttpClientFactory.Object,
             timeMock,

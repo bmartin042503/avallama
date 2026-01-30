@@ -66,8 +66,26 @@ public class ModelItem : TemplatedControl
             (o, v) => o.RunsSlow = v
         );
 
-    public static readonly StyledProperty<ICommand> CommandProperty =
-        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(Command));
+    public static readonly StyledProperty<string?> StatusTextProperty =
+        AvaloniaProperty.Register<ModelItem, string?>(nameof(StatusText));
+
+    public static readonly StyledProperty<string?> SpeedTextProperty =
+        AvaloniaProperty.Register<ModelItem, string?>(nameof(SpeedTextProperty));
+
+    public static readonly StyledProperty<ICommand> DownloadCommandProperty =
+        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(DownloadCommand));
+
+    public static readonly StyledProperty<ICommand> PauseCommandProperty =
+        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(PauseCommand));
+
+    public static readonly StyledProperty<ICommand> ResumeCommandProperty =
+        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(ResumeCommand));
+
+    public static readonly StyledProperty<ICommand> DeleteCommandProperty =
+        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(DeleteCommand));
+
+    public static readonly StyledProperty<ICommand> CancelCommandProperty =
+        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(CancelCommand));
 
     public string? Title
     {
@@ -117,10 +135,46 @@ public class ModelItem : TemplatedControl
         set => SetAndRaise(RunsSlowProperty, ref field, value);
     }
 
-    public ICommand Command
+    public string? StatusText
     {
-        get => GetValue(CommandProperty);
-        set => SetValue(CommandProperty, value);
+        get => GetValue(StatusTextProperty);
+        set => SetValue(StatusTextProperty, value);
+    }
+
+    public string? SpeedText
+    {
+        get => GetValue(SpeedTextProperty);
+        set => SetValue(SpeedTextProperty, value);
+    }
+
+    public ICommand DownloadCommand
+    {
+        get => GetValue(DownloadCommandProperty);
+        set => SetValue(DownloadCommandProperty, value);
+    }
+
+    public ICommand PauseCommand
+    {
+        get => GetValue(PauseCommandProperty);
+        set => SetValue(PauseCommandProperty, value);
+    }
+
+    public ICommand ResumeCommand
+    {
+        get => GetValue(ResumeCommandProperty);
+        set => SetValue(ResumeCommandProperty, value);
+    }
+
+    public ICommand DeleteCommand
+    {
+        get => GetValue(DeleteCommandProperty);
+        set => SetValue(DeleteCommandProperty, value);
+    }
+
+    public ICommand CancelCommand
+    {
+        get => GetValue(CancelCommandProperty);
+        set => SetValue(CancelCommandProperty, value);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

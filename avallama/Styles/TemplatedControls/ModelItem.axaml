@@ -119,9 +119,9 @@ Licensed under the MIT License. See LICENSE file for details.
         <Style.Resources>
             <converters:ModelSizeConverter x:Key="ModelSizeConverter" />
 
-            <!-- DownloadState templates using DownloadStateTemplateSelector which derives from IDataTemplate -->
-            <!-- Template creation logic found at: /DataTemplates/DownloadStateTemplateSelector.cs -->
-            <dataTemplates:DownloadStateTemplateSelector x:Key="ModelItemDownloadStateTemplateSelector">
+            <!-- ModelDownloadStatus templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
+            <!-- Template creation logic found at: /DataTemplates/ModelDownloadStatusTemplateSelector.cs -->
+            <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelDownloadStatusTemplateSelector">
 
                 <!-- Queued template -->
                 <DataTemplate x:Key="Queued" DataType="download:ModelDownloadStatus">
@@ -137,7 +137,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <DataTemplate x:Key="Downloadable" DataType="download:ModelDownloadStatus">
                     <Button Content="{services:LocalizationService Key='DOWNLOAD'}"
                             Cursor="Hand"
-                            Command="{Binding $parent[vm:ModelItemViewModel].DownloadCommand}">
+                            Command="{Binding $parent[templatedControls:ModelItem].DownloadCommand}">
                     </Button>
                 </DataTemplate>
 
@@ -146,12 +146,12 @@ Licensed under the MIT License. See LICENSE file for details.
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                         <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" Margin="0,0,8,0">
                             <TextBlock
-                                Text="{Binding $parent[vm:ModelItemViewModel].LongDownloadStatusText}"
+                                Text="{Binding $parent[templatedControls:ModelItem].StatusText}"
                                 FontFamily="{StaticResource Manrope}"
                                 VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
 
                             <TextBlock
-                                Text="{Binding $parent[vm:ModelItemViewModel].DownloadSpeedText}"
+                                Text="{Binding $parent[templatedControls:ModelItem].SpeedText}"
                                 FontFamily="{StaticResource Manrope}"
                                 VerticalAlignment="Center" FontSize="12" FontWeight="Medium"
                                 HorizontalAlignment="Right" />
@@ -160,7 +160,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <!-- Pause button -->
                         <Button Grid.Column="1" Cursor="Hand"
                                 Padding="10"
-                                Command="{Binding $parent[vm:ModelItemViewModel].PauseCommand}">
+                                Command="{Binding $parent[templatedControls:ModelItem].PauseCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/pause.svg" Height="12"
                                                  FillColor="{DynamicResource OnPrimary}" />
                         </Button>
@@ -168,7 +168,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <!-- Cancel button -->
                         <Button Grid.Column="2" Cursor="Hand"
                                 Padding="10"
-                                Command="{Binding $parent[vm:ModelItemViewModel].CancelCommand}">
+                                Command="{Binding $parent[templatedControls:ModelItem].CancelCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
                                                  StrokeColor="{DynamicResource OnPrimary}" />
                         </Button>
@@ -185,7 +185,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <!-- Resume button -->
                         <Button Grid.Column="1" Cursor="Hand"
                                 Padding="8"
-                                Command="{Binding $parent[vm:ModelItemViewModel].ResumeCommand}">
+                                Command="{Binding $parent[templatedControls:ModelItem].ResumeCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="16"
                                                  FillColor="{DynamicResource OnPrimary}" />
                         </Button>
@@ -193,7 +193,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <!-- Cancel button -->
                         <Button Grid.Column="2" Cursor="Hand"
                                 Padding="10"
-                                Command="{Binding $parent[vm:ModelItemViewModel].CancelCommand}">
+                                Command="{Binding $parent[templatedControls:ModelItem].CancelCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
                                                  StrokeColor="{DynamicResource OnPrimary}" />
                         </Button>
@@ -204,11 +204,11 @@ Licensed under the MIT License. See LICENSE file for details.
                 <DataTemplate x:Key="Downloaded">
                     <Button Cursor="Hand" Classes="errorButton"
                             Content="{services:LocalizationService Key='DELETE'}"
-                            Command="{Binding $parent[vm:ModelItemViewModel].DeleteCommand}">
+                            Command="{Binding $parent[templatedControls:ModelItem].DeleteCommand}">
                     </Button>
                 </DataTemplate>
 
-            </dataTemplates:DownloadStateTemplateSelector>
+            </dataTemplates:ModelDownloadStatusTemplateSelector>
         </Style.Resources>
 
         <Setter Property="Template">
@@ -300,7 +300,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                         Content="{services:LocalizationService Key='LEARN_MORE'}"
                                         Foreground="{DynamicResource Primary}" Padding="0"
                                         Cursor="Hand"
-                                        Command="{Binding $parent[vm:ModelManagerViewModel].ForwardToOllamaCommand}"
+                                        Command="{Binding $parent[UserControl].((vm:ModelManagerViewModel)DataContext).ForwardToOllamaCommand}"
                                         CommandParameter="{TemplateBinding Title}"
                                         FontFamily="{StaticResource Manrope}" FontWeight="Bold" />
 
@@ -323,11 +323,11 @@ Licensed under the MIT License. See LICENSE file for details.
                                     FontSize="12" VerticalAlignment="Center" />
                             </Border>
 
-                            <!-- DownloadState template which is received from DownloadStateTemplateSelector.cs -->
+                            <!-- ModelDownloadStatus template which is received from ModelDownloadStatusTemplateSelector.cs -->
                             <ContentControl
                                 Grid.Column="1"
                                 Content="{TemplateBinding DownloadStatus}"
-                                ContentTemplate="{StaticResource ModelItemDownloadStateTemplateSelector}"
+                                ContentTemplate="{StaticResource ModelDownloadStatusTemplateSelector}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center" />
                         </Grid>

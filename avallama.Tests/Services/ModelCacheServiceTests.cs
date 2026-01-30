@@ -7,7 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using avallama.Models;
+using avallama.Constants;
+using avallama.Models.Ollama;
 using avallama.Services.Persistence;
 using Microsoft.Data.Sqlite;
 using Xunit;
@@ -70,7 +71,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                           context_length INTEGER,
                           embedding_length INTEGER,
                           additional_info TEXT,
-                          download_status INTEGER NOT NULL DEFAULT 0,
+                          is_downloaded INTEGER NOT NULL DEFAULT 0,
                           cached_at TEXT NOT NULL,
                           FOREIGN KEY (family_name) REFERENCES model_families(name) ON DELETE CASCADE
                           );
@@ -225,7 +226,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:7b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
@@ -266,7 +267,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:7b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloading,
+                IsDownloaded = false,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
@@ -283,7 +284,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:7b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = true,
                 Info = new Dictionary<string, string>
                 {
@@ -296,13 +297,13 @@ public class ModelCacheServiceTests : IAsyncDisposable
         await _modelCacheService.CacheModelsAsync(updatedModel);
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText =
-            "SELECT quantization, parameters, format, download_status FROM ollama_models WHERE name = 'model-1:7b'";
+            "SELECT quantization, parameters, format, is_downloaded FROM ollama_models WHERE name = 'model-1:7b'";
         await using var reader = await cmd.ExecuteReaderAsync();
         Assert.True(await reader.ReadAsync());
         Assert.Equal("MPFX6", reader.GetString(0));
         Assert.Equal(1_010_000_000, reader.GetInt64(1));
         Assert.Equal("Updated Format", reader.GetString(2));
-        Assert.Equal((int)ModelDownloadStatus.Downloaded, reader.GetInt32(3));
+        Assert.Equal(1, reader.GetInt32(3));
     }
 
     [Fact]
@@ -325,7 +326,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:7b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
@@ -338,7 +339,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:13b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
@@ -355,7 +356,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:7b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = true,
                 Info = new Dictionary<string, string>
                 {
@@ -393,7 +394,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:7b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
@@ -421,7 +422,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             Parameters = 1_010_000_000,
             Info = info,
             Size = 2048,
-            DownloadStatus = ModelDownloadStatus.Downloaded,
+            IsDownloaded = true,
             RunsSlow = false
         };
 
@@ -429,7 +430,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
 
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText =
-            "SELECT architecture, context_length, block_count, embedding_length, download_status FROM ollama_models WHERE name = 'model-1:7b'";
+            "SELECT architecture, context_length, block_count, embedding_length, is_downloaded FROM ollama_models WHERE name = 'model-1:7b'";
         await using var reader = await cmd.ExecuteReaderAsync();
 
         Assert.True(await reader.ReadAsync());
@@ -437,7 +438,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
         Assert.Equal(8192, reader.GetInt32(1));
         Assert.Equal(32, reader.GetInt32(2));
         Assert.Equal(4096, reader.GetInt32(3));
-        Assert.Equal((int)ModelDownloadStatus.Downloaded, reader.GetInt32(4));
+        Assert.Equal(1, reader.GetInt32(4));
     }
 
     [Fact]
@@ -495,7 +496,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:7b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
@@ -508,7 +509,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = "model-1:13b",
                 Parameters = 1_010_000_000,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {
@@ -618,7 +619,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
         {
             Name = "model-1:7b",
             Parameters = 1_000_000_000,
-            DownloadStatus = ModelDownloadStatus.Downloaded,
+            IsDownloaded = true,
             RunsSlow = false,
             Info = new Dictionary<string, string>
             {
@@ -644,7 +645,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
                         ["quantization"] = $"MPFX{i}"
                     },
                     Size = 2048 + i,
-                    DownloadStatus = ModelDownloadStatus.Downloaded,
+                    IsDownloaded = true,
                     RunsSlow = false
                 };
                 await _modelCacheService.UpdateModelAsync(updated);
@@ -771,7 +772,7 @@ public class ModelCacheServiceTests : IAsyncDisposable
             {
                 Name = $"{family.Name}:model-{i}",
                 Parameters = 1_000_000_000 + i,
-                DownloadStatus = ModelDownloadStatus.Downloaded,
+                IsDownloaded = true,
                 RunsSlow = false,
                 Info = new Dictionary<string, string>
                 {

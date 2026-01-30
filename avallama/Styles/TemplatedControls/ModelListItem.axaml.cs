@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Windows.Input;
-using avallama.Models;
 using avallama.Models.Download;
 using Avalonia;
 using Avalonia.Controls.Primitives;
@@ -37,6 +36,9 @@ public class ModelListItem : TemplatedControl
             unsetValue: string.Empty
         );
 
+    public static readonly StyledProperty<string?> StatusTextProperty =
+        AvaloniaProperty.Register<ModelItem, string?>(nameof(StatusText));
+
     public static readonly StyledProperty<ICommand> CommandProperty =
         AvaloniaProperty.Register<ModelListItem, ICommand>(nameof(Command));
 
@@ -62,6 +64,12 @@ public class ModelListItem : TemplatedControl
     {
         get;
         set => SetAndRaise(SelectedNameProperty, ref field, value);
+    }
+
+    public string? StatusText
+    {
+        get => GetValue(StatusTextProperty);
+        set => SetValue(StatusTextProperty, value);
     }
 
     public ICommand Command

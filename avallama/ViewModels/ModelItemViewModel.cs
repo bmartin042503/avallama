@@ -1,6 +1,8 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
+using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models.Download;
 using avallama.Models.Ollama;
@@ -47,16 +49,25 @@ public partial class ModelItemViewModel : ViewModelBase
 
     // computed property which provides the status of the model itself
     // it uses the downloadrequest's current status or the model's status if there is no active request
-    public ModelDownloadStatus? CurrentStatus
+    public ModelDownloadStatus CurrentStatus
     {
         get
         {
-            if (DownloadRequest is { Status: not null })
-                return DownloadRequest.Status;
+            ModelDownloadStatus returnedStatus;
 
-            return Model.IsDownloaded
-                ? new ModelDownloadStatus(DownloadState.Downloaded)
-                : new ModelDownloadStatus(); // Downloadable
+            if (DownloadRequest is { Status: not null })
+            {
+                returnedStatus = DownloadRequest.Status;
+            }
+            else
+            {
+                returnedStatus = Model.IsDownloaded
+                    ? new ModelDownloadStatus(DownloadState.Downloaded)
+                    : new ModelDownloadStatus();
+            }
+
+            Console.WriteLine($"Returned status of {Model.Name} is: {returnedStatus.DownloadState}");
+            return returnedStatus;
         }
     }
 
@@ -66,7 +77,8 @@ public partial class ModelItemViewModel : ViewModelBase
         if (Model.IsDownloaded) return;
         DownloadRequest = new ModelDownloadRequest
         {
-            ModelName = Model.Name
+            ModelName = Model.Name,
+            Status = new ModelDownloadStatus(DownloadState.Queued),
         };
         _modelDownloadQueueService.Enqueue(DownloadRequest);
     }
@@ -90,19 +102,47 @@ public partial class ModelItemViewModel : ViewModelBase
             DownloadRequest.Status.DownloadState != DownloadState.Paused) return;
 
         _modelDownloadQueueService.Enqueue(DownloadRequest);
+        DownloadRequest.Status = new ModelDownloadStatus(DownloadState.Queued);
     }
 
     [RelayCommand]
     public void Cancel()
     {
-        DownloadRequest?.Cancel();
+        if (DownloadRequest == null) return;
+        DownloadRequest.Cancel();
+        DownloadRequest = null;
+        OnPropertyChanged(nameof(CurrentStatus));
     }
 
     [RelayCommand]
-    public void Delete()
+    public async Task Delete()
     {
         if (!Model.IsDownloaded) return;
-        _ollamaService.DeleteModel(Model.Name);
+        var dialogResult = await _dialogService.ShowConfirmationDialog(
+            LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
+            LocalizationService.GetString("DELETE"),
+            LocalizationService.GetString("CANCEL"),
+            string.Format(LocalizationService.GetString("CONFIRM_DELETION_DIALOG_DESC"),
+                Model.Name),
+            ConfirmationType.Positive
+        );
+
+        if (dialogResult is ConfirmationResult { Confirmation: ConfirmationType.Positive })
+        {
+            if (await _ollamaService.DeleteModel(Model.Name))
+            {
+                Model.IsDownloaded = false;
+                DownloadRequest = null;
+                await _ollamaService.UpdateDownloadedModels();
+
+                // TODO: notify ModelManagerViewModel to resort the models list and update downloaded models info
+            }
+            else
+            {
+                _dialogService.ShowErrorDialog(LocalizationService.GetString("ERROR_DELETING_MODEL"),
+                    false);
+            }
+        }
     }
 
     // this is called inside the active download request's setter (which is generated automatically)

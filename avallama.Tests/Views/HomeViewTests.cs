@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using avallama.Models;
+using avallama.Models.Download;
+using avallama.Models.Ollama;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
 using avallama.Views;
@@ -80,8 +82,8 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     {
         var mockModels = new List<OllamaModel>
         {
-            new() { Name = "test-model-1:8b", Size = 8_030_000_000, DownloadStatus = ModelDownloadStatus.Downloaded },
-            new() { Name = "test-model-2:20b", Size = 20_100_000_000, DownloadStatus = ModelDownloadStatus.Downloaded }
+            new() { Name = "test-model-1:8b", Size = 8_030_000_000, IsDownloaded = true },
+            new() { Name = "test-model-2:20b", Size = 20_100_000_000, IsDownloaded = true }
         };
 
         _fixture.OllamaMock.Setup(x => x.GetDownloadedModels()).ReturnsAsync(mockModels);

@@ -655,6 +655,7 @@ namespace avallama.Services.Ollama
             if (!await CheckConnectionAsync())
             {
                 SetFailedServiceStatus();
+                // TODO: throw ollama exception instead of returning boolean value
                 return false;
             }
 

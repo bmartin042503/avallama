@@ -5,12 +5,13 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:models="clr-namespace:avallama.Models"
         xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
         xmlns:controls="clr-namespace:avallama.Controls"
         xmlns:dataTemplates="clr-namespace:avallama.DataTemplates"
         xmlns:download="clr-namespace:avallama.Models.Download"
-        xmlns:services="clr-namespace:avallama.Services">
+        xmlns:services="clr-namespace:avallama.Services"
+        xmlns:vm="clr-namespace:avallama.ViewModels"
+        x:DataType="vm:ModelItemViewModel">
     <Design.PreviewWith>
 
         <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
@@ -151,7 +152,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Style.Resources>
             <!-- Downloaded state templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
             <!-- Template creation logic found at: /DataTemplates/ModelDownloadStatusTemplateSelector.cs -->
-            <dataTemplates:DownloadStateTemplateSelector x:Key="ModelListItemDownloadStatusTemplateSelector">
+            <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelListItemDownloadStatusTemplateSelector">
 
                 <!-- Downloaded template -->
                 <DataTemplate x:Key="Downloaded" DataType="download:ModelDownloadStatus">
@@ -164,6 +165,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
                 <!-- Downloading template -->
                 <DataTemplate x:Key="Downloading" DataType="download:ModelDownloadStatus">
+                    <!-- TODO: include the short download status text here as {Binding $parent[templatedControls:ModelListItem].ShortDownloadStatusText} -->
                     <controls:DynamicSvg Path="/Assets/Svg/spinner.svg"
                                          Height="16"
                                          FillColor="{DynamicResource OnSurface}"
@@ -187,7 +189,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <DataTemplate x:Key="Downloadable" DataType="download:ModelDownloadStatus" />
                 <DataTemplate x:Key="Failed" DataType="download:ModelDownloadStatus" />
 
-            </dataTemplates:DownloadStateTemplateSelector>
+            </dataTemplates:ModelDownloadStatusTemplateSelector>
         </Style.Resources>
 
         <Setter Property="Template">

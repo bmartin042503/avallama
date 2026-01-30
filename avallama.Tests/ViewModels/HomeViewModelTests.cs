@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using avallama.Models;
+using avallama.Models.Dtos;
+using avallama.Models.Ollama;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
 using Moq;
