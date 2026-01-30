@@ -7,11 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using avallama.Models;
+using avallama.Constants;
+using avallama.Models.Ollama;
 using avallama.Utilities;
 using Microsoft.Data.Sqlite;
 
-namespace avallama.Services;
+namespace avallama.Services.Persistence;
 
 public interface IModelCacheService
 {
@@ -232,7 +233,7 @@ public class ModelCacheService : IModelCacheService
             cmd.CommandText = """
                                       SELECT name, family_name, parameters, size, format, quantization,
                                              architecture, block_count, context_length, embedding_length,
-                                             additional_info, download_status
+                                             additional_info, is_downloaded
                                       FROM ollama_models
                               """;
 
@@ -268,7 +269,7 @@ public class ModelCacheService : IModelCacheService
                     Parameters = reader.IsDBNull(2) ? 0 : reader.GetInt64(2),
                     Size = reader.GetInt64(3),
                     Info = info,
-                    DownloadStatus = (ModelDownloadStatus)reader.GetInt32(11)
+                    IsDownloaded = reader.GetInt32(11) != 0
                 };
 
                 existingModels[model.Name] = model;
@@ -301,12 +302,12 @@ public class ModelCacheService : IModelCacheService
                                                 (name, family_name, parameters, size, format,
                                                  quantization, architecture, block_count,
                                                  context_length, embedding_length, additional_info,
-                                                 download_status, cached_at)
+                                                 is_downloaded, cached_at)
                                             VALUES
                                                 (@name, @familyName, @parameters, @size, @format,
                                                  @quantization, @architecture, @blockCount,
                                                  @contextLength, @embeddingLength, @additionalInfo,
-                                                 @downloadStatus, @cachedAt)
+                                                 @isDownloaded, @cachedAt)
                                             """;
 
                     insertCmd.Parameters.AddWithValue("@name", model.Name);
@@ -320,7 +321,7 @@ public class ModelCacheService : IModelCacheService
                     insertCmd.Parameters.AddWithValue("@contextLength", contextLength ?? (object)DBNull.Value);
                     insertCmd.Parameters.AddWithValue("@embeddingLength", embeddingLength ?? (object)DBNull.Value);
                     insertCmd.Parameters.AddWithValue("@additionalInfo", additionalInfo ?? (object)DBNull.Value);
-                    insertCmd.Parameters.AddWithValue("@downloadStatus", (int)model.DownloadStatus);
+                    insertCmd.Parameters.AddWithValue("@isDownloaded", model.IsDownloaded ? 1 : 0);
                     insertCmd.Parameters.AddWithValue("@cachedAt", now);
 
                     await insertCmd.ExecuteNonQueryAsync();
@@ -351,7 +352,7 @@ public class ModelCacheService : IModelCacheService
                                                 context_length = @contextLength,
                                                 embedding_length = @embeddingLength,
                                                 additional_info = @additionalInfo,
-                                                download_status = @downloadStatus,
+                                                is_downloaded = @isDownloaded,
                                                 cached_at = @cachedAt
                                             WHERE name = @name
                                             """;
@@ -367,7 +368,7 @@ public class ModelCacheService : IModelCacheService
                     updateCmd.Parameters.AddWithValue("@contextLength", contextLength ?? (object)DBNull.Value);
                     updateCmd.Parameters.AddWithValue("@embeddingLength", embeddingLength ?? (object)DBNull.Value);
                     updateCmd.Parameters.AddWithValue("@additionalInfo", additionalInfo ?? (object)DBNull.Value);
-                    updateCmd.Parameters.AddWithValue("@downloadStatus", (int)model.DownloadStatus);
+                    updateCmd.Parameters.AddWithValue("@isDownloaded", model.IsDownloaded ? 1 : 0);
                     updateCmd.Parameters.AddWithValue("@cachedAt", now);
 
                     await updateCmd.ExecuteNonQueryAsync();
@@ -438,7 +439,7 @@ public class ModelCacheService : IModelCacheService
     {
         if (newModel.Parameters != existingModel.Parameters ||
             newModel.Size != existingModel.Size ||
-            newModel.DownloadStatus != existingModel.DownloadStatus)
+            newModel.IsDownloaded != existingModel.IsDownloaded)
         {
             return true;
         }
@@ -495,7 +496,7 @@ public class ModelCacheService : IModelCacheService
                                   context_length = @contextLength,
                                   embedding_length = @embeddingLength,
                                   additional_info = @additionalInfo,
-                                  download_status = @downloadStatus,
+                                  is_downloaded = @isDownloaded,
                                   cached_at = @cachedAt
                               WHERE name = @name
                               """;
@@ -513,7 +514,7 @@ public class ModelCacheService : IModelCacheService
             cmd.Parameters.AddWithValue("@contextLength", contextLength ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@embeddingLength", embeddingLength ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@additionalInfo", additionalInfo ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@downloadStatus", (int)model.DownloadStatus);
+            cmd.Parameters.AddWithValue("@isDownloaded", model.IsDownloaded ? 1 : 0);
             cmd.Parameters.AddWithValue("@cachedAt", now);
 
             await cmd.ExecuteNonQueryAsync();
@@ -533,7 +534,7 @@ public class ModelCacheService : IModelCacheService
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText =
                 "SELECT name, family_name, parameters, size, format, quantization, architecture, " +
-                "block_count, context_length, embedding_length, additional_info, download_status " +
+                "block_count, context_length, embedding_length, additional_info, is_downloaded " +
                 "FROM ollama_models ORDER BY name NULLS LAST";
 
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -573,7 +574,7 @@ public class ModelCacheService : IModelCacheService
                     Parameters = reader.IsDBNull(2) ? 0 : reader.GetInt64(2),
                     Size = reader.GetInt64(3),
                     Info = info,
-                    DownloadStatus = (ModelDownloadStatus)reader.GetInt32(11)
+                    IsDownloaded = reader.GetInt32(11) != 0
                 };
 
                 models.Add(model);

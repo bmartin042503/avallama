@@ -15,13 +15,18 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using avallama.Dtos;
+using avallama.Constants;
+using avallama.Exceptions;
+using avallama.Models.Dtos;
 using avallama.Extensions;
 using avallama.Models;
+using avallama.Models.Ollama;
+using avallama.Services.Persistence;
 using avallama.Utilities;
+using avallama.Utilities.Network;
 using avallama.Utilities.Time;
 
-namespace avallama.Services
+namespace avallama.Services.Ollama
 {
     #region Supporting Types
 
@@ -140,8 +145,17 @@ namespace avallama.Services
         /// Downloads (pulls) a model from the Ollama library.
         /// </summary>
         /// <param name="modelName">The name of the model to pull.</param>
+        /// <param name="ct">
+        /// The cancellation token to cancel the operation.
+        /// Decorated with <see cref="EnumeratorCancellationAttribute"/> to ensure the token is passed correctly
+        /// when using <c>await foreach</c> loop cancellation or <c>WithCancellation</c>.
+        /// Cancelling this token will abort the underlying HTTP request immediately.
+        /// </param>
         /// <returns>An async stream of download progress responses.</returns>
-        IAsyncEnumerable<DownloadResponse> PullModel(string modelName);
+        IAsyncEnumerable<DownloadResponse> PullModelAsync(
+            string modelName,
+            CancellationToken ct = default
+        );
 
         // Chat & Scraper
 
@@ -182,6 +196,7 @@ namespace avallama.Services
         private readonly IDialogService _dialogService;
         private readonly IModelCacheService _modelCacheService;
         private readonly IOllamaScraperService _ollamaScraperService;
+        private readonly INetworkManager _networkManager;
         private readonly IAvaloniaDispatcher _dispatcher;
         private readonly HttpClient _checkHttpClient;
         private readonly HttpClient _heavyHttpClient;
@@ -249,6 +264,7 @@ namespace avallama.Services
         /// <param name="dialogService">Service for showing UI dialogs.</param>
         /// <param name="modelCacheService">Service for caching model details.</param>
         /// <param name="ollamaScraperService">Service for scraping online models.</param>
+        /// <param name="networkManager">Network manager to perform connection checks.</param>
         /// <param name="dispatcher">Dispatcher to marshal events to the UI thread.</param>
         /// <param name="httpClientFactory">Factory to create a named HttpClient instance.</param>
         /// <param name="timeProvider">Time provider to use for time measurements.</param>
@@ -258,6 +274,7 @@ namespace avallama.Services
             IDialogService dialogService,
             IModelCacheService modelCacheService,
             IOllamaScraperService ollamaScraperService,
+            INetworkManager networkManager,
             IAvaloniaDispatcher dispatcher,
             IHttpClientFactory httpClientFactory,
             ITimeProvider? timeProvider = null,
@@ -267,6 +284,7 @@ namespace avallama.Services
             _dialogService = dialogService;
             _modelCacheService = modelCacheService;
             _ollamaScraperService = ollamaScraperService;
+            _networkManager = networkManager;
             _dispatcher = dispatcher;
 
             _checkHttpClient = httpClientFactory.CreateClient("OllamaCheckHttpClient");
@@ -444,7 +462,7 @@ namespace avallama.Services
         {
             if (!await CheckConnectionAsync())
             {
-                HandleConnectionError();
+                SetFailedServiceStatus();
                 return new List<OllamaModel>();
             }
 
@@ -461,7 +479,7 @@ namespace avallama.Services
         {
             if (!await CheckConnectionAsync())
             {
-                HandleConnectionError();
+                SetFailedServiceStatus();
                 return;
             }
 
@@ -483,7 +501,7 @@ namespace avallama.Services
                     {
                         var showResponse = await FetchModelInfoAsync(downloadedModel.Name);
                         EnrichModelWithInfo(downloadedModel, showResponse);
-                        downloadedModel.DownloadStatus = ModelDownloadStatus.Downloaded;
+                        downloadedModel.IsDownloaded = true;
                     }
                     catch (Exception ex)
                     {
@@ -504,12 +522,21 @@ namespace avallama.Services
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<DownloadResponse> PullModel(string modelName)
+        public async IAsyncEnumerable<DownloadResponse> PullModelAsync(
+            string modelName,
+            [EnumeratorCancellation] CancellationToken ct = default)
         {
+            if (!await _networkManager.IsInternetAvailableAsync())
+            {
+                throw new NoInternetConnectionException();
+            }
+
+            // TODO: add storage space check
+
             if (!await CheckConnectionAsync())
             {
-                HandleConnectionError();
-                yield break;
+                SetFailedServiceStatus();
+                ThrowServiceUnreachableException();
             }
 
             var payload = new { model = modelName, stream = true };
@@ -522,32 +549,50 @@ namespace avallama.Services
             HttpResponseMessage response;
             try
             {
-                response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    OllamaServiceState = new ServiceState(ServiceStatus.Running);
-                }
+                response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            catch (HttpRequestException ex)
             {
-                HandleConnectionError();
-                yield break;
+                ThrowServiceUnreachableException(ex);
+                throw; // never runs bet needed for compiler when initializing
             }
 
-            await using var stream = await response.Content.ReadAsStreamAsync();
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                OllamaServiceState = new ServiceState(ServiceStatus.Running);
+            }
+            else
+            {
+                throw new OllamaApiException(response.StatusCode);
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(ct);
             using var reader = new StreamReader(stream);
 
-            while (await reader.ReadLineAsync() is { } line)
+            while (true)
             {
+                string? line;
+                try
+                {
+                    line = await reader.ReadLineAsync(ct);
+                }
+                catch (IOException ex)
+                {
+                    throw new LostInternetConnectionException(ex);
+                }
+
+                if (line == null) break;
+
                 if (string.IsNullOrWhiteSpace(line)) continue;
+
                 DownloadResponse? json = null;
                 try
                 {
-                    json = JsonSerializer.Deserialize<DownloadResponse>(line);
+                    json = JsonSerializer.Deserialize<DownloadResponse>(line, _jsonSerializerOptions);
                 }
-                catch (JsonException e)
+                catch (JsonException)
                 {
-                    _dialogService.ShowErrorDialog(e.Message, false);
+                    // TODO: proper logging
                 }
 
                 if (json != null) yield return json;
@@ -559,7 +604,7 @@ namespace avallama.Services
         {
             if (!await CheckConnectionAsync())
             {
-                HandleConnectionError();
+                SetFailedServiceStatus();
                 yield break;
             }
 
@@ -581,7 +626,7 @@ namespace avallama.Services
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {
-                HandleConnectionError();
+                SetFailedServiceStatus();
                 yield break;
             }
 
@@ -609,7 +654,7 @@ namespace avallama.Services
         {
             if (!await CheckConnectionAsync())
             {
-                HandleConnectionError();
+                SetFailedServiceStatus();
                 return false;
             }
 
@@ -650,6 +695,32 @@ namespace avallama.Services
         #endregion
 
         #region Private Helpers
+
+        /// <summary>
+        /// Checks if the configured API host points to a remote server.
+        /// </summary>
+        private bool IsConnectionRemote()
+        {
+            var host = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
+
+            if (string.IsNullOrEmpty(host)) return false;
+
+            return !host.Equals("localhost", StringComparison.OrdinalIgnoreCase) &&
+                   !host.Equals("127.0.0.1", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Throws the appropriate exception based on whether the connection is local or remote.
+        /// </summary>
+        private void ThrowServiceUnreachableException(Exception? innerException = null)
+        {
+            if (IsConnectionRemote())
+            {
+                throw new OllamaRemoteServerUnreachableException(innerException);
+            }
+
+            throw new OllamaLocalServerUnreachableException(innerException);
+        }
 
         /// <summary>
         /// Determines the appropriate path for the Ollama executable based on the operating system.
@@ -869,7 +940,7 @@ namespace avallama.Services
         /// <summary>
         /// Updates the service state to Stopped/ConnectionError when an API call fails.
         /// </summary>
-        private void HandleConnectionError()
+        private void SetFailedServiceStatus()
         {
             OllamaServiceState = new ServiceState(ServiceStatus.Failed,
                 LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));

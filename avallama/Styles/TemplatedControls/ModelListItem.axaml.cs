@@ -1,14 +1,12 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
 using System.Windows.Input;
 using avallama.Models;
+using avallama.Models.Download;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace avallama.Styles.TemplatedControls;
 

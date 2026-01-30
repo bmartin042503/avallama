@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using avallama.Services;
+using avallama.Services.Persistence;
 using avallama.Tests.Extensions;
 using Xunit;
 

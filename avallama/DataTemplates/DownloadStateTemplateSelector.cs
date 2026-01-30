@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using avallama.Models;
+using avallama.Constants;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
 
 namespace avallama.DataTemplates;
 
-public class ModelDownloadStatusTemplateSelector : IDataTemplate
+public class DownloadStateTemplateSelector : IDataTemplate
 {
 
     [Content]
@@ -27,7 +27,7 @@ public class ModelDownloadStatusTemplateSelector : IDataTemplate
         // Our Keys in the dictionary are strings, so we call .ToString() to get the key to look up
         var key = data?.ToString();
 
-        return data is ModelDownloadStatus
+        return data is DownloadState
                && !string.IsNullOrEmpty(key)
                && AvailableTemplates.ContainsKey(key);
     }

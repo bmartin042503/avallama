@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Factories;
@@ -460,10 +459,10 @@ public class DialogService(
     ///     }
     /// );
     ///
-    /// if (dialogResult is InputResult inputResult)
+    /// if (dialogResult is InputResult inpResult)
     /// {
     ///     var count = 0;
-    ///     foreach (var result in inputResult.Results)
+    ///     foreach (var result in inpResult.Results)
     ///     {
     ///         Console.WriteLine($"({count}) Input Field Value: {result}");
     ///         count++;

@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
 using avallama.Services;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
 using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -511,7 +513,7 @@ public partial class HomeViewModel : PageViewModel
     {
         ScrollSetting = _configurationService.ReadSetting(ConfigurationKey.ScrollToBottom);
         ShowInformationalMessages =
-            _configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages) == "True";
+            _configurationService.ReadSetting(ConfigurationKey.IsInformationalMessagesVisible) == "True";
     }
 
     private ConversationState GetState(Conversation conversation)

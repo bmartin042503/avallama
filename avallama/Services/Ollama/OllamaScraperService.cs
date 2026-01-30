@@ -10,10 +10,11 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using avallama.Models.Ollama;
 using avallama.Utilities;
 using HtmlAgilityPack;
 
-namespace avallama.Services;
+namespace avallama.Services.Ollama;
 
 public sealed class OllamaScraperResult
 {
@@ -219,8 +220,7 @@ public class OllamaScraperService : IOllamaScraperService
             {
                 Name = tagName,
                 Size = ConversionHelper.ParseSizeToBytes(tagSize),
-                Family = family,
-                DownloadStatus = ModelDownloadStatus.Ready
+                Family = family
             };
 
             yield return model;

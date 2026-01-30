@@ -14,6 +14,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:converters="clr-namespace:avallama.Converters"
              xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
              xmlns:utilities="clr-namespace:avallama.Utilities"
+             xmlns:ollama="clr-namespace:avallama.Models.Ollama"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="avallama.Views.ModelManagerView"
              x:DataType="vm:ModelManagerViewModel"
@@ -92,18 +93,18 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextAlignment="Center" />
             </StackPanel>
 
-            <!-- Model selection -->
+            <!-- Model selection list -->
             <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,14,0,0"
                           AllowAutoHide="True">
                 <StackPanel Orientation="Vertical" Spacing="12">
-                    <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
+                    <ItemsControl ItemsSource="{Binding ModelItemViewModels}" VerticalAlignment="Stretch">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="models:OllamaModel">
+                            <DataTemplate DataType="vm:ModelItemViewModel">
                                 <templatedControls:ModelListItem
                                     Margin="0,12,0,0"
-                                    Title="{Binding Name}"
-                                    DownloadStatus="{Binding DownloadStatus}"
-                                    SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
+                                    Title="{Binding Model.Name}"
+                                    DownloadStatus="{Binding CurrentStatus}"
+                                    SelectedName="{Binding $parent[vm:ModelManagerViewModel].SelectedModelItemViewModel.Model.Name}"
                                     Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -127,17 +128,16 @@ Licensed under the MIT License. See LICENSE file for details.
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
                       Margin="4,0,4,0" />
 
-        <!-- Selected model -->
+        <!-- Selected model view -->
         <templatedControls:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
                                      IsVisible="{Binding IsModelInfoBlockVisible}"
-                                     Title="{Binding SelectedModel.Name}"
-                                     Family="{Binding SelectedModel.Family}"
-                                     Parameters="{Binding SelectedModel.Parameters}"
-                                     InformationSource="{Binding SelectedModel.Info}"
-                                     SizeInBytes="{Binding SelectedModel.Size}"
-                                     DownloadStatus="{Binding SelectedModel.DownloadStatus}"
-                                     RunsSlow="{Binding SelectedModel.RunsSlow}"
-                                     Command="{Binding ModelAction}" />
+                                     Title="{Binding SelectedModelItemViewModel.Model.Name}"
+                                     Family="{Binding SelectedModelItemViewModel.Model.Family}"
+                                     Parameters="{Binding SelectedModelItemViewModel.Model.Parameters}"
+                                     InformationSource="{Binding SelectedModelItemViewModel.Model.Info}"
+                                     SizeInBytes="{Binding SelectedModelItemViewModel.Model.Size}"
+                                     DownloadStatus="{Binding SelectedModelItemViewModel.CurrentStatus}"
+                                     RunsSlow="{Binding SelectedModelItemViewModel.Model.RunsSlow}" />
 
         <!-- All downloaded models size -->
         <TextBlock Grid.Row="2" Grid.Column="0"

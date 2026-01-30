@@ -7,6 +7,9 @@ using avallama.Constants;
 using avallama.ViewModels;
 using avallama.Factories;
 using avallama.Services;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
+using avallama.Services.Queue;
 using avallama.Utilities;
 using avallama.Utilities.Network;
 using CommunityToolkit.Mvvm.Messaging;
@@ -16,108 +19,109 @@ namespace avallama.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddCommonServices(this IServiceCollection collection)
+    extension(IServiceCollection collection)
     {
-        // Instantiate dependencies here
-        // Singleton - Available in memory for the lifetime of the application
-        // Transient - Created when needed, disposed when no longer in use
-
-        // Take caution with cyclic dependencies, as they may not throw exceptions, but fail to instantiate anything while the application continues to run,
-        // making debugging difficult, e.g., AppService -> MainViewModel -> PageFactory -> Func<...> -> HomeViewModel -> AppService
-
-        // Weak reference messenger, which means they do not need to be manually deleted
-        collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
-
-        collection.AddSingleton<IAvaloniaDispatcher, AvaloniaDispatcher>();
-
-        // Temporary registration of both interfaces and concrete implementations until refactoring is done
-        collection.AddSingleton<ApplicationService>();
-        collection.AddSingleton<IApplicationService>(sp => sp.GetRequiredService<ApplicationService>());
-
-        collection.AddSingleton<ConfigurationService>();
-        collection.AddSingleton<IConfigurationService>(sp => sp.GetRequiredService<ConfigurationService>());
-
-        collection.AddTransient<DatabaseInitService>();
-        collection.AddTransient<IDatabaseInitService>(sp => sp.GetRequiredService<DatabaseInitService>());
-
-        collection.AddSingleton<ConversationService>();
-        collection.AddSingleton<IConversationService>(sp => sp.GetRequiredService<ConversationService>());
-
-        collection.AddSingleton<OllamaService>();
-        collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
-
-        collection.AddSingleton<NetworkManager>();
-        collection.AddSingleton<INetworkManager>(sp => sp.GetRequiredService<NetworkManager>());
-
-        collection.AddSingleton<RateLimiter>(_ => new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
+        public void AddCommonServices()
         {
-            TokenLimit = 5,
-            TokensPerPeriod = 1,
-            ReplenishmentPeriod = TimeSpan.FromSeconds(1),
-            QueueLimit = 100,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-            AutoReplenishment = true
-        }));
+            // Instantiate dependencies here
+            // Singleton - Available in memory for the lifetime of the application
+            // Transient - Created when needed, disposed when no longer in use
 
-        collection.AddTransient<OllamaRateLimitedHandler>();
+            // Take caution with cyclic dependencies, as they may not throw exceptions, but fail to instantiate anything while the application continues to run,
+            // making debugging difficult, e.g., AppService -> MainViewModel -> PageFactory -> Func<...> -> HomeViewModel -> AppService
 
-        collection.AddHttpClient<IOllamaScraperService, OllamaScraperService>(client =>
+            // Weak reference messenger, which means they do not need to be manually deleted
+            collection.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+
+            collection.AddSingleton<IAvaloniaDispatcher, AvaloniaDispatcher>();
+
+            // Temporary registration of both interfaces and concrete implementations until refactoring is done
+            collection.AddSingleton<ApplicationService>();
+            collection.AddSingleton<IApplicationService>(sp => sp.GetRequiredService<ApplicationService>());
+
+            collection.AddSingleton<ConfigurationService>();
+            collection.AddSingleton<IConfigurationService>(sp => sp.GetRequiredService<ConfigurationService>());
+
+            collection.AddTransient<DatabaseInitService>();
+            collection.AddTransient<IDatabaseInitService>(sp => sp.GetRequiredService<DatabaseInitService>());
+
+            collection.AddSingleton<ConversationService>();
+            collection.AddSingleton<IConversationService>(sp => sp.GetRequiredService<ConversationService>());
+
+            collection.AddSingleton<OllamaService>();
+            collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
+
+            collection.AddSingleton<NetworkManager>();
+            collection.AddSingleton<INetworkManager>(sp => sp.GetRequiredService<NetworkManager>());
+
+            collection.AddSingleton<RateLimiter>(_ => new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
             {
-                client.BaseAddress = new Uri("https://www.ollama.com");
-                client.Timeout = TimeSpan.FromSeconds(30);
-            })
-            .AddHttpMessageHandler<OllamaRateLimitedHandler>();
+                TokenLimit = 5,
+                TokensPerPeriod = 1,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(1),
+                QueueLimit = 100,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
+            }));
 
-        // httpClient for quick connection verifications with a timeout of 2 seconds
-        collection.AddHttpClient("OllamaCheckHttpClient", client =>
-        {
-            client.Timeout = TimeSpan.FromSeconds(2);
-        });
+            collection.AddTransient<OllamaRateLimitedHandler>();
 
-        // httpClient for heavy operations (model initialization, message generation etc.) with a timeout of 5 minutes
-        collection.AddHttpClient("OllamaHeavyHttpClient", client =>
-        {
-            client.Timeout = TimeSpan.FromMinutes(5);
-        });
+            collection.AddHttpClient<IOllamaScraperService, OllamaScraperService>(client =>
+                {
+                    client.BaseAddress = new Uri("https://www.ollama.com");
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                })
+                .AddHttpMessageHandler<OllamaRateLimitedHandler>();
 
-        collection.AddSingleton<ModelCacheService>();
-        collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());
+            // httpClient for quick connection verifications with a timeout of 2 seconds
+            collection.AddHttpClient("OllamaCheckHttpClient", client => { client.Timeout = TimeSpan.FromSeconds(2); });
 
-        collection.AddSingleton<DialogService>();
-        collection.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
+            // httpClient for heavy operations (model initialization, message generation etc.) with a timeout of 5 minutes
+            collection.AddHttpClient("OllamaHeavyHttpClient", client => { client.Timeout = TimeSpan.FromMinutes(5); });
 
-        collection.AddSingleton<MainViewModel>();
-        collection.AddSingleton<HomeViewModel>();
-        collection.AddTransient<GreetingViewModel>();
-        collection.AddTransient<SettingsViewModel>();
-        collection.AddSingleton<ModelManagerViewModel>();
-        collection.AddTransient<GuideViewModel>();
-        collection.AddTransient<ScraperViewModel>();
+            collection.AddSingleton<ModelCacheService>();
+            collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());
 
-        collection.AddSingleton<PageFactory>();
-        collection.AddSingleton<DialogViewModelFactory>();
+            collection.AddSingleton<DialogService>();
+            collection.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
 
-        // Delegate dependency injection for PageFactory
-        // This ensures that all dependencies are handled in App.axaml.cs according to the factory pattern
-        // Func<ApplicationPage, PageViewModel> - returns a PageViewModel for a given ApplicationPage
-        collection.AddSingleton<Func<ApplicationPage, PageViewModel>>(serviceProvider => page => page switch
-        {
-            ApplicationPage.Greeting => serviceProvider.GetRequiredService<GreetingViewModel>(),
-            ApplicationPage.Home => serviceProvider.GetRequiredService<HomeViewModel>(),
-            ApplicationPage.Guide => serviceProvider.GetRequiredService<GuideViewModel>(),
-            ApplicationPage.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
-            ApplicationPage.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
-            ApplicationPage.Scraper => serviceProvider.GetRequiredService<ScraperViewModel>(),
-            _ => throw new InvalidOperationException() // if there is no Page registered yet, throw an exception
-        });
+            collection.AddSingleton<ModelModelDownloadQueueService>();
+            collection.AddSingleton<IModelDownloadQueueService>(sp => sp.GetRequiredService<ModelModelDownloadQueueService>());
+
+            collection.AddSingleton<MainViewModel>();
+            collection.AddSingleton<HomeViewModel>();
+            collection.AddTransient<GreetingViewModel>();
+            collection.AddTransient<SettingsViewModel>();
+            collection.AddSingleton<ModelManagerViewModel>();
+            collection.AddTransient<GuideViewModel>();
+            collection.AddTransient<ScraperViewModel>();
+
+            collection.AddSingleton<PageFactory>();
+            collection.AddSingleton<DialogViewModelFactory>();
+
+            // Delegate dependency injection for PageFactory
+            // This ensures that all dependencies are handled in App.axaml.cs according to the factory pattern
+            // Func<ApplicationPage, PageViewModel> - returns a PageViewModel for a given ApplicationPage
+            collection.AddSingleton<Func<ApplicationPage, PageViewModel>>(serviceProvider => page => page switch
+            {
+                ApplicationPage.Greeting => serviceProvider.GetRequiredService<GreetingViewModel>(),
+                ApplicationPage.Home => serviceProvider.GetRequiredService<HomeViewModel>(),
+                ApplicationPage.Guide => serviceProvider.GetRequiredService<GuideViewModel>(),
+                ApplicationPage.Settings => serviceProvider.GetRequiredService<SettingsViewModel>(),
+                ApplicationPage.ModelManager => serviceProvider.GetRequiredService<ModelManagerViewModel>(),
+                ApplicationPage.Scraper => serviceProvider.GetRequiredService<ScraperViewModel>(),
+                _ => throw new InvalidOperationException() // if there is no Page registered yet, throw an exception
+            });
 
 
-        collection.AddSingleton<Func<ApplicationDialog, DialogViewModel>>(serviceProvider => content => content switch
-        {
-            // since dialogs have been moved, this throws an exception, but I won't delete it as there may be views later
-            // that are personalized and need to appear in a separate window as a dialog
-            _ => throw new NotSupportedException()
-            // Info, Error and the other dialogs are not needed, as they do not call this
-        });
+            collection.AddSingleton<Func<ApplicationDialog, DialogViewModel>>(serviceProvider => content =>
+                content switch
+                {
+                    // since dialogs have been moved, this throws an exception, but I won't delete it as there may be views later
+                    // that are personalized and need to appear in a separate window as a dialog
+                    _ => throw new NotSupportedException()
+                    // Info, Error and the other dialogs are not needed, as they do not call this
+                });
+        }
     }
 }

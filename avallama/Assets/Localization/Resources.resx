@@ -54,7 +54,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>This model is not running optimally on your system due to low avaliable VRAM</value>
     </data>
     <data name="VERSION" xml:space="preserve">
-        <value>v0.2.0</value>
+        <value>v0.3.0</value>
     </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Ollama has been successfully started</value>
@@ -437,9 +437,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="UPDATE_MODEL_LIBRARY" xml:space="preserve">
         <value>Update model library</value>
     </data>
-    <data name="DOWNLOADING_PART" xml:space="preserve">
-        <value>Downloading part {0}</value>
-    </data>
     <data name="GUIDE_ITEM_2_DESCRIPTION" xml:space="preserve">
         <value>Browse, download, or remove any Ollama model. View detailed info and manage your local library with ease.</value>
     </data>
@@ -464,10 +461,31 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="PARAMETERS" xml:space="preserve">
         <value>Parameters</value>
     </data>
-    <data name="NO_INTERNET_WARNING" xml:space="preserve">
+    <data name="NO_INTERNET_CONNECTION" xml:space="preserve">
         <value>No internet connection. Please try again.</value>
     </data>
-    <data name="LOST_INTERNET_WARNING" xml:space="preserve">
+    <data name="LOST_INTERNET_CONNECTION" xml:space="preserve">
         <value>Internet connection lost. Please try again.</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING" xml:space="preserve">
+        <value>Parallel downloads</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING_DESC" xml:space="preserve">
+        <value>Enable downloading multiple models at the same time. When disabled, models will be download sequentially in a queue.</value>
+    </data>
+    <data name="SORT_DOWNLOADING" xml:space="preserve">
+        <value>Downloading</value>
+    </data>
+    <data name="QUEUED" xml:space="preserve">
+        <value>Queued</value>
+    </data>
+    <data name="FINALIZING_DOWNLOAD" xml:space="preserve">
+        <value>Finalizing download..</value>
+    </data>
+    <data name="FINALIZING" xml:space="preserve">
+        <value>Finalizing..</value>
+    </data>
+    <data name="DOWNLOAD_FAILED" xml:space="preserve">
+        <value>Download failed: {0}</value>
     </data>
 </root>

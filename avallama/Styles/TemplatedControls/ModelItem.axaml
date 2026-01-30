@@ -7,12 +7,14 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:templatedControls="using:avallama.Styles.TemplatedControls"
         xmlns:services="using:avallama.Services"
-        xmlns:models="clr-namespace:avallama.Models"
         xmlns:collections="clr-namespace:System.Collections.Generic;assembly=System.Collections"
         xmlns:converters="clr-namespace:avallama.Converters"
         xmlns:vm="clr-namespace:avallama.ViewModels"
         xmlns:dataTemplates="clr-namespace:avallama.DataTemplates"
-        xmlns:controls="clr-namespace:avallama.Controls">
+        xmlns:controls="clr-namespace:avallama.Controls"
+        xmlns:ollama="clr-namespace:avallama.Models.Ollama"
+        xmlns:download="clr-namespace:avallama.Models.Download"
+        x:DataType="vm:ModelItemViewModel">
     <Design.PreviewWith>
 
         <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
@@ -26,25 +28,28 @@ Licensed under the MIT License. See LICENSE file for details.
                         MaxWidth="600"
                         SizeInBytes="7200000000">
                         <templatedControls:ModelItem.Family>
-                            <models:OllamaModelFamily
+                            <ollama:OllamaModelFamily
                                 Name="DeepSeek"
                                 Description="DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro. "
                                 PullCount="1234"
                                 TagCount="4">
 
-                                <models:OllamaModelFamily.Labels>
+                                <ollama:OllamaModelFamily.Labels>
                                     <collections:List x:TypeArguments="x:String">
                                         <x:String>tools</x:String>
                                         <x:String>thinking</x:String>
                                         <x:String>8b</x:String>
                                     </collections:List>
-                                </models:OllamaModelFamily.Labels>
+                                </ollama:OllamaModelFamily.Labels>
 
-                            </models:OllamaModelFamily>
+                            </ollama:OllamaModelFamily>
                         </templatedControls:ModelItem.Family>
 
                         <templatedControls:ModelItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Paused</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus>
+                                <download:ModelDownloadStatus.DownloadState>Paused</download:ModelDownloadStatus.DownloadState>
+                                <download:ModelDownloadStatus.Message />
+                            </download:ModelDownloadStatus>
                         </templatedControls:ModelItem.DownloadStatus>
 
                         <templatedControls:ModelItem.InformationSource>
@@ -68,25 +73,28 @@ Licensed under the MIT License. See LICENSE file for details.
                         SizeInBytes="3200000000">
 
                         <templatedControls:ModelItem.Family>
-                            <models:OllamaModelFamily
+                            <ollama:OllamaModelFamily
                                 Name="llama:3.2"
                                 Description="The Meta Llama 3.2 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction-tuned generative models in 1B and 3B sizes (text in/text out). The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks. They outperform many of the available open source and closed chat models on common industry benchmarks."
                                 PullCount="47200000"
                                 TagCount="4">
 
-                                <models:OllamaModelFamily.Labels>
+                                <ollama:OllamaModelFamily.Labels>
                                     <collections:List x:TypeArguments="x:String">
                                         <x:String>tools</x:String>
                                         <x:String>1b</x:String>
                                         <x:String>3b</x:String>
                                     </collections:List>
-                                </models:OllamaModelFamily.Labels>
+                                </ollama:OllamaModelFamily.Labels>
 
-                            </models:OllamaModelFamily>
+                            </ollama:OllamaModelFamily>
                         </templatedControls:ModelItem.Family>
 
                         <templatedControls:ModelItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Downloaded</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus>
+                                <download:ModelDownloadStatus.DownloadState>Downloaded</download:ModelDownloadStatus.DownloadState>
+                                <download:ModelDownloadStatus.Message />
+                            </download:ModelDownloadStatus>
                         </templatedControls:ModelItem.DownloadStatus>
 
                         <templatedControls:ModelItem.InformationSource>
@@ -111,42 +119,39 @@ Licensed under the MIT License. See LICENSE file for details.
         <Style.Resources>
             <converters:ModelSizeConverter x:Key="ModelSizeConverter" />
 
-            <!-- Downloaded state templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
-            <!-- Template creation logic found at: /DataTemplates/ModelDownloadStatusTemplateSelector.cs -->
-            <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelItemDownloadStatusTemplateSelector">
+            <!-- DownloadState templates using DownloadStateTemplateSelector which derives from IDataTemplate -->
+            <!-- Template creation logic found at: /DataTemplates/DownloadStateTemplateSelector.cs -->
+            <dataTemplates:DownloadStateTemplateSelector x:Key="ModelItemDownloadStateTemplateSelector">
 
-                <!-- Not enough space template -->
-                <DataTemplate x:Key="NotEnoughSpace" DataType="models:ModelDownloadStatus">
-                    <TextBlock Text="{services:LocalizationService Key='NOT_ENOUGH_SPACE_DOWNLOAD'}" />
+                <!-- Queued template -->
+                <DataTemplate x:Key="Queued" DataType="download:ModelDownloadStatus">
+                    <TextBlock Text="{services:LocalizationService Key='QUEUED'}" />
                 </DataTemplate>
 
-                <!-- No connection template -->
-                <DataTemplate x:Key="NoConnection" DataType="models:ModelDownloadStatus">
-                    <TextBlock Text="{services:LocalizationService Key='NO_CONNECTION_DOWNLOAD'}" />
+                <!-- Failed template -->
+                <DataTemplate x:Key="Failed" DataType="download:ModelDownloadStatus">
+                    <TextBlock Text="{Binding Message}" />
                 </DataTemplate>
 
-                <!-- Ready template -->
-                <DataTemplate x:Key="Ready" DataType="models:ModelDownloadStatus">
+                <!-- Downloadable template -->
+                <DataTemplate x:Key="Downloadable" DataType="download:ModelDownloadStatus">
                     <Button Content="{services:LocalizationService Key='DOWNLOAD'}"
                             Cursor="Hand"
-                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                        <Button.CommandParameter>
-                            <models:ModelDownloadAction>Start</models:ModelDownloadAction>
-                        </Button.CommandParameter>
+                            Command="{Binding $parent[vm:ModelItemViewModel].DownloadCommand}">
                     </Button>
                 </DataTemplate>
 
                 <!-- Downloading template -->
-                <DataTemplate x:Key="Downloading" DataType="models:ModelDownloadStatus">
+                <DataTemplate x:Key="Downloading" DataType="download:ModelDownloadStatus">
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                         <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" Margin="0,0,8,0">
                             <TextBlock
-                                Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadStatusText}"
+                                Text="{Binding $parent[vm:ModelItemViewModel].LongDownloadStatusText}"
                                 FontFamily="{StaticResource Manrope}"
                                 VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
 
                             <TextBlock
-                                Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).DownloadSpeedText}"
+                                Text="{Binding $parent[vm:ModelItemViewModel].DownloadSpeedText}"
                                 FontFamily="{StaticResource Manrope}"
                                 VerticalAlignment="Center" FontSize="12" FontWeight="Medium"
                                 HorizontalAlignment="Right" />
@@ -155,10 +160,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <!-- Pause button -->
                         <Button Grid.Column="1" Cursor="Hand"
                                 Padding="10"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                            <Button.CommandParameter>
-                                <models:ModelDownloadAction>Pause</models:ModelDownloadAction>
-                            </Button.CommandParameter>
+                                Command="{Binding $parent[vm:ModelItemViewModel].PauseCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/pause.svg" Height="12"
                                                  FillColor="{DynamicResource OnPrimary}" />
                         </Button>
@@ -166,10 +168,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <!-- Cancel button -->
                         <Button Grid.Column="2" Cursor="Hand"
                                 Padding="10"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                            <Button.CommandParameter>
-                                <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
-                            </Button.CommandParameter>
+                                Command="{Binding $parent[vm:ModelItemViewModel].CancelCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
                                                  StrokeColor="{DynamicResource OnPrimary}" />
                         </Button>
@@ -177,7 +176,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 </DataTemplate>
 
                 <!-- Paused template -->
-                <DataTemplate x:Key="Paused" DataType="models:ModelDownloadStatus">
+                <DataTemplate x:Key="Paused" DataType="download:ModelDownloadStatus">
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                         <TextBlock Grid.Column="0"
                                    Text="{services:LocalizationService Key='DOWNLOAD_PAUSED'}"
@@ -186,21 +185,15 @@ Licensed under the MIT License. See LICENSE file for details.
                         <!-- Resume button -->
                         <Button Grid.Column="1" Cursor="Hand"
                                 Padding="8"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                            <Button.CommandParameter>
-                                <models:ModelDownloadAction>Resume</models:ModelDownloadAction>
-                            </Button.CommandParameter>
+                                Command="{Binding $parent[vm:ModelItemViewModel].ResumeCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="16"
                                                  FillColor="{DynamicResource OnPrimary}" />
                         </Button>
 
-                        <!-- Close button -->
+                        <!-- Cancel button -->
                         <Button Grid.Column="2" Cursor="Hand"
                                 Padding="10"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                            <Button.CommandParameter>
-                                <models:ModelDownloadAction>Cancel</models:ModelDownloadAction>
-                            </Button.CommandParameter>
+                                Command="{Binding $parent[vm:ModelItemViewModel].CancelCommand}">
                             <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
                                                  StrokeColor="{DynamicResource OnPrimary}" />
                         </Button>
@@ -208,17 +201,14 @@ Licensed under the MIT License. See LICENSE file for details.
                 </DataTemplate>
 
                 <!-- Downloaded template -->
-                <DataTemplate x:Key="Downloaded" DataType="models:ModelDownloadStatus">
+                <DataTemplate x:Key="Downloaded">
                     <Button Cursor="Hand" Classes="errorButton"
                             Content="{services:LocalizationService Key='DELETE'}"
-                            Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ModelAction}">
-                        <Button.CommandParameter>
-                            <models:ModelDownloadAction>Delete</models:ModelDownloadAction>
-                        </Button.CommandParameter>
+                            Command="{Binding $parent[vm:ModelItemViewModel].DeleteCommand}">
                     </Button>
                 </DataTemplate>
 
-            </dataTemplates:ModelDownloadStatusTemplateSelector>
+            </dataTemplates:DownloadStateTemplateSelector>
         </Style.Resources>
 
         <Setter Property="Template">
@@ -253,7 +243,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             Grid.Row="1"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
-                            ItemsSource="{Binding Family.Labels, RelativeSource={RelativeSource TemplatedParent}}">
+                            ItemsSource="{Binding Model.Family.Labels}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal" ItemSpacing="12" LineSpacing="12" />
@@ -293,7 +283,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                     <!-- Family description -->
                                     <SelectableTextBlock
                                         Grid.Row="0"
-                                        Text="{Binding Family.Description, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Text="{Binding Model.Family.Description}"
                                         FontSize="14" Foreground="{DynamicResource OnSurface}"
                                         FontFamily="{StaticResource Manrope}"
                                         TextWrapping="Wrap" />
@@ -310,7 +300,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                         Content="{services:LocalizationService Key='LEARN_MORE'}"
                                         Foreground="{DynamicResource Primary}" Padding="0"
                                         Cursor="Hand"
-                                        Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).ForwardToOllama}"
+                                        Command="{Binding $parent[vm:ModelManagerViewModel].ForwardToOllamaCommand}"
                                         CommandParameter="{TemplateBinding Title}"
                                         FontFamily="{StaticResource Manrope}" FontWeight="Bold" />
 
@@ -333,11 +323,11 @@ Licensed under the MIT License. See LICENSE file for details.
                                     FontSize="12" VerticalAlignment="Center" />
                             </Border>
 
-                            <!-- DownloadStatus template which is received from ModelDownloadStatusTemplateSelector.cs -->
+                            <!-- DownloadState template which is received from DownloadStateTemplateSelector.cs -->
                             <ContentControl
                                 Grid.Column="1"
                                 Content="{TemplateBinding DownloadStatus}"
-                                ContentTemplate="{StaticResource ModelItemDownloadStatusTemplateSelector}"
+                                ContentTemplate="{StaticResource ModelItemDownloadStateTemplateSelector}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center" />
                         </Grid>

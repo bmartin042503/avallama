@@ -6,21 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
+using avallama.Constants;
 using Avalonia.Styling;
 
-namespace avallama.Services;
-
-public static class ConfigurationKey
-{
-    public const string FirstTime = "first-time";
-    public const string Language = "language";
-    public const string ColorScheme = "color-scheme";
-    public const string ScrollToBottom = "scroll-to-bottom";
-    public const string ApiHost = "api-host";
-    public const string ApiPort = "api-port";
-    public const string ShowInformationalMessages = "show-informational-messages";
-    public const string LastUpdatedCache = "last-updated-cache";
-}
+namespace avallama.Services.Persistence;
 
 public interface IConfigurationService
 {

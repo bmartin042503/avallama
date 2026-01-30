@@ -5,13 +5,11 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace avallama.Dtos;
+namespace avallama.Models.Dtos;
 
 public sealed class OllamaShowResponse
 {
-    [JsonPropertyName("license")]
-    public string? License { get; set; }
+    [JsonPropertyName("license")] public string? License { get; set; }
 
-    [JsonPropertyName("model_info")]
-    public Dictionary<string, JsonElement>? ModelInfo { get; set; }
+    [JsonPropertyName("model_info")] public Dictionary<string, JsonElement>? ModelInfo { get; set; }
 }

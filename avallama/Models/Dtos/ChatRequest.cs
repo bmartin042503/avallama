@@ -5,15 +5,13 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace avallama.Models;
+namespace avallama.Models.Dtos;
 
 public class ChatRequest
 {
-    [JsonPropertyName("model")]
-    public string Model { get; set; }
+    [JsonPropertyName("model")] public string Model { get; set; }
 
-    [JsonPropertyName("messages")]
-    public List<ChatMessage> Messages { get; set; }
+    [JsonPropertyName("messages")] public List<ChatMessage> Messages { get; set; }
 
     public ChatRequest(List<Message> messages, string model)
     {
@@ -51,9 +49,7 @@ public class ChatRequest
 
 public class ChatMessage
 {
-    [JsonPropertyName("role")]
-    public string? Role { get; set; }
+    [JsonPropertyName("role")] public string? Role { get; set; }
 
-    [JsonPropertyName("content")]
-    public string? Content { get; set; }
+    [JsonPropertyName("content")] public string? Content { get; set; }
 }

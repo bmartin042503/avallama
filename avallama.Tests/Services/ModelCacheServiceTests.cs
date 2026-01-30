@@ -2,14 +2,13 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using avallama.Models;
-using avallama.Services;
+using avallama.Services.Persistence;
 using Microsoft.Data.Sqlite;
 using Xunit;
 

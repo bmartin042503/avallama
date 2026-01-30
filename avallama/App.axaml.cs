@@ -7,14 +7,14 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
+using avallama.Constants;
 using avallama.Extensions;
 using Avalonia.Markup.Xaml;
 using avallama.Services;
-using avallama.Utilities;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
 using Avalonia.Controls;
-using Avalonia.Rendering;
 using Avalonia.Styling;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,12 +52,12 @@ public partial class App : Application
         var colorScheme = configurationService.ReadSetting(ConfigurationKey.ColorScheme);
         var language = configurationService.ReadSetting(ConfigurationKey.Language);
 
-        var showInformationalMessages = configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages);
+        var showInformationalMessages = configurationService.ReadSetting(ConfigurationKey.IsInformationalMessagesVisible);
 
         // the information message is enabled by default for new users
         if (string.IsNullOrWhiteSpace(showInformationalMessages))
         {
-            configurationService.SaveSetting(ConfigurationKey.ShowInformationalMessages, true.ToString());
+            configurationService.SaveSetting(ConfigurationKey.IsInformationalMessagesVisible, true.ToString());
         }
 
         var cultureInfo = language switch

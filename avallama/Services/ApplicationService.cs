@@ -10,6 +10,8 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
 using avallama.ViewModels;
 using avallama.Views;
 using Avalonia;

@@ -457,10 +457,31 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="PARAMETERS" xml:space="preserve">
         <value>Paraméterek</value>
     </data>
-    <data name="NO_INTERNET_WARNING" xml:space="preserve">
+    <data name="NO_INTERNET_CONNECTION" xml:space="preserve">
         <value>Nincs internetkapcsolat. Kérlek próbáld meg újra.</value>
     </data>
-    <data name="LOST_INTERNET_WARNING" xml:space="preserve">
+    <data name="LOST_INTERNET_CONNECTION" xml:space="preserve">
         <value>Az internetkapcsolat megszakadt. Kérlek próbáld meg újra.</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING" xml:space="preserve">
+        <value>Párhuzamos letöltések</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING_DESC" xml:space="preserve">
+        <value>Több modell egyidejű letöltésének engedélyezése. Kikapcsolt állapotban a modellek sorrendben, egymás után töltődnek le.</value>
+    </data>
+    <data name="SORT_DOWNLOADING" xml:space="preserve">
+        <value>Letöltés alatt</value>
+    </data>
+    <data name="QUEUED" xml:space="preserve">
+        <value>Sorba állítva</value>
+    </data>
+    <data name="FINALIZING_DOWNLOAD" xml:space="preserve">
+        <value>Letöltés befejezése..</value>
+    </data>
+    <data name="FINALIZING" xml:space="preserve">
+        <value>Véglegesítés..</value>
+    </data>
+    <data name="DOWNLOAD_FAILED" xml:space="preserve">
+        <value>Letöltés sikertelen: {0}</value>
     </data>
 </root>

@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace avallama.Constants;
 
-
 public static class ApplicationMessage
 {
     // request ollama start confirmation dialog

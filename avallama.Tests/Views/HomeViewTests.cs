@@ -4,10 +4,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using avallama.Models;
-using avallama.Services;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
 using avallama.Views;
+using avallama.Services.Ollama;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;

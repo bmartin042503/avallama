@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using avallama.Models;
-using avallama.Services;
+using avallama.Services.Ollama;
 using Moq;
 using Moq.Protected;
 using Xunit;

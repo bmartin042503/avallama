@@ -4,7 +4,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using avallama.Constants;
 using avallama.Models;
+using avallama.Models.Download;
+using avallama.Models.Ollama;
 using avallama.Services;
 using avallama.Utilities;
 using Avalonia;
@@ -49,8 +52,8 @@ public class ModelItem : TemplatedControl
             unsetValue: 0
         );
 
-    public static readonly DirectProperty<ModelItem, ModelDownloadStatus> DownloadStatusProperty =
-        AvaloniaProperty.RegisterDirect<ModelItem, ModelDownloadStatus>(
+    public static readonly DirectProperty<ModelItem, ModelDownloadStatus?> DownloadStatusProperty =
+        AvaloniaProperty.RegisterDirect<ModelItem, ModelDownloadStatus?>(
             nameof(DownloadStatus),
             o => o.DownloadStatus,
             (o, v) => o.DownloadStatus = v
@@ -102,7 +105,7 @@ public class ModelItem : TemplatedControl
         set => SetAndRaise(SizeInBytesProperty, ref field, value);
     }
 
-    public ModelDownloadStatus DownloadStatus
+    public ModelDownloadStatus? DownloadStatus
     {
         get;
         set => SetAndRaise(DownloadStatusProperty, ref field, value);

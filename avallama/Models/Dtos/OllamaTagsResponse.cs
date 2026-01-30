@@ -4,10 +4,9 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace avallama.Dtos;
+namespace avallama.Models.Dtos;
 
 public class OllamaTagsResponse
 {
-    [JsonPropertyName("models")]
-    public List<OllamaModelDto> Models { get; set; } = [];
+    [JsonPropertyName("models")] public List<OllamaModelDto> Models { get; set; } = [];
 }

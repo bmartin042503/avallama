@@ -6,13 +6,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Utilities;
 using Microsoft.Data.Sqlite;
 
-namespace avallama.Services;
+namespace avallama.Services.Persistence;
 
 internal static class Roles
 {

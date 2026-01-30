@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using avallama.Services;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
 using avallama.Utilities.Network;
 using CommunityToolkit.Mvvm.Messaging;
 using Moq;
