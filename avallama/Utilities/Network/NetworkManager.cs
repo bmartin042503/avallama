@@ -15,6 +15,7 @@ public interface INetworkManager
 {
     /// <summary>
     /// Checks if the internet is available by getting the header for 1.1.1.1.
+    /// <returns> True if internet is available (Header arrives in less than 1 second), False otherwise </returns>
     /// </summary>
     public Task<bool> IsInternetAvailableAsync();
 }
@@ -29,10 +30,7 @@ public class NetworkManager(IHttpClientFactory httpClientFactory) : INetworkMana
     /// </summary>
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("OllamaCheckHttpClient");
 
-    /// <summary>
-    /// Checks if the internet is available by getting the header for 1.1.1.1.
-    /// <returns> True if internet is available (Header arrives in less than 1 second), False otherwise </returns>
-    /// </summary>
+    /// <inheritdoc/>
     public async Task<bool> IsInternetAvailableAsync()
     {
         try

@@ -470,4 +470,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="LOST_INTERNET_WARNING" xml:space="preserve">
         <value>Internet connection lost. Please try again.</value>
     </data>
+    <data name="NO_DISK_SPACE_MODEL_DOWNLOAD_WARNING" xml:space="preserve">
+        <value>There is not enough storage space on the disk to download this model.</value>
+    </data>
 </root>

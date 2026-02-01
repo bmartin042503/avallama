@@ -463,4 +463,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="LOST_INTERNET_WARNING" xml:space="preserve">
         <value>Az internetkapcsolat megszakadt. Kérlek próbáld meg újra.</value>
     </data>
+    <data name="NO_DISK_SPACE_MODEL_DOWNLOAD_WARNING" xml:space="preserve">
+        <value>Nincs elegendő tárhely ezen a meghajtón a modell letöltéséhez.</value>
+    </data>
 </root>
