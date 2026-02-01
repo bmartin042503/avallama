@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using avallama.Models;
-using avallama.Models.Download;
 using avallama.Models.Ollama;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
@@ -71,7 +70,11 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     private (Window Window, HomeView View, HomeViewModel ViewModel) CreateAndShowHomeView()
     {
         var viewModel = CreateHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
+        var view = new HomeView
+        {
+            DataContext = viewModel,
+            IsFullScreenOverride = () => false
+        };
         var window = new Window { Content = view };
         window.Show();
         return (window, view, viewModel);

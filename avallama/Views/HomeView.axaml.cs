@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using avallama.Services;
@@ -16,6 +17,8 @@ namespace avallama.Views;
 
 public partial class HomeView : UserControl
 {
+    public Func<bool>? IsFullScreenOverride { get; set; } = null;
+
     public HomeView()
     {
         InitializeComponent();
@@ -56,22 +59,31 @@ public partial class HomeView : UserControl
 
         // if the native macOS window is in full screen
         // this can't be reached through Avalonia, so a native external library was needed (see: MacOSInterop.cs)
-        if (MacOSInterop.isKeyWindowInFullScreen())
+        try
         {
-            SideBarTopGrid.Margin = new Thickness(14,14,14,0);
-            SideBarButton.Margin = _sideBarExpanded ? new Thickness(0, -10, 0, 0) : new Thickness(10, -10, 0, 0);
-        }
-        else
-        {
-            if (_sideBarExpanded)
+            var isFullScreen = IsFullScreenOverride?.Invoke() ?? MacOSInterop.isKeyWindowInFullScreen();
+
+            if (isFullScreen)
             {
-                SideBarTopGrid.Margin = new Thickness(14, 30, 14, 0);
-                SideBarButton.Margin = new Thickness(0, -10, 0, 0);
+                SideBarTopGrid.Margin = new Thickness(14, 14, 14, 0);
+                SideBarButton.Margin = _sideBarExpanded ? new Thickness(0, -10, 0, 0) : new Thickness(10, -10, 0, 0);
             }
             else
             {
-                SideBarButton.Margin = new Thickness(10, 26, 0, 0);
+                if (_sideBarExpanded)
+                {
+                    SideBarTopGrid.Margin = new Thickness(14, 30, 14, 0);
+                    SideBarButton.Margin = new Thickness(0, -10, 0, 0);
+                }
+                else
+                {
+                    SideBarButton.Margin = new Thickness(10, 26, 0, 0);
+                }
             }
+        }
+        catch (DllNotFoundException)
+        {
+            // TODO: proper logging
         }
     }
 
