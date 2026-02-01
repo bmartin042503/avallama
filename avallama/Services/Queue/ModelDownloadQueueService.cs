@@ -35,11 +35,14 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
             throw new NoInternetConnectionException();
         }
 
-        // TODO: add storage space check (this will be caught by QueueService.TryProcessItemAsync) and OnItemFailed will be called here
-
         request.DownloadPartCount = 1;
         await foreach (var chunk in _ollamaService.PullModelAsync(request.ModelName, ct))
         {
+            if (!DiskManager.IsEnoughDiskSpaceAvailable(request.TotalBytes))
+            {
+                throw new InsufficientDiskSpaceException(request.TotalBytes, DiskManager.GetAvailableDiskSpaceBytes());
+            }
+
             if (chunk is { Total: not null, Completed: not null })
             {
                 if (request.TotalBytes != 0 && chunk.Total.Value != request.TotalBytes)
