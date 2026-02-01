@@ -113,7 +113,7 @@ xattr -cr /Applications/Avallama.app
 
 If you are comfortable building the app from source, feel free to clone the repository and build the application to test out the newest features we are actively implementing.
 
-1. Install the [.NET SDK](https://dotnet.microsoft.com/en-us/download) (version 9.0 or later).
+1. Install the [.NET SDK](https://dotnet.microsoft.com/en-us/download) (version 10.0 or later).
 2. Clone the repository: `git clone https://github.com/4foureyes/avallama.git`
 3. Navigate to the project directory: `cd avallama`
 4. Restore dependencies: `dotnet restore`
@@ -129,20 +129,7 @@ The output executable will be located in the `avallama/bin/Release/net9.0/<RID>/
 
 ## Known issues
 
-This is a list of issues we are aware of that will be fixed in a subsequent release. Please do not open new issues for the following known problems, as they are already being addressed.
-
-**All platforms**:
-- When using a thinking model, generated conversation titles may be malformed or missing.
-- When switching between conversations at the exact moment a title is being generated, the title may not update correctly.
-- When switching models mid-conversation, messages may fail to send if the model is not loaded into memory yet.
-- Searching through conversations is not yet implemented.
-- Markdown and custom tags (e.g. `<think>`) rendering is not yet supported.
-- Automatic restarting of the app when changing language settings may not work as expected.
-
-**Linux**:
-- When uninstalling, configuration files in `~/.config/avallama` are not removed automatically.
-- Ollama process management is not fully functional, as Ollama installs itself as a systemd service.
-- When starting the app from a terminal, killing the app prints a stack trace to the terminal.
+A list of known issues can be found [here](./docs/KnownIssues.md).
 
 ## License
 

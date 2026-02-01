@@ -41,4 +41,24 @@ public static class DiskManager
 
         return false;
     }
+
+    public static long GetAvailableDiskSpaceBytes()
+    {
+        var path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var rootDir = Directory.GetDirectoryRoot(path);
+        var driveInfo = new DriveInfo(rootDir);
+        try
+        {
+            if (driveInfo.IsReady)
+            {
+                return driveInfo.AvailableFreeSpace;
+            }
+        }
+        catch (IOException ex)
+        {
+            // TODO: InterruptService
+        }
+
+        return 0;
+    }
 }
