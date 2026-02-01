@@ -133,7 +133,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([convA, convB]);
         fixture.DbMock.Setup(db => db.GetMessagesForConversation(It.IsAny<Conversation>())).ReturnsAsync([]);
         fixture.DbMock.Setup(db => db.InsertMessage(It.IsAny<Guid>(), It.IsAny<Message>(), It.IsAny<string?>(), It.IsAny<double?>()))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(1L);
 
         var allowTitleToFinish = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 

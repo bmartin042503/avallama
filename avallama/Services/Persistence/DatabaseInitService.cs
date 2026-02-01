@@ -179,6 +179,7 @@ public class DatabaseInitService : IDatabaseInitService
 
             // if the user has the previous "download_status" column then we migrate the db to the new "is_downloaded" column
             // keep this migration script here indefinitely (possibly removeable in a 1.0.0 release)
+            // maybe extract this if we'll have more migration codes
             if (hasDownloadStatusColumn)
             {
                 await using var migrationCmd = conn.CreateCommand();
@@ -197,7 +198,7 @@ public class DatabaseInitService : IDatabaseInitService
                                                    context_length INTEGER,
                                                    embedding_length INTEGER,
                                                    additional_info TEXT,
-                                                   is_downloaded INTEGER NOT NULL DEFAULT 0, -- new column from v0.2.1
+                                                   is_downloaded INTEGER NOT NULL DEFAULT 0, -- new column from v0.3.0
                                                    cached_at TEXT NOT NULL,
                                                    FOREIGN KEY (family_name) REFERENCES model_families(name) ON DELETE CASCADE
                                                );

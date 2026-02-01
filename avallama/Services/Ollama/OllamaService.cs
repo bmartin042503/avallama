@@ -196,7 +196,6 @@ namespace avallama.Services.Ollama
         private readonly IDialogService _dialogService;
         private readonly IModelCacheService _modelCacheService;
         private readonly IOllamaScraperService _ollamaScraperService;
-        private readonly INetworkManager _networkManager;
         private readonly IAvaloniaDispatcher _dispatcher;
         private readonly HttpClient _checkHttpClient;
         private readonly HttpClient _heavyHttpClient;
@@ -274,7 +273,6 @@ namespace avallama.Services.Ollama
             IDialogService dialogService,
             IModelCacheService modelCacheService,
             IOllamaScraperService ollamaScraperService,
-            INetworkManager networkManager,
             IAvaloniaDispatcher dispatcher,
             IHttpClientFactory httpClientFactory,
             ITimeProvider? timeProvider = null,
@@ -284,7 +282,6 @@ namespace avallama.Services.Ollama
             _dialogService = dialogService;
             _modelCacheService = modelCacheService;
             _ollamaScraperService = ollamaScraperService;
-            _networkManager = networkManager;
             _dispatcher = dispatcher;
 
             _checkHttpClient = httpClientFactory.CreateClient("OllamaCheckHttpClient");
@@ -526,13 +523,6 @@ namespace avallama.Services.Ollama
             string modelName,
             [EnumeratorCancellation] CancellationToken ct = default)
         {
-            if (!await _networkManager.IsInternetAvailableAsync())
-            {
-                throw new NoInternetConnectionException();
-            }
-
-            // TODO: add storage space check
-
             if (!await CheckConnectionAsync())
             {
                 SetFailedServiceStatus();

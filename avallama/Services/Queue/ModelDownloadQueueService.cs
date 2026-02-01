@@ -9,6 +9,7 @@ using avallama.Exceptions;
 using avallama.Models.Download;
 using avallama.Services.Ollama;
 using avallama.Utilities;
+using avallama.Utilities.Network;
 
 namespace avallama.Services.Queue;
 
@@ -17,15 +18,25 @@ public interface IModelDownloadQueueService : IQueueService<ModelDownloadRequest
 public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>, IModelDownloadQueueService
 {
     private readonly IOllamaService _ollamaService;
+    private readonly INetworkManager _networkManager;
 
     public ModelModelDownloadQueueService(
-        IOllamaService ollamaService)
+        IOllamaService ollamaService,
+        INetworkManager networkManager)
     {
         _ollamaService = ollamaService;
+        _networkManager = networkManager;
     }
 
     protected override async Task ProcessItemAsync(ModelDownloadRequest request, CancellationToken ct)
     {
+        if (!await _networkManager.IsInternetAvailableAsync())
+        {
+            throw new NoInternetConnectionException();
+        }
+
+        // TODO: add storage space check (this will be caught by QueueService.TryProcessItemAsync) and OnItemFailed will be called here
+
         request.DownloadPartCount = 1;
         await foreach (var chunk in _ollamaService.PullModelAsync(request.ModelName, ct))
         {

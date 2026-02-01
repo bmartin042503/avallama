@@ -33,8 +33,14 @@ public class ConversationItem : TemplatedControl
             unsetValue: Guid.Empty
         );
 
-    public static readonly StyledProperty<ICommand?> CommandProperty =
-        AvaloniaProperty.Register<ConversationItem, ICommand?>(nameof(Command));
+    public static readonly StyledProperty<ICommand?> SelectCommandProperty =
+        AvaloniaProperty.Register<ConversationItem, ICommand?>(nameof(SelectCommand));
+
+    public static readonly StyledProperty<ICommand?> DeleteCommandProperty =
+        AvaloniaProperty.Register<ConversationItem, ICommand?>(nameof(DeleteCommand));
+
+    public static readonly StyledProperty<object?> DeleteCommandParameterProperty =
+        AvaloniaProperty.Register<ConversationItem, object?>(nameof(DeleteCommandParameter));
 
     public string? Text
     {
@@ -60,17 +66,29 @@ public class ConversationItem : TemplatedControl
         set => SetAndRaise(SelectedIdProperty, ref field, value);
     }
 
-    public ICommand? Command
+    public ICommand? SelectCommand
     {
-        get => GetValue(CommandProperty);
-        set => SetValue(CommandProperty, value);
+        get => GetValue(SelectCommandProperty);
+        set => SetValue(SelectCommandProperty, value);
+    }
+
+    public ICommand? DeleteCommand
+    {
+        get => GetValue(DeleteCommandProperty);
+        set => SetValue(DeleteCommandProperty, value);
+    }
+
+    public object? DeleteCommandParameter
+    {
+        get => GetValue(DeleteCommandParameterProperty);
+        set => SetValue(DeleteCommandParameterProperty, value);
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         if (Id is null) return;
 
-        if (Command is { } cmd && cmd.CanExecute(Id))
+        if (SelectCommand is { } cmd && cmd.CanExecute(Id))
         {
             cmd.Execute(Id);
         }

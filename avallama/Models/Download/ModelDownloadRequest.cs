@@ -9,8 +9,6 @@ namespace avallama.Models.Download;
 public partial class ModelDownloadRequest : QueueItem
 {
     public required string ModelName { get; init; }
-
-    // TODO: modify NetworkSpeedCalculator to get the speed from instead of the property below
     public NetworkSpeedCalculator SpeedCalculator { get; } = new();
     public int DownloadPartCount { get; set; }
 

@@ -91,6 +91,20 @@ public partial class HomeViewModel : PageViewModel
     } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the text of the SearchBox.
+    /// </summary>
+    public string SearchBoxText
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+            FilterConversations();
+        }
+    } = string.Empty;
+
+    /// <summary>
     /// The collection of available Ollama models.
     /// </summary>
     public ObservableCollection<string> AvailableModels
@@ -113,6 +127,8 @@ public partial class HomeViewModel : PageViewModel
     [ObservableProperty] private string _retryInfoText = string.Empty;
     [ObservableProperty] private bool _showInformationalMessages;
     [ObservableProperty] private bool _isModelsDropdownEnabled;
+
+    private IList<Conversation> _conversationsData = [];
 
     #endregion
 
@@ -169,7 +185,7 @@ public partial class HomeViewModel : PageViewModel
             }
 
             await InitializeModels();
-            if(!_isInitializedAsync) _isInitializedAsync = true;
+            if (!_isInitializedAsync) _isInitializedAsync = true;
         }
         catch (Exception)
         {
@@ -190,7 +206,9 @@ public partial class HomeViewModel : PageViewModel
         var message = new Message(NewMessageText);
 
         SelectedConversation.AddMessage(message);
-        await _conversationService.InsertMessage(SelectedConversation.ConversationId, message, null, null);
+        var newMessageId =
+            await _conversationService.InsertMessage(SelectedConversation.ConversationId, message, null, null);
+        message.Id = newMessageId;
 
         NewMessageText = string.Empty;
 
@@ -210,6 +228,11 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     public async Task CreateNewConversation()
     {
+        if (!string.IsNullOrEmpty(SearchBoxText))
+        {
+            SearchBoxText = string.Empty;
+        }
+
         Conversations ??= [];
         var newConversation = new Conversation(
             LocalizationService.GetString("NEW_CONVERSATION"),
@@ -217,6 +240,7 @@ public partial class HomeViewModel : PageViewModel
         );
         newConversation.ConversationId = await _conversationService.CreateConversation(newConversation);
         Conversations.Push(newConversation);
+        _conversationsData.Insert(0, newConversation);
         SelectedConversation = newConversation;
     }
 
@@ -239,7 +263,8 @@ public partial class HomeViewModel : PageViewModel
         var state = GetState(SelectedConversation);
         if (state.MessagesLoaded) return;
 
-        SelectedConversation.Messages = await _conversationService.GetMessagesForConversation(SelectedConversation);
+        var messages = await _conversationService.GetMessagesForConversation(SelectedConversation);
+        SelectedConversation.Messages = new ObservableCollection<Message>(messages);
         state.MessagesLoaded = true;
     }
 
@@ -263,8 +288,9 @@ public partial class HomeViewModel : PageViewModel
 
         await _conversationService.DeleteConversation(guid);
         Conversations.Remove(SelectedConversation);
+        _conversationsData.Remove(SelectedConversation);
 
-        if (Conversations.Count == 0)
+        if (_conversationsData.Count == 0)
         {
             await CreateNewConversation();
             return;
@@ -272,6 +298,22 @@ public partial class HomeViewModel : PageViewModel
 
         var newIndex = Math.Min(Conversations.IndexOf(SelectedConversation) + 1, Conversations.Count - 1);
         SelectedConversation = Conversations[newIndex];
+    }
+
+    /// <summary>
+    /// Deletes the specified message.
+    /// </summary>
+    /// <param name="parameter">???</param>
+    [RelayCommand]
+    public async Task DeleteMessage(object parameter)
+    {
+        if (parameter is not Message messageToDelete) return;
+        // id: -1 is a failed message
+        if (messageToDelete.Id >= 0 && messageToDelete is not FailedMessage)
+        {
+            await _conversationService.DeleteMessage(messageToDelete.Id);
+        }
+        SelectedConversation?.Messages.Remove(messageToDelete);
     }
 
     /// <summary>
@@ -336,9 +378,9 @@ public partial class HomeViewModel : PageViewModel
             }
         }
 
-        await _conversationService.InsertMessage(conversation.ConversationId, generatedMessage,
+        var generatedMessageId = await _conversationService.InsertMessage(conversation.ConversationId, generatedMessage,
             SelectedModelName, generatedMessage.GenerationSpeed);
-
+        generatedMessage.Id = generatedMessageId;
         conversation.Model = SelectedModelName;
     }
 
@@ -368,7 +410,8 @@ public partial class HomeViewModel : PageViewModel
     /// </summary>
     private async Task InitializeConversations()
     {
-        Conversations = await _conversationService.GetConversations();
+        _conversationsData = await _conversationService.GetConversations();
+        Conversations = new ObservableStack<Conversation>(_conversationsData);
         if (_conversations is not { Count: > 0 })
         {
             await CreateNewConversation();
@@ -376,7 +419,8 @@ public partial class HomeViewModel : PageViewModel
         }
 
         SelectedConversation = _conversations.FirstOrDefault()!;
-        SelectedConversation.Messages = await _conversationService.GetMessagesForConversation(SelectedConversation);
+        var messages = await _conversationService.GetMessagesForConversation(SelectedConversation);
+        SelectedConversation.Messages = new ObservableCollection<Message>(messages);
         GetState(SelectedConversation).MessagesLoaded = true;
     }
 
@@ -424,6 +468,35 @@ public partial class HomeViewModel : PageViewModel
             // sets the previously selected model
             SelectedModelName = tmpName;
         }
+    }
+
+    /// <summary>
+    /// Filters the visible conversations list based on the search query using fuzzy matching.
+    /// Reverts to the full conversation list if the search box is empty.
+    /// </summary>
+    private void FilterConversations()
+    {
+        if (_conversationsData.Count == 0) return;
+
+        var search = SearchBoxText.Trim();
+
+        if (string.IsNullOrEmpty(search))
+        {
+            Conversations = new ObservableStack<Conversation>(_conversationsData);
+            return;
+        }
+
+        var filteredList = _conversationsData
+            .Select(c => new
+            {
+                Conversation = c,
+                Score = SearchUtilities.CalculateMatchScore(c.Title, search)
+            })
+            .Where(x => x.Score >= 25)
+            .OrderByDescending(x => x.Score)
+            .Select(x => x.Conversation);
+
+        Conversations = new ObservableStack<Conversation>(filteredList);
     }
 
     /// <summary>

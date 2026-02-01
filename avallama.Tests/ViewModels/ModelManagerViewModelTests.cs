@@ -30,6 +30,40 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
             .Setup(q => q.SetParallelism(It.IsAny<int>()));
     }
 
+    private ModelManagerViewModel CreateViewModel()
+    {
+        return new ModelManagerViewModel(
+            fixture.DialogMock.Object,
+            fixture.OllamaMock.Object,
+            fixture.ModelCacheMock.Object,
+            fixture.NetworkManagerMock.Object,
+            fixture.ConfigMock.Object,
+            fixture.DownloadQueueMock.Object
+        );
+    }
+
+    private static List<OllamaModel> CreateModels(int count)
+    {
+        var models = new List<OllamaModel>();
+        for (var i = 0; i < count; i++)
+        {
+            models.Add(
+                new OllamaModel
+                {
+                    Name = "Name-" + i,
+                    Size = i * 1000_000_000,
+                    Family = new OllamaModelFamily
+                    {
+                        Name = "Family-" + i,
+                        Description = "Desc-" + i,
+                    }
+                }
+            );
+        }
+
+        return models;
+    }
+
     [Fact]
     public async Task InitializesModelManager_NoModelSelected_ModelItemIsInvisible()
     {
@@ -343,39 +377,5 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
 
         Assert.Equal(sortedPulls, pulls);
         Assert.Equal(30, pulls[0]);
-    }
-
-    private ModelManagerViewModel CreateViewModel()
-    {
-        return new ModelManagerViewModel(
-            fixture.DialogMock.Object,
-            fixture.OllamaMock.Object,
-            fixture.ModelCacheMock.Object,
-            fixture.NetworkManagerMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DownloadQueueMock.Object
-        );
-    }
-
-    private static List<OllamaModel> CreateModels(int count)
-    {
-        var models = new List<OllamaModel>();
-        for (var i = 0; i < count; i++)
-        {
-            models.Add(
-                new OllamaModel
-                {
-                    Name = "Name-" + i,
-                    Size = i * 1000_000_000,
-                    Family = new OllamaModelFamily
-                    {
-                        Name = "Family-" + i,
-                        Description = "Desc-" + i,
-                    }
-                }
-            );
-        }
-
-        return models;
     }
 }

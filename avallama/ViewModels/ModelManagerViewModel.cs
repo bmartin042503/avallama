@@ -57,8 +57,8 @@ public partial class ModelManagerViewModel : PageViewModel
         set
         {
             field = value;
-            SortModels();
             OnPropertyChanged();
+            SortModels();
         }
     }
 
@@ -68,8 +68,8 @@ public partial class ModelManagerViewModel : PageViewModel
         set
         {
             field = value;
-            FilterModels();
             OnPropertyChanged();
+            FilterModels();
         }
     } = string.Empty;
 
