@@ -50,6 +50,7 @@ jobs:
           dotnet test avallama.sln
           --configuration Release
           --no-build
+          --settings avallama.Tests/runsettings.runsettings
           --collect:"XPlat Code Coverage"
           --logger "trx;LogFileName=test-results.trx"
           --logger "console;verbosity=detailed"
