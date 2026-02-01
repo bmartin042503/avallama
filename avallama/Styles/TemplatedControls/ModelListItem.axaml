@@ -37,7 +37,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
-                    <!-- Sample item 3 - Downloading ModelListItem -->
+                    <!-- Sample item 3 - Downloading ModelListItem (selected) -->
                     <templatedControls:ModelListItem
                         Title="gpt-oss:20b"
                         Classes="selectedListItem">
@@ -189,6 +189,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <!-- Queued template -->
                 <DataTemplate x:Key="Queued">
                     <TextBlock
+                        Classes="downloadStatusText"
                         Text="{services:LocalizationService Key='QUEUED'}"
                         FontSize="12"/>
                 </DataTemplate>

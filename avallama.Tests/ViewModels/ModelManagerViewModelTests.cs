@@ -38,7 +38,8 @@ public class ModelManagerViewModelTests(TestServicesFixture fixture) : IClassFix
             fixture.ModelCacheMock.Object,
             fixture.NetworkManagerMock.Object,
             fixture.ConfigMock.Object,
-            fixture.DownloadQueueMock.Object
+            fixture.DownloadQueueMock.Object,
+            fixture.MessengerMock.Object
         );
     }
 

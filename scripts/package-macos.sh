@@ -116,4 +116,4 @@ rm -rf Avallama.app
 rm -rf mac-dist-*
 rm -rf $DYLIB_OUTPUT
 
-echo "Done: Created avallama_${VERSION}_osx_x64.zip and avallama_${VERSION}_osx_arm64.zip"
+echo "Done: Created avallama_${VERSION}_osx_x64.dmg and avallama_${VERSION}_osx_arm64.dmg"

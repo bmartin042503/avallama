@@ -147,13 +147,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-x64-package
-          path: avallama_${{ env.VERSION }}_osx_x64.zip
+          path: avallama_${{ env.VERSION }}_osx_x64.dmg
 
       - name: Upload macOS arm64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-package
-          path: avallama_${{ env.VERSION }}_osx_arm64.zip
+          path: avallama_${{ env.VERSION }}_osx_arm64.dmg
 
   release:
     name: Publish GitHub Release

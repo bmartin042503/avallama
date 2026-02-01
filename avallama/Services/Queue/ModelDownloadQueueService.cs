@@ -130,5 +130,25 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
     {
         request.DownloadSpeed = 0.0;
         request.SpeedCalculator.Reset();
+
+        switch (request.CancellationReason)
+        {
+            case CancellationReason.UserCancelRequest:
+                request.Status = new ModelDownloadStatus(DownloadState.Downloadable);
+                request.DownloadedBytes = 0;
+                request.TotalBytes = 0;
+                request.DownloadPartCount = 0;
+                break;
+            case CancellationReason.SystemScaling:
+                request.Status = new ModelDownloadStatus(DownloadState.Queued);
+                request.CancellationReason = CancellationReason.Unknown;
+                request.ResetToken();
+                Enqueue(request);
+                break;
+            case CancellationReason.UserPauseRequest:
+            default:
+                request.Status = new ModelDownloadStatus(DownloadState.Paused);
+                break;
+        }
     }
 }

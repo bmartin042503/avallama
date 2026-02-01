@@ -15,8 +15,10 @@ using avallama.Services.Persistence;
 using avallama.Services.Queue;
 using avallama.Utilities;
 using avallama.Utilities.Network;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
 
@@ -28,6 +30,7 @@ public partial class ModelManagerViewModel : PageViewModel
     private readonly INetworkManager _networkManager;
     private readonly IConfigurationService _configurationService;
     private readonly IModelDownloadQueueService _modelDownloadQueueService;
+    private readonly IMessenger _messenger;
 
     // all loaded models (stays in the memory)
     private IEnumerable<ModelItemViewModel> _modelItemViewModelsData = [];
@@ -79,7 +82,8 @@ public partial class ModelManagerViewModel : PageViewModel
         IModelCacheService modelCacheService,
         INetworkManager networkManager,
         IConfigurationService configurationService,
-        IModelDownloadQueueService modelDownloadQueueService)
+        IModelDownloadQueueService modelDownloadQueueService,
+        IMessenger messenger)
     {
         Page = ApplicationPage.ModelManager;
         _dialogService = dialogService;
@@ -88,6 +92,16 @@ public partial class ModelManagerViewModel : PageViewModel
         _networkManager = networkManager;
         _configurationService = configurationService;
         _modelDownloadQueueService = modelDownloadQueueService;
+        _messenger = messenger;
+
+        _messenger.Register<ApplicationMessage.ModelStatusChanged>(this, (_, _) =>
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                UpdateDownloadedModelsInfo();
+                SortModels();
+            });
+        });
 
         _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
     }
@@ -95,9 +109,15 @@ public partial class ModelManagerViewModel : PageViewModel
     [RelayCommand]
     public async Task InitializeAsync()
     {
+        // if there are loaded models skip, but update parallelism settings
+        if (_modelItemViewModelsData.Any())
+        {
+            ApplyParallelismSettings();
+            return;
+        }
+        
         await LoadModelsData();
         SelectedSortingOption = SortingOption.Downloaded;
-        ApplyParallelismSettings();
     }
 
     private void ApplyParallelismSettings()
@@ -143,7 +163,8 @@ public partial class ModelManagerViewModel : PageViewModel
             model,
             _ollamaService,
             _modelDownloadQueueService,
-            _dialogService
+            _dialogService,
+            _messenger
         );
         return vm;
     }
@@ -157,7 +178,11 @@ public partial class ModelManagerViewModel : PageViewModel
 
         if (modelItemList.Count == 0) return;
 
-        IEnumerable<ModelItemViewModel> sortResult = modelItemList;
+        // active downloads first then the rest of the list
+        var activeDownloads = modelItemList
+            .OrderByDescending(vm => vm.DownloadRequest != null);
+
+        IEnumerable<ModelItemViewModel> sortResult;
 
         switch (SelectedSortingOption)
         {
@@ -165,19 +190,22 @@ public partial class ModelManagerViewModel : PageViewModel
             // if there is then it takes the downloaded ones separately from the rest and then concatenates them with a Models that has the Downloaded ones removed
             // thus the downloaded ones will be in the front
             case SortingOption.Downloaded:
-                sortResult = modelItemList.OrderByDescending(vm => vm.Model.IsDownloaded);
+                sortResult = activeDownloads.ThenByDescending(vm => vm.Model.IsDownloaded);
                 break;
             case SortingOption.PullCountAscending:
-                sortResult = modelItemList.OrderBy(vm => vm.Model.Family?.PullCount);
+                sortResult = activeDownloads.ThenBy(vm => vm.Model.Family?.PullCount);
                 break;
             case SortingOption.PullCountDescending:
-                sortResult = modelItemList.OrderByDescending(vm => vm.Model.Family?.PullCount);
+                sortResult = activeDownloads.ThenByDescending(vm => vm.Model.Family?.PullCount);
                 break;
             case SortingOption.SizeAscending:
-                sortResult = modelItemList.OrderBy(vm => vm.Model.Size);
+                sortResult = activeDownloads.ThenBy(vm => vm.Model.Size);
                 break;
             case SortingOption.SizeDescending:
-                sortResult = modelItemList.OrderByDescending(vm => vm.Model.Size);
+                sortResult = activeDownloads.ThenByDescending(vm => vm.Model.Size);
+                break;
+            default:
+                sortResult = activeDownloads.ThenBy(vm => vm.Model.Name);
                 break;
         }
 

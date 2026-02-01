@@ -11,6 +11,7 @@ using avallama.Services.Queue;
 using avallama.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
 
@@ -19,6 +20,7 @@ public partial class ModelItemViewModel : ViewModelBase
     private readonly IOllamaService _ollamaService;
     private readonly IModelDownloadQueueService _modelDownloadQueueService;
     private readonly IDialogService _dialogService;
+    private readonly IMessenger _messenger;
 
     [ObservableProperty] private OllamaModel _model;
 
@@ -38,12 +40,14 @@ public partial class ModelItemViewModel : ViewModelBase
         OllamaModel model,
         IOllamaService ollamaService,
         IModelDownloadQueueService modelDownloadQueueService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        IMessenger messenger)
     {
         Model = model;
         _ollamaService = ollamaService;
         _modelDownloadQueueService = modelDownloadQueueService;
         _dialogService = dialogService;
+        _messenger = messenger;
     }
 
     // computed property which provides the status of the model itself
@@ -79,6 +83,7 @@ public partial class ModelItemViewModel : ViewModelBase
             Status = new ModelDownloadStatus(DownloadState.Queued),
         };
         _modelDownloadQueueService.Enqueue(DownloadRequest);
+        _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
     }
 
     [RelayCommand]
@@ -89,7 +94,9 @@ public partial class ModelItemViewModel : ViewModelBase
             DownloadRequest.Status.DownloadState == DownloadState.Paused) return;
 
         DownloadRequest?.Cancel();
+        DownloadRequest?.CancellationReason = CancellationReason.UserPauseRequest;
         DownloadRequest?.Status = new ModelDownloadStatus(DownloadState.Paused);
+        _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
     }
 
     [RelayCommand]
@@ -99,8 +106,11 @@ public partial class ModelItemViewModel : ViewModelBase
             DownloadRequest.Status == null ||
             DownloadRequest.Status.DownloadState != DownloadState.Paused) return;
 
+        DownloadRequest.CancellationReason = CancellationReason.Unknown;
+        DownloadRequest.ResetToken();
         _modelDownloadQueueService.Enqueue(DownloadRequest);
         DownloadRequest.Status = new ModelDownloadStatus(DownloadState.Queued);
+        _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
     }
 
     [RelayCommand]
@@ -108,8 +118,10 @@ public partial class ModelItemViewModel : ViewModelBase
     {
         if (DownloadRequest == null) return;
         DownloadRequest.Cancel();
+        DownloadRequest.CancellationReason = CancellationReason.UserCancelRequest;
         DownloadRequest = null;
         OnPropertyChanged(nameof(CurrentStatus));
+        _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
     }
 
     [RelayCommand]
@@ -132,8 +144,8 @@ public partial class ModelItemViewModel : ViewModelBase
                 Model.IsDownloaded = false;
                 DownloadRequest = null;
                 await _ollamaService.UpdateDownloadedModels();
-
-                // TODO: notify ModelManagerViewModel to resort the models list and update downloaded models info
+                OnPropertyChanged(nameof(CurrentStatus));
+                _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
             }
             else
             {
@@ -176,6 +188,7 @@ public partial class ModelItemViewModel : ViewModelBase
                 {
                     Model.IsDownloaded = true;
                     DownloadRequest = null;
+                    _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
                 }
 
                 break;
