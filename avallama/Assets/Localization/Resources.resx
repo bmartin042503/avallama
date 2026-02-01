@@ -492,7 +492,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Would you like to fetch all models from Ollama?</value>
     </data>
     <data name="SCRAPE_ASK_DIALOG_DESCRIPTION" xml:space="preserve">
-        <value>Avallama can fetch the complete model list from the Ollama library and save it to a local database, allowing you to browse and download models comfortably. This process is rate-limited for safety and may take several minutes. Would you like to start it now?</value>
+        <value>To use Model Manager, Avallama needs to download model metadata from Ollama. This process can take several minutes. Would you like to start it now?</value>
     </data>
     <data name="SCRAPE_ASK_DIALOG_POSITIVE" xml:space="preserve">
         <value>Sync library</value>

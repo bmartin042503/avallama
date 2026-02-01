@@ -485,7 +485,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Szeretnéd lekérni az összes Ollama modellt?</value>
     </data>
     <data name="SCRAPE_ASK_DIALOG_DESCRIPTION" xml:space="preserve">
-        <value>Az Avallama képes letölteni és egy helyi adatbázisba menteni a teljes Ollama modell listát, így kényelmesen böngészhetsz és tölthetsz le modelleket. A folyamat biztonságos (sebességkorlátozott), így eltarthat néhány percig. Szeretnéd most elindítani?</value>
+        <value>A Modellkezelő használatához az Avallamának le kell töltenie a modellek metaadatait. Ez a művelet több percet is igénybe vehet. Szeretnéd most elindítani?</value>
     </data>
     <data name="SCRAPE_ASK_DIALOG_POSITIVE" xml:space="preserve">
         <value>Szinkronizálás</value>

@@ -115,7 +115,7 @@ public partial class ModelManagerViewModel : PageViewModel
             ApplyParallelismSettings();
             return;
         }
-        
+
         await LoadModelsData();
         SelectedSortingOption = SortingOption.Downloaded;
     }

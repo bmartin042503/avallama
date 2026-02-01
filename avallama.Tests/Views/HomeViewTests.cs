@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using avallama.Models;
@@ -54,6 +55,10 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         _fixture.OllamaMock
             .Setup(x => x.GetDownloadedModels())
             .ReturnsAsync(new List<OllamaModel>());
+
+        _fixture.DbMock.Setup(x => x.GetConversations()).ReturnsAsync([]);
+        _fixture.DbMock.Setup(x => x.CreateConversation(It.IsAny<Conversation>())).ReturnsAsync(Guid.NewGuid());
+        _fixture.DbMock.Setup(x => x.GetMessagesForConversation(It.IsAny<Conversation>())).ReturnsAsync([]);
     }
 
     private HomeViewModel CreateHomeViewModel()
