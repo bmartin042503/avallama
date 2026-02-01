@@ -501,6 +501,6 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Not now</value>
     </data>
     <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
-        <value>You can manually update the model library at any time in the Settings.</value>
+        <value>You can update the model library at any time in the Settings.</value>
     </data>
 </root>

@@ -548,7 +548,7 @@ namespace avallama.Services.Ollama
             catch (HttpRequestException ex)
             {
                 ThrowServiceUnreachableException(ex);
-                throw; // never runs bet needed for compiler when initializing
+                throw; // never runs but needed for compiler when initializing
             }
 
             if (response.StatusCode == HttpStatusCode.OK)
@@ -563,6 +563,7 @@ namespace avallama.Services.Ollama
             await using var stream = await response.Content.ReadAsStreamAsync(ct);
             using var reader = new StreamReader(stream);
 
+            // TODO: make this more readable
             while (true)
             {
                 string? line;
