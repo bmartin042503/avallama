@@ -25,10 +25,10 @@ jobs:
         run: brew install create-dmg
 
       - name: Make script executable
-        run: chmod +x ./package-macos.sh
+        run: chmod +x scripts/package-macos.sh
 
       - name: Run Packaging Script
-        run: ./package-macos.sh ${{ inputs.version }}
+        run: ./scripts/package-macos.sh ${{ inputs.version }}
 
       - name: Upload DMG Artifacts
         uses: actions/upload-artifact@v4
