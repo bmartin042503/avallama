@@ -5,10 +5,13 @@ Licensed under the MIT License. See LICENSE file for details.
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:models="clr-namespace:avallama.Models"
         xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
         xmlns:controls="clr-namespace:avallama.Controls"
-        xmlns:dataTemplates="clr-namespace:avallama.DataTemplates">
+        xmlns:dataTemplates="clr-namespace:avallama.DataTemplates"
+        xmlns:download="clr-namespace:avallama.Models.Download"
+        xmlns:services="clr-namespace:avallama.Services"
+        xmlns:vm="clr-namespace:avallama.ViewModels"
+        x:DataType="vm:ModelItemViewModel">
     <Design.PreviewWith>
 
         <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
@@ -22,7 +25,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     <templatedControls:ModelListItem
                         Title="llama-3.2:latest">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Downloaded</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus DownloadState="Downloaded" Message="" />
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
@@ -30,24 +33,25 @@ Licensed under the MIT License. See LICENSE file for details.
                     <templatedControls:ModelListItem
                         Title="deepseek-r1:8b-llama-distill-q4_K_M">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Downloaded</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus DownloadState="Downloaded" Message="" />
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
-                    <!-- Sample item 3 - Downloading ModelListItem -->
+                    <!-- Sample item 3 - Downloading ModelListItem (selected) -->
                     <templatedControls:ModelListItem
                         Title="gpt-oss:20b"
                         Classes="selectedListItem">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Downloading</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus DownloadState="Downloading" Message="" />
                         </templatedControls:ModelListItem.DownloadStatus>
+                        <templatedControls:ModelListItem.StatusText>3.00%</templatedControls:ModelListItem.StatusText>
                     </templatedControls:ModelListItem>
 
                     <!-- Sample item 4 - Paused ModelListItem -->
                     <templatedControls:ModelListItem
                         Title="qwen:14b">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Paused</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus DownloadState="Downloaded" Message="" />
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
@@ -55,31 +59,50 @@ Licensed under the MIT License. See LICENSE file for details.
                     <templatedControls:ModelListItem
                         Title="deepseek-r1:70b-llama-distill-q4_K_M">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Downloading</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus DownloadState="Downloading" Message="" />
                         </templatedControls:ModelListItem.DownloadStatus>
+                        <templatedControls:ModelListItem.StatusText>43.57%</templatedControls:ModelListItem.StatusText>
                     </templatedControls:ModelListItem>
 
-                    <!-- Sample item 6 - Ready ModelListItem -->
+                    <!-- Sample item 6 - Downloadable ModelListItem -->
                     <templatedControls:ModelListItem
                         Title="qwen3-coder:480b-a35b-q4_K_M">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>Ready</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus DownloadState="Downloadable" Message="" />
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
-                    <!-- Sample item 7 - NoConnection ModelListItem -->
+                    <!-- Sample item 7 - Failed ModelListItem (no internet connection) -->
                     <templatedControls:ModelListItem
                         Title="llava:34b">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>NoConnection</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus>
+                                <download:ModelDownloadStatus.DownloadState>Failed</download:ModelDownloadStatus.DownloadState>
+                                <download:ModelDownloadStatus.Message>
+                                    <services:LocalizationService Key="NO_INTERNET_CONNECTION"/>
+                                </download:ModelDownloadStatus.Message>
+                            </download:ModelDownloadStatus>
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
-                    <!-- Sample item 8 - NotEnoughSpace ModelListItem -->
+                    <!-- Sample item 8 - Failed ModelListItem (not enough space) -->
                     <templatedControls:ModelListItem
                         Title="mistral:7b-instruct-q3_K_S">
                         <templatedControls:ModelListItem.DownloadStatus>
-                            <models:ModelDownloadStatus>NotEnoughSpace</models:ModelDownloadStatus>
+                            <download:ModelDownloadStatus>
+                                <download:ModelDownloadStatus.DownloadState>Failed</download:ModelDownloadStatus.DownloadState>
+                                <download:ModelDownloadStatus.Message>
+                                    <services:LocalizationService Key="NOT_ENOUGH_SPACE_DOWNLOAD"/>
+                                </download:ModelDownloadStatus.Message>
+                            </download:ModelDownloadStatus>
+                        </templatedControls:ModelListItem.DownloadStatus>
+                    </templatedControls:ModelListItem>
+
+                    <!-- Sample item 7 - Queued ModelListItem -->
+                    <templatedControls:ModelListItem
+                        Title="qwen3-coder:480b-a35b-q4_K_M">
+                        <templatedControls:ModelListItem.DownloadStatus>
+                            <download:ModelDownloadStatus DownloadState="Queued" Message="" />
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
@@ -124,7 +147,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelListItemDownloadStatusTemplateSelector">
 
                 <!-- Downloaded template -->
-                <DataTemplate x:Key="Downloaded" DataType="models:ModelDownloadStatus">
+                <DataTemplate x:Key="Downloaded" DataType="download:ModelDownloadStatus">
                     <controls:DynamicSvg
                         Path="/Assets/Svg/download.svg"
                         Height="16"
@@ -133,19 +156,25 @@ Licensed under the MIT License. See LICENSE file for details.
                 </DataTemplate>
 
                 <!-- Downloading template -->
-                <DataTemplate x:Key="Downloading" DataType="models:ModelDownloadStatus">
-                    <controls:DynamicSvg Path="/Assets/Svg/spinner.svg"
-                                         Height="16"
-                                         FillColor="{DynamicResource OnSurface}"
-                                         Classes="spinnerAnimation">
-                        <controls:DynamicSvg.RenderTransform>
-                            <RotateTransform Angle="0" />
-                        </controls:DynamicSvg.RenderTransform>
-                    </controls:DynamicSvg>
+                <DataTemplate x:Key="Downloading" DataType="download:ModelDownloadStatus">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding $parent[templatedControls:ModelListItem].StatusText}"
+                                   FontSize="12"
+                                   Classes="downloadStatusText"/>
+                        <controls:DynamicSvg Grid.Column="1" Path="/Assets/Svg/spinner.svg"
+                                             Height="16"
+                                             FillColor="{DynamicResource OnSurface}"
+                                             Classes="spinnerAnimation">
+                            <controls:DynamicSvg.RenderTransform>
+                                <RotateTransform Angle="0" />
+                            </controls:DynamicSvg.RenderTransform>
+                        </controls:DynamicSvg>
+                    </Grid>
                 </DataTemplate>
 
                 <!-- Paused template -->
-                <DataTemplate x:Key="Paused" DataType="models:ModelDownloadStatus">
+                <DataTemplate x:Key="Paused" DataType="download:ModelDownloadStatus">
                     <controls:DynamicSvg
                         Path="/Assets/Svg/pause.svg"
                         Height="12"
@@ -153,10 +182,17 @@ Licensed under the MIT License. See LICENSE file for details.
                         FillColor="{DynamicResource OnSurface}" />
                 </DataTemplate>
 
-                <!-- Empty templates for Ready, NotEnoughSpace, NoConnection status -->
-                <DataTemplate x:Key="Ready" DataType="models:ModelDownloadStatus" />
-                <DataTemplate x:Key="NotEnoughSpace" DataType="models:ModelDownloadStatus" />
-                <DataTemplate x:Key="NoConnection" DataType="models:ModelDownloadStatus" />
+                <!-- Downloadable and Failed templates (empty for now) -->
+                <DataTemplate x:Key="Downloadable" DataType="download:ModelDownloadStatus" />
+                <DataTemplate x:Key="Failed" DataType="download:ModelDownloadStatus" />
+
+                <!-- Queued template -->
+                <DataTemplate x:Key="Queued">
+                    <TextBlock
+                        Classes="downloadStatusText"
+                        Text="{services:LocalizationService Key='QUEUED'}"
+                        FontSize="12"/>
+                </DataTemplate>
 
             </dataTemplates:ModelDownloadStatusTemplateSelector>
         </Style.Resources>

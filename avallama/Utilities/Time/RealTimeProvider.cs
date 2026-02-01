@@ -22,6 +22,11 @@ public interface ITimeProvider
     /// Starts, or resumes, measuring elapsed time.
     /// </summary>
     void Start();
+
+    /// <summary>
+    /// Stops measuring elapsed time.
+    /// </summary>
+    void Stop();
 }
 
 /// <summary>
@@ -37,4 +42,7 @@ public class RealTimeProvider : ITimeProvider
 
     /// <inheritdoc />
     public void Start() => _stopwatch.Start();
+
+    /// <inheritdoc />
+    public void Stop() => _stopwatch.Stop();
 }

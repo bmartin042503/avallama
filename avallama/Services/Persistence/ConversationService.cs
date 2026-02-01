@@ -6,13 +6,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Utilities;
 using Microsoft.Data.Sqlite;
 
-namespace avallama.Services;
+namespace avallama.Services.Persistence;
 
 internal static class Roles
 {
@@ -22,12 +21,13 @@ internal static class Roles
 
 public interface IConversationService
 {
-    public Task<Guid> CreateConversation(Conversation conversation);
-    public Task InsertMessage(Guid conversationId, Message message, string? modelName, double? tokenPerSec);
-    public Task<ObservableStack<Conversation>> GetConversations();
-    public Task<bool> UpdateConversationTitle(Conversation conversation);
-    public Task<ObservableCollection<Message>> GetMessagesForConversation(Conversation conversation);
-    public Task DeleteConversation(Guid conversationId);
+    Task<Guid> CreateConversation(Conversation conversation);
+    Task<long> InsertMessage(Guid conversationId, Message message, string? modelName, double? tokenPerSec);
+    Task DeleteMessage(long messageId);
+    Task<IList<Conversation>> GetConversations();
+    Task<bool> UpdateConversationTitle(Conversation conversation);
+    Task<IList<Message>> GetMessagesForConversation(Conversation conversation);
+    Task DeleteConversation(Guid conversationId);
 }
 
 public class ConversationService : IConversationService, IDisposable
@@ -81,14 +81,15 @@ public class ConversationService : IConversationService, IDisposable
         return conversationId;
     }
 
-    public async Task InsertMessage(Guid conversationId, Message message, string? modelName, double? tokenPerSec)
+    public async Task<long> InsertMessage(Guid conversationId, Message message, string? modelName, double? tokenPerSec)
     {
-        if (message is FailedMessage) return;
+        if (message is FailedMessage) return -1;
 
         using (DatabaseLock.Instance.AcquireWriteLock())
         {
             await using var transaction = await _connection.BeginTransactionAsync();
             var now = DateTime.Now;
+            long newId = 0;
 
             try
             {
@@ -98,14 +99,19 @@ public class ConversationService : IConversationService, IDisposable
 
                 // Insert message
                 insertCmd.CommandText =
-                    "INSERT INTO messages (conversation_id, role, message, timestamp, model_name, tokens_per_sec) VALUES (@ConversationId, @Role, @Message, @Timestamp, @ModelName, @TokenPerSec)";
+                    """
+                    INSERT INTO messages (conversation_id, role, message, timestamp, model_name, tokens_per_sec)
+                    VALUES (@ConversationId, @Role, @Message, @Timestamp, @ModelName, @TokenPerSec);
+                    SELECT last_insert_rowid()
+                    """;
                 insertCmd.Parameters.AddWithValue("@ConversationId", conversationId);
                 insertCmd.Parameters.AddWithValue("@Role", message is GeneratedMessage ? "assistant" : "user");
                 insertCmd.Parameters.AddWithValue("@Message", message.Content);
                 insertCmd.Parameters.AddWithValue("@Timestamp", now);
                 insertCmd.Parameters.AddWithValue("@ModelName", modelName ?? (object)DBNull.Value);
                 insertCmd.Parameters.AddWithValue("@TokenPerSec", tokenPerSec ?? (object)DBNull.Value);
-                await insertCmd.ExecuteNonQueryAsync();
+                var result = await insertCmd.ExecuteScalarAsync();
+                newId = Convert.ToInt64(result);
 
                 // Update conversation's last_message_sent_at
                 await using var updateCmd = _connection.CreateCommand();
@@ -125,10 +131,12 @@ public class ConversationService : IConversationService, IDisposable
                 // TODO: InterruptService
                 throw;
             }
+
+            return newId;
         }
     }
 
-    public async Task<ObservableStack<Conversation>> GetConversations()
+    public async Task<IList<Conversation>> GetConversations()
     {
         ObservableStack<Conversation> conversations;
         using (DatabaseLock.Instance.AcquireReadLock())
@@ -242,7 +250,7 @@ public class ConversationService : IConversationService, IDisposable
         }
     }
 
-    public async Task<ObservableCollection<Message>> GetMessagesForConversation(Conversation conversation)
+    public async Task<IList<Message>> GetMessagesForConversation(Conversation conversation)
     {
         ObservableCollection<Message> messages;
         using (DatabaseLock.Instance.AcquireReadLock())
@@ -256,6 +264,7 @@ public class ConversationService : IConversationService, IDisposable
             {
                 while (await reader.ReadAsync())
                 {
+                    var id = reader.GetInt64(0);
                     var role = reader["role"].ToString();
                     var content = reader["message"].ToString()!;
 
@@ -266,6 +275,7 @@ public class ConversationService : IConversationService, IDisposable
                         _ => throw new InvalidOperationException($"Unknown role: {role}")
                     };
 
+                    message.Id = id;
                     messages.Add(message);
                 }
             }
@@ -286,6 +296,25 @@ public class ConversationService : IConversationService, IDisposable
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText = "DELETE FROM conversations WHERE id = @ConversationId";
             cmd.Parameters.AddWithValue("@ConversationId", conversationId);
+            try
+            {
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception)
+            {
+                // TODO: InterruptService
+                throw;
+            }
+        }
+    }
+
+    public async Task DeleteMessage(long messageId)
+    {
+        using (DatabaseLock.Instance.AcquireWriteLock())
+        {
+            await using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "DELETE FROM messages WHERE id = @Id";
+            cmd.Parameters.AddWithValue("@Id", messageId);
             try
             {
                 await cmd.ExecuteNonQueryAsync();

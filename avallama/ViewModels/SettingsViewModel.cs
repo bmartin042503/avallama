@@ -7,6 +7,8 @@ using System.Net;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Services;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
 using avallama.Utilities.Network;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -119,7 +121,17 @@ public partial class SettingsViewModel : PageViewModel
         }
     } = OllamaService.DefaultApiPort.ToString();
 
-    public bool ShowInformationalMessages
+    public bool IsInformationalMessagesVisible
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsParallelDownloadEnabled
     {
         get;
         set
@@ -175,8 +187,11 @@ public partial class SettingsViewModel : PageViewModel
         var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
         ApiPort = string.IsNullOrEmpty(portSetting) ? OllamaService.DefaultApiPort.ToString() : portSetting;
 
-        var showInformationalMessages = _configurationService.ReadSetting(ConfigurationKey.ShowInformationalMessages);
-        ShowInformationalMessages = showInformationalMessages == "True";
+        var isInformationalMessagesVisible = _configurationService.ReadSetting(ConfigurationKey.IsInformationalMessagesVisible);
+        IsInformationalMessagesVisible = isInformationalMessagesVisible == "True";
+
+        var isParallelDownloadEnabled = _configurationService.ReadSetting(ConfigurationKey.IsParallelDownloadEnabled);
+        IsParallelDownloadEnabled = isParallelDownloadEnabled == "True";
 
         var lastModelUpdate = _configurationService.ReadSetting(ConfigurationKey.LastUpdatedCache);
         LastModelUpdate = LocalizationService.GetString("LAST_UPDATED") + ": " + (!lastModelUpdate.Equals(string.Empty) ? lastModelUpdate : LocalizationService.GetString("NEVER"));
@@ -226,8 +241,10 @@ public partial class SettingsViewModel : PageViewModel
 
         _configurationService.SaveSetting(ConfigurationKey.ApiHost, ApiHost);
         _configurationService.SaveSetting(ConfigurationKey.ApiPort, ApiPort);
-        _configurationService.SaveSetting(ConfigurationKey.ShowInformationalMessages,
-            ShowInformationalMessages.ToString());
+        _configurationService.SaveSetting(ConfigurationKey.IsInformationalMessagesVisible,
+            IsInformationalMessagesVisible.ToString());
+        _configurationService.SaveSetting(ConfigurationKey.IsParallelDownloadEnabled,
+            IsParallelDownloadEnabled.ToString());
 
         _messenger.Send(new ApplicationMessage.ReloadSettings());
 
@@ -240,7 +257,7 @@ public partial class SettingsViewModel : PageViewModel
     {
         if (!await _networkManager.IsInternetAvailableAsync())
         {
-            _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_WARNING"));
+            _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_CONNECTION"));
             return;
         }
         Process.Start(new ProcessStartInfo
@@ -268,7 +285,7 @@ public partial class SettingsViewModel : PageViewModel
         SelectedScrollIndex = 1; // floating button scroll setting
         ApiHost = OllamaService.DefaultApiHost;
         ApiPort = OllamaService.DefaultApiPort.ToString();
-        ShowInformationalMessages = true; // show informational messages
+        IsInformationalMessagesVisible = true; // show informational messages
     }
 
     private static bool IsValidHost(string host)

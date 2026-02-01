@@ -68,5 +68,16 @@ namespace avallama.Utilities.Network
 
             return _samples.Average(s => s.Speed);
         }
+
+        /// <summary>
+        /// Resets and restarts the timer with empty values.
+        /// </summary>
+        public void Reset()
+        {
+            _lastBytes = 0;
+            _samples.Clear();
+            _timeProvider.Stop();
+            _timeProvider.Start();
+        }
     }
 }

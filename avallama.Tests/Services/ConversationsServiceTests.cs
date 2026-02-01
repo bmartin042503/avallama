@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using avallama.Models;
 using avallama.Services;
+using avallama.Services.Persistence;
 using Microsoft.Data.Sqlite;
 using Xunit;
 

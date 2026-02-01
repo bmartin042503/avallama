@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using avallama.Services;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
+using avallama.Services.Queue;
 using avallama.Utilities.Network;
 using CommunityToolkit.Mvvm.Messaging;
 using Moq;
@@ -17,5 +20,6 @@ public class TestServicesFixture
     public Mock<IMessenger> MessengerMock { get; } = new();
     public Mock<IModelCacheService> ModelCacheMock { get; } = new();
     public Mock<IOllamaScraperService> ScraperMock { get; } = new();
+    public Mock<IModelDownloadQueueService> DownloadQueueMock { get; } = new();
     public Mock<INetworkManager> NetworkManagerMock { get; } = new();
 }

@@ -121,7 +121,7 @@ jobs:
 
 
   build-macos:
-    name: macOS Packages (.zip for x64 and arm64)
+    name: macOS Packages (.dmg for x64 and arm64)
     runs-on: macos-latest
 
     steps:
@@ -132,6 +132,9 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Install create-dmg tool
+        run: brew install create-dmg
+
       - name: Set version var
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
@@ -140,18 +143,17 @@ jobs:
           chmod +x scripts/package-macos.sh
           ./scripts/package-macos.sh "${{ env.VERSION }}"
 
-
       - name: Upload macOS x64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-x64-package
-          path: avallama_${{ env.VERSION }}_osx_x64.zip
+          path: avallama_${{ env.VERSION }}_osx_x64.dmg
 
       - name: Upload macOS arm64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-package
-          path: avallama_${{ env.VERSION }}_osx_arm64.zip
+          path: avallama_${{ env.VERSION }}_osx_arm64.dmg
 
   release:
     name: Publish GitHub Release

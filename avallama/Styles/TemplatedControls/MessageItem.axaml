@@ -64,13 +64,26 @@ Licensed under the MIT License. See LICENSE file for details.
 
     </Design.PreviewWith>
 
+    <!-- DeletePopup that appears at right click -->
+    <Style Selector="templatedControls|MessageItem">
+        <Setter Property="ContextFlyout">
+            <controls:DeletePopup>
+                <Button
+                    Content="{services:LocalizationService Key='DELETE'}"
+                    Command="{Binding $parent[templatedControls:MessageItem].DeleteCommand}"
+                    CommandParameter="{Binding $parent[templatedControls:MessageItem].DeleteCommandParameter}"
+                    Classes="errorButton"/>
+            </controls:DeletePopup>
+        </Setter>
+    </Style>
+
     <!-- Converters -->
     <Styles.Resources>
         <converters:MessageItemSizeConverter x:Key="MessageItemSizeConverter" />
         <converters:TextToVisibilityConverter x:Key="TextToVisibilityConverter" />
     </Styles.Resources>
 
-    <!-- Build of MessageItem for UserMessage -->
+    <!-- Build of UserMessage -->
     <Style Selector="templatedControls|MessageItem.userMessage">
         <Setter Property="Template">
             <ControlTemplate>
@@ -82,6 +95,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
                     <!-- Message text -->
                     <SelectableTextBlock
+                        ContextFlyout="{Binding ContextFlyout, RelativeSource={RelativeSource TemplatedParent}}"
                         Text="{TemplateBinding Text}"
                         FontSize="14"
                         LineHeight="22"
@@ -93,7 +107,7 @@ Licensed under the MIT License. See LICENSE file for details.
         </Setter>
     </Style>
 
-    <!-- Build of MessageItem for GeneratedMessage -->
+    <!-- Build of GeneratedMessage -->
     <Style Selector="templatedControls|MessageItem.generatedMessage">
         <Setter Property="Template">
             <ControlTemplate>
@@ -106,6 +120,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
                         <!-- Message text -->
                         <SelectableTextBlock
+                            ContextFlyout="{Binding ContextFlyout, RelativeSource={RelativeSource TemplatedParent}}"
                             Text="{TemplateBinding Text}"
                             IsVisible="{TemplateBinding Text, Converter={StaticResource TextToVisibilityConverter}}"
                             FontSize="14"
@@ -116,6 +131,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
                         <!-- Message subtext -->
                         <TextBlock
+                            ContextFlyout="{Binding ContextFlyout, RelativeSource={RelativeSource TemplatedParent}}"
                             Text="{TemplateBinding SubText}"
                             IsVisible="{TemplateBinding SubText, Converter={StaticResource TextToVisibilityConverter}}"
                             TextWrapping="Wrap"
@@ -130,7 +146,7 @@ Licensed under the MIT License. See LICENSE file for details.
         </Setter>
     </Style>
 
-    <!-- Build of MessageItem for FailedMessage -->
+    <!-- Build of FailedMessage -->
     <Style Selector="templatedControls|MessageItem.failedMessage">
         <Setter Property="Template">
             <ControlTemplate>

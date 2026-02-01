@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-namespace avallama.Services;
+namespace avallama.Services.Persistence;
 
 public interface IDatabaseInitService
 {
@@ -69,7 +69,7 @@ public class DatabaseInitService : IDatabaseInitService
                                            context_length INTEGER,
                                            embedding_length INTEGER,
                                            additional_info TEXT,
-                                           download_status INTEGER NOT NULL DEFAULT 0,
+                                           is_downloaded INTEGER NOT NULL DEFAULT 0,
                                            cached_at TEXT NOT NULL,
                                            FOREIGN KEY (family_name) REFERENCES model_families(name) ON DELETE CASCADE
                                            );
@@ -127,19 +127,19 @@ public class DatabaseInitService : IDatabaseInitService
     {
         var cmd = conn.CreateCommand();
         cmd.CommandText = $"""
-                          PRAGMA foreign_keys = ON;
-                          PRAGMA journal_mode = WAL;
-                          PRAGMA synchronous = NORMAL;
-                          PRAGMA temp_store = MEMORY;
-                          PRAGMA cache_size = 32000;
+                           PRAGMA foreign_keys = ON;
+                           PRAGMA journal_mode = WAL;
+                           PRAGMA synchronous = NORMAL;
+                           PRAGMA temp_store = MEMORY;
+                           PRAGMA cache_size = 32000;
 
-                          CREATE TABLE IF NOT EXISTS schema_metadata (
-                          key TEXT PRIMARY KEY,
-                          value TEXT NOT NULL
-                          );
+                           CREATE TABLE IF NOT EXISTS schema_metadata (
+                           key TEXT PRIMARY KEY,
+                           value TEXT NOT NULL
+                           );
 
-                          {CanonicalSchema}
-                          """;
+                           {CanonicalSchema}
+                           """;
         await cmd.ExecuteNonQueryAsync();
         await StoreSchemaHashAsync(conn);
     }
@@ -163,17 +163,79 @@ public class DatabaseInitService : IDatabaseInitService
         await using var transaction = await conn.BeginTransactionAsync();
         try
         {
-            await using var cmd = conn.CreateCommand();
-            cmd.CommandText = """
-                              CREATE TABLE IF NOT EXISTS schema_metadata (
-                              key TEXT PRIMARY KEY,
-                              value TEXT NOT NULL
-                              );
-                              """;
-            await cmd.ExecuteNonQueryAsync();
+            await using var checkCmd = conn.CreateCommand();
+            checkCmd.CommandText =
+                "SELECT COUNT(*) FROM pragma_table_info('ollama_models') WHERE name='download_status'";
+            var hasDownloadStatusColumn = (long)(await checkCmd.ExecuteScalarAsync() ?? 0L) > 0;
 
-            cmd.CommandText = CanonicalSchema;
-            await cmd.ExecuteNonQueryAsync();
+            await using var metaCmd = conn.CreateCommand();
+            metaCmd.CommandText = """
+                                  CREATE TABLE IF NOT EXISTS schema_metadata (
+                                  key TEXT PRIMARY KEY,
+                                  value TEXT NOT NULL
+                                  );
+                                  """;
+            await metaCmd.ExecuteNonQueryAsync();
+
+            // if the user has the previous "download_status" column then we migrate the db to the new "is_downloaded" column
+            // keep this migration script here indefinitely (possibly removeable in a 1.0.0 release)
+            // maybe extract this if we'll have more migration codes
+            if (hasDownloadStatusColumn)
+            {
+                await using var migrationCmd = conn.CreateCommand();
+                migrationCmd.CommandText = """
+                                               PRAGMA foreign_keys=OFF;
+
+                                               CREATE TABLE ollama_models_new (
+                                                   name TEXT PRIMARY KEY,
+                                                   family_name TEXT NOT NULL,
+                                                   parameters INTEGER,
+                                                   size INTEGER NOT NULL,
+                                                   format TEXT,
+                                                   quantization TEXT,
+                                                   architecture TEXT,
+                                                   block_count INTEGER,
+                                                   context_length INTEGER,
+                                                   embedding_length INTEGER,
+                                                   additional_info TEXT,
+                                                   is_downloaded INTEGER NOT NULL DEFAULT 0, -- new column from v0.3.0
+                                                   cached_at TEXT NOT NULL,
+                                                   FOREIGN KEY (family_name) REFERENCES model_families(name) ON DELETE CASCADE
+                                               );
+
+                                               -- insert old data to a new table
+                                               INSERT INTO ollama_models_new (
+                                                   name, family_name, parameters, size, format, quantization, architecture,
+                                                   block_count, context_length, embedding_length, additional_info,
+                                                   is_downloaded, cached_at
+                                               )
+                                               SELECT
+                                                   name, family_name, parameters, size, format, quantization, architecture,
+                                                   block_count, context_length, embedding_length, additional_info,
+                                                   CASE WHEN download_status = 5 THEN 1 ELSE 0 END, -- conversion to new column
+                                                   cached_at
+                                               FROM ollama_models;
+
+                                               -- drop old table
+                                               DROP TABLE ollama_models;
+
+                                               -- rename new table
+                                               ALTER TABLE ollama_models_new RENAME TO ollama_models;
+
+                                               -- restore indexes
+                                               CREATE INDEX IF NOT EXISTS idx_models_name_asc ON ollama_models(name ASC);
+                                               CREATE INDEX IF NOT EXISTS idx_models_pull_count_desc ON model_families(pull_count DESC);
+
+                                               PRAGMA foreign_keys=ON;
+                                           """;
+                await migrationCmd.ExecuteNonQueryAsync();
+            }
+            else
+            {
+                await using var schemaCmd = conn.CreateCommand();
+                schemaCmd.CommandText = CanonicalSchema;
+                await schemaCmd.ExecuteNonQueryAsync();
+            }
 
             await StoreSchemaHashAsync(conn);
 
@@ -184,7 +246,6 @@ public class DatabaseInitService : IDatabaseInitService
             await transaction.RollbackAsync();
             throw new InvalidOperationException("Schema migration failed.", ex);
         }
-
     }
 
     private static async Task StoreSchemaHashAsync(SqliteConnection conn)

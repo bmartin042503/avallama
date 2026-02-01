@@ -1,14 +1,11 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
 using System.Windows.Input;
-using avallama.Models;
+using avallama.Models.Download;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace avallama.Styles.TemplatedControls;
 
@@ -17,12 +14,9 @@ public class ModelListItem : TemplatedControl
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<ModelListItem, string?>(nameof(Title));
 
-    public static readonly DirectProperty<ModelListItem, ModelDownloadStatus?> DownloadStatusProperty =
-        AvaloniaProperty.RegisterDirect<ModelListItem, ModelDownloadStatus?>(
-            nameof(DownloadStatus),
-            o => o.DownloadStatus,
-            (o, v) => o.DownloadStatus = v
-        );
+    // This is a styled property so AXAML will work better (e.g. for preview)
+    public static readonly StyledProperty<ModelDownloadStatus?> DownloadStatusProperty =
+        AvaloniaProperty.Register<ModelListItem, ModelDownloadStatus?>(nameof(DownloadStatus));
 
     public static readonly DirectProperty<ModelListItem, double?> DownloadProgressProperty =
         AvaloniaProperty.RegisterDirect<ModelListItem, double?>(
@@ -39,6 +33,9 @@ public class ModelListItem : TemplatedControl
             unsetValue: string.Empty
         );
 
+    public static readonly StyledProperty<string?> StatusTextProperty =
+        AvaloniaProperty.Register<ModelItem, string?>(nameof(StatusText));
+
     public static readonly StyledProperty<ICommand> CommandProperty =
         AvaloniaProperty.Register<ModelListItem, ICommand>(nameof(Command));
 
@@ -50,8 +47,8 @@ public class ModelListItem : TemplatedControl
 
     public ModelDownloadStatus? DownloadStatus
     {
-        get;
-        set => SetAndRaise(DownloadStatusProperty, ref field, value);
+        get => GetValue(DownloadStatusProperty);
+        set => SetValue(DownloadStatusProperty, value);
     }
 
     public double? DownloadProgress
@@ -64,6 +61,12 @@ public class ModelListItem : TemplatedControl
     {
         get;
         set => SetAndRaise(SelectedNameProperty, ref field, value);
+    }
+
+    public string? StatusText
+    {
+        get => GetValue(StatusTextProperty);
+        set => SetValue(StatusTextProperty, value);
     }
 
     public ICommand Command

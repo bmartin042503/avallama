@@ -7,7 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
+using avallama.Models.Ollama;
 using avallama.Services;
+using avallama.Services.Ollama;
+using avallama.Services.Persistence;
 using avallama.Utilities.Network;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -55,7 +58,7 @@ public partial class ScraperViewModel : PageViewModel
     {
         if (!await _networkManager.IsInternetAvailableAsync())
         {
-            _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_WARNING"), false);
+            _dialogService.ShowErrorDialog(LocalizationService.GetString("NO_INTERNET_CONNECTION"), false);
             CancelScraping();
             return;
         }
@@ -77,13 +80,6 @@ public partial class ScraperViewModel : PageViewModel
             _cancellationToken = _cancellationTokenSource.Token;
 
             var monitorTask = MonitorInternetAsync(_cancellationToken);
-
-            var tmpModels = await _modelCacheService.GetCachedModelsAsync();
-            if (tmpModels.Count == 0)
-            {
-                // cancel button disabled for first scraping since it's necessary for the app to work
-                IsCancelEnabled = false;
-            }
 
             var models = new List<OllamaModel>();
             await foreach (var model in _ollamaService.StreamAllScrapedModelsAsync(_cancellationToken))
@@ -116,7 +112,7 @@ public partial class ScraperViewModel : PageViewModel
         {
             // TODO: proper logging
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // TODO: proper logging
         }
@@ -132,7 +128,7 @@ public partial class ScraperViewModel : PageViewModel
 
                 if (!await _networkManager.IsInternetAvailableAsync())
                 {
-                    _dialogService.ShowErrorDialog(LocalizationService.GetString("LOST_INTERNET_WARNING"), false);
+                    _dialogService.ShowErrorDialog(LocalizationService.GetString("LOST_INTERNET_CONNECTION"), false);
                     CancelScraping();
                     return;
                 }

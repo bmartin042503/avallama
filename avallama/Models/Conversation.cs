@@ -10,34 +10,29 @@ namespace avallama.Models;
 
 public class Conversation : ObservableObject
 {
-    private string _title = string.Empty;
-    private string _model = string.Empty;
-    private ObservableCollection<Message> _messages = [];
-    private Guid _conversationId = Guid.Empty;
-
     public string Title
     {
-        get => _title;
-        set => SetProperty(ref _title, value);
+        get;
+        set => SetProperty(ref field, value);
     }
 
     public string Model
     {
-        get => _model;
-        set => SetProperty(ref _model, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = string.Empty;
 
     public ObservableCollection<Message> Messages
     {
-        get => _messages;
-        set => SetProperty(ref _messages, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = [];
 
     public Guid ConversationId
     {
-        get => _conversationId;
-        set => SetProperty(ref _conversationId, value);
-    }
+        get;
+        set => SetProperty(ref field, value);
+    } = Guid.Empty;
 
     public Conversation(string title, string model)
     {

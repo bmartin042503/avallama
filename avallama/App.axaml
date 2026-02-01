@@ -21,13 +21,16 @@ Licensed under the MIT License. See LICENSE file for details.
     </Application.Resources>
 
     <Application.Styles>
-        <!-- Styles to use globally -->
+        <!-- Styles to use -->
         <StyleInclude Source="Styles/Button.axaml" />
         <StyleInclude Source="Styles/TextBox.axaml" />
         <StyleInclude Source="Styles/TextBlock.axaml" />
         <StyleInclude Source="Styles/ComboBox.axaml" />
-        <StyleInclude Source="Styles/General.axaml" />
         <StyleInclude Source="Styles/ToggleSwitch.axaml" />
+        <StyleInclude Source="Styles/DeletePopup.axaml" />
+
+        <!-- Global styles -->
+        <StyleInclude Source="Styles/Global.axaml" />
         <FluentTheme />
 
         <!-- Templated controls -->

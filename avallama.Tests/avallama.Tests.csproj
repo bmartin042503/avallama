@@ -41,12 +41,6 @@ Licensed under the MIT License. See LICENSE file for details.
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="../native/macos/libFullScreenCheck.dylib">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\avallama\avallama.csproj" />
     </ItemGroup>
 </Project>

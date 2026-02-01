@@ -10,7 +10,6 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:services="clr-namespace:avallama.Services"
              xmlns:vm="using:avallama.ViewModels"
              xmlns:controls="clr-namespace:avallama.Controls"
-             xmlns:models="clr-namespace:avallama.Models"
              xmlns:converters="clr-namespace:avallama.Converters"
              xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
              xmlns:utilities="clr-namespace:avallama.Utilities"
@@ -92,19 +91,20 @@ Licensed under the MIT License. See LICENSE file for details.
                            TextAlignment="Center" />
             </StackPanel>
 
-            <!-- Model selection -->
+            <!-- Model selection list -->
             <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,14,0,0"
                           AllowAutoHide="True">
                 <StackPanel Orientation="Vertical" Spacing="12">
-                    <ItemsControl ItemsSource="{Binding Models}" VerticalAlignment="Stretch">
+                    <ItemsControl ItemsSource="{Binding ModelItemViewModels}" VerticalAlignment="Stretch">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="models:OllamaModel">
+                            <DataTemplate DataType="vm:ModelItemViewModel">
                                 <templatedControls:ModelListItem
                                     Margin="0,12,0,0"
-                                    Title="{Binding Name}"
-                                    DownloadStatus="{Binding DownloadStatus}"
-                                    SelectedName="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectedModelName}"
-                                    Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:ModelManagerViewModel)DataContext).SelectModel}" />
+                                    Title="{Binding Model.Name}"
+                                    StatusText="{Binding ShortDownloadStatusText}"
+                                    DownloadStatus="{Binding CurrentStatus}"
+                                    SelectedName="{Binding $parent[UserControl].((vm:ModelManagerViewModel)DataContext).SelectedModelItemViewModel.Model.Name}"
+                                    Command="{Binding $parent[UserControl].((vm:ModelManagerViewModel)DataContext).SelectModelCommand}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -127,17 +127,24 @@ Licensed under the MIT License. See LICENSE file for details.
         <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Opacity="0" ResizeDirection="Columns"
                       Margin="4,0,4,0" />
 
-        <!-- Selected model -->
+        <!-- Selected model view -->
         <templatedControls:ModelItem Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
-                                     IsVisible="{Binding IsModelInfoBlockVisible}"
-                                     Title="{Binding SelectedModel.Name}"
-                                     Family="{Binding SelectedModel.Family}"
-                                     Parameters="{Binding SelectedModel.Parameters}"
-                                     InformationSource="{Binding SelectedModel.Info}"
-                                     SizeInBytes="{Binding SelectedModel.Size}"
-                                     DownloadStatus="{Binding SelectedModel.DownloadStatus}"
-                                     RunsSlow="{Binding SelectedModel.RunsSlow}"
-                                     Command="{Binding ModelAction}" />
+                                     IsVisible="{Binding $parent[UserControl].((vm:ModelManagerViewModel)DataContext).IsModelInfoBlockVisible}"
+                                     DataContext="{Binding SelectedModelItemViewModel}"
+                                     Title="{Binding Model.Name}"
+                                     Family="{Binding Model.Family}"
+                                     Parameters="{Binding Model.Parameters}"
+                                     InformationSource="{Binding Model.Info}"
+                                     SizeInBytes="{Binding Model.Size}"
+                                     DownloadStatus="{Binding CurrentStatus}"
+                                     RunsSlow="{Binding Model.RunsSlow}"
+                                     DownloadCommand="{Binding DownloadCommand}"
+                                     PauseCommand="{Binding PauseCommand}"
+                                     DeleteCommand="{Binding DeleteCommand}"
+                                     CancelCommand="{Binding CancelCommand}"
+                                     ResumeCommand="{Binding ResumeCommand}"
+                                     StatusText="{Binding LongDownloadStatusText}"
+                                     SpeedText="{Binding DownloadSpeedText}"/>
 
         <!-- All downloaded models size -->
         <TextBlock Grid.Row="2" Grid.Column="0"

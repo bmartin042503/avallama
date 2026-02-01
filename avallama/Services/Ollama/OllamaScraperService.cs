@@ -1,7 +1,6 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using avallama.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +9,11 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using avallama.Models.Ollama;
 using avallama.Utilities;
 using HtmlAgilityPack;
 
-namespace avallama.Services;
+namespace avallama.Services.Ollama;
 
 public sealed class OllamaScraperResult
 {
@@ -153,7 +153,7 @@ public class OllamaScraperService : IOllamaScraperService
                     family.Labels = labels;
                     result.Add(family);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO: proper logging
                 }
@@ -161,7 +161,7 @@ public class OllamaScraperService : IOllamaScraperService
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // TODO: proper logging
         }
@@ -194,7 +194,7 @@ public class OllamaScraperService : IOllamaScraperService
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // TODO: proper logging
         }
@@ -219,8 +219,7 @@ public class OllamaScraperService : IOllamaScraperService
             {
                 Name = tagName,
                 Size = ConversionHelper.ParseSizeToBytes(tagSize),
-                Family = family,
-                DownloadStatus = ModelDownloadStatus.Ready
+                Family = family
             };
 
             yield return model;

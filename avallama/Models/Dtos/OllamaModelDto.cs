@@ -3,18 +3,15 @@
 
 using System.Text.Json.Serialization;
 
-namespace avallama.Dtos;
+namespace avallama.Models.Dtos;
 
 public class OllamaModelDto
 {
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    [JsonPropertyName("name")] public string? Name { get; set; }
 
-    [JsonPropertyName("size")]
-    public long? Size { get; set; }
+    [JsonPropertyName("size")] public long? Size { get; set; }
 
-    [JsonPropertyName("details")]
-    public OllamaModelDetailsDto? Details { get; set; }
+    [JsonPropertyName("details")] public OllamaModelDetailsDto? Details { get; set; }
 
     // [JsonPropertyName("model")]
     // public string? Model { get; set; }

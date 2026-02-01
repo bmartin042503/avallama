@@ -100,14 +100,13 @@ Windows on Arm is not currently supported.
 
 This application is **not signed nor notarized**. MacOS may prevent it from running by default.
 
-1. Download the latest ZIP file from the [releases](https://github.com/4foureyes/avallama/releases) page. (for Intel use *osx_x64*, for Apple Silicon use *osx_arm64*)
-2. Double-click on the ZIP file to extract it.
-3. Double-click on Avallama to run it.
-4. *(Optional) Move the Avallama.app file to the Applications folder using Finder*.
+1. Download the latest `.dmg` file from the [releases](https://github.com/4foureyes/avallama/releases) page. (for Intel use *osx_x64*, for Apple Silicon use *osx_arm64*)
+2. Open the downloaded `.dmg` file.
+3. Drag **Avallama** into the **Applications** folder.
 
-If the '*app is damaged or can't be opened*' error occurs, make sure you remove the quarantine flag of the ZIP file using the following command in the Terminal, and extract it again:
+If the '*app is damaged or can't be opened*' error occurs, make sure you remove the quarantine flag using the following command in the Terminal:
 ```bash
-xattr -d com.apple.quarantine avallama_0.2.0_osx_arm64.zip
+xattr -cr /Applications/Avallama.app
 ```
 
 ### Building from source
@@ -144,9 +143,6 @@ This is a list of issues we are aware of that will be fixed in a subsequent rele
 - When uninstalling, configuration files in `~/.config/avallama` are not removed automatically.
 - Ollama process management is not fully functional, as Ollama installs itself as a systemd service.
 - When starting the app from a terminal, killing the app prints a stack trace to the terminal.
-
-**macOS**:
-- The installed application is missing the `native/macos/libFullScreenCheck.dylib` file. This causes the application to launch with a black screen. A temporary fix is to place this file in the `Avallama.app/Contents/macOS` directory.
 
 ## License
 

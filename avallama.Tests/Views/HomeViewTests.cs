@@ -1,13 +1,15 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using avallama.Models;
-using avallama.Services;
+using avallama.Models.Ollama;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
 using avallama.Views;
+using avallama.Services.Ollama;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -53,6 +55,10 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         _fixture.OllamaMock
             .Setup(x => x.GetDownloadedModels())
             .ReturnsAsync(new List<OllamaModel>());
+
+        _fixture.DbMock.Setup(x => x.GetConversations()).ReturnsAsync([]);
+        _fixture.DbMock.Setup(x => x.CreateConversation(It.IsAny<Conversation>())).ReturnsAsync(Guid.NewGuid());
+        _fixture.DbMock.Setup(x => x.GetMessagesForConversation(It.IsAny<Conversation>())).ReturnsAsync([]);
     }
 
     private HomeViewModel CreateHomeViewModel()
@@ -69,7 +75,11 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     private (Window Window, HomeView View, HomeViewModel ViewModel) CreateAndShowHomeView()
     {
         var viewModel = CreateHomeViewModel();
-        var view = new HomeView { DataContext = viewModel };
+        var view = new HomeView
+        {
+            DataContext = viewModel,
+            IsFullScreenOverride = () => false
+        };
         var window = new Window { Content = view };
         window.Show();
         return (window, view, viewModel);
@@ -80,8 +90,8 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     {
         var mockModels = new List<OllamaModel>
         {
-            new() { Name = "test-model-1:8b", Size = 8_030_000_000, DownloadStatus = ModelDownloadStatus.Downloaded },
-            new() { Name = "test-model-2:20b", Size = 20_100_000_000, DownloadStatus = ModelDownloadStatus.Downloaded }
+            new() { Name = "test-model-1:8b", Size = 8_030_000_000, IsDownloaded = true },
+            new() { Name = "test-model-2:20b", Size = 20_100_000_000, IsDownloaded = true }
         };
 
         _fixture.OllamaMock.Setup(x => x.GetDownloadedModels()).ReturnsAsync(mockModels);

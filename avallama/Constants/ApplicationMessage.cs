@@ -5,24 +5,23 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace avallama.Constants;
 
-
 public static class ApplicationMessage
 {
     // request ollama start confirmation dialog
-    public class AskOllamaStart() : ValueChangedMessage<bool>(true);
+    public record AskOllamaStart;
 
     // request for app shutdown
-    public class Shutdown() : ValueChangedMessage<bool>(true);
+    public record Shutdown;
 
     // request for app restart
-    public class Restart() : ValueChangedMessage<bool>(true);
+    public record Restart;
 
     // request for settings to reload
-    public class ReloadSettings() : ValueChangedMessage<bool>(true);
+    public record ReloadSettings;
 
     // request for an application page
-    public class RequestPage(ApplicationPage page) : ValueChangedMessage<bool>(true)
-    {
-        public ApplicationPage Page { get; } = page;
-    }
+    public record RequestPage(ApplicationPage Page);
+
+    // notification for ModelManagerViewModel when a Model status' changes
+    public record ModelStatusChanged(string ModelName);
 }
