@@ -11,10 +11,14 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>1.3</value>
     </resheader>
     <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <data name="CANCEL" xml:space="preserve">
         <value>Vissza</value>
@@ -474,5 +478,38 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="DISK_FULL_DURING_DOWNLOAD" xml:space="preserve">
         <value>A letöltés megszakadt, mert elfogyott a tárhely.</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING" xml:space="preserve">
+        <value>Párhuzamos letöltések</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING_DESC" xml:space="preserve">
+        <value>Több modell egyidejű letöltésének engedélyezése. Kikapcsolt állapotban a modellek sorrendben, egymás után töltődnek le.</value>
+    </data>
+    <data name="QUEUED" xml:space="preserve">
+        <value>Sorba állítva</value>
+    </data>
+    <data name="FINALIZING_DOWNLOAD" xml:space="preserve">
+        <value>Letöltés befejezése..</value>
+    </data>
+    <data name="FINALIZING" xml:space="preserve">
+        <value>Véglegesítés..</value>
+    </data>
+    <data name="DOWNLOAD_FAILED" xml:space="preserve">
+        <value>Letöltés sikertelen: {0}</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_TITLE" xml:space="preserve">
+        <value>Szeretnéd lekérni az összes Ollama modellt?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_DESCRIPTION" xml:space="preserve">
+        <value>A Modellkezelő használatához az Avallamának le kell töltenie a modellek metaadatait az Ollamáról. Ez a művelet több percet is igénybe vehet. Szeretnéd most elindítani?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_POSITIVE" xml:space="preserve">
+        <value>Szinkronizálás</value>
+    </data>
+    <data name="NOT_NOW" xml:space="preserve">
+        <value>Most nem</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
+        <value>A modellkönyvtárat később bármikor frissítheted a Beállításokban.</value>
     </data>
 </root>

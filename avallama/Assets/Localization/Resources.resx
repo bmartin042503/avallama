@@ -6,7 +6,8 @@ Licensed under the MIT License. See LICENSE file for details.
 -->
 
 <root>
-    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
         <xsd:element name="root" msdata:IsDataSet="true">
 
         </xsd:element>
@@ -18,10 +19,14 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>1.3</value>
     </resheader>
     <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <data name="GREETING_TEXT" xml:space="preserve">
         <value>Avallama</value>
@@ -481,5 +486,38 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="DISK_FULL_DURING_DOWNLOAD" xml:space="preserve">
         <value>Download failed due to insufficient disk space.</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING" xml:space="preserve">
+        <value>Parallel downloads</value>
+    </data>
+    <data name="PARALLEL_DOWNLOAD_SETTING_DESC" xml:space="preserve">
+        <value>Enable downloading multiple models at the same time. When disabled, models will be download sequentially in a queue.</value>
+    </data>
+    <data name="QUEUED" xml:space="preserve">
+        <value>Queued</value>
+    </data>
+    <data name="FINALIZING_DOWNLOAD" xml:space="preserve">
+        <value>Finalizing download..</value>
+    </data>
+    <data name="FINALIZING" xml:space="preserve">
+        <value>Finalizing..</value>
+    </data>
+    <data name="DOWNLOAD_FAILED" xml:space="preserve">
+        <value>Download failed: {0}</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_TITLE" xml:space="preserve">
+        <value>Would you like to fetch all models from Ollama?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_DESCRIPTION" xml:space="preserve">
+        <value>To use Model Manager, Avallama needs to download model metadata from Ollama. This process can take several minutes. Would you like to start it now?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_POSITIVE" xml:space="preserve">
+        <value>Sync library</value>
+    </data>
+    <data name="NOT_NOW" xml:space="preserve">
+        <value>Not now</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
+        <value>You can update the model library at any time in the Settings.</value>
     </data>
 </root>
