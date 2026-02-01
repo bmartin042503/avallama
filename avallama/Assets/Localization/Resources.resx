@@ -503,4 +503,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
         <value>You can update the model library at any time in the Settings.</value>
     </data>
+    <data name="INSUFFICIENT_DISK_SPACE" xml:space="preserve">
+        <value>There is not enough storage space on the disk to download this model.</value>
+    </data>
+    <data name="OLLAMA_LOCAL_UNREACHABLE" xml:space="preserve">
+        <value>Local Ollama server is unreachable.</value>
+    </data>
+    <data name="OLLAMA_REMOTE_UNREACHABLE" xml:space="preserve">
+        <value>Remote Ollama server is unreachable.</value>
+    </data>
+    <data name="DISK_FULL_DURING_DOWNLOAD" xml:space="preserve">
+        <value>Download failed due to insufficient disk space.</value>
+    </data>
 </root>

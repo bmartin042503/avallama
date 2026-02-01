@@ -76,17 +76,16 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
                 errorKey = "NO_INTERNET_CONNECTION";
                 break;
 
-            // TODO: set model status to 'Paused' so the user can resume to the download when they have internet connection again
             case LostInternetConnectionException:
                 errorKey = "LOST_INTERNET_CONNECTION";
                 break;
 
             case OllamaLocalServerUnreachableException:
-                errorKey = "OLLAMA_LOCAL_UNREACHABLE"; // TODO: add missing localization key
+                errorKey = "OLLAMA_LOCAL_UNREACHABLE";
                 break;
 
             case OllamaRemoteServerUnreachableException:
-                errorKey = "OLLAMA_REMOTE_UNREACHABLE"; // TODO: add missing localization key
+                errorKey = "OLLAMA_REMOTE_UNREACHABLE";
                 break;
 
             case OllamaApiException apiEx:
@@ -95,12 +94,12 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
                 break;
 
             case InsufficientDiskSpaceException spaceEx:
-                errorKey = "DISK_SPACE_INSUFFICIENT"; // TODO: add missing localization key
+                errorKey = "INSUFFICIENT_DISK_SPACE";
                 arg = ConversionHelper.BytesToReadableSize(spaceEx.RequiredBytes);
                 break;
 
             case DiskFullException:
-                errorKey = "DISK_FULL_DURING_DOWNLOAD"; // TODO: add missing localization key
+                errorKey = "DISK_FULL_DURING_DOWNLOAD";
                 break;
 
             default:

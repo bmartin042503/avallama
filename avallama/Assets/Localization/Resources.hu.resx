@@ -496,4 +496,16 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
         <value>A modellkönyvtárat később bármikor frissítheted a Beállításokban.</value>
     </data>
+    <data name="INSUFFICIENT_DISK_SPACE" xml:space="preserve">
+        <value>Nincs elegendő tárhely ezen a meghajtón a modell letöltéséhez.</value>
+    </data>
+    <data name="OLLAMA_LOCAL_UNREACHABLE" xml:space="preserve">
+        <value>A lokális Ollama szerver nem elérhető.</value>
+    </data>
+    <data name="OLLAMA_REMOTE_UNREACHABLE" xml:space="preserve">
+        <value>A távoli Ollama szerver nem elérhető.</value>
+    </data>
+    <data name="DISK_FULL_DURING_DOWNLOAD" xml:space="preserve">
+        <value>A letöltés megszakadt, mert elfogyott a tárhely.</value>
+    </data>
 </root>
