@@ -14,12 +14,9 @@ public class ModelListItem : TemplatedControl
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<ModelListItem, string?>(nameof(Title));
 
-    public static readonly DirectProperty<ModelListItem, ModelDownloadStatus?> DownloadStatusProperty =
-        AvaloniaProperty.RegisterDirect<ModelListItem, ModelDownloadStatus?>(
-            nameof(DownloadStatus),
-            o => o.DownloadStatus,
-            (o, v) => o.DownloadStatus = v
-        );
+    // This is a styled property so AXAML will work better (e.g. for preview)
+    public static readonly StyledProperty<ModelDownloadStatus?> DownloadStatusProperty =
+        AvaloniaProperty.Register<ModelListItem, ModelDownloadStatus?>(nameof(DownloadStatus));
 
     public static readonly DirectProperty<ModelListItem, double?> DownloadProgressProperty =
         AvaloniaProperty.RegisterDirect<ModelListItem, double?>(
@@ -50,8 +47,8 @@ public class ModelListItem : TemplatedControl
 
     public ModelDownloadStatus? DownloadStatus
     {
-        get;
-        set => SetAndRaise(DownloadStatusProperty, ref field, value);
+        get => GetValue(DownloadStatusProperty);
+        set => SetValue(DownloadStatusProperty, value);
     }
 
     public double? DownloadProgress

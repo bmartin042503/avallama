@@ -7,7 +7,7 @@ namespace avallama.Models.Download;
 
 public class ModelDownloadStatus
 {
-    // Kell egy üres konstruktor a XAML-nek
+    // empty constructor for AXAML
     public ModelDownloadStatus() { }
 
     public ModelDownloadStatus(DownloadState state, string? message = null)

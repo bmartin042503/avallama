@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using avallama.Constants;
-using avallama.Models;
 using avallama.Models.Download;
 using avallama.Models.Ollama;
 using avallama.Services;
@@ -22,6 +21,10 @@ public class ModelItem : TemplatedControl
 
     public static readonly StyledProperty<string?> InformationProperty =
         AvaloniaProperty.Register<ModelItem, string?>(nameof(Information));
+
+    // This is a styled property so AXAML will work better (e.g. for preview)
+    public static readonly StyledProperty<ModelDownloadStatus?> DownloadStatusProperty =
+        AvaloniaProperty.Register<ModelListItem, ModelDownloadStatus?>(nameof(DownloadStatus));
 
     public static readonly DirectProperty<ModelItem, OllamaModelFamily?> FamilyProperty =
         AvaloniaProperty.RegisterDirect<ModelItem, OllamaModelFamily?>(
@@ -50,13 +53,6 @@ public class ModelItem : TemplatedControl
             o => o.SizeInBytes,
             (o, v) => o.SizeInBytes = v,
             unsetValue: 0
-        );
-
-    public static readonly DirectProperty<ModelItem, ModelDownloadStatus?> DownloadStatusProperty =
-        AvaloniaProperty.RegisterDirect<ModelItem, ModelDownloadStatus?>(
-            nameof(DownloadStatus),
-            o => o.DownloadStatus,
-            (o, v) => o.DownloadStatus = v
         );
 
     public static readonly DirectProperty<ModelItem, bool?> RunsSlowProperty =
@@ -125,8 +121,8 @@ public class ModelItem : TemplatedControl
 
     public ModelDownloadStatus? DownloadStatus
     {
-        get;
-        set => SetAndRaise(DownloadStatusProperty, ref field, value);
+        get => GetValue(DownloadStatusProperty);
+        set => SetValue(DownloadStatusProperty, value);
     }
 
     public bool? RunsSlow

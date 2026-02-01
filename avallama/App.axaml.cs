@@ -107,7 +107,7 @@ public partial class App : Application
             {
                 await _ollamaService!.Start();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO: proper logging
             }

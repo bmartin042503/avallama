@@ -488,4 +488,19 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="DOWNLOAD_FAILED" xml:space="preserve">
         <value>Download failed: {0}</value>
     </data>
+    <data name="SCRAPE_ASK_DIALOG_TITLE" xml:space="preserve">
+        <value>Would you like to fetch all models from Ollama?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_DESCRIPTION" xml:space="preserve">
+        <value>Avallama can fetch the complete model list from the Ollama library and save it to a local database, allowing you to browse and download models comfortably. This process is rate-limited for safety and may take several minutes. Would you like to start it now?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_POSITIVE" xml:space="preserve">
+        <value>Sync library</value>
+    </data>
+    <data name="NOT_NOW" xml:space="preserve">
+        <value>Not now</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
+        <value>You can manually update the model library at any time in the Settings.</value>
+    </data>
 </root>

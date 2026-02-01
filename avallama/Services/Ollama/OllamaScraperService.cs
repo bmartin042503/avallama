@@ -154,7 +154,7 @@ public class OllamaScraperService : IOllamaScraperService
                     family.Labels = labels;
                     result.Add(family);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO: proper logging
                 }
@@ -162,7 +162,7 @@ public class OllamaScraperService : IOllamaScraperService
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // TODO: proper logging
         }
@@ -195,7 +195,7 @@ public class OllamaScraperService : IOllamaScraperService
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // TODO: proper logging
         }

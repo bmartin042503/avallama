@@ -430,9 +430,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="UPDATE_MODEL_LIBRARY" xml:space="preserve">
         <value>Modellkönyvtár frissítése</value>
     </data>
-    <data name="DOWNLOADING_PART" xml:space="preserve">
-        <value>Letöltés ({0}. rész)</value>
-    </data>
     <data name="GUIDE_ITEM_2_DESCRIPTION" xml:space="preserve">
         <value>Böngéssz, tölts le bármilyen Ollama modellt. Tekintsd meg a részletes információkat, és kezeld egyszerűen a helyi könyvtárad.</value>
     </data>
@@ -483,5 +480,20 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="DOWNLOAD_FAILED" xml:space="preserve">
         <value>Letöltés sikertelen: {0}</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_TITLE" xml:space="preserve">
+        <value>Szeretnéd lekérni az összes Ollama modellt?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_DESCRIPTION" xml:space="preserve">
+        <value>Az Avallama képes letölteni és egy helyi adatbázisba menteni a teljes Ollama modell listát, így kényelmesen böngészhetsz és tölthetsz le modelleket. A folyamat biztonságos (sebességkorlátozott), így eltarthat néhány percig. Szeretnéd most elindítani?</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_POSITIVE" xml:space="preserve">
+        <value>Szinkronizálás</value>
+    </data>
+    <data name="NOT_NOW" xml:space="preserve">
+        <value>Most nem</value>
+    </data>
+    <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
+        <value>A modellkönyvtárat később bármikor frissítheted manuálisan a Beállításokban.</value>
     </data>
 </root>

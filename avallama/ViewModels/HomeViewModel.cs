@@ -171,7 +171,7 @@ public partial class HomeViewModel : PageViewModel
             await InitializeModels();
             if(!_isInitializedAsync) _isInitializedAsync = true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // TODO: proper logging
         }

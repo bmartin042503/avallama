@@ -8,9 +8,19 @@ if [ -z "$VERSION" ]; then
 fi
 
 PROJECT="avallama/avallama.csproj"
+NATIVE_SRC="native/macos/FullScreenCheck.m"
+DYLIB_OUTPUT="./libFullScreenCheck.dylib"
+
+# checks if the native macOS source code exists
+if [ ! -f "$NATIVE_SRC" ]; then
+    echo "ERROR: Native source file not found at $NATIVE_SRC"
+    exit 1
+fi
+
+# compiles native macOS source code to create a universal dylib binary
+clang -dynamiclib -framework Cocoa -arch x86_64 -arch arm64 -o "$DYLIB_OUTPUT" "$NATIVE_SRC"
 
 dotnet publish "$PROJECT" -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
-
 dotnet publish "$PROJECT" -c Release -r osx-arm64 --self-contained true -o mac-dist-arm64 /p:PublishSingleFile=true
 
 create_app_structure() {
@@ -20,6 +30,10 @@ create_app_structure() {
   mkdir -p "$output_app/Contents/"{_CodeSignature,MacOS,Resources}
   cp -a "$arch_dir"/. "$output_app/Contents/MacOS/"
   cp avallama/Assets/Avallama.icns "$output_app/Contents/Resources"
+
+  # includes the compiled universal dylib in the .app
+  cp "$DYLIB_OUTPUT" "$output_app/Contents/MacOS/"
+  chmod +x "$output_app/Contents/MacOS/libFullScreenCheck.dylib"
 
   cat > "$output_app/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -53,11 +67,53 @@ create_app_structure() {
 EOF
 }
 
-create_app_structure "mac-dist-x64" "Avallama.app"
-zip -r "avallama_${VERSION}_osx_x64.zip" Avallama.app
+create_installer_dmg() {
+    local app_name="Avallama.app"
+    local arch="$1"
+    local dmg_name="avallama_${VERSION}_osx_${arch}.dmg"
+    local vol_name="Avallama Installer"
 
-rm -rf Avallama.app/Contents/MacOS/*
-cp -a mac-dist-arm64/. Avallama.app/Contents/MacOS/
-zip -r "avallama_${VERSION}_osx_arm64.zip" Avallama.app
+    # delete previous dmg file
+    rm -f "$dmg_name"
+
+    # volname: set volume name (displayed in the Finder sidebar and window title)
+    # window-pos: set position the folder window
+    # window-size: set size of the folder window
+    # icon-size: set window icons size (up to 128)
+    # background: set folder background image (provide png, gif, jpg)
+    # icon: set position of the file's icon
+    # app-drop-link: creates a drop link to Applications and positions it
+    # hide-extension: hides the '.app' extension for a cleaner look
+    # no-internet-enable: disable automatic mount&copy
+
+    create-dmg \
+      --volname "$vol_name" \
+      --window-pos 200 120 \
+      --window-size 660 400 \
+      --icon-size 100 \
+      --icon "$app_name" 180 170 \
+      --hide-extension "$app_name" \
+      --app-drop-link 480 170 \
+      --no-internet-enable \
+      "$dmg_name" \
+      "$app_name"
+}
+
+# x64
+rm -rf Avallama.app
+create_app_structure "mac-dist-x64" "Avallama.app"
+# zip -r "avallama_${VERSION}_osx_x64.zip" Avallama.app
+create_installer_dmg "x64"
+
+# arm64
+rm -rf Avallama.app
+create_app_structure "mac-dist-arm64" "Avallama.app"
+# zip -r "avallama_${VERSION}_osx_arm64.zip" Avallama.app
+create_installer_dmg "arm64"
+
+# delete leftover files
+rm -rf Avallama.app
+rm -rf mac-dist-*
+rm -rf $DYLIB_OUTPUT
 
 echo "Done: Created avallama_${VERSION}_osx_x64.zip and avallama_${VERSION}_osx_arm64.zip"

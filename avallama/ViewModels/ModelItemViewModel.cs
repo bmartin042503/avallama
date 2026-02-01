@@ -1,7 +1,6 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using System;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models.Download;
@@ -63,10 +62,9 @@ public partial class ModelItemViewModel : ViewModelBase
             {
                 returnedStatus = Model.IsDownloaded
                     ? new ModelDownloadStatus(DownloadState.Downloaded)
-                    : new ModelDownloadStatus();
+                    : new ModelDownloadStatus(); // Downloadable
             }
 
-            Console.WriteLine($"Returned status of {Model.Name} is: {returnedStatus.DownloadState}");
             return returnedStatus;
         }
     }

@@ -21,7 +21,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Background="{DynamicResource Surface}">
                 <WrapPanel Orientation="Horizontal">
-                    <!-- Sample item 1 - deepseek-r1:8b - Paused download state -->
+                    <!-- Sample item 1 - deepseek-r1:8b - Queued download state -->
                     <templatedControls:ModelItem
                         Title="deepseek-r1:8b"
                         RunsSlow="False" Margin="40,40,0,40"
@@ -47,7 +47,7 @@ Licensed under the MIT License. See LICENSE file for details.
 
                         <templatedControls:ModelItem.DownloadStatus>
                             <download:ModelDownloadStatus>
-                                <download:ModelDownloadStatus.DownloadState>Paused</download:ModelDownloadStatus.DownloadState>
+                                <download:ModelDownloadStatus.DownloadState>Queued</download:ModelDownloadStatus.DownloadState>
                                 <download:ModelDownloadStatus.Message />
                             </download:ModelDownloadStatus>
                         </templatedControls:ModelItem.DownloadStatus>
@@ -125,7 +125,19 @@ Licensed under the MIT License. See LICENSE file for details.
 
                 <!-- Queued template -->
                 <DataTemplate x:Key="Queued" DataType="download:ModelDownloadStatus">
-                    <TextBlock Text="{services:LocalizationService Key='QUEUED'}" />
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                        <!-- Queued text -->
+                        <TextBlock Text="{services:LocalizationService Key='QUEUED'}"
+                                   VerticalAlignment="Center"/>
+
+                        <!-- Cancel button -->
+                        <Button Grid.Column="2" Cursor="Hand"
+                                Padding="10"
+                                Command="{Binding $parent[templatedControls:ModelItem].CancelCommand}">
+                            <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
+                                                 StrokeColor="{DynamicResource OnPrimary}" />
+                        </Button>
+                    </Grid>
                 </DataTemplate>
 
                 <!-- Failed template -->

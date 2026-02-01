@@ -503,7 +503,7 @@ namespace avallama.Services.Ollama
                         EnrichModelWithInfo(downloadedModel, showResponse);
                         downloadedModel.IsDownloaded = true;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         // TODO: proper logging
                     }

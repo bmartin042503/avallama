@@ -14,4 +14,5 @@ public static class ConfigurationKey
     public const string IsInformationalMessagesVisible = "is-informational-messages-visible";
     public const string IsParallelDownloadEnabled = "is-parallel-download-enabled";
     public const string LastUpdatedCache = "last-updated-cache";
+    public const string InitialScrapeAskDialogHandled = "initial-scrape-ask-dialog-handled";
 }

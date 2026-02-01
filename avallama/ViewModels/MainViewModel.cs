@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Factories;
+using avallama.Services;
 using avallama.Services.Persistence;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -18,6 +19,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly PageFactory _pageFactory;
     private readonly ConfigurationService _configurationService;
     private readonly IModelCacheService _modelCacheService;
+    private readonly IDialogService _dialogService;
     private readonly IMessenger _messenger;
 
     private string? _firstTime;
@@ -28,12 +30,14 @@ public partial class MainViewModel : ViewModelBase
         PageFactory pageFactory,
         ConfigurationService configurationService,
         IModelCacheService modelCacheService,
+        IDialogService dialogService,
         IMessenger messenger
     )
     {
         _pageFactory = pageFactory;
         _configurationService = configurationService;
         _modelCacheService = modelCacheService;
+        _dialogService = dialogService;
         _messenger = messenger;
 
         _messenger.Register<ApplicationMessage.RequestPage>(this, (_, msg) =>
@@ -86,9 +90,31 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.ModelManager);
         var models = await _modelCacheService.GetCachedModelsAsync();
-        if (models.Count == 0)
+        var isScrapeDialogHandled = _configurationService.ReadSetting(ConfigurationKey.InitialScrapeAskDialogHandled);
+        if (models.Count == 0 && (string.IsNullOrEmpty(isScrapeDialogHandled) || isScrapeDialogHandled == "False"))
         {
-            CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Scraper);
+            // ask the user if they want to fetch all models from ollama's website if they haven't been asked before
+            var dialogResult = await _dialogService.ShowConfirmationDialog(
+                LocalizationService.GetString("SCRAPE_ASK_DIALOG_TITLE"),
+                LocalizationService.GetString("SCRAPE_ASK_DIALOG_POSITIVE"),
+                LocalizationService.GetString("NOT_NOW"),
+                LocalizationService.GetString("SCRAPE_ASK_DIALOG_DESCRIPTION"),
+                ConfirmationType.Positive
+            );
+
+            switch (dialogResult)
+            {
+                case ConfirmationResult { Confirmation: ConfirmationType.Positive }:
+                    // start the scraping process
+                    CurrentPageViewModel = _pageFactory.GetPageViewModel(ApplicationPage.Scraper);
+                    _configurationService.SaveSetting(ConfigurationKey.InitialScrapeAskDialogHandled, "True");
+                    return;
+                case ConfirmationResult { Confirmation: ConfirmationType.Negative }:
+                    // inform the user that they can update the library in the Settings later
+                    _dialogService.ShowInfoDialog(LocalizationService.GetString("SCRAPE_ASK_DIALOG_INFO"));
+                    _configurationService.SaveSetting(ConfigurationKey.InitialScrapeAskDialogHandled, "True");
+                    break;
+            }
         }
     }
 
