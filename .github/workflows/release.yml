@@ -121,7 +121,7 @@ jobs:
 
 
   build-macos:
-    name: macOS Packages (.zip for x64 and arm64)
+    name: macOS Packages (.dmg for x64 and arm64)
     runs-on: macos-latest
 
     steps:
