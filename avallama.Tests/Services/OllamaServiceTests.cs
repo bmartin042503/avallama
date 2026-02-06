@@ -104,9 +104,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             GetProcessCountFunc = () => 0
         };
 
-        var reportedState = new ServiceState(ServiceStatus.Stopped);
-        ol.ServiceStateChanged += status => reportedState = status;
-        await ol.Start();
+        var reportedState = new OllamaState(ServiceStatus.Stopped);
+        ol.StatusChanged += status => reportedState = status;
+        await ol.StartProcess();
 
         Assert.Equal(ServiceStatus.Running, reportedState.Status);
     }
@@ -135,9 +135,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             GetProcessCountFunc = () => 0
         };
 
-        var reportedState = new ServiceState(ServiceStatus.Stopped);
-        ol.ServiceStateChanged += status => reportedState = status;
-        await ol.Start();
+        var reportedState = new OllamaState(ServiceStatus.Stopped);
+        ol.StatusChanged += status => reportedState = status;
+        await ol.StartProcess();
 
         Assert.Equal(ServiceStatus.NotInstalled, reportedState.Status);
     }
@@ -166,9 +166,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             GetProcessCountFunc = () => 1
         };
 
-        var reportedState = new ServiceState(ServiceStatus.Stopped);
-        ol.ServiceStateChanged += status => reportedState = status;
-        await ol.Start();
+        var reportedState = new OllamaState(ServiceStatus.Stopped);
+        ol.StatusChanged += status => reportedState = status;
+        await ol.StartProcess();
 
         Assert.Equal(ServiceStatus.Running, reportedState.Status);
     }
@@ -225,9 +225,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
         };
 
-        ol.ServiceStateChanged += state => { statusEvents.Add(state?.Status); };
+        ol.StatusChanged += state => { statusEvents.Add(state?.Status); };
 
-        await ol.Start();
+        await ol.StartProcess();
 
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Running));
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Retrying));
@@ -277,17 +277,17 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var statusEvents = new List<ServiceStatus>();
-        ol.ServiceStateChanged += s =>
+        ol.StatusChanged += s =>
         {
             if (s?.Status != null) statusEvents.Add(s.Status);
         };
 
-        await ol.Start();
+        await ol.StartProcess();
 
         Assert.Equal(ServiceStatus.Retrying, statusEvents[0]);
         Assert.Equal(ServiceStatus.Failed, statusEvents[1]);
         Assert.Equal(2, statusEvents.Count);
-        Assert.Equal(ServiceStatus.Failed, ol.OllamaServiceState?.Status);
+        Assert.Equal(ServiceStatus.Failed, ol.Status?.Status);
         Assert.True(callCount > 1, $"Expected multiple calls, but got {callCount}");
     }
 
@@ -345,16 +345,16 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var statusEvents = new List<ServiceStatus>();
-        ol.ServiceStateChanged += s =>
+        ol.StatusChanged += s =>
         {
             if (s?.Status != null) statusEvents.Add(s.Status);
         };
 
-        await ol.Start();
+        await ol.StartProcess();
 
         Assert.Equal(2, callCount);
         Assert.Equal(ServiceStatus.Retrying, statusEvents[0]);
-        Assert.Equal(ServiceStatus.Running, ol.OllamaServiceState?.Status);
+        Assert.Equal(ServiceStatus.Running, ol.Status?.Status);
     }
 
     [Fact]
@@ -428,9 +428,9 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var statusEvents = new List<(ServiceStatus? status, string? message)>();
-        ol.ServiceStateChanged += s => statusEvents.Add((s?.Status, s?.Message));
+        ol.StatusChanged += s => statusEvents.Add((s?.Status, s?.Message));
 
-        await ol.Start();
+        await ol.StartProcess();
 
         // Act
         var results = new List<OllamaResponse>();
@@ -497,7 +497,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             GetProcessCountFunc = () => 0
         };
 
-        await ol.Start();
+        await ol.StartProcess();
 
         var results = new List<OllamaResponse>();
         await foreach (var r in ol.GenerateMessage([], "llama3.2"))
@@ -555,18 +555,18 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
         };
 
         var statusEvents = new List<ServiceStatus>();
-        ol.ServiceStateChanged += s =>
+        ol.StatusChanged += s =>
         {
             if (s?.Status != null) statusEvents.Add(s.Status);
         };
 
-        await ol.Start();
+        await ol.StartProcess();
 
         await foreach (var _ in ol.GenerateMessage([], "model"))
         {
         }
 
-        Assert.Equal(ServiceStatus.Failed, ol.OllamaServiceState?.Status);
+        Assert.Equal(ServiceStatus.Failed, ol.Status?.Status);
         Assert.Contains(ServiceStatus.Failed, statusEvents);
     }
 
@@ -638,7 +638,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             GetProcessCountFunc = () => 0
         };
 
-        await ol.Start();
+        await ol.StartProcess();
 
         var results = new List<OllamaResponse>();
 
@@ -656,6 +656,6 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
 
         Assert.Single(results);
         Assert.Equal("Finally loaded!", results[0].Message?.Content);
-        Assert.NotEqual(ServiceStatus.Stopped, ol.OllamaServiceState?.Status);
+        Assert.NotEqual(ServiceStatus.Stopped, ol.Status?.Status);
     }
 }

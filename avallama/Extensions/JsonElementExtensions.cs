@@ -7,9 +7,12 @@ namespace avallama.Extensions;
 
 public static class JsonElementExtensions
 {
-    public static bool TryGetString(this JsonElement element, out string? value)
+    extension(JsonElement element)
     {
-        try { value = element.GetString(); return true; }
-        catch { value = null; return false; }
+        public bool TryGetString(out string? value)
+        {
+            try { value = element.GetString(); return true; }
+            catch { value = null; return false; }
+        }
     }
 }

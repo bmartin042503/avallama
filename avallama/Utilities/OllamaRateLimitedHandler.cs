@@ -26,7 +26,7 @@ internal sealed class OllamaRateLimitedHandler : DelegatingHandler
         CancellationToken cancellationToken
     )
     {
-        using RateLimitLease lease = await _rateLimiter.AcquireAsync(
+        using var lease = await _rateLimiter.AcquireAsync(
             permitCount: 1,
             cancellationToken
         );

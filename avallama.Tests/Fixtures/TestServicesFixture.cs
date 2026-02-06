@@ -19,7 +19,7 @@ public class TestServicesFixture
     public Mock<IConversationService> DbMock { get; } = new();
     public Mock<IMessenger> MessengerMock { get; } = new();
     public Mock<IModelCacheService> ModelCacheMock { get; } = new();
-    public Mock<IOllamaScraperService> ScraperMock { get; } = new();
+    public Mock<IOllamaScraper> ScraperMock { get; } = new();
     public Mock<IModelDownloadQueueService> DownloadQueueMock { get; } = new();
     public Mock<INetworkManager> NetworkManagerMock { get; } = new();
 }

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using avallama.Constants;
+using avallama.Constants.Keys;
 using avallama.Models.Ollama;
 using avallama.Services.Persistence;
 using Microsoft.Data.Sqlite;

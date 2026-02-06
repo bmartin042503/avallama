@@ -8,7 +8,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using System.Threading.Tasks;
-using avallama.Constants;
+using avallama.Constants.Keys;
 using avallama.Extensions;
 using Avalonia.Markup.Xaml;
 using avallama.Services;
@@ -97,15 +97,18 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    // TODO: find a better solution to start ollama process automatically
     private void OnStartup(object? sender, ControlledApplicationLifetimeStartupEventArgs e)
     {
         // runs on a separate thread, asynchronously in theory
         // not likely that any exception would be caught but just in case
+
+        // TODO: change this if we support the app w/o Ollama installed to only start when necessary
         Task.Run(async () =>
         {
             try
             {
-                await _ollamaService!.Start();
+                await _ollamaService!.StartOllamaProcessAsync();
             }
             catch (Exception)
             {
@@ -114,9 +117,25 @@ public partial class App : Application
         });
     }
 
+    // TODO: find a better solution to stop ollama process automatically
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
-        _ollamaService?.Stop();
+        // we force the main thread to wait for ollama process shutdown
+        // this is better than before I guess, since the previous one started a new thread while the main thread finished OnExit
+        // previous logic might cause stuck Ollama instances in memory, however I still think there is a better solution
+        try
+        {
+            var shutdownTask = _ollamaService!.StopOllamaProcessAsync();
+            if (!shutdownTask.Wait(TimeSpan.FromSeconds(2)))
+            {
+                // TODO: proper logging
+                // ollama shutdown took more than 2 sec
+            }
+        }
+        catch (Exception)
+        {
+            // TODO: proper logging
+        }
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

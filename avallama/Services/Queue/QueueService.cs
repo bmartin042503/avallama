@@ -54,7 +54,7 @@ public abstract class QueueService<T> : IQueueService<T>
 
                 foreach (var context in tasksToCancel.Where(context => !context.Cts.IsCancellationRequested))
                 {
-                    context.Item.CancellationReason = CancellationReason.SystemScaling;
+                    context.Item.QueueItemCancellationReason = QueueItemCancellationReason.SystemScaling;
                     context.Cts.Cancel();
                 }
             }

@@ -2,9 +2,11 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.Constants.States;
 using avallama.Exceptions;
 using avallama.Models.Download;
 using avallama.Services.Ollama;
@@ -15,12 +17,12 @@ namespace avallama.Services.Queue;
 
 public interface IModelDownloadQueueService : IQueueService<ModelDownloadRequest>;
 
-public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>, IModelDownloadQueueService
+public class ModelDownloadQueueService : QueueService<ModelDownloadRequest>, IModelDownloadQueueService
 {
     private readonly IOllamaService _ollamaService;
     private readonly INetworkManager _networkManager;
 
-    public ModelModelDownloadQueueService(
+    public ModelDownloadQueueService(
         IOllamaService ollamaService,
         INetworkManager networkManager)
     {
@@ -36,35 +38,46 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
         }
 
         request.DownloadPartCount = 1;
-        await foreach (var chunk in _ollamaService.PullModelAsync(request.ModelName, ct))
+        try
         {
-            if (!DiskManager.IsEnoughDiskSpaceAvailable(request.TotalBytes))
+            await foreach (var chunk in _ollamaService.DownloadModelAsync(request.ModelName, ct))
             {
-                throw new InsufficientDiskSpaceException(request.TotalBytes, DiskManager.GetAvailableDiskSpaceBytes());
-            }
-
-            if (chunk is { Total: not null, Completed: not null })
-            {
-                if (request.TotalBytes != 0 && chunk.Total.Value != request.TotalBytes)
+                if (!DiskManager.IsEnoughDiskSpaceAvailable(request.TotalBytes))
                 {
-                    request.DownloadPartCount++;
+                    throw new InsufficientDiskSpaceException(request.TotalBytes, DiskManager.GetAvailableDiskSpaceBytes());
                 }
 
-                var speed = request.SpeedCalculator.CalculateSpeed(chunk.Completed.Value);
-                if (request.Status == null || request.Status.DownloadState == DownloadState.Queued)
+                if (chunk is { Total: not null, Completed: not null })
                 {
-                    request.Status = new ModelDownloadStatus(DownloadState.Downloading);
+                    if (request.TotalBytes != 0 && chunk.Total.Value != request.TotalBytes)
+                    {
+                        request.DownloadPartCount++;
+                    }
+
+                    var speed = request.SpeedCalculator.CalculateSpeed(chunk.Completed.Value);
+                    if (request.Status == null || request.Status.DownloadState == DownloadState.Queued)
+                    {
+                        request.Status = new ModelDownloadStatus(DownloadState.Downloading);
+                    }
+
+                    request.DownloadedBytes = chunk.Completed.Value;
+                    request.TotalBytes = chunk.Total.Value;
+                    request.DownloadSpeed = speed;
                 }
 
-                request.DownloadedBytes = chunk.Completed.Value;
-                request.TotalBytes = chunk.Total.Value;
-                request.DownloadSpeed = speed;
+                if (chunk.Status == "success")
+                {
+                    request.Status = new ModelDownloadStatus(DownloadState.Downloaded);
+                }
             }
-
-            if (chunk.Status == "success")
+        }
+        catch (IOException ex)
+        {
+            if (!await _networkManager.IsInternetAvailableAsync())
             {
-                request.Status = new ModelDownloadStatus(DownloadState.Downloaded);
+                throw new LostInternetConnectionException(ex);
             }
+            throw;
         }
     }
 
@@ -133,21 +146,21 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
         request.DownloadSpeed = 0.0;
         request.SpeedCalculator.Reset();
 
-        switch (request.CancellationReason)
+        switch (request.QueueItemCancellationReason)
         {
-            case CancellationReason.UserCancelRequest:
+            case QueueItemCancellationReason.UserCancelRequest:
                 request.Status = new ModelDownloadStatus(DownloadState.Downloadable);
                 request.DownloadedBytes = 0;
                 request.TotalBytes = 0;
                 request.DownloadPartCount = 0;
                 break;
-            case CancellationReason.SystemScaling:
+            case QueueItemCancellationReason.SystemScaling:
                 request.Status = new ModelDownloadStatus(DownloadState.Queued);
-                request.CancellationReason = CancellationReason.Unknown;
+                request.QueueItemCancellationReason = QueueItemCancellationReason.Unknown;
                 request.ResetToken();
                 Enqueue(request);
                 break;
-            case CancellationReason.UserPauseRequest:
+            case QueueItemCancellationReason.UserPauseRequest:
             default:
                 request.Status = new ModelDownloadStatus(DownloadState.Paused);
                 break;

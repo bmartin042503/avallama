@@ -8,6 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.Constants.Application;
+using avallama.Constants.Keys;
+using avallama.Constants.States;
 using avallama.Models.Ollama;
 using avallama.Services;
 using avallama.Services.Ollama;
@@ -103,7 +106,8 @@ public partial class ModelManagerViewModel : PageViewModel
             });
         });
 
-        _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
+        _ollamaService.ProcessStatusChanged += OllamaProcessStatusChanged;
+        _ollamaService.ApiStatusChanged += OllamaApiStatusChanged;
     }
 
     [RelayCommand]
@@ -342,16 +346,51 @@ public partial class ModelManagerViewModel : PageViewModel
     }
 
     // TODO: proper logging and implementation of status changes
-    private void OllamaServiceStateChanged(ServiceState? state)
+
+    /// <summary>
+    /// Handles changes when Ollama API status changes and updates UI elements accordingly.
+    /// </summary>
+    private void OllamaApiStatusChanged(OllamaApiStatus status)
     {
-        if (state == null) return;
-        switch (state.Status)
+        switch (status.ApiState)
         {
-            case ServiceStatus.Running:
+            case OllamaApiState.Connecting:
                 break;
-            case ServiceStatus.Retrying:
+
+            case OllamaApiState.Connected:
                 break;
-            case ServiceStatus.Stopped or ServiceStatus.Failed:
+
+            case OllamaApiState.Disconnected:
+                break;
+
+            case OllamaApiState.Reconnecting:
+                break;
+
+            case OllamaApiState.Faulted:
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles changes when Ollama process status changes and updates UI elements accordingly.
+    /// </summary>
+    private void OllamaProcessStatusChanged(OllamaProcessStatus status)
+    {
+        switch (status.ProcessState)
+        {
+            case OllamaProcessState.Running:
+                break;
+
+            case OllamaProcessState.NotInstalled:
+                break;
+
+            case OllamaProcessState.Restarting:
+                break;
+
+            case OllamaProcessState.Stopped:
+                break;
+
+            case OllamaProcessState.Failed:
                 break;
         }
     }

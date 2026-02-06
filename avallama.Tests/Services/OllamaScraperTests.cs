@@ -19,7 +19,7 @@ using Xunit;
 
 namespace avallama.Tests.Services;
 
-public class OllamaScraperServiceTests
+public class OllamaScraperTests
 {
     // Used families:
     // gpt-oss
@@ -42,9 +42,9 @@ public class OllamaScraperServiceTests
     private readonly string _gptOssTagsHtml;
     private readonly string _qwen3VlTagsHtml;
 
-    private readonly OllamaScraperService _scraperService;
+    private readonly OllamaScraper _scraper;
 
-    public OllamaScraperServiceTests()
+    public OllamaScraperTests()
     {
         _libraryHtml = GetHtmlContent(LibraryHtmlPath);
         _gptOssTagsHtml = GetHtmlContent(GptOssTagsHtmlPath);
@@ -100,7 +100,7 @@ public class OllamaScraperServiceTests
             BaseAddress = new Uri(OllamaUrl)
         };
 
-        _scraperService = new OllamaScraperService(httpClient);
+        _scraper = new OllamaScraper(httpClient);
     }
 
     private string GetHtmlContent(string fileName)
@@ -143,7 +143,7 @@ public class OllamaScraperServiceTests
     [Fact]
     public async Task GetAllOllamaModelsAsync_ShouldParseAllFamiliesAndModelsWithValidData()
     {
-        var result = await _scraperService.GetAllOllamaModelsAsync(CancellationToken.None);
+        var result = await _scraper.GetAllOllamaModelsAsync(CancellationToken.None);
 
         var modelsList = new List<OllamaModel>();
         await foreach (var model in result.Models)
@@ -204,7 +204,7 @@ public class OllamaScraperServiceTests
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
 
         var result = await scraper.GetAllOllamaModelsAsync(CancellationToken.None);
 
@@ -232,7 +232,7 @@ public class OllamaScraperServiceTests
             };
         });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
 
         var result = await scraper.GetAllOllamaModelsAsync(CancellationToken.None);
 
@@ -256,7 +256,7 @@ public class OllamaScraperServiceTests
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(_libraryHtml) };
         });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
         var cts = new CancellationTokenSource();
 
         cts.CancelAfter(100);
@@ -279,7 +279,7 @@ public class OllamaScraperServiceTests
         var httpClient = CreateMockHttpClient(_ =>
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(emptyHtml) });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
 
         var result = await scraper.GetAllOllamaModelsAsync(CancellationToken.None);
         var models = new List<OllamaModel>();

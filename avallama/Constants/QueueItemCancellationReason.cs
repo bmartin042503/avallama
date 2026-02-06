@@ -3,7 +3,7 @@
 
 namespace avallama.Constants;
 
-public enum CancellationReason
+public enum QueueItemCancellationReason
 {
     Unknown,
     UserCancelRequest,

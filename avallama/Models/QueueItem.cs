@@ -11,7 +11,7 @@ public abstract class QueueItem : ObservableObject
 {
     private CancellationTokenSource _cts = new();
     public CancellationToken Token => _cts.Token;
-    public CancellationReason CancellationReason { get; set; } = CancellationReason.Unknown;
+    public QueueItemCancellationReason QueueItemCancellationReason { get; set; } = QueueItemCancellationReason.Unknown;
 
     public void Cancel()
     {

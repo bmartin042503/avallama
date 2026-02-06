@@ -1,7 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using avallama.Constants;
+using avallama.Constants.Application;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -12,7 +12,7 @@ namespace avallama.Utilities.Render;
 // returns the color for the given color key based on the current theme
 public static class ColorProvider
 {
-    public static ImmutableSolidColorBrush GetColor(AppColor appColor)
+    public static ImmutableSolidColorBrush GetColor(ApplicationColor applicationColor)
     {
         var defaultColorBrush = new ImmutableSolidColorBrush(Colors.Black);
 
@@ -28,7 +28,7 @@ public static class ColorProvider
 
         // gets the color from the theme
         theme?.TryGetResource(
-            appColor.ToString(),
+            applicationColor.ToString(),
             Application.Current?.ActualThemeVariant ?? ThemeVariant.Default,
             out color
         );

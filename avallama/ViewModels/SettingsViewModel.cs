@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.Constants.Application;
+using avallama.Constants.Keys;
 using avallama.Services;
 using avallama.Services.Ollama;
 using avallama.Services.Persistence;
@@ -119,7 +121,7 @@ public partial class SettingsViewModel : PageViewModel
             field = value;
             OnPropertyChanged();
         }
-    } = OllamaService.DefaultApiPort.ToString();
+    } = OllamaApiClient.DefaultApiPort.ToString();
 
     public bool IsInformationalMessagesVisible
     {
@@ -185,7 +187,7 @@ public partial class SettingsViewModel : PageViewModel
         var hostSetting = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
         ApiHost = string.IsNullOrEmpty(hostSetting) ? "localhost" : hostSetting;
         var portSetting = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
-        ApiPort = string.IsNullOrEmpty(portSetting) ? OllamaService.DefaultApiPort.ToString() : portSetting;
+        ApiPort = string.IsNullOrEmpty(portSetting) ? OllamaApiClient.DefaultApiPort.ToString() : portSetting;
 
         var isInformationalMessagesVisible = _configurationService.ReadSetting(ConfigurationKey.IsInformationalMessagesVisible);
         IsInformationalMessagesVisible = isInformationalMessagesVisible == "True";
@@ -283,8 +285,8 @@ public partial class SettingsViewModel : PageViewModel
         SelectedLanguageIndex = systemUiCultureName == "hu-HU" ? 0 : 1;
         SelectedThemeIndex = 0; // system theme
         SelectedScrollIndex = 1; // floating button scroll setting
-        ApiHost = OllamaService.DefaultApiHost;
-        ApiPort = OllamaService.DefaultApiPort.ToString();
+        ApiHost = OllamaApiClient.DefaultApiHost;
+        ApiPort = OllamaApiClient.DefaultApiPort.ToString();
         IsInformationalMessagesVisible = true; // show informational messages
     }
 

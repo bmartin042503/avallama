@@ -246,7 +246,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Érvénytelen Ollama API port! A portnak 1 és 65535 között kell lennie.</value>
     </data>
     <data name="OLLAMA_CONNECTION_ERROR" xml:space="preserve">
-        <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
+        <value>Nem sikerült kapcsolatot teremteni az Ollamával.</value>
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
         <value>Kiemelt modellek</value>
@@ -471,10 +471,10 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Nincs elegendő tárhely ezen a meghajtón a modell letöltéséhez.</value>
     </data>
     <data name="OLLAMA_LOCAL_UNREACHABLE" xml:space="preserve">
-        <value>A lokális Ollama szerver nem elérhető.</value>
+        <value>A lokális Ollama szerver nem elérhető. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
     </data>
     <data name="OLLAMA_REMOTE_UNREACHABLE" xml:space="preserve">
-        <value>A távoli Ollama szerver nem elérhető.</value>
+        <value>A távoli Ollama szerver nem elérhető. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
     </data>
     <data name="DISK_FULL_DURING_DOWNLOAD" xml:space="preserve">
         <value>A letöltés megszakadt, mert elfogyott a tárhely.</value>

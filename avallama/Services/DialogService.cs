@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using avallama.Constants;
+using avallama.Constants.Application;
 using avallama.Factories;
 using avallama.ViewModels;
 using avallama.Views;

@@ -254,7 +254,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ollama API port is invalid, please enter a valid port. (1 - 65535)</value>
     </data>
     <data name="OLLAMA_CONNECTION_ERROR" xml:space="preserve">
-        <value>Could not establish connection with the Ollama host machine. The host settings may not be configured correctly.</value>
+        <value>Could not establish connection with Ollama.</value>
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
         <value>Popular models</value>
@@ -479,10 +479,10 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>There is not enough storage space on the disk to download this model.</value>
     </data>
     <data name="OLLAMA_LOCAL_UNREACHABLE" xml:space="preserve">
-        <value>Local Ollama server is unreachable.</value>
+        <value>Local Ollama server is unreachable. Host settings may not be configured correctly.</value>
     </data>
     <data name="OLLAMA_REMOTE_UNREACHABLE" xml:space="preserve">
-        <value>Remote Ollama server is unreachable.</value>
+        <value>Remote Ollama server is unreachable. The host settings may not be configured correctly.</value>
     </data>
     <data name="DISK_FULL_DURING_DOWNLOAD" xml:space="preserve">
         <value>Download failed due to insufficient disk space.</value>
@@ -491,7 +491,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Parallel downloads</value>
     </data>
     <data name="PARALLEL_DOWNLOAD_SETTING_DESC" xml:space="preserve">
-        <value>Enable downloading multiple models at the same time. When disabled, models will be download sequentially in a queue.</value>
+        <value>Enable downloading multiple models at the same time. When disabled, models will be downloaded sequentially in a queue.</value>
     </data>
     <data name="QUEUED" xml:space="preserve">
         <value>Queued</value>

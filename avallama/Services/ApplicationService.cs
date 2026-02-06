@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using avallama.Constants;
+using avallama.Constants.Application;
+using avallama.Constants.Keys;
 using avallama.Services.Ollama;
 using avallama.Services.Persistence;
 using avallama.ViewModels;
@@ -88,7 +88,7 @@ public class ApplicationService : IApplicationService
                     ),
                     new (
                         placeholder: LocalizationService.GetString("API_PORT_SETTING"),
-                        inputValue: OllamaService.DefaultApiPort.ToString(),
+                        inputValue: OllamaApiClient.DefaultApiPort.ToString(),
                         validator: port => int.TryParse(port, out var parsed) && parsed is > 0 and < 65536,
                         validationErrorMessage: LocalizationService.GetString("INVALID_PORT_ERR")
                     )
@@ -107,7 +107,7 @@ public class ApplicationService : IApplicationService
         else
         {
             _configurationService.SaveSetting(ConfigurationKey.ApiHost, "localhost");
-            _configurationService.SaveSetting(ConfigurationKey.ApiPort, OllamaService.DefaultApiPort.ToString());
+            _configurationService.SaveSetting(ConfigurationKey.ApiPort, OllamaApiClient.DefaultApiPort.ToString());
         }
     }
 
