@@ -21,7 +21,7 @@ Licensed under the MIT License. See LICENSE file for details.
                            Classes="H1" Margin="0,0,0,20" />
 
                 <!-- Setting items -->
-                <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="24"
+                <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="24"
                       ColumnDefinitions="500, *"
                       Margin="0,0,26,0">
                     <!-- Language -->
@@ -123,13 +123,26 @@ Licensed under the MIT License. See LICENSE file for details.
                                   OffContent="{services:LocalizationService Key='OFF'}"
                                   OnContent="{services:LocalizationService Key='ON'}" />
 
+                    <!-- Update checking setting -->
+                    <StackPanel Grid.Row="7" Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="{services:LocalizationService Key='UPDATE_CHECK_SETTING'}"
+                                   FontSize="18" Foreground="{DynamicResource OnSurface}" />
+                        <TextBlock Text="{services:LocalizationService Key='UPDATE_CHECK_SETTING_DESC'}"
+                                   Margin="0,2,0,0" Foreground="{DynamicResource Outline}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Row="7" Grid.Column="1" IsChecked="{Binding IsUpdateCheckEnabled}"
+                                  VerticalAlignment="Center" HorizontalAlignment="Right" Cursor="Hand"
+                                  OffContent="{services:LocalizationService Key='OFF'}"
+                                  OnContent="{services:LocalizationService Key='ON'}" />
+
                     <!-- Reset settings to default -->
-                    <Button Grid.Row="7" Grid.Column="1" Margin="0,20,0,0"
+                    <Button Grid.Row="8" Grid.Column="1" Margin="0,20,0,0"
                             Content="{services:LocalizationService Key='RESET_TO_DEFAULT'}"
                             HorizontalAlignment="Right" Cursor="Hand" Classes="secondaryButton"
                             Command="{Binding ResetSettingsToDefault}" />
 
-                    <StackPanel Grid.Row="7" Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal"
+                    <StackPanel Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal"
                                 Spacing="14" Margin="0,20,0,0">
                         <!-- Update model library -->
                         <Button Content="{services:LocalizationService Key='UPDATE_MODEL_LIBRARY'}"

@@ -68,6 +68,7 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
             _fixture.DialogMock.Object,
             _fixture.ConfigMock.Object,
             _fixture.DbMock.Object,
+            _fixture.UpdateMock.Object,
             _fixture.MessengerMock.Object
         );
     }

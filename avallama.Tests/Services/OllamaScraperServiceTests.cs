@@ -165,7 +165,8 @@ public class OllamaScraperServiceTests
             Assert.NotNull(family.Labels);
         });
 
-        Assert.Equal(6, modelsList.Count);
+        // excluding cloud and latest models
+        Assert.Equal(2, modelsList.Count);
 
         Assert.All(modelsList, model =>
         {
@@ -185,12 +186,12 @@ public class OllamaScraperServiceTests
         Assert.Contains(result.Families, f => f.Name == "gpt-oss");
         Assert.Contains(result.Families, f => f.Name == "qwen3-vl");
 
-        Assert.Contains(modelsList, m => m.Name == "gpt-oss:latest");
+        Assert.DoesNotContain(modelsList, m => m.Name == "gpt-oss:latest");
         Assert.Contains(modelsList, m => m.Name == "gpt-oss:20b");
         Assert.Contains(modelsList, m => m.Name == "gpt-oss:120b");
-        Assert.Contains(modelsList, m => m.Name == "qwen3-vl:latest");
-        Assert.Contains(modelsList, m => m.Name == "qwen3-vl:235b-cloud");
-        Assert.Contains(modelsList, m => m.Name == "qwen3-vl:235b-instruct-cloud");
+        Assert.DoesNotContain(modelsList, m => m.Name == "qwen3-vl:latest");
+        Assert.DoesNotContain(modelsList, m => m.Name == "qwen3-vl:235b-cloud");
+        Assert.DoesNotContain(modelsList, m => m.Name == "qwen3-vl:235b-instruct-cloud");
     }
 
     [Fact]
@@ -240,11 +241,7 @@ public class OllamaScraperServiceTests
         await foreach (var m in result.Models) models.Add(m);
 
         Assert.Equal(2, result.Families.Count);
-        Assert.Equal(3, models.Count);
-
-        Assert.Contains(models, m => m.Name == "qwen3-vl:latest");
-        Assert.Contains(models, m => m.Name == "qwen3-vl:235b-cloud");
-        Assert.Contains(models, m => m.Name == "qwen3-vl:235b-instruct-cloud");
+        Assert.Empty(models);
     }
 
     [Fact]

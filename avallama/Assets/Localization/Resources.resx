@@ -58,9 +58,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
         <value>This model is not running optimally on your system due to low avaliable VRAM</value>
     </data>
-    <data name="VERSION" xml:space="preserve">
-        <value>v0.3.0</value>
-    </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Ollama has been successfully started</value>
     </data>
@@ -519,5 +516,20 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
         <value>You can update the model library at any time in the Settings.</value>
+    </data>
+    <data name="UPDATE_CHECK_SETTING" xml:space="preserve">
+        <value>Update checking</value>
+    </data>
+    <data name="UPDATE_CHECK_SETTING_DESC" xml:space="preserve">
+        <value>When enabled, the application will automatically check if a newer version is available during startup.</value>
+    </data>
+    <data name="UPDATE_AVAILABLE" xml:space="preserve">
+        <value>An update is available</value>
+    </data>
+    <data name="OPEN_GITHUB" xml:space="preserve">
+        <value>Open GitHub</value>
+    </data>
+    <data name="UPDATE_AVAILABLE_DESC" xml:space="preserve">
+        <value>To update, download the latest release from our GitHub page.</value>
     </data>
 </root>
