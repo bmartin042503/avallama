@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+log_ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+log()    { printf '%s [INFO] %s\n' "$(log_ts)" "$*"; }
+
+log "Starting Debian package script"
+
 VERSION="${1:-}"
 if [ -z "$VERSION" ]; then
   echo "Usage: $0 <version>"
@@ -9,6 +14,7 @@ fi
 
 PROJECT="avallama/avallama.csproj"
 
+log "Running dotnet publish...\n"
 dotnet publish "${PROJECT}" \
   --verbosity quiet \
   --nologo \
@@ -17,17 +23,19 @@ dotnet publish "${PROJECT}" \
   --runtime linux-x64 \
   --output "./out/linux-x64"
 
+log "Preparing staging directory"
 rm -rf staging_folder
 mkdir -p staging_folder/DEBIAN
 mkdir -p staging_folder/usr/{bin,lib/avallama,share/{applications,pixmaps,icons/hicolor,doc/avallama}}
 
+log "Creating control file"
 cat > ./staging_folder/DEBIAN/control <<EOF
 Package: avallama
 Version: ${VERSION}
 Section: devel
 Priority: optional
 Architecture: amd64
-Depends: libc6 (>= 2.34), libicu76, libfontconfig1, libfreetype6, libx11-6, libxrender1, libxcb1, libgl1, libpng16-16
+Depends: libc6 (>= 2.34), libicu70 | libicu72 | libicu74 | libicu76, libfontconfig1, libfreetype6, libx11-6, libxrender1, libxcb1, libgl1, libpng16-16
 Maintainer: Márk Csörgő <mcsorgo@proton.me>
 Homepage: https://github.com/4foureyes/avallama
 Description: User-friendly GUI for Ollama
@@ -35,6 +43,7 @@ Description: User-friendly GUI for Ollama
  Ollama. Designed for simplicity and performance.
 EOF
 
+log "Creating copyright file"
 cat > ./staging_folder/usr/share/doc/avallama/copyright <<EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Avallama
@@ -142,29 +151,38 @@ License: Apache-2.0
 EOF
 
 # Starter script
+log "Copying starter script"
 cp scripts/debian/avallama.sh ./staging_folder/usr/bin/avallama
 
 # Application files
+log "Copying application files"
 cp -a ./out/linux-x64/. ./staging_folder/usr/lib/avallama/
 
 # Fix permissions: no world-writable or executable .dll/.so
+log "Setting permissions"
 find ./staging_folder/usr/lib/avallama -type d -exec chmod 755 {} +
 find ./staging_folder/usr/lib/avallama -type f -exec chmod 644 {} +
 
 # Strip unneeded symbols from binaries
+log "Stripping binaries"
 find ./staging_folder/usr/lib/avallama -type f -name "*.so" -exec strip --strip-unneeded {} + || true
 strip --strip-unneeded ./staging_folder/usr/lib/avallama/avallama || true
 
 # Desktop entry and icons
+log "Copying desktop entry and icons"
 cp scripts/debian/Avallama.desktop ./staging_folder/usr/share/applications/
 cp scripts/debian/pixmaps/avallama.png ./staging_folder/usr/share/pixmaps/
 cp -a scripts/debian/icons/hicolor/. ./staging_folder/usr/share/icons/hicolor/
 
 # Normalize permissions
+log "Normalizing permissions"
 find ./staging_folder -type d -exec chmod 755 {} +
 find ./staging_folder -type f -exec chmod 644 {} +
 chmod 755 ./staging_folder/usr/bin/avallama
 chmod 755 ./staging_folder/usr/lib/avallama/avallama
 
 # Build .deb package
+log "Building .deb package via dpkg-deb"
 dpkg-deb --root-owner-group --build ./staging_folder ./avallama_"${VERSION}"_amd64.deb
+
+log "Debian package created: avallama_${VERSION}_amd64.deb"

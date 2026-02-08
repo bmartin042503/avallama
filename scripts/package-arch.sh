@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+log_ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+log()    { printf '%s [INFO] %s\n' "$(log_ts)" "$*"; }
+
+log "Starting Arch package script"
+
 VERSION="${1:-}"
 if [ -z "$VERSION" ]; then
   echo "Usage: $0 <version>"
@@ -12,6 +17,7 @@ PROJECT="./avallama/avallama.csproj"
 rm -rf src pkg
 mkdir -p src
 
+log "Running dotnet publish"
 dotnet publish "${PROJECT}" \
   --verbosity quiet \
   --nologo \
@@ -20,6 +26,7 @@ dotnet publish "${PROJECT}" \
   --runtime linux-x64 \
   --output "./src/avallama"
 
+log "Creating desktop entry"
 cat > src/avallama.desktop <<EOF
 [Desktop Entry]
 Name=Avallama
@@ -33,8 +40,10 @@ GenericName=Avallama
 Keywords=ollama; gui; avallama; artificial; intelligence
 EOF
 
+log "Copying icon"
 cp scripts/debian/pixmaps/avallama.png src/
 
+log "Creating PKGBUILD"
 cat > PKGBUILD <<EOF
 # Maintainer: Márk Csörgő, Martin Bartos (4foureyes)
 pkgname=avallama
@@ -47,7 +56,7 @@ license=('MIT')
 depends=('icu' 'fontconfig' 'freetype2' 'libx11' 'libxrender' 'libxcb' 'mesa' 'libpng' 'zlib')
 source=()
 sha256sums=()
-options=(!debug !strip)
+options=(!debug)
 
 package() {
     mkdir -p "\${pkgdir}/opt/avallama"
@@ -62,4 +71,7 @@ package() {
 }
 EOF
 
+log "Building package via makepkg"
 makepkg -fs --noconfirm
+
+log "Arch package created: avallama-${VERSION}-1-x86_64.pkg.tar.zst"
