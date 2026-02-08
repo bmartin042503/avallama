@@ -43,13 +43,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         SetupMock();
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         var availableModels = new ObservableCollection<string>
         {
@@ -74,13 +68,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         SetupMock();
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         await vm.InitializeAsync();
 
@@ -100,13 +88,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             .Setup(o => o.GenerateMessage(It.IsAny<List<Message>>(), It.IsAny<string>()))
             .Returns(MainStreamAsync());
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         await vm.InitializeAsync();
 
@@ -159,13 +141,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             .Callback<Conversation>(c => updatedConversationIds.Add(c.ConversationId))
             .ReturnsAsync(true);
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         await vm.InitializeAsync();
 
@@ -212,5 +188,17 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         };
 
         await gate.ConfigureAwait(false);
+    }
+
+    private HomeViewModel CreateViewModel()
+    {
+        return new HomeViewModel(
+            fixture.OllamaMock.Object,
+            fixture.DialogMock.Object,
+            fixture.ConfigMock.Object,
+            fixture.DbMock.Object,
+            fixture.UpdateMock.Object,
+            fixture.MessengerMock.Object
+        );
     }
 }

@@ -22,4 +22,5 @@ public class TestServicesFixture
     public Mock<IOllamaScraperService> ScraperMock { get; } = new();
     public Mock<IModelDownloadQueueService> DownloadQueueMock { get; } = new();
     public Mock<INetworkManager> NetworkManagerMock { get; } = new();
+    public Mock<IUpdateService> UpdateMock { get; } = new();
 }

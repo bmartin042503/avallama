@@ -27,6 +27,7 @@ public partial class App : Application
     private DialogService? _dialogService;
     private DatabaseInitService? _databaseInitService;
     public static SqliteConnection SharedDbConnection { get; private set; } = null!;
+    public const string Version = "v0.3.0";
 
     public override void Initialize()
     {
@@ -136,7 +137,7 @@ public partial class App : Application
     {
         // this is for later for some fancy dialog
         _dialogService?.ShowInfoDialog(
-            "Avallama - " + LocalizationService.GetString("VERSION")
+            "Avallama - " + Version
                           + "\n\nCopyright (c) " + LocalizationService.GetString("DEVELOPER_NAMES")
                           + "\n\n" + LocalizationService.GetString("LICENSE_DETAILS")
                           + "\n\n" + LocalizationService.GetString("FROM_ORG") + " (github.com/4foureyes/avallama)"

@@ -82,6 +82,9 @@ public static class ServiceCollectionExtensions
             collection.AddSingleton<ModelCacheService>();
             collection.AddSingleton<IModelCacheService>(sp => sp.GetRequiredService<ModelCacheService>());
 
+            collection.AddTransient<UpdateService>();
+            collection.AddTransient<IUpdateService>(sp => sp.GetRequiredService<UpdateService>());
+
             collection.AddSingleton<DialogService>();
             collection.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
 
