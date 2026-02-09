@@ -39,6 +39,7 @@ public partial class HomeViewModel : PageViewModel
     private readonly IDialogService _dialogService;
     private readonly IConfigurationService _configurationService;
     private readonly IConversationService _conversationService;
+    private readonly IUpdateService _updateService;
     private readonly IMessenger _messenger;
 
     // Internal State
@@ -146,12 +147,14 @@ public partial class HomeViewModel : PageViewModel
     /// <param name="dialogService">Service for displaying dialogs.</param>
     /// <param name="configurationService">Service for application settings.</param>
     /// <param name="conversationService">Service for conversation interactions.</param>
+    /// <param name="updateService">Service for checking application updates.</param>
     /// <param name="messenger">Messenger for cross-component communication.</param>
     public HomeViewModel(
         IOllamaService ollamaService,
         IDialogService dialogService,
         IConfigurationService configurationService,
         IConversationService conversationService,
+        IUpdateService updateService,
         IMessenger messenger
     )
     {
@@ -161,6 +164,7 @@ public partial class HomeViewModel : PageViewModel
         _dialogService = dialogService;
         _configurationService = configurationService;
         _conversationService = conversationService;
+        _updateService = updateService;
         _messenger = messenger;
         _availableModels = [];
 
@@ -188,6 +192,8 @@ public partial class HomeViewModel : PageViewModel
             if (!_isInitializedAsync)
             {
                 await InitializeConversations();
+                if (_configurationService.ReadSetting(ConfigurationKey.IsUpdateCheckEnabled) == "True")
+                    await CheckForUpdatesAsync();
             }
 
             await InitializeModels();
@@ -501,6 +507,34 @@ public partial class HomeViewModel : PageViewModel
         {
             // sets the previously selected model
             SelectedModelName = tmpName;
+        }
+    }
+
+    /// <summary>
+    /// Calls <see cref="UpdateService"/> to check if a new version of the application is available.
+    /// If an update is available, shows a dialog prompting the user to visit the GitHub releases page.
+    /// If the <see cref="ConfigurationKey"/> IsUpdateCheckEnabled is false, this method is not called.
+    /// </summary>
+    private async Task CheckForUpdatesAsync()
+    {
+        if (await _updateService.IsUpdateAvailableAsync())
+        {
+            _dialogService.ShowActionDialog(
+                LocalizationService.GetString("UPDATE_AVAILABLE"),
+                LocalizationService.GetString("OPEN_GITHUB"),
+                () =>
+                {
+                    Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "https://github.com/4foureyes/avallama/releases/latest",
+                            UseShellExecute = true
+                        }
+                    );
+                },
+                null,
+                LocalizationService.GetString("UPDATE_AVAILABLE_DESC"),
+                false
+            );
         }
     }
 

@@ -26,15 +26,8 @@ public interface IOllamaScraper
     Task<OllamaScraperResult> GetAllOllamaModelsAsync(CancellationToken cancellationToken);
 }
 
-public class OllamaScraperService : IOllamaScraper
+public class OllamaScraper(HttpClient httpClient) : IOllamaScraper
 {
-    private readonly HttpClient _httpClient;
-
-    public OllamaScraperService(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<OllamaScraperResult> GetAllOllamaModelsAsync(
         CancellationToken cancellationToken)
     {
@@ -99,7 +92,7 @@ public class OllamaScraperService : IOllamaScraper
     {
         try
         {
-            using var response = await _httpClient.GetAsync("/library", ct);
+            using var response = await httpClient.GetAsync("/library", ct);
 
             if (!response.IsSuccessStatusCode) return [];
 
@@ -159,6 +152,9 @@ public class OllamaScraperService : IOllamaScraper
                 }
             }
 
+            // TODO: remove this once image models are supported
+            result = result.Where(f => !f.Labels.Contains("image")).ToList();
+
             return result;
         }
         catch (Exception)
@@ -178,7 +174,7 @@ public class OllamaScraperService : IOllamaScraper
 
         try
         {
-            using var tagsResponse = await _httpClient.GetAsync(familyUrl, ct);
+            using var tagsResponse = await httpClient.GetAsync(familyUrl, ct);
 
             if (tagsResponse.IsSuccessStatusCode)
             {
@@ -222,7 +218,17 @@ public class OllamaScraperService : IOllamaScraper
                 Family = family
             };
 
+            if (!IsValidModel(model)) continue;
+
+            // TODO: Remove this once image models are supported
+            if (model.Name.Contains("image")) continue;
+
             yield return model;
         }
+    }
+
+    private static bool IsValidModel(OllamaModel model)
+    {
+        return !model.Name.Contains("cloud") && !model.Name.Contains("latest") && model.Size > 0;
     }
 }

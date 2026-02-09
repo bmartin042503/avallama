@@ -19,7 +19,7 @@ using Xunit;
 
 namespace avallama.Tests.Services;
 
-public class OllamaScraperServiceTests
+public class OllamaScraperTests
 {
     // Used families:
     // gpt-oss
@@ -42,9 +42,9 @@ public class OllamaScraperServiceTests
     private readonly string _gptOssTagsHtml;
     private readonly string _qwen3VlTagsHtml;
 
-    private readonly OllamaScraperService _scraperService;
+    private readonly OllamaScraper _scraper;
 
-    public OllamaScraperServiceTests()
+    public OllamaScraperTests()
     {
         _libraryHtml = GetHtmlContent(LibraryHtmlPath);
         _gptOssTagsHtml = GetHtmlContent(GptOssTagsHtmlPath);
@@ -100,7 +100,7 @@ public class OllamaScraperServiceTests
             BaseAddress = new Uri(OllamaUrl)
         };
 
-        _scraperService = new OllamaScraperService(httpClient);
+        _scraper = new OllamaScraper(httpClient);
     }
 
     private string GetHtmlContent(string fileName)
@@ -143,7 +143,7 @@ public class OllamaScraperServiceTests
     [Fact]
     public async Task GetAllOllamaModelsAsync_ShouldParseAllFamiliesAndModelsWithValidData()
     {
-        var result = await _scraperService.GetAllOllamaModelsAsync(CancellationToken.None);
+        var result = await _scraper.GetAllOllamaModelsAsync(CancellationToken.None);
 
         var modelsList = new List<OllamaModel>();
         await foreach (var model in result.Models)
@@ -165,7 +165,8 @@ public class OllamaScraperServiceTests
             Assert.NotNull(family.Labels);
         });
 
-        Assert.Equal(6, modelsList.Count);
+        // excluding cloud and latest models
+        Assert.Equal(2, modelsList.Count);
 
         Assert.All(modelsList, model =>
         {
@@ -185,12 +186,12 @@ public class OllamaScraperServiceTests
         Assert.Contains(result.Families, f => f.Name == "gpt-oss");
         Assert.Contains(result.Families, f => f.Name == "qwen3-vl");
 
-        Assert.Contains(modelsList, m => m.Name == "gpt-oss:latest");
+        Assert.DoesNotContain(modelsList, m => m.Name == "gpt-oss:latest");
         Assert.Contains(modelsList, m => m.Name == "gpt-oss:20b");
         Assert.Contains(modelsList, m => m.Name == "gpt-oss:120b");
-        Assert.Contains(modelsList, m => m.Name == "qwen3-vl:latest");
-        Assert.Contains(modelsList, m => m.Name == "qwen3-vl:235b-cloud");
-        Assert.Contains(modelsList, m => m.Name == "qwen3-vl:235b-instruct-cloud");
+        Assert.DoesNotContain(modelsList, m => m.Name == "qwen3-vl:latest");
+        Assert.DoesNotContain(modelsList, m => m.Name == "qwen3-vl:235b-cloud");
+        Assert.DoesNotContain(modelsList, m => m.Name == "qwen3-vl:235b-instruct-cloud");
     }
 
     [Fact]
@@ -204,7 +205,7 @@ public class OllamaScraperServiceTests
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
 
         var result = await scraper.GetAllOllamaModelsAsync(CancellationToken.None);
 
@@ -232,7 +233,7 @@ public class OllamaScraperServiceTests
             };
         });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
 
         var result = await scraper.GetAllOllamaModelsAsync(CancellationToken.None);
 
@@ -240,11 +241,7 @@ public class OllamaScraperServiceTests
         await foreach (var m in result.Models) models.Add(m);
 
         Assert.Equal(2, result.Families.Count);
-        Assert.Equal(3, models.Count);
-
-        Assert.Contains(models, m => m.Name == "qwen3-vl:latest");
-        Assert.Contains(models, m => m.Name == "qwen3-vl:235b-cloud");
-        Assert.Contains(models, m => m.Name == "qwen3-vl:235b-instruct-cloud");
+        Assert.Empty(models);
     }
 
     [Fact]
@@ -256,7 +253,7 @@ public class OllamaScraperServiceTests
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(_libraryHtml) };
         });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
         var cts = new CancellationTokenSource();
 
         cts.CancelAfter(100);
@@ -279,7 +276,7 @@ public class OllamaScraperServiceTests
         var httpClient = CreateMockHttpClient(_ =>
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(emptyHtml) });
 
-        var scraper = new OllamaScraperService(httpClient);
+        var scraper = new OllamaScraper(httpClient);
 
         var result = await scraper.GetAllOllamaModelsAsync(CancellationToken.None);
         var models = new List<OllamaModel>();

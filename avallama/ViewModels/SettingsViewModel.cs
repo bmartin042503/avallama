@@ -143,6 +143,16 @@ public partial class SettingsViewModel : PageViewModel
         }
     }
 
+    public bool IsUpdateCheckEnabled
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
     public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService,
         IMessenger messenger, INetworkManager networkManager)
     {
@@ -194,6 +204,9 @@ public partial class SettingsViewModel : PageViewModel
 
         var isParallelDownloadEnabled = _configurationService.ReadSetting(ConfigurationKey.IsParallelDownloadEnabled);
         IsParallelDownloadEnabled = isParallelDownloadEnabled == "True";
+
+        var isUpdateCheckEnabled = _configurationService.ReadSetting(ConfigurationKey.IsUpdateCheckEnabled);
+        IsUpdateCheckEnabled = isUpdateCheckEnabled == "True";
 
         var lastModelUpdate = _configurationService.ReadSetting(ConfigurationKey.LastUpdatedCache);
         LastModelUpdate = LocalizationService.GetString("LAST_UPDATED") + ": " + (!lastModelUpdate.Equals(string.Empty) ? lastModelUpdate : LocalizationService.GetString("NEVER"));
@@ -247,6 +260,8 @@ public partial class SettingsViewModel : PageViewModel
             IsInformationalMessagesVisible.ToString());
         _configurationService.SaveSetting(ConfigurationKey.IsParallelDownloadEnabled,
             IsParallelDownloadEnabled.ToString());
+        _configurationService.SaveSetting(ConfigurationKey.IsUpdateCheckEnabled,
+            IsUpdateCheckEnabled.ToString());
 
         _messenger.Send(new ApplicationMessage.ReloadSettings());
 

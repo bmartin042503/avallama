@@ -50,9 +50,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="LOW_VRAM_WARNING" xml:space="preserve">
         <value>Ez a modell nem fut optimálisan a rendszereden alacsony elérhető VRAM miatt.</value>
     </data>
-    <data name="VERSION" xml:space="preserve">
-        <value>v0.2.0</value>
-    </data>
     <data name="OLLAMA_STARTED" xml:space="preserve">
         <value>Az Ollama sikeresen elindult</value>
     </data>
@@ -511,5 +508,20 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="SCRAPE_ASK_DIALOG_INFO" xml:space="preserve">
         <value>A modellkönyvtárat később bármikor frissítheted a Beállításokban.</value>
+    </data>
+    <data name="UPDATE_CHECK_SETTING" xml:space="preserve">
+        <value>Frissítés észlelés</value>
+    </data>
+    <data name="UPDATE_CHECK_SETTING_DESC" xml:space="preserve">
+        <value>Bekapcsolt állapotban az applikáció indulásakor automatikusan észleli, ha elérhető egy újabb verzió</value>
+    </data>
+    <data name="UPDATE_AVAILABLE" xml:space="preserve">
+        <value>Frissítés elérhető</value>
+    </data>
+    <data name="UPDATE_AVAILABLE_DESC" xml:space="preserve">
+        <value>A frissítéshez töltsd le a legújabb releaset a GitHub oldalunkról.</value>
+    </data>
+    <data name="OPEN_GITHUB" xml:space="preserve">
+        <value>GitHub Megnyitása</value>
     </data>
 </root>

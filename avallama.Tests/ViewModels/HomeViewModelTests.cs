@@ -13,7 +13,6 @@ using avallama.Models.Ollama;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
 using Moq;
-using Moq.Protected;
 using Xunit;
 
 namespace avallama.Tests.ViewModels;
@@ -43,13 +42,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         SetupMock();
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         var availableModels = new ObservableCollection<string>
         {
@@ -78,13 +71,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         SetupMock();
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
         fixture.OllamaMock.Raise(x =>
@@ -118,13 +105,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             .Callback<Conversation>(c => updatedConversationIds.Add(c.ConversationId))
             .ReturnsAsync(true);
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
         fixture.OllamaMock.Raise(x =>
@@ -184,13 +165,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             .Callback<Conversation>(c => updatedConversationIds.Add(c.ConversationId))
             .ReturnsAsync(true);
 
-        var vm = new HomeViewModel(
-            fixture.OllamaMock.Object,
-            fixture.DialogMock.Object,
-            fixture.ConfigMock.Object,
-            fixture.DbMock.Object,
-            fixture.MessengerMock.Object
-        );
+        var vm = CreateViewModel();
 
         // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
         fixture.OllamaMock.Raise(x =>
@@ -241,5 +216,17 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         };
 
         await gate.ConfigureAwait(false);
+    }
+
+    private HomeViewModel CreateViewModel()
+    {
+        return new HomeViewModel(
+            fixture.OllamaMock.Object,
+            fixture.DialogMock.Object,
+            fixture.ConfigMock.Object,
+            fixture.DbMock.Object,
+            fixture.UpdateMock.Object,
+            fixture.MessengerMock.Object
+        );
     }
 }

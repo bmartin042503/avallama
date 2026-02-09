@@ -15,4 +15,5 @@ public static class ConfigurationKey
     public const string IsParallelDownloadEnabled = "is-parallel-download-enabled";
     public const string LastUpdatedCache = "last-updated-cache";
     public const string InitialScrapeAskDialogHandled = "initial-scrape-ask-dialog-handled";
+    public const string IsUpdateCheckEnabled = "is-update-checking-enabled";
 }
