@@ -44,7 +44,6 @@ public partial class HomeViewModel : PageViewModel
     // Internal State
     private readonly ConditionalWeakTable<Conversation, ConversationState> _conversationStates = new();
     private bool _isInitializedAsync;
-    private OllamaProcessState _lastOllamaProcessState;
 
     // Backing fields for manual properties
     private ObservableStack<Conversation>? _conversations;
@@ -335,7 +334,7 @@ public partial class HomeViewModel : PageViewModel
         }
         else
         {
-            switch (_lastOllamaProcessState)
+            switch (_ollamaService.CurrentProcessStatus.ProcessState)
             {
                 case OllamaProcessState.NotInstalled:
                     // TODO: change this to not shutdown and add new localization key
@@ -399,7 +398,6 @@ public partial class HomeViewModel : PageViewModel
                 // Regenerate title after the first 2 messages and then every 6 messages (1 & 3 exchanges)
                 if ((conversation.Messages.Count - 2) % 6 == 0 || conversation.Messages.Count == 2)
                 {
-                    Console.WriteLine(2 % 6);
                     await RegenerateConversationTitle(conversation);
                 }
 
@@ -602,8 +600,6 @@ public partial class HomeViewModel : PageViewModel
     /// </summary>
     private void OllamaProcessStatusChanged(OllamaProcessStatus status)
     {
-        _lastOllamaProcessState = status.ProcessState;
-
         switch (status.ProcessState)
         {
             case OllamaProcessState.Running:

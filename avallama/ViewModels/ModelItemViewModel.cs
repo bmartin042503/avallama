@@ -1,6 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Constants.Application;
@@ -195,6 +196,7 @@ public partial class ModelItemViewModel : ViewModelBase
                         _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
                         break;
                     case DownloadState.Failed:
+                        Console.WriteLine("Failed download status received");
                         _dialogService.ShowErrorDialog(
                             DownloadRequest.Status.Message ?? LocalizationService.GetString("UNKNOWN_ERROR"),
                             false);

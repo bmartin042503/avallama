@@ -26,11 +26,11 @@ public interface IOllamaScraper
     Task<OllamaScraperResult> GetAllOllamaModelsAsync(CancellationToken cancellationToken);
 }
 
-public class OllamaScraper : IOllamaScraper
+public class OllamaScraperService : IOllamaScraper
 {
     private readonly HttpClient _httpClient;
 
-    public OllamaScraper(HttpClient httpClient)
+    public OllamaScraperService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

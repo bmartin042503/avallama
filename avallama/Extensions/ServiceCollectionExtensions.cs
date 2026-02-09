@@ -72,7 +72,7 @@ public static class ServiceCollectionExtensions
 
             collection.AddTransient<OllamaRateLimitedHandler>();
 
-            collection.AddHttpClient<IOllamaScraper, OllamaScraper>(client =>
+            collection.AddHttpClient<IOllamaScraper, OllamaScraperService>(client =>
                 {
                     client.BaseAddress = new Uri("https://www.ollama.com");
                     client.Timeout = TimeSpan.FromSeconds(30);

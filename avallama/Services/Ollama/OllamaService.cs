@@ -13,9 +13,12 @@ namespace avallama.Services.Ollama;
 
 public interface IOllamaService
 {
+    OllamaProcessStatus CurrentProcessStatus { get; }
+    OllamaApiStatus CurrentApiStatus { get; }
     event OllamaProcessStatusChangedHandler? ProcessStatusChanged;
     event OllamaApiStatusChangedHandler? ApiStatusChanged;
     Task StartOllamaProcessAsync();
+    Task CheckOllamaApiConnectionAsync();
     Task StopOllamaProcessAsync();
     Task RetryOllamaApiConnectionAsync();
     IAsyncEnumerable<DownloadResponse> DownloadModelAsync(string modelName, CancellationToken ct = default);
@@ -47,6 +50,9 @@ public class OllamaService : IOllamaService
         remove => _apiClient.StatusChanged -= value;
     }
 
+    public OllamaApiStatus CurrentApiStatus => _apiClient.Status;
+    public OllamaProcessStatus CurrentProcessStatus => _processManager.Status;
+
     public OllamaService(
         IOllamaProcessManager processManager,
         IOllamaApiClient apiClient,
@@ -65,6 +71,11 @@ public class OllamaService : IOllamaService
     public async Task StopOllamaProcessAsync()
     {
         await _processManager.StopAsync();
+    }
+
+    public async Task CheckOllamaApiConnectionAsync()
+    {
+        await _apiClient.CheckConnectionAsync();
     }
 
     public async Task RetryOllamaApiConnectionAsync()

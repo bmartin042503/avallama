@@ -29,8 +29,9 @@ public delegate void OllamaApiStatusChangedHandler(OllamaApiStatus status);
 
 public interface IOllamaApiClient
 {
+    OllamaApiStatus Status { get; }
     event OllamaApiStatusChangedHandler? StatusChanged;
-
+    Task CheckConnectionAsync();
     Task RetryConnectionAsync();
     Task<IList<OllamaModel>> GetDownloadedModelsAsync();
     Task UpdateDownloadedModelsAsync();
@@ -62,18 +63,19 @@ public class OllamaApiClient : IOllamaApiClient
     private readonly ITimeProvider _timeProvider;
     private readonly ITaskDelayer _taskDelayer;
 
-    private readonly TimeSpan _maxRetryingTime = TimeSpan.FromSeconds(15);
-    private readonly TimeSpan _connectionCheckInterval = TimeSpan.FromMilliseconds(500);
+    public TimeSpan DownloadTimeout { get; init; } = TimeSpan.FromSeconds(5);
+    public TimeSpan MaxRetryingTime { get; init; } = TimeSpan.FromSeconds(15);
+    public TimeSpan ConnectionCheckInterval { get; init; } = TimeSpan.FromMilliseconds(500);
 
     private List<OllamaModel>? _downloadedModels;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     public event OllamaApiStatusChangedHandler? StatusChanged;
 
-    private OllamaApiStatus Status
+    public OllamaApiStatus Status
     {
         get;
-        set
+        private set
         {
             if (field == value) return;
             field = value;
@@ -100,13 +102,26 @@ public class OllamaApiClient : IOllamaApiClient
         _taskDelayer = taskDelayer ?? new RealTaskDelayer();
     }
 
+    public async Task CheckConnectionAsync()
+    {
+        Status = new OllamaApiStatus(OllamaApiState.Connecting);
+        if (await IsOllamaReachable())
+        {
+            Status = new OllamaApiStatus(OllamaApiState.Connected);
+        }
+        else
+        {
+            await RetryConnectionAsync();
+        }
+    }
+
     public async Task RetryConnectionAsync()
     {
         Status = new OllamaApiStatus(OllamaApiState.Reconnecting);
         _timeProvider.Start();
 
         var loopStartTime = _timeProvider.Elapsed;
-        while (_timeProvider.Elapsed - loopStartTime < _maxRetryingTime)
+        while (_timeProvider.Elapsed - loopStartTime < MaxRetryingTime)
         {
             if (await IsOllamaReachable())
             {
@@ -114,7 +129,7 @@ public class OllamaApiClient : IOllamaApiClient
                 return;
             }
 
-            await _taskDelayer.Delay(_connectionCheckInterval);
+            await _taskDelayer.Delay(ConnectionCheckInterval);
         }
 
         SetUnreachableStatus();
@@ -211,7 +226,7 @@ public class OllamaApiClient : IOllamaApiClient
             throw NewServiceUnreachableException(ex);
         }
 
-        if (response.StatusCode == HttpStatusCode.OK && Status.ApiState != OllamaApiState.Connected)
+        if (response.StatusCode == HttpStatusCode.OK)
         {
             Status = new OllamaApiStatus(OllamaApiState.Connected);
         }
@@ -230,6 +245,7 @@ public class OllamaApiClient : IOllamaApiClient
             try
             {
                 line = await reader.ReadLineAsync(ct);
+                Console.WriteLine(line);
                 if (line == null) break;
                 json = JsonSerializer.Deserialize<DownloadResponse>(line, _jsonSerializerOptions);
             }
@@ -247,7 +263,7 @@ public class OllamaApiClient : IOllamaApiClient
         string modelName,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        // TODO: pass cancellable cancellation token if we'll support stopping the message generation
+        // TODO: pass cancellation token properly when we'll support stopping the message generation
 
         if (!await IsOllamaReachable())
         {
@@ -337,6 +353,7 @@ public class OllamaApiClient : IOllamaApiClient
         {
             return new OllamaRemoteServerUnreachableException(innerException);
         }
+
         return new OllamaLocalServerUnreachableException(innerException);
     }
 

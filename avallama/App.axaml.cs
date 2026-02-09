@@ -109,6 +109,7 @@ public partial class App : Application
             try
             {
                 await _ollamaService!.StartOllamaProcessAsync();
+                await _ollamaService!.CheckOllamaApiConnectionAsync();
             }
             catch (Exception)
             {

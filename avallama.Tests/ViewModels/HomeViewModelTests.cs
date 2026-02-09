@@ -4,13 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
+using avallama.Constants.States;
 using avallama.Models;
 using avallama.Models.Dtos;
 using avallama.Models.Ollama;
 using avallama.Tests.Fixtures;
 using avallama.ViewModels;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace avallama.Tests.ViewModels;
@@ -22,10 +25,6 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         // Mock db svc to prevent NullReferenceException when testing
         fixture.DbMock.Setup(db => db.GetConversations())
             .ReturnsAsync([]);
-
-        fixture.OllamaMock
-            .Setup(x => x.WaitForRunningAsync())
-            .Returns(Task.CompletedTask);
     }
 
     [Fact]
@@ -37,8 +36,9 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             new() { Name = "model1" },
             new() { Name = "model2" }
         };
+
         fixture.OllamaMock
-            .Setup(o => o.GetDownloadedModels())
+            .Setup(o => o.GetDownloadedModelsAsync())
             .ReturnsAsync(models);
 
         SetupMock();
@@ -57,6 +57,10 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             "model2"
         };
 
+        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
+
         await vm.InitializeAsync();
 
         Assert.Equal(availableModels, vm.AvailableModels);
@@ -69,7 +73,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
     {
         fixture.OllamaMock.Reset();
         fixture.OllamaMock
-            .Setup(o => o.GetDownloadedModels())
+            .Setup(o => o.GetDownloadedModelsAsync())
             .ReturnsAsync([]);
 
         SetupMock();
@@ -81,6 +85,10 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.DbMock.Object,
             fixture.MessengerMock.Object
         );
+
+        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
 
         await vm.InitializeAsync();
 
@@ -97,8 +105,18 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         var conv = new Conversation("A", string.Empty) { ConversationId = Guid.NewGuid() };
 
         fixture.OllamaMock
-            .Setup(o => o.GenerateMessage(It.IsAny<List<Message>>(), It.IsAny<string>()))
+            .Setup(o => o.GenerateMessageAsync(
+                It.IsAny<List<Message>>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
             .Returns(MainStreamAsync());
+
+        var updatedConversationIds = new List<Guid>();
+        fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([conv]);
+        fixture.DbMock
+            .Setup(db => db.UpdateConversationTitle(It.IsAny<Conversation>()))
+            .Callback<Conversation>(c => updatedConversationIds.Add(c.ConversationId))
+            .ReturnsAsync(true);
 
         var vm = new HomeViewModel(
             fixture.OllamaMock.Object,
@@ -108,6 +126,10 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.MessengerMock.Object
         );
 
+        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
+
         await vm.InitializeAsync();
 
         vm.SelectedConversation = conv;
@@ -115,12 +137,11 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         await vm.SendMessageCommand.ExecuteAsync(null);
 
-        // TODO: investigate why this verification fails
-        /* fixture.DbMock.Verify(
+        Assert.Contains(conv.ConversationId, updatedConversationIds);
+        fixture.DbMock.Verify(
             db => db.UpdateConversationTitle(It.Is<Conversation>(c => c.ConversationId == conv.ConversationId)),
-            Times.AtLeastOnce); */
+            Times.AtLeastOnce);
     }
-
 
     [Fact]
     public async Task TitleGeneration_WhenUserSwitchesConversation_UpdatesRightConversation()
@@ -133,14 +154,18 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([convA, convB]);
         fixture.DbMock.Setup(db => db.GetMessagesForConversation(It.IsAny<Conversation>())).ReturnsAsync([]);
-        fixture.DbMock.Setup(db => db.InsertMessage(It.IsAny<Guid>(), It.IsAny<Message>(), It.IsAny<string?>(), It.IsAny<double?>()))
+        fixture.DbMock.Setup(db =>
+                db.InsertMessage(It.IsAny<Guid>(), It.IsAny<Message>(), It.IsAny<string?>(), It.IsAny<double?>()))
             .ReturnsAsync(1L);
 
         var allowTitleToFinish = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         fixture.OllamaMock
-            .Setup(o => o.GenerateMessage(It.IsAny<List<Message>>(), It.IsAny<string>()))
-            .Returns((List<Message> history, string _) =>
+            .Setup(o => o.GenerateMessageAsync(
+                It.IsAny<List<Message>>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .Returns((List<Message> history, string _,  CancellationToken _) =>
             {
                 var isTitleRequest =
                     history.Count > 0 &&
@@ -166,6 +191,10 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.DbMock.Object,
             fixture.MessengerMock.Object
         );
+
+        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
 
         await vm.InitializeAsync();
 

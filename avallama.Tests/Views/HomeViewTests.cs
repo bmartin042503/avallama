@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using avallama.Constants.States;
 using avallama.Models;
 using avallama.Models.Ollama;
 using avallama.Tests.Fixtures;
@@ -47,9 +48,9 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
             .Setup(x => x.ReadSetting(It.IsAny<string>()))
             .Returns("");
 
-        _fixture.OllamaMock
-            .Setup(x => x.WaitForRunningAsync())
-            .Returns(Task.CompletedTask);
+        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        _fixture.OllamaApiClientMock.Raise(x =>
+            x.StatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
 
         _fixture.OllamaMock
             .Setup(x => x.GetDownloadedModelsAsync())
@@ -97,7 +98,9 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
 
         var (window, view, viewModel) = CreateAndShowHomeView();
 
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Running));
+        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        _fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
 
         await viewModel.InitializeAsync();
 
@@ -110,8 +113,6 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     public void SideBar_ClickingSideBarButton_TogglesSideBarCorrectly()
     {
         var (_, view, _) = CreateAndShowHomeView();
-
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Running));
 
         var sideBarButton = view.FindControl<Button>("SideBarButton");
         var sideBar = view.FindControl<Grid>("SideBar");
@@ -145,8 +146,6 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     {
         var (_, view, viewModel) = CreateAndShowHomeView();
 
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Running));
-
         var conversationGrid = view.FindControl<Grid>("ConversationGrid");
         var retryButton = view.FindControl<Button>("RetryButton");
         var retryPanel = view.FindControl<StackPanel>("RetryPanel");
@@ -157,8 +156,9 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         Assert.NotNull(retryPanel);
         Assert.NotNull(retryInfoText);
 
-        // set status to Failed
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Failed));
+        // set status to Faulted
+        _fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Faulted));
         Assert.True(viewModel.IsRetryPanelVisible);
         Assert.True(viewModel.IsRetryButtonVisible);
         Assert.True(retryButton.IsEnabled);
@@ -173,8 +173,6 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     public void RetryPanel_WhenOllamaServiceIsRunning_ItDisappearsCorrectly()
     {
         var (_, view, viewModel) = CreateAndShowHomeView();
-
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Running));
 
         var conversationGrid = view.FindControl<Grid>("ConversationGrid");
         var retryButton = view.FindControl<Button>("RetryButton");
@@ -197,19 +195,20 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     {
         var (_, view, viewModel) = CreateAndShowHomeView();
 
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Running));
-
         var messageTextBox = view.FindControl<TextBox>("MessageTextBox");
 
         Assert.NotNull(messageTextBox);
 
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Stopped));
+        _fixture.OllamaApiClientMock.Raise(x =>
+            x.StatusChanged += null, new OllamaApiStatus(OllamaApiState.Disconnected));
         Assert.False(viewModel.IsMessageBoxEnabled);
         Assert.False(messageTextBox.IsEnabled);
 
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Running));
+        _fixture.OllamaApiClientMock.Raise(x =>
+            x.StatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
 
-        _fixture.OllamaMock.Raise(x => x.StatusChanged += null, new ServiceState(ServiceStatus.Failed));
+        _fixture.OllamaApiClientMock.Raise(x =>
+            x.StatusChanged += null, new OllamaApiStatus(OllamaApiState.Faulted));
         Assert.False(viewModel.IsMessageBoxEnabled);
         Assert.False(messageTextBox.IsEnabled);
     }

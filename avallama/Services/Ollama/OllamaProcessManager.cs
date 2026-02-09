@@ -17,24 +17,24 @@ public delegate void OllamaProcessStatusChangedHandler(OllamaProcessStatus statu
 
 public interface IOllamaProcessManager
 {
+    OllamaProcessStatus Status { get; }
     event OllamaProcessStatusChangedHandler? StatusChanged;
-
     Task StartAsync();
     Task StopAsync();
 }
 
 public class OllamaProcessManager : IOllamaProcessManager
 {
-    public Func<ProcessStartInfo, Process?> StartProcessFunc { get; } = Process.Start;
-    public Func<int> GetProcessCountFunc { get; } = () => Process.GetProcessesByName("ollama").Length;
+    public Func<ProcessStartInfo, Process?> StartProcessFunc { get; init; } = Process.Start;
+    public Func<int> GetProcessCountFunc { get; init; } = () => Process.GetProcessesByName("ollama").Length;
     private readonly SemaphoreSlim _startSemaphore = new(1, 1);
     private string OllamaPath { get; set; } = "";
     private Process? _ollamaProcess;
 
-    private OllamaProcessStatus Status
+    public OllamaProcessStatus Status
     {
         get;
-        set
+        private set
         {
             if (field == value) return;
             field = value;
@@ -49,6 +49,8 @@ public class OllamaProcessManager : IOllamaProcessManager
         await _startSemaphore.WaitAsync();
 
         if (Status.ProcessState == OllamaProcessState.Running) return;
+
+        Status = new OllamaProcessStatus(OllamaProcessState.Starting);
 
         ConfigureOllamaPath();
 
