@@ -17,19 +17,16 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace avallama.Tests.Views;
 
 public class HomeViewTests : IClassFixture<TestServicesFixture>
 {
     private readonly TestServicesFixture _fixture;
-    private readonly ITestOutputHelper _output;
 
-    public HomeViewTests(TestServicesFixture fixture, ITestOutputHelper output)
+    public HomeViewTests(TestServicesFixture fixture)
     {
         _fixture = fixture;
-        _output = output;
         SetupDefaultBehaviors();
     }
 
@@ -48,7 +45,11 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
             .Setup(x => x.ReadSetting(It.IsAny<string>()))
             .Returns("");
 
-        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
+        _fixture.OllamaMock.Raise(x =>
+            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessState.Running));
+
+        // raises Connected status so the ViewModel doesn't wait indefinitely for connection
         _fixture.OllamaApiClientMock.Raise(x =>
             x.StatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
 
@@ -69,6 +70,7 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
             _fixture.ConfigMock.Object,
             _fixture.DbMock.Object,
             _fixture.UpdateMock.Object,
+            _fixture.ModelCacheMock.Object,
             _fixture.MessengerMock.Object
         );
     }
@@ -91,13 +93,17 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     {
         var mockModels = new List<OllamaModel>
         {
-            new() { Name = "test-model-1:8b", Size = 8_030_000_000, IsDownloaded = true },
-            new() { Name = "test-model-2:20b", Size = 20_100_000_000, IsDownloaded = true }
+            new() { Name = "test-model-1:8b", Size = 8_030_000_000 },
+            new() { Name = "test-model-2:20b", Size = 20_100_000_000 }
         };
 
         _fixture.OllamaMock.Setup(x => x.GetDownloadedModelsAsync()).ReturnsAsync(mockModels);
 
         var (window, view, viewModel) = CreateAndShowHomeView();
+
+        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
+        _fixture.OllamaMock.Raise(x =>
+            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessState.Running));
 
         // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
         _fixture.OllamaMock.Raise(x =>
@@ -143,7 +149,7 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     }
 
     [AvaloniaFact]
-    public void RetryPanel_WhenOllamaServiceIsFailed_ItAppearsCorrectly()
+    public void RetryPanel_WhenOllamaApiIsFaulted_ItAppearsCorrectly()
     {
         var (_, view, viewModel) = CreateAndShowHomeView();
 
@@ -156,6 +162,10 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         Assert.NotNull(retryButton);
         Assert.NotNull(retryPanel);
         Assert.NotNull(retryInfoText);
+
+        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
+        _fixture.OllamaMock.Raise(x =>
+            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessState.Running));
 
         // set status to Faulted
         _fixture.OllamaMock.Raise(x =>
@@ -171,7 +181,7 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
     }
 
     [AvaloniaFact]
-    public void RetryPanel_WhenOllamaServiceIsRunning_ItDisappearsCorrectly()
+    public void RetryPanel_WhenOllamaApiIsConnected_ItDisappearsCorrectly()
     {
         var (_, view, viewModel) = CreateAndShowHomeView();
 

@@ -11,101 +11,160 @@ using avallama.Models.Ollama;
 
 namespace avallama.Services.Ollama;
 
+/// <summary>
+/// Defines a high-level service for interacting with the Ollama ecosystem.
+/// This acts as a facade, aggregating process management, API communication, and web scraping capabilities.
+/// </summary>
 public interface IOllamaService
 {
+    #region Interface
+
+    /// <summary>
+    /// Gets the current status of the local Ollama process.
+    /// </summary>
     OllamaProcessStatus CurrentProcessStatus { get; }
+
+    /// <summary>
+    /// Gets the current status of the Ollama API connection.
+    /// </summary>
     OllamaApiStatus CurrentApiStatus { get; }
+
+    /// <summary>
+    /// Event raised when the status of the local Ollama process changes.
+    /// </summary>
     event OllamaProcessStatusChangedHandler? ProcessStatusChanged;
+
+    /// <summary>
+    /// Event raised when the status of the Ollama API connection changes.
+    /// </summary>
     event OllamaApiStatusChangedHandler? ApiStatusChanged;
+
+    /// <summary>
+    /// Starts the local Ollama process asynchronously.
+    /// </summary>
     Task StartOllamaProcessAsync();
-    Task CheckOllamaApiConnectionAsync();
+
+    /// <summary>
+    /// Stops the local Ollama process asynchronously.
+    /// </summary>
     Task StopOllamaProcessAsync();
+
+    /// <summary>
+    /// Manually triggers a check for the Ollama API connection status.
+    /// </summary>
+    Task CheckOllamaApiConnectionAsync();
+
+    /// <summary>
+    /// Attempts to reconnect to the Ollama API.
+    /// </summary>
     Task RetryOllamaApiConnectionAsync();
-    IAsyncEnumerable<DownloadResponse> DownloadModelAsync(string modelName, CancellationToken ct = default);
-    IAsyncEnumerable<OllamaResponse> GenerateMessageAsync(List<Message> messageHistory, string modelName, CancellationToken ct = default);
-    Task<bool> DeleteModelAsync(string modelName);
+
+    /// <summary>
+    /// Retrieves a list of models currently downloaded via the API.
+    /// </summary>
+    /// <returns>A list of downloaded Ollama models.</returns>
     Task<IList<OllamaModel>> GetDownloadedModelsAsync();
-    Task UpdateDownloadedModelsAsync();
+
+    /// <summary>
+    /// Deletes a specified model from the library via the API.
+    /// </summary>
+    /// <param name="modelName">The name of the model to delete.</param>
+    /// <returns>True if deletion was successful; otherwise, false.</returns>
+    Task<bool> DeleteModelAsync(string modelName);
+
+    /// <summary>
+    /// Enriches a model object with detailed metadata from the API (/api/tags, /api/show).
+    /// </summary>
+    /// <param name="model">The model to enrich.</param>
+    Task EnrichModelAsync(OllamaModel model);
+
+    /// <summary>
+    /// Downloads (pulls) a specific model from the Ollama library.
+    /// </summary>
+    /// <param name="modelName">The name of the model to download.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>An async stream of download progress updates.</returns>
+    IAsyncEnumerable<DownloadResponse> DownloadModelAsync(string modelName, CancellationToken ct = default);
+
+    /// <summary>
+    /// Generates a response from a model based on a conversation history.
+    /// </summary>
+    /// <param name="messageHistory">The list of previous messages in the conversation.</param>
+    /// <param name="modelName">The model to use for generation.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>An async stream of response chunks.</returns>
+    IAsyncEnumerable<OllamaResponse> GenerateMessageAsync(List<Message> messageHistory, string modelName, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves model families fetched during the last scraping session.
+    /// </summary>
+    /// <returns>A list of model families.</returns>
     Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync();
+
+    /// <summary>
+    /// Scrapes and streams all available models from the Ollama online library.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An async stream of discovered models.</returns>
     IAsyncEnumerable<OllamaModel> StreamAllScrapedModelsAsync(CancellationToken cancellationToken);
+
+    #endregion
 }
 
-public class OllamaService : IOllamaService
+/// <summary>
+/// Implementation of the IOllamaService facade, orchestrating process management, API calls, and scraping.
+/// </summary>
+public class OllamaService(
+    IOllamaProcessManager processManager,
+    IOllamaApiClient apiClient,
+    IOllamaScraper ollamaScraper)
+    : IOllamaService
 {
-    private readonly IOllamaProcessManager _processManager;
-    private readonly IOllamaApiClient _apiClient;
-    private readonly IOllamaScraper _ollamaScraper;
-
     private OllamaScraperResult? _currentScrapeSession;
+
+    #region Events & Status
 
     public event OllamaProcessStatusChangedHandler? ProcessStatusChanged
     {
-        add => _processManager.StatusChanged += value;
-        remove => _processManager.StatusChanged -= value;
+        add => processManager.StatusChanged += value;
+        remove => processManager.StatusChanged -= value;
     }
 
     public event OllamaApiStatusChangedHandler? ApiStatusChanged
     {
-        add => _apiClient.StatusChanged += value;
-        remove => _apiClient.StatusChanged -= value;
+        add => apiClient.StatusChanged += value;
+        remove => apiClient.StatusChanged -= value;
     }
 
-    public OllamaApiStatus CurrentApiStatus => _apiClient.Status;
-    public OllamaProcessStatus CurrentProcessStatus => _processManager.Status;
+    public OllamaApiStatus CurrentApiStatus => apiClient.Status;
 
-    public OllamaService(
-        IOllamaProcessManager processManager,
-        IOllamaApiClient apiClient,
-        IOllamaScraper ollamaScraper)
-    {
-        _processManager = processManager;
-        _apiClient = apiClient;
-        _ollamaScraper = ollamaScraper;
-    }
+    public OllamaProcessStatus CurrentProcessStatus => processManager.Status;
 
-    public async Task StartOllamaProcessAsync()
-    {
-        await _processManager.StartAsync();
-    }
+    #endregion
 
-    public async Task StopOllamaProcessAsync()
-    {
-        await _processManager.StopAsync();
-    }
+    #region Process Management
 
-    public async Task CheckOllamaApiConnectionAsync()
-    {
-        await _apiClient.CheckConnectionAsync();
-    }
+    public async Task StartOllamaProcessAsync() => await processManager.StartAsync();
+    public async Task StopOllamaProcessAsync() => await processManager.StopAsync();
 
-    public async Task RetryOllamaApiConnectionAsync()
-    {
-        await _apiClient.RetryConnectionAsync();
-    }
+    #endregion
 
-    public async Task<IList<OllamaModel>> GetDownloadedModelsAsync()
-    {
-        return await _apiClient.GetDownloadedModelsAsync();
-    }
+    #region API
 
-    public async Task UpdateDownloadedModelsAsync()
-    {
-        await _apiClient.GetDownloadedModelsAsync();
-    }
+    public async Task CheckOllamaApiConnectionAsync() => await apiClient.CheckConnectionAsync();
+    public async Task RetryOllamaApiConnectionAsync() => await apiClient.RetryConnectionAsync();
+    public async Task EnrichModelAsync(OllamaModel model) => await apiClient.EnrichModelAsync(model);
+    public async Task<IList<OllamaModel>> GetDownloadedModelsAsync() => await apiClient.GetDownloadedModelsAsync();
+    public async Task<bool> DeleteModelAsync(string modelName) => await apiClient.DeleteModelAsync(modelName);
 
     public async IAsyncEnumerable<DownloadResponse> DownloadModelAsync(
         string modelName,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await foreach (var response in _apiClient.PullModelAsync(modelName, ct))
+        await foreach (var response in apiClient.PullModelAsync(modelName, ct))
         {
             yield return response;
         }
-    }
-
-    public async Task<bool> DeleteModelAsync(string modelName)
-    {
-        return await _apiClient.DeleteModelAsync(modelName);
     }
 
     public async IAsyncEnumerable<OllamaResponse> GenerateMessageAsync(
@@ -113,14 +172,19 @@ public class OllamaService : IOllamaService
         string modelName,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await foreach (var response in _apiClient.GenerateMessageAsync(messageHistory, modelName, ct))
+        await foreach (var response in apiClient.GenerateMessageAsync(messageHistory, modelName, ct))
         {
             yield return response;
         }
     }
 
+    #endregion
+
+    #region Scraper
+
     public Task<IList<OllamaModelFamily>> GetScrapedFamiliesAsync()
     {
+        // Return families from the cached scrape session if available, then clear the session cache.
         if (_currentScrapeSession?.Families is not { } families)
             return Task.FromResult<IList<OllamaModelFamily>>([]);
 
@@ -132,7 +196,7 @@ public class OllamaService : IOllamaService
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         _currentScrapeSession = null;
-        var result = await _ollamaScraper.GetAllOllamaModelsAsync(cancellationToken);
+        var result = await ollamaScraper.GetAllOllamaModelsAsync(cancellationToken);
         _currentScrapeSession = result;
 
         await foreach (var model in result.Models.WithCancellation(cancellationToken))
@@ -140,4 +204,6 @@ public class OllamaService : IOllamaService
             yield return model;
         }
     }
+
+    #endregion
 }

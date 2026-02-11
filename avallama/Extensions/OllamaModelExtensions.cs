@@ -16,9 +16,11 @@ public static class OllamaModelExtensions
         {
             if (showResponse?.ModelInfo == null) return;
 
+            var workingInfoDirectory = new Dictionary<string, string>(model.Info);
+
             if (!string.IsNullOrEmpty(showResponse.License))
             {
-                model.Info.TryAdd(ModelInfoKey.License, showResponse.License);
+                workingInfoDirectory[ModelInfoKey.License] = showResponse.License;
             }
 
             var info = showResponse.ModelInfo;
@@ -29,7 +31,7 @@ public static class OllamaModelExtensions
                 return;
             }
 
-            model.Info.TryAdd(ModelInfoKey.Architecture, arch);
+            workingInfoDirectory[ModelInfoKey.Architecture] = arch;
 
             if (info.TryGetValue("general.parameter_count", out var paramElem) &&
                 paramElem.TryGetInt64(out var paramCount) && paramCount > 0)
@@ -43,9 +45,29 @@ public static class OllamaModelExtensions
                 var searchKey = $"{arch}.{key}";
                 if (info.TryGetValue(searchKey, out var element) && element.TryGetInt32(out var value) && value > 0)
                 {
-                    model.Info.TryAdd(key, value.ToString());
+                    workingInfoDirectory[key] = value.ToString();
                 }
             }
+
+            model.Info = workingInfoDirectory;
+        }
+
+        public void EnrichWith(OllamaModelDto? modelDto)
+        {
+            var workingInfoDirectory = new Dictionary<string, string>(model.Info);
+
+            if (modelDto?.Name == null) return;
+            model.Name = modelDto.Name;
+
+            if (modelDto.Size.HasValue) model.Size = modelDto.Size.Value;
+            if (modelDto.Details == null) return;
+
+            if (modelDto.Details.QuantizationLevel != null)
+                workingInfoDirectory[ModelInfoKey.QuantizationLevel] = modelDto.Details.QuantizationLevel;
+            if (modelDto.Details.Format != null)
+                workingInfoDirectory[ModelInfoKey.Format] = modelDto.Details.Format;
+
+            model.Info = workingInfoDirectory;
         }
     }
 }

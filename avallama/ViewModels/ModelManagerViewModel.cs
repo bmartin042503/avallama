@@ -134,7 +134,6 @@ public partial class ModelManagerViewModel : PageViewModel
     private async Task LoadModelsData()
     {
         // Get models data from cache excluding cloud models
-        // TODO: extract cloud models that has "cloud" in their names or "cloud" among their labels
         var rawModels = (await _modelCacheService.GetCachedModelsAsync())
             .Where(m => !m.Name.EndsWith("-cloud", StringComparison.OrdinalIgnoreCase));
 
@@ -168,6 +167,7 @@ public partial class ModelManagerViewModel : PageViewModel
             _ollamaService,
             _modelDownloadQueueService,
             _dialogService,
+            _modelCacheService,
             _messenger
         );
         return vm;
@@ -345,7 +345,7 @@ public partial class ModelManagerViewModel : PageViewModel
         _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
     }
 
-    // TODO: proper logging and implementation of status changes
+    // TODO: react to status changes with beautifully written code when the time comes
 
     /// <summary>
     /// Handles changes when Ollama API status changes and updates UI elements accordingly.
@@ -384,7 +384,7 @@ public partial class ModelManagerViewModel : PageViewModel
             case OllamaProcessState.NotInstalled:
                 break;
 
-            case OllamaProcessState.Restarting:
+            case OllamaProcessState.Starting:
                 break;
 
             case OllamaProcessState.Stopped:

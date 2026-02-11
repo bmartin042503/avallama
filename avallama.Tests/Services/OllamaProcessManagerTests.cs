@@ -5,23 +5,21 @@ using System.Threading.Tasks;
 using avallama.Constants.States;
 using avallama.Services.Ollama;
 using avallama.Tests.Fixtures;
+using avallama.Tests.Mocks;
 using Xunit;
 
 namespace avallama.Tests.Services;
 
-public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
+public class OllamaProcessManagerTests(TestServicesFixture fixture) : IClassFixture<TestServicesFixture>
 {
-    private readonly TestServicesFixture _fixture;
-
-    public OllamaProcessManagerTests(TestServicesFixture fixture)
-    {
-        _fixture = fixture;
-    }
-
     [Fact]
     public async Task StartAsync_SetsStartingState()
     {
-        var opm = new OllamaProcessManager();
+        var opm = new OllamaProcessManager
+        {
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => []
+        };
 
         var stateChanged = false;
         var processState = OllamaProcessState.Stopped;
@@ -44,7 +42,7 @@ public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
         var opm = new OllamaProcessManager
         {
             StartProcessFunc = _ => null,
-            GetProcessCountFunc = () => 0
+            GetProcessesFunc = () => []
         };
 
         var processState = OllamaProcessState.Stopped;
@@ -59,8 +57,8 @@ public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
     {
         var opm = new OllamaProcessManager
         {
-            StartProcessFunc = _ => null,
-            GetProcessCountFunc = () => 1
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [ new OllamaProcessMock() ]
         };
 
         var processState = OllamaProcessState.Stopped;
@@ -69,6 +67,4 @@ public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
 
         Assert.Equal(OllamaProcessState.Running, processState);
     }
-
-
 }

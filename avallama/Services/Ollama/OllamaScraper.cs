@@ -15,6 +15,8 @@ using HtmlAgilityPack;
 
 namespace avallama.Services.Ollama;
 
+// TODO: add documentation and clean code
+
 public sealed class OllamaScraperResult
 {
     public required IAsyncEnumerable<OllamaModel> Models { get; init; }

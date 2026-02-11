@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Copyright (c) Márk Csörgő and Martin Bartos
 Licensed under the MIT License. See LICENSE file for details.
 -->
@@ -34,7 +34,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </StackPanel>
         </StackPanel>
 
-        <TextBlock Text="{localization:LocalizationService Key='VERSION'}"
+        <TextBlock Text="{Binding AppVersion}"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Bottom"
                    Margin="10"

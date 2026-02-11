@@ -3,12 +3,33 @@
 
 namespace avallama.Constants.States;
 
+/// <summary>
+/// Defines the lifecycle states of the local Ollama executable process.
+/// </summary>
 public enum OllamaProcessState
 {
+    /// <summary>
+    /// The process is currently starting up.
+    /// </summary>
     Starting,
+
+    /// <summary>
+    /// The process is actively running.
+    /// </summary>
     Running,
+
+    /// <summary>
+    /// The process has been stopped or has not been started yet.
+    /// </summary>
     Stopped,
-    Restarting,
+
+    /// <summary>
+    /// The process failed to start or exited unexpectedly.
+    /// </summary>
     Failed,
+
+    /// <summary>
+    /// The Ollama executable was not found on the system.
+    /// </summary>
     NotInstalled
 }

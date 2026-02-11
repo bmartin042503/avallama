@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
-using avallama.Constants;
 using avallama.Constants.Application;
 using avallama.Constants.Keys;
 using avallama.Services;
@@ -152,6 +151,8 @@ public partial class SettingsViewModel : PageViewModel
             OnPropertyChanged();
         }
     }
+
+    public string AppVersion => App.Version;
 
     public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService,
         IMessenger messenger, INetworkManager networkManager)

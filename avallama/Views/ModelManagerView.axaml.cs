@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System.Runtime.InteropServices;
-using avallama.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Models;
-using avallama.Models.Download;
 
 namespace avallama.Services.Queue;
 

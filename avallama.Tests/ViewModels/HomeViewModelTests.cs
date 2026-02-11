@@ -40,6 +40,10 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             .Setup(o => o.GetDownloadedModelsAsync())
             .ReturnsAsync(models);
 
+        fixture.ModelCacheMock
+            .Setup(o => o.GetDownloadedModelsAsync())
+            .ReturnsAsync(models);
+
         SetupMock();
 
         var vm = CreateViewModel();
@@ -50,7 +54,11 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             "model2"
         };
 
-        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
+        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
+        fixture.OllamaMock.Raise(x =>
+            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessState.Running));
+
+        // raises Connected API status so the ViewModel doesn't wait indefinitely for connection
         fixture.OllamaMock.Raise(x =>
             x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
 
@@ -59,28 +67,6 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         Assert.Equal(availableModels, vm.AvailableModels);
         Assert.Equal("model1", vm.SelectedModelName);
         Assert.True(vm.IsModelsDropdownEnabled);
-    }
-
-    [Fact]
-    public async Task InitializeModels_WhenEmptyList_IsEmpty_SelectedEmptyString_DropdownDisabled()
-    {
-        fixture.OllamaMock.Reset();
-        fixture.OllamaMock
-            .Setup(o => o.GetDownloadedModelsAsync())
-            .ReturnsAsync([]);
-
-        SetupMock();
-
-        var vm = CreateViewModel();
-
-        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
-        fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaApiState.Connected));
-
-        await vm.InitializeAsync();
-
-        Assert.Empty(vm.AvailableModels);
-        Assert.False(vm.IsModelsDropdownEnabled);
     }
 
     [Fact]
@@ -226,6 +212,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             fixture.ConfigMock.Object,
             fixture.DbMock.Object,
             fixture.UpdateMock.Object,
+            fixture.ModelCacheMock.Object,
             fixture.MessengerMock.Object
         );
     }

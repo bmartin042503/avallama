@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,54 +20,117 @@ using avallama.Models;
 using avallama.Models.Dtos;
 using avallama.Models.Ollama;
 using avallama.Services.Persistence;
+using avallama.Utilities.Network;
 using avallama.Utilities.Time;
 
 namespace avallama.Services.Ollama;
 
+/// <summary>
+/// Delegate for handling changes in the Ollama API connection status.
+/// </summary>
 public delegate void OllamaApiStatusChangedHandler(OllamaApiStatus status);
 
+/// <summary>
+/// Defines the contract for interacting with the Ollama API, including connection management,
+/// model retrieval, generation, and deletion.
+/// </summary>
 public interface IOllamaApiClient
 {
+    #region Interface
+
+    /// <summary>
+    /// Gets the current status of the connection to the Ollama API.
+    /// </summary>
     OllamaApiStatus Status { get; }
+
+    /// <summary>
+    /// Event raised when the API connection status changes.
+    /// </summary>
     event OllamaApiStatusChangedHandler? StatusChanged;
+
+    /// <summary>
+    /// Checks the connection to the Ollama API and updates the status accordingly.
+    /// </summary>
     Task CheckConnectionAsync();
+
+    /// <summary>
+    /// Attempts to reconnect to the Ollama API within a configured timeout period.
+    /// </summary>
     Task RetryConnectionAsync();
+
+    /// <summary>
+    /// Enriches the specified model with detailed information from the API (/api/tags, /api/show).
+    /// </summary>
+    /// <param name="model">The model to enrich.</param>
+    Task EnrichModelAsync(OllamaModel model);
+
+    /// <summary>
+    /// Retrieves a list of models that are currently downloaded and available on the Ollama server.
+    /// </summary>
+    /// <returns>A list of downloaded models.</returns>
     Task<IList<OllamaModel>> GetDownloadedModelsAsync();
-    Task UpdateDownloadedModelsAsync();
+
+    /// <summary>
+    /// Deletes a specific model from the Ollama server.
+    /// </summary>
+    /// <param name="modelName">The name of the model to delete.</param>
+    /// <returns>True if the deletion was successful; otherwise, false.</returns>
     Task<bool> DeleteModelAsync(string modelName);
 
-    IAsyncEnumerable<DownloadResponse> PullModelAsync(
-        string modelName,
-        CancellationToken ct = default
-    );
+    /// <summary>
+    /// Pulls a model from the Ollama library, streaming the download progress.
+    /// </summary>
+    /// <param name="modelName">The name of the model to download.</param>
+    /// <param name="ct">Cancellation token to cancel the operation.</param>
+    /// <returns>An async stream of download progress updates.</returns>
+    IAsyncEnumerable<DownloadResponse> PullModelAsync(string modelName, CancellationToken ct = default);
 
-    IAsyncEnumerable<OllamaResponse> GenerateMessageAsync(
-        List<Message> messageHistory,
-        string modelName,
+    /// <summary>
+    /// Generates a chat response from the specified model based on the message history.
+    /// </summary>
+    /// <param name="messageHistory">The history of messages in the conversation.</param>
+    /// <param name="modelName">The name of the model to use for generation.</param>
+    /// <param name="ct">Cancellation token to cancel the operation.</param>
+    /// <returns>An async stream of response chunks.</returns>
+    IAsyncEnumerable<OllamaResponse> GenerateMessageAsync(List<Message> messageHistory, string modelName,
         CancellationToken ct = default);
+
+    #endregion
 }
 
-public class OllamaApiClient : IOllamaApiClient
+/// <summary>
+/// Implementation of the Ollama API client, handling HTTP communication with the Ollama server.
+/// </summary>
+public class OllamaApiClient(
+    IConfigurationService configurationService,
+    INetworkManager networkManager,
+    IHttpClientFactory httpClientFactory,
+    ITimeProvider? timeProvider = null,
+    ITaskDelayer? taskDelayer = null)
+    : IOllamaApiClient
 {
+    #region Constants & Fields
+
     // Default server configuration
     public const int DefaultApiPort = 11434;
     public const string DefaultApiHost = "localhost";
 
     // Dependencies
-    private readonly IConfigurationService _configurationService;
-    private readonly IDialogService _dialogService;
-    private readonly IModelCacheService _modelCacheService;
-    private readonly HttpClient _checkHttpClient;
-    private readonly HttpClient _heavyHttpClient;
-    private readonly ITimeProvider _timeProvider;
-    private readonly ITaskDelayer _taskDelayer;
+    private readonly HttpClient _checkHttpClient = httpClientFactory.CreateClient("OllamaCheckHttpClient");
+    private readonly HttpClient _heavyHttpClient = httpClientFactory.CreateClient("OllamaHeavyHttpClient");
+    private readonly ITimeProvider _timeProvider = timeProvider ?? new RealTimeProvider();
+    private readonly ITaskDelayer _taskDelayer = taskDelayer ?? new RealTaskDelayer();
 
-    public TimeSpan DownloadTimeout { get; init; } = TimeSpan.FromSeconds(5);
+    // Configuration
+    private readonly TimeSpan _downloadTimeout = TimeSpan.FromSeconds(5);
     public TimeSpan MaxRetryingTime { get; init; } = TimeSpan.FromSeconds(15);
     public TimeSpan ConnectionCheckInterval { get; init; } = TimeSpan.FromMilliseconds(500);
 
-    private List<OllamaModel>? _downloadedModels;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
+
+    #endregion
+
+    #region Event & Status
 
     public event OllamaApiStatusChangedHandler? StatusChanged;
 
@@ -83,24 +145,9 @@ public class OllamaApiClient : IOllamaApiClient
         }
     } = new(OllamaApiState.Disconnected);
 
-    public OllamaApiClient(
-        IConfigurationService configurationService,
-        IDialogService dialogService,
-        IModelCacheService modelCacheService,
-        IHttpClientFactory httpClientFactory,
-        ITimeProvider? timeProvider = null,
-        ITaskDelayer? taskDelayer = null)
-    {
-        _configurationService = configurationService;
-        _dialogService = dialogService;
-        _modelCacheService = modelCacheService;
+    #endregion
 
-        _checkHttpClient = httpClientFactory.CreateClient("OllamaCheckHttpClient");
-        _heavyHttpClient = httpClientFactory.CreateClient("OllamaHeavyHttpClient");
-
-        _timeProvider = timeProvider ?? new RealTimeProvider();
-        _taskDelayer = taskDelayer ?? new RealTaskDelayer();
-    }
+    #region Public Methods
 
     public async Task CheckConnectionAsync()
     {
@@ -140,19 +187,26 @@ public class OllamaApiClient : IOllamaApiClient
         if (!await IsOllamaReachable())
         {
             SetUnreachableStatus();
-            return new List<OllamaModel>();
+            return [];
         }
 
-        if (_downloadedModels == null || _downloadedModels.Count == 0)
-        {
-            await UpdateDownloadedModelsAsync();
-        }
+        var tagsResponse = await FetchOllamaTagsAsync();
 
-        return _downloadedModels ?? [];
+        var downloadedModels = tagsResponse?.Models
+            .Where(dto => !string.IsNullOrEmpty(dto.Name))
+            .Select(dto => new OllamaModel
+            {
+                Name = dto.Name!,
+                Info = new Dictionary<string, string>()
+            }).ToList();
+
+        return downloadedModels ?? [];
     }
 
-    public async Task UpdateDownloadedModelsAsync()
+    public async Task EnrichModelAsync(OllamaModel model)
     {
+        if (string.IsNullOrEmpty(model.Name)) return;
+
         if (!await IsOllamaReachable())
         {
             SetUnreachableStatus();
@@ -160,42 +214,14 @@ public class OllamaApiClient : IOllamaApiClient
         }
 
         var tagsResponse = await FetchOllamaTagsAsync();
-        if (tagsResponse?.Models == null) return;
 
-        var downloadedModels = new ConcurrentBag<OllamaModel>();
+        var modelDto = tagsResponse?.Models.FirstOrDefault(modelDto => model.Name == modelDto.Name);
 
-        var parallelOptions = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = 5
-        };
+        if (modelDto == null) return;
+        var modelShowResponse = await FetchModelInfoAsync(model.Name);
 
-        await Parallel.ForEachAsync(tagsResponse.Models.Where(m => !string.IsNullOrEmpty(m.Name)), parallelOptions,
-            async (ollamaModelDto, _) =>
-            {
-                var downloadedModel = ollamaModelDto.ConvertToOllamaModel();
-                try
-                {
-                    var showResponse = await FetchModelInfoAsync(downloadedModel.Name);
-                    downloadedModel.EnrichWith(showResponse);
-                    downloadedModel.IsDownloaded = true;
-                }
-                catch (Exception)
-                {
-                    // TODO: proper logging
-                }
-
-                downloadedModels.Add(downloadedModel);
-            });
-
-        var sortedModels = downloadedModels.OrderBy(m => m.Name).ToList();
-
-        // TODO: fix local model caching when there is no scraped models in the db
-        foreach (var model in sortedModels)
-        {
-            await _modelCacheService.UpdateModelAsync(model);
-        }
-
-        _downloadedModels = sortedModels;
+        model.EnrichWith(modelDto);
+        model.EnrichWith(modelShowResponse);
     }
 
     public async IAsyncEnumerable<DownloadResponse> PullModelAsync(
@@ -218,7 +244,9 @@ public class OllamaApiClient : IOllamaApiClient
         HttpResponseMessage? response;
         try
         {
-            response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            // Using check client since this request is sent once and associated with the stream.
+            // It doesn't need heavyclient's full timeout, as the API should reply quickly at first.
+            response = await _checkHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         }
         catch (HttpRequestException ex)
         {
@@ -235,23 +263,46 @@ public class OllamaApiClient : IOllamaApiClient
             throw new OllamaApiException(response.StatusCode);
         }
 
+        // TODO: Extract stream reading logic into a separate method so proper exceptions will be thrown
+        // and they'll be canceled correctly.
+        // TODO: Handle the thrown exceptions properly (e.g., catch LostInternetException in HomeViewModel).
+
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
         using var reader = new StreamReader(stream);
+        var lastProgressDateTime = DateTime.Now;
+        long? previousCompletedValue = 0;
 
-        var line = await reader.ReadLineAsync(ct);
-        while (line != null)
+        while (!ct.IsCancellationRequested)
         {
             DownloadResponse? json = null;
             try
             {
-                line = await reader.ReadLineAsync(ct);
-                Console.WriteLine(line);
-                if (line == null) break;
-                json = JsonSerializer.Deserialize<DownloadResponse>(line, _jsonSerializerOptions);
+                // Check for internet connection if the timeout has passed without progress
+                if (DateTime.Now - lastProgressDateTime > _downloadTimeout)
+                {
+                    if (!await networkManager.IsInternetAvailableAsync())
+                    {
+                        throw new LostInternetConnectionException();
+                    }
+                }
+
+                var line = await reader.ReadLineAsync(ct);
+                if (line != null)
+                {
+                    json = JsonSerializer.Deserialize<DownloadResponse>(line, _jsonSerializerOptions);
+
+                    // Check whether the Completed value is received and is increasing
+                    if (json is { Completed: not null } && json.Completed > previousCompletedValue)
+                    {
+                        lastProgressDateTime = DateTime.Now;
+                        previousCompletedValue = json.Completed;
+                    }
+                }
+                else break;
             }
             catch (JsonException)
             {
-                // TODO: proper logging
+                // TODO: Proper logging
             }
 
             if (json != null) yield return json;
@@ -263,7 +314,8 @@ public class OllamaApiClient : IOllamaApiClient
         string modelName,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        // TODO: pass cancellation token properly when we'll support stopping the message generation
+        // TODO: Pass cancellation token properly when supporting stopping message generation.
+        // The default token currently is not cancellable.
 
         if (!await IsOllamaReachable())
         {
@@ -303,9 +355,9 @@ public class OllamaApiClient : IOllamaApiClient
             {
                 json = JsonSerializer.Deserialize<OllamaResponse>(line);
             }
-            catch (JsonException e)
+            catch (JsonException)
             {
-                _dialogService.ShowErrorDialog(e.Message, false);
+                // TODO: Proper logging
             }
 
             if (json != null) yield return json;
@@ -327,13 +379,15 @@ public class OllamaApiClient : IOllamaApiClient
         using var request = CreateRequest(HttpMethod.Delete, "/api/delete");
         request.Content = content;
 
-        using var response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        // Using check client since API should not take a long time on this
+        using var response = await _checkHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         return response.StatusCode == HttpStatusCode.OK;
     }
 
     /// <summary>
     /// Checks if the configured API host points to a remote server.
     /// </summary>
+    /// <param name="host">The hostname to check.</param>
     /// <returns>True if the Ollama connection is remote; otherwise, false.</returns>
     public static bool IsConnectionRemote(string host)
     {
@@ -343,13 +397,17 @@ public class OllamaApiClient : IOllamaApiClient
                !host.Equals("127.0.0.1", StringComparison.Ordinal);
     }
 
+    #endregion
+
+    #region Private Helpers
+
     /// <summary>
     /// Creates the appropriate exception based on whether the connection is local or remote.
-    /// <returns>Newly created exception</returns>
     /// </summary>
+    /// <returns>A newly created OllamaException to throw.</returns>
     private OllamaException NewServiceUnreachableException(Exception? innerException = null)
     {
-        if (IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
+        if (IsConnectionRemote(configurationService.ReadSetting(ConfigurationKey.ApiHost)))
         {
             return new OllamaRemoteServerUnreachableException(innerException);
         }
@@ -359,7 +417,7 @@ public class OllamaApiClient : IOllamaApiClient
 
     private void SetUnreachableStatus()
     {
-        if (IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
+        if (IsConnectionRemote(configurationService.ReadSetting(ConfigurationKey.ApiHost)))
         {
             Status = new OllamaApiStatus(OllamaApiState.Faulted,
                 LocalizationService.GetString("OLLAMA_REMOTE_UNREACHABLE"));
@@ -376,14 +434,14 @@ public class OllamaApiClient : IOllamaApiClient
     /// </summary>
     private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint)
     {
-        var host = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
+        var host = configurationService.ReadSetting(ConfigurationKey.ApiHost);
         if (string.IsNullOrEmpty(host) || host == "localhost")
         {
-            // use IPv4 since Windows may resolve 'localhost' to IPv6
+            // Use IPv4 since Windows may resolve 'localhost' to IPv6
             host = "127.0.0.1";
         }
 
-        var port = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
+        var port = configurationService.ReadSetting(ConfigurationKey.ApiPort);
         if (string.IsNullOrEmpty(port)) port = "11434";
 
         var builder = new UriBuilder("http", host, int.Parse(port), endpoint);
@@ -393,24 +451,42 @@ public class OllamaApiClient : IOllamaApiClient
 
     private async Task<OllamaTagsResponse?> FetchOllamaTagsAsync()
     {
-        using var request = CreateRequest(HttpMethod.Get, "/api/tags");
-        using var response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-        var json = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<OllamaTagsResponse>(json, _jsonSerializerOptions);
+        try
+        {
+            using var request = CreateRequest(HttpMethod.Get, "/api/tags");
+            using var response = await _checkHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<OllamaTagsResponse>(json, _jsonSerializerOptions);
+        }
+        catch (Exception ex) when (ex is HttpRequestException)
+        {
+            // TODO: Proper logging
+            return null;
+        }
     }
 
     private async Task<OllamaShowResponse?> FetchModelInfoAsync(string modelName)
     {
-        var payload = new { model = modelName };
-        var jsonPayload = JsonSerializer.Serialize(payload);
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        try
+        {
+            var payload = new { model = modelName };
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        using var request = CreateRequest(HttpMethod.Post, "/api/show");
-        request.Content = content;
-        using var response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-        var json = await response.Content.ReadAsStringAsync();
+            using var request = CreateRequest(HttpMethod.Post, "/api/show");
+            request.Content = content;
 
-        return JsonSerializer.Deserialize<OllamaShowResponse>(json, _jsonSerializerOptions);
+            // Using check client since API should not take a long time on this
+            using var response = await _checkHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<OllamaShowResponse>(json, _jsonSerializerOptions);
+        }
+        catch (Exception ex) when (ex is HttpRequestException)
+        {
+            // TODO: Proper logging
+            return null;
+        }
     }
 
     private async Task<bool> IsOllamaReachable()
@@ -428,4 +504,6 @@ public class OllamaApiClient : IOllamaApiClient
             return false;
         }
     }
+
+    #endregion
 }

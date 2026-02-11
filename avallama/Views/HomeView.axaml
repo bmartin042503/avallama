@@ -167,7 +167,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </Grid>
         </StackPanel>
 
-        <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="3" RowDefinitions="*,Auto" Margin="18,0">
+        <Grid Grid.Column="1" Grid.Row="2" ColumnSpan="3" RowDefinitions="*,Auto,Auto" Margin="18,0">
 
             <!-- Restart Ollama (if it's unable to connect)  -->
             <StackPanel x:Name="RetryPanel" Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center"
@@ -185,7 +185,7 @@ Licensed under the MIT License. See LICENSE file for details.
                 <Button x:Name="RetryButton"
                         Content="{services:LocalizationService Key='RETRY'}"
                         Padding="14, 4" CornerRadius="6"
-                        Command="{Binding RetryOllamaConnection}"
+                        Command="{Binding RetryOllamaConnectionCommand}"
                         Cursor="Hand" HorizontalAlignment="Center" VerticalAlignment="Center"
                         IsVisible="{Binding IsRetryButtonVisible}" />
             </StackPanel>
@@ -249,12 +249,14 @@ Licensed under the MIT License. See LICENSE file for details.
 
             </Grid>
 
-            <!-- Send message button -->
+            <!-- Send message text box -->
             <TextBox Grid.Row="1"
                      x:Name="MessageTextBox"
+                     Height="64"
                      Watermark="{services:LocalizationService Key='SEND_MESSAGE'}"
-                     Margin="0,30,0,20"
-                     Padding="20, 10"
+                     Margin="0,30,0,0"
+                     Padding="14, 10"
+                     CornerRadius="14"
                      IsEnabled="{Binding IsMessageBoxEnabled}"
                      Text="{Binding NewMessageText, Mode=TwoWay}">
                 <TextBox.KeyBindings>
@@ -262,6 +264,15 @@ Licensed under the MIT License. See LICENSE file for details.
                                 Command="{Binding SendMessageCommand}" />
                 </TextBox.KeyBindings>
             </TextBox>
+
+            <TextBlock Grid.Row="2"
+                       Text="{services:LocalizationService Key='LLM_RESPONSE_WARNING'}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,8"
+                       Opacity="0.7"
+                       Foreground="{DynamicResource OnSurface}"
+                       FontSize="11"/>
         </Grid>
     </Grid>
 </UserControl>

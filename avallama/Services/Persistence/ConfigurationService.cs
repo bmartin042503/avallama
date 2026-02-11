@@ -17,6 +17,7 @@ public interface IConfigurationService
     void SaveSetting(string key, string value);
 }
 
+// TODO: refactor this to use generic types rather than comparing strings
 
 public class ConfigurationService : IConfigurationService
 {

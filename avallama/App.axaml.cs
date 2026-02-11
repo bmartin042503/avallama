@@ -14,6 +14,7 @@ using Avalonia.Markup.Xaml;
 using avallama.Services;
 using avallama.Services.Ollama;
 using avallama.Services.Persistence;
+using avallama.Utilities;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Microsoft.Data.Sqlite;
@@ -36,6 +37,7 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        DiskManager.IsEnoughDiskSpaceAvailable(25_000_000_000L);
         // Create all dependencies and store them in a ServiceCollection
         var collection = new ServiceCollection();
         collection.AddCommonServices();
@@ -160,7 +162,7 @@ public partial class App : Application
             "Avallama - " + Version
                           + "\n\nCopyright (c) " + LocalizationService.GetString("DEVELOPER_NAMES")
                           + "\n\n" + LocalizationService.GetString("LICENSE_DETAILS")
-                          + "\n\n" + LocalizationService.GetString("FROM_ORG") + " (github.com/4foureyes/avallama)"
+                          + "\n\n" + LocalizationService.GetString("FROM_TEAM") + " (github.com/4foureyes/avallama)"
         );
     }
 }

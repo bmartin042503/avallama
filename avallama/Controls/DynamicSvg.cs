@@ -12,9 +12,7 @@ namespace avallama.Controls;
 /// Can be used to display an SVG. The FillColor and StrokeColor properties can be used to set the SVG colors.
 /// </summary>
 
-// TODO:
-// ezt majd megcsinálom úgy hogy svg fájlban meg lehessen adni osztályokat/tageket (pl. Primary, OnPrimary stb.)
-// és akkor teljesen dinamikusan működne minden svg színezés
+// TODO: replace this with StreamGeometry
 public class DynamicSvg : Avalonia.Svg.Svg
 {
     /* An SVG can be colored properly with this class by:

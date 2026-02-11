@@ -15,6 +15,7 @@ using avallama.Models.Dtos;
 using avallama.Services.Ollama;
 using avallama.Tests.Fixtures;
 using avallama.Tests.Mocks;
+using avallama.Utilities.Time;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -113,17 +114,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         var httpClient = new HttpClient(_handlerMock.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
-        var oac = new OllamaApiClient(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            mockHttpClientFactory.Object,
-            timeMock,
-            delayerMock)
-        {
-            MaxRetryingTime = TimeSpan.FromSeconds(2),
-            ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
-        };
+        var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
         oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
 
@@ -159,17 +150,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         var httpClient = new HttpClient(_handlerMock.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
-        var oac = new OllamaApiClient(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            mockHttpClientFactory.Object,
-            timeMock,
-            delayerMock)
-        {
-            MaxRetryingTime = TimeSpan.FromSeconds(2),
-            ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
-        };
+        var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
         var stateEvents = new List<OllamaApiState?>();
         oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
@@ -221,13 +202,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         var httpClient = new HttpClient(_handlerMock.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
-        var oac = new OllamaApiClient(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            mockHttpClientFactory.Object,
-            timeMock,
-            delayerMock);
+        var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
         var stateEvents = new List<OllamaApiState?>();
         oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
@@ -295,13 +270,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         var httpClient = new HttpClient(mockHandler.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
-        var oac = new OllamaApiClient(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            mockHttpClientFactory.Object,
-            timeMock,
-            delayerMock);
+        var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
         var stateEvents = new List<OllamaApiState?>();
         oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
@@ -358,13 +327,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         var httpClient = new HttpClient(mockHandler.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
-        var oac = new OllamaApiClient(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            mockHttpClientFactory.Object,
-            timeMock,
-            delayerMock);
+        var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
         var results = new List<OllamaResponse>();
         await foreach (var r in oac.GenerateMessageAsync([], "llama3.2"))
@@ -406,13 +369,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         var httpClient = new HttpClient(mockHandler.Object);
         var mockHttpClientFactory = CreateMockHttpClientFactory(httpClient, httpClient);
 
-        var oac = new OllamaApiClient(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            mockHttpClientFactory.Object,
-            timeMock,
-            delayerMock);
+        var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
         var stateEvents = new List<OllamaApiState?>();
         oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
@@ -478,13 +435,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
 
         var mockHttpClientFactory = CreateMockHttpClientFactory(checkClient, heavyClient);
 
-        var oac = new OllamaApiClient(
-            _fixture.ConfigMock.Object,
-            _fixture.DialogMock.Object,
-            _fixture.ModelCacheMock.Object,
-            mockHttpClientFactory.Object,
-            timeMock,
-            delayerMock);
+        var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
         var results = new List<OllamaResponse>();
 
@@ -504,5 +455,22 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         Assert.Equal("Finally loaded!", results[0].Message?.Content);
         Assert.NotEqual(OllamaApiState.Disconnected, oac.Status.ApiState);
         Assert.NotEqual(OllamaApiState.Faulted, oac.Status.ApiState);
+    }
+
+    private OllamaApiClient CreateOllamaApiClient(
+        IHttpClientFactory mockHttpClientFactory,
+        ITimeProvider? timeMock,
+        ITaskDelayer? delayerMock)
+    {
+        return new OllamaApiClient(
+            _fixture.ConfigMock.Object,
+            _fixture.NetworkManagerMock.Object,
+            mockHttpClientFactory,
+            timeMock,
+            delayerMock)
+        {
+            MaxRetryingTime = TimeSpan.FromSeconds(2),
+            ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
+        };
     }
 }

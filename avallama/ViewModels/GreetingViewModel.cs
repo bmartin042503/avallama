@@ -7,6 +7,7 @@ namespace avallama.ViewModels;
 
 public partial class GreetingViewModel : PageViewModel
 {
+    public string AppVersion => App.Version;
     public GreetingViewModel()
     {
         // setting the page type that this viewmodel handles

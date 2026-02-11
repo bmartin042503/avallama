@@ -162,9 +162,10 @@ Licensed under the MIT License. See LICENSE file for details.
                         <StackPanel Spacing="3" Orientation="Vertical">
                             <TextBlock Text="Avallama" FontWeight="Bold" FontSize="18" />
                             <TextBlock Text="{services:LocalizationService Key='SHORT_DESC'}" FontStyle="Italic" />
+                            <!-- TODO: add 'new version available' clickable text that redirects to GitHub -->
                             <TextBlock Margin="0,16,0,0">
                                 <Run Text="{services:LocalizationService Key='VERSION_LABEL'}" FontWeight="Bold" />
-                                <Run Text="{services:LocalizationService Key='VERSION'}" />
+                                <Run Text="{Binding AppVersion}" />
                             </TextBlock>
                             <TextBlock>
                                 <Run Text="{services:LocalizationService Key='DEVELOPERS'}" FontWeight="Bold" />
@@ -191,7 +192,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                 <Run Text="Copyright" FontWeight="Bold" />
                                 <Run Text="© 2025 Márk Csörgő and Martin Bartos" />
                             </TextBlock>
-                            <TextBlock Text="{services:LocalizationService Key='FROM_ORG'}"
+                            <TextBlock Text="{services:LocalizationService Key='FROM_TEAM'}"
                                        HorizontalAlignment="Center"
                                        FontStyle="Italic" ClipToBounds="False" />
                         </StackPanel>

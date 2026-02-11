@@ -74,7 +74,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>An unknown error occured</value>
     </data>
     <data name="MULTIPLE_INSTANCES_ERROR" xml:space="preserve">
-        <value>Multiple instances of Ollama are running. Please close all instances and restart the app.</value>
+        <value>Multiple instances of Ollama detected. Please ensure only one is running.</value>
     </data>
     <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
         <value>Ollama is not installed</value>
@@ -124,8 +124,8 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="GITHUB_BUTTON" xml:space="preserve">
         <value>GitHub</value>
     </data>
-    <data name="FROM_ORG" xml:space="preserve">
-        <value>From the 4foureyes organization</value>
+    <data name="FROM_TEAM" xml:space="preserve">
+        <value>From the 4foureyes team</value>
     </data>
     <data name="CLOSE" xml:space="preserve">
         <value>Close</value>
@@ -531,5 +531,17 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="UPDATE_AVAILABLE_DESC" xml:space="preserve">
         <value>To update, download the latest release from our GitHub page.</value>
+    </data>
+    <data name="OLLAMA_STOPPED_UNEXPECTEDLY" xml:space="preserve">
+        <value>Ollama stopped unexpectedly.</value>
+    </data>
+    <data name="EXIT_CODE" xml:space="preserve">
+        <value>Exit code</value>
+    </data>
+    <data name="ERROR_UPDATING_MODEL" xml:space="preserve">
+        <value>An error has occurred while updating the model metadata: {0}</value>
+    </data>
+    <data name="LLM_RESPONSE_WARNING" xml:space="preserve">
+        <value>LLMs can make mistakes. Always verify important information.</value>
     </data>
 </root>

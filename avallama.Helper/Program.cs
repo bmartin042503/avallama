@@ -10,6 +10,7 @@ namespace avallama.Helper;
 /// </summary>
 internal static class Program
 {
+    // TODO: fix app restart + implement automatic update
     private static void Main(string[] args)
     {
         // avallama starts this process when it needs to restart the application
