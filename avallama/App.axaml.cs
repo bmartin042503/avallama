@@ -37,7 +37,6 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        DiskManager.IsEnoughDiskSpaceAvailable(25_000_000_000L);
         // Create all dependencies and store them in a ServiceCollection
         var collection = new ServiceCollection();
         collection.AddCommonServices();
