@@ -14,7 +14,7 @@ fi
 
 PROJECT="avallama/avallama.csproj"
 
-log "Running dotnet publish...\n"
+log "Running dotnet publish"
 dotnet publish "${PROJECT}" \
   --verbosity quiet \
   --nologo \

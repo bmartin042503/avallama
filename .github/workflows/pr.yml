@@ -29,10 +29,10 @@ jobs:
       DOTNET_NOLOGO: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET 10 SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
@@ -54,11 +54,11 @@ jobs:
           --collect:"XPlat Code Coverage"
           --logger "trx;LogFileName=test-results.trx"
           --logger "console;verbosity=detailed"
-          -v d
+          -v n
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-${{ matrix.os }}
           path: |
@@ -67,14 +67,14 @@ jobs:
 
       - name: Upload coverage artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-${{ matrix.os }}
           path: |
             **/TestResults/*/coverage.cobertura.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de
         with:
           files: "**/TestResults/*/coverage.cobertura.xml"
           flags: ${{ matrix.os }}
