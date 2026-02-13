@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.Constants.Application;
+using avallama.Constants.Keys;
 using avallama.Models.Ollama;
 using avallama.Services;
 using avallama.Services.Ollama;

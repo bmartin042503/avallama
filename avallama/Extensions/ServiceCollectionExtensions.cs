@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.RateLimiting;
-using avallama.Constants;
+using avallama.Constants.Application;
 using avallama.ViewModels;
 using avallama.Factories;
 using avallama.Services;
@@ -66,7 +66,7 @@ public static class ServiceCollectionExtensions
 
             collection.AddTransient<OllamaRateLimitedHandler>();
 
-            collection.AddHttpClient<IOllamaScraperService, OllamaScraperService>(client =>
+            collection.AddHttpClient<IOllamaScraper, OllamaScraper>(client =>
                 {
                     client.BaseAddress = new Uri("https://www.ollama.com");
                     client.Timeout = TimeSpan.FromSeconds(30);
@@ -88,8 +88,8 @@ public static class ServiceCollectionExtensions
             collection.AddSingleton<DialogService>();
             collection.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
 
-            collection.AddSingleton<ModelModelDownloadQueueService>();
-            collection.AddSingleton<IModelDownloadQueueService>(sp => sp.GetRequiredService<ModelModelDownloadQueueService>());
+            collection.AddSingleton<ModelDownloadQueueService>();
+            collection.AddSingleton<IModelDownloadQueueService>(sp => sp.GetRequiredService<ModelDownloadQueueService>());
 
             collection.AddSingleton<MainViewModel>();
             collection.AddSingleton<HomeViewModel>();

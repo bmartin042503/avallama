@@ -15,7 +15,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using avallama.Constants;
+using avallama.Constants.Keys;
 using avallama.Exceptions;
 using avallama.Models.Dtos;
 using avallama.Extensions;
@@ -91,12 +91,12 @@ namespace avallama.Services.Ollama
         /// Attempts to start the Ollama process and establish a connection.
         /// Thread-safe and prevents multiple concurrent start attempts.
         /// </summary>
-        Task Start();
+        Task StartAsync();
 
         /// <summary>
         /// Stops the local Ollama process and disposes of resources.
         /// </summary>
-        void Stop();
+        Task StopAsync();
 
         /// <summary>
         /// Retries the connection logic with an exponential backoff strategy.
@@ -195,7 +195,7 @@ namespace avallama.Services.Ollama
         private readonly IConfigurationService _configurationService;
         private readonly IDialogService _dialogService;
         private readonly IModelCacheService _modelCacheService;
-        private readonly IOllamaScraperService _ollamaScraperService;
+        private readonly IOllamaScraper _ollamaScraper;
         private readonly INetworkManager _networkManager;
         private readonly IAvaloniaDispatcher _dispatcher;
         private readonly HttpClient _checkHttpClient;
@@ -204,13 +204,13 @@ namespace avallama.Services.Ollama
         private readonly ITaskDelayer _taskDelayer;
 
         // Internal State
-        private Process? _ollamaProcess;
+        private IOllamaProcess? _process;
         private bool _started;
 
         /// <summary>
         /// Semaphore to ensure thread safety during the Start sequence.
         /// </summary>
-        private readonly SemaphoreSlim _startLock = new(1, 1);
+        private readonly SemaphoreSlim _processSemaphore = new(1, 1);
 
         // Caching
         private OllamaScraperResult? _currentScrapeSession;
@@ -241,10 +241,17 @@ namespace avallama.Services.Ollama
         // Mockable delegates for testing
 
         /// <summary>Delegate used to start the process. Can be mocked for unit testing.</summary>
-        public Func<ProcessStartInfo, Process?> StartProcessFunc { get; init; } = Process.Start;
+        public Func<ProcessStartInfo, IOllamaProcess?> StartProcessFunc { get; init; } = psi =>
+        {
+            var process = Process.Start(psi);
+            return process != null ? new OllamaProcess(process) : null;
+        };
 
-        /// <summary>Delegate used to check running processes. Can be mocked for unit testing.</summary>
-        public Func<int> GetProcessCountFunc { get; init; } = () => Process.GetProcessesByName("ollama").Length;
+        /// <summary>Delegate used to retrieve running processes. Can be mocked for unit testing.</summary>
+        public Func<IEnumerable<IOllamaProcess>> GetProcessesFunc { get; init; }
+
+        /// <summary>Delegate used to check if Ollama is running as a systemd service (Linux only). Can be mocked for unit testing.</summary>
+        public Func<bool> CheckSystemdStatusFunc { get; init; }
 
         public TimeSpan MaxRetryingTime { get; init; } = TimeSpan.FromSeconds(15);
         public TimeSpan ConnectionCheckInterval { get; init; } = TimeSpan.FromMilliseconds(500);
@@ -263,7 +270,7 @@ namespace avallama.Services.Ollama
         /// <param name="configurationService">Service for reading app settings.</param>
         /// <param name="dialogService">Service for showing UI dialogs.</param>
         /// <param name="modelCacheService">Service for caching model details.</param>
-        /// <param name="ollamaScraperService">Service for scraping online models.</param>
+        /// <param name="ollamaScraper">Service for scraping online models.</param>
         /// <param name="networkManager">Network manager to perform connection checks.</param>
         /// <param name="dispatcher">Dispatcher to marshal events to the UI thread.</param>
         /// <param name="httpClientFactory">Factory to create a named HttpClient instance.</param>
@@ -273,17 +280,20 @@ namespace avallama.Services.Ollama
             IConfigurationService configurationService,
             IDialogService dialogService,
             IModelCacheService modelCacheService,
-            IOllamaScraperService ollamaScraperService,
+            IOllamaScraper ollamaScraper,
             INetworkManager networkManager,
             IAvaloniaDispatcher dispatcher,
             IHttpClientFactory httpClientFactory,
             ITimeProvider? timeProvider = null,
             ITaskDelayer? taskDelayer = null)
         {
+            GetProcessesFunc ??= () => Process.GetProcessesByName("ollama").Select(p => new OllamaProcess(p));
+            CheckSystemdStatusFunc ??= IsOllamaRunningAsSystemdService;
+
             _configurationService = configurationService;
             _dialogService = dialogService;
             _modelCacheService = modelCacheService;
-            _ollamaScraperService = ollamaScraperService;
+            _ollamaScraper = ollamaScraper;
             _networkManager = networkManager;
             _dispatcher = dispatcher;
 
@@ -304,9 +314,9 @@ namespace avallama.Services.Ollama
         /// Orchestrates the startup of the Ollama service.
         /// Checks for existing instances, attempts to start the process if needed, and verifies connectivity.
         /// </summary>
-        public async Task Start()
+        public async Task StartAsync()
         {
-            await _startLock.WaitAsync();
+            await _processSemaphore.WaitAsync();
 
             try
             {
@@ -314,20 +324,32 @@ namespace avallama.Services.Ollama
 
                 ConfigureOllamaPath();
 
-                // Check for existing instances
-                var ollamaProcessCount = GetProcessCountFunc();
-                switch (ollamaProcessCount)
+                // check for existing instances (real server processes).
+                // we get all processes named "ollama" and ensure they don't have a window handle
+                // (to distinguish from GUI wrappers).
+                var ollamaServerProcesses = GetProcessesFunc()
+                    .Where(p => p.MainWindowHandle == IntPtr.Zero)
+                    .Where(p => !p.ProcessName.Equals("Ollama", StringComparison.Ordinal))
+                    .ToArray();
+
+                if (ollamaServerProcesses.Length == 1)
                 {
-                    case 1:
-                        // If ollama is running as a systemd service under Linux, it should be counted here
-                        OllamaServiceState = new ServiceState(ServiceStatus.Running,
-                            LocalizationService.GetString("OLLAMA_ALREADY_RUNNING"));
-                        _started = true;
-                        return;
-                    case >= 2:
-                        OllamaServiceState = new ServiceState(ServiceStatus.Failed,
-                            LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR"));
-                        return;
+                    // attach to the existing process
+                    // _isProcessStartedByAvallama = false;
+                    _process = ollamaServerProcesses.FirstOrDefault();
+
+                    // TODO: subscribe to Exited event and handle unexpected shutdown
+
+                    OllamaServiceState = new ServiceState(ServiceStatus.Running,
+                        LocalizationService.GetString("OLLAMA_ALREADY_RUNNING"));
+                    return;
+                }
+                else if (ollamaServerProcesses.Length > 1)
+                {
+                    // multiple instances found, report failure rather than attempting to kill them
+                    OllamaServiceState = new ServiceState(ServiceStatus.Failed,
+                        LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR"));
+                    return;
                 }
 
                 // Attempt to start process
@@ -348,31 +370,44 @@ namespace avallama.Services.Ollama
             }
             finally
             {
-                _startLock.Release();
+                _processSemaphore.Release();
             }
         }
 
         /// <summary>
         /// Stops the managed Ollama process and resets the internal state.
         /// </summary>
-        public void Stop()
+        public async Task StopAsync()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && IsOllamaRunningAsSystemdService())
-            {
-                // ollama is running as a systemd service, so it should not be killed
-                return;
-            }
+            await _processSemaphore.WaitAsync();
 
-            var ollamaProcessList = Process.GetProcessesByName("ollama");
-            foreach (var process in ollamaProcessList)
-            {
-                if (process.HasExited) return;
-                process.Kill();
-                process.Dispose();
-            }
+            // TODO: check if process is started by Avallama
 
-            _started = false;
-            OllamaServiceState = new ServiceState(ServiceStatus.Stopped);
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && CheckSystemdStatusFunc())
+                {
+                    // ollama is running as a systemd service, so it should not be killed
+                    return;
+                }
+
+                // TODO: better process exit handling, awaiting exit async, etc.
+
+                var ollamaProcessList = Process.GetProcessesByName("ollama");
+                foreach (var process in ollamaProcessList)
+                {
+                    if (process.HasExited) return;
+                    process.Kill();
+                    process.Dispose();
+                }
+
+                _started = false;
+                OllamaServiceState = new ServiceState(ServiceStatus.Stopped);
+            }
+            finally
+            {
+                _processSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -404,7 +439,7 @@ namespace avallama.Services.Ollama
                 return;
             }
 
-            var processCount = GetProcessCountFunc();
+            var processCount = GetProcessesFunc().Count();
 
             // if there is no ollama process start one and restart connection checks
             if (processCount == 0)
@@ -684,7 +719,7 @@ namespace avallama.Services.Ollama
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             _currentScrapeSession = null;
-            var result = await _ollamaScraperService.GetAllOllamaModelsAsync(cancellationToken);
+            var result = await _ollamaScraper.GetAllOllamaModelsAsync(cancellationToken);
             _currentScrapeSession = result;
 
             await foreach (var model in result.Models.WithCancellation(cancellationToken))
@@ -828,8 +863,8 @@ namespace avallama.Services.Ollama
 
             try
             {
-                _ollamaProcess = StartProcessFunc(startInfo);
-                if (_ollamaProcess != null) return true;
+                _process = StartProcessFunc(startInfo);
+                if (_process != null) return true;
                 OllamaServiceState = new ServiceState(ServiceStatus.NotInstalled);
                 return false;
             }
@@ -987,7 +1022,7 @@ namespace avallama.Services.Ollama
         /// </summary>
         public void Dispose()
         {
-            _startLock.Dispose();
+            _processSemaphore.Dispose();
             GC.SuppressFinalize(this);
         }
 

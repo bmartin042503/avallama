@@ -4,17 +4,15 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using avallama.Constants;
+using avallama.Constants.Keys;
 using avallama.Models;
 using avallama.Models.Dtos;
 using avallama.Services.Ollama;
-using avallama.Services.Persistence;
 using avallama.Tests.Mocks;
 using avallama.Tests.Fixtures;
 using Moq;
@@ -100,13 +98,13 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => []
         };
 
         var reportedState = new ServiceState(ServiceStatus.Stopped);
         ol.ServiceStateChanged += status => reportedState = status;
-        await ol.Start();
+        await ol.StartAsync();
 
         Assert.Equal(ServiceStatus.Running, reportedState.Status);
     }
@@ -132,12 +130,12 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             delayerMock)
         {
             StartProcessFunc = _ => null,
-            GetProcessCountFunc = () => 0
+            GetProcessesFunc = () => []
         };
 
         var reportedState = new ServiceState(ServiceStatus.Stopped);
         ol.ServiceStateChanged += status => reportedState = status;
-        await ol.Start();
+        await ol.StartAsync();
 
         Assert.Equal(ServiceStatus.NotInstalled, reportedState.Status);
     }
@@ -162,13 +160,13 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => null,
-            GetProcessCountFunc = () => 1
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [new OllamaProcessMock()]
         };
 
         var reportedState = new ServiceState(ServiceStatus.Stopped);
         ol.ServiceStateChanged += status => reportedState = status;
-        await ol.Start();
+        await ol.StartAsync();
 
         Assert.Equal(ServiceStatus.Running, reportedState.Status);
     }
@@ -219,15 +217,15 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0,
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [],
             MaxRetryingTime = TimeSpan.FromSeconds(2),
             ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
         };
 
         ol.ServiceStateChanged += state => { statusEvents.Add(state?.Status); };
 
-        await ol.Start();
+        await ol.StartAsync();
 
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Running));
         Assert.Equal(1, statusEvents.Count(e => e == ServiceStatus.Retrying));
@@ -270,8 +268,8 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0,
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [],
             MaxRetryingTime = TimeSpan.FromSeconds(2),
             ConnectionCheckInterval = TimeSpan.FromMilliseconds(50)
         };
@@ -282,7 +280,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             if (s?.Status != null) statusEvents.Add(s.Status);
         };
 
-        await ol.Start();
+        await ol.StartAsync();
 
         Assert.Equal(ServiceStatus.Retrying, statusEvents[0]);
         Assert.Equal(ServiceStatus.Failed, statusEvents[1]);
@@ -340,8 +338,8 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [],
         };
 
         var statusEvents = new List<ServiceStatus>();
@@ -350,7 +348,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             if (s?.Status != null) statusEvents.Add(s.Status);
         };
 
-        await ol.Start();
+        await ol.StartAsync();
 
         Assert.Equal(2, callCount);
         Assert.Equal(ServiceStatus.Retrying, statusEvents[0]);
@@ -423,14 +421,14 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [],
         };
 
         var statusEvents = new List<(ServiceStatus? status, string? message)>();
         ol.ServiceStateChanged += s => statusEvents.Add((s?.Status, s?.Message));
 
-        await ol.Start();
+        await ol.StartAsync();
 
         // Act
         var results = new List<OllamaResponse>();
@@ -493,11 +491,11 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [],
         };
 
-        await ol.Start();
+        await ol.StartAsync();
 
         var results = new List<OllamaResponse>();
         await foreach (var r in ol.GenerateMessage([], "llama3.2"))
@@ -550,8 +548,8 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [],
         };
 
         var statusEvents = new List<ServiceStatus>();
@@ -560,7 +558,7 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             if (s?.Status != null) statusEvents.Add(s.Status);
         };
 
-        await ol.Start();
+        await ol.StartAsync();
 
         await foreach (var _ in ol.GenerateMessage([], "model"))
         {
@@ -634,11 +632,11 @@ public class OllamaServiceTests : IClassFixture<TestServicesFixture>
             timeMock,
             delayerMock)
         {
-            StartProcessFunc = _ => new Process(),
-            GetProcessCountFunc = () => 0
+            StartProcessFunc = _ => new OllamaProcessMock(),
+            GetProcessesFunc = () => [],
         };
 
-        await ol.Start();
+        await ol.StartAsync();
 
         var results = new List<OllamaResponse>();
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using avallama.Constants;
+using avallama.Constants.Application;
 
 namespace avallama.ViewModels;
 public partial class PageViewModel : ViewModelBase

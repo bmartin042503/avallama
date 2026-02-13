@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.Constants.States;
 using avallama.Exceptions;
 using avallama.Models.Download;
 using avallama.Services.Ollama;
@@ -15,12 +16,12 @@ namespace avallama.Services.Queue;
 
 public interface IModelDownloadQueueService : IQueueService<ModelDownloadRequest>;
 
-public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>, IModelDownloadQueueService
+public class ModelDownloadQueueService : QueueService<ModelDownloadRequest>, IModelDownloadQueueService
 {
     private readonly IOllamaService _ollamaService;
     private readonly INetworkManager _networkManager;
 
-    public ModelModelDownloadQueueService(
+    public ModelDownloadQueueService(
         IOllamaService ollamaService,
         INetworkManager networkManager)
     {
@@ -133,21 +134,21 @@ public class ModelModelDownloadQueueService : QueueService<ModelDownloadRequest>
         request.DownloadSpeed = 0.0;
         request.SpeedCalculator.Reset();
 
-        switch (request.CancellationReason)
+        switch (request.QueueItemCancellationReason)
         {
-            case CancellationReason.UserCancelRequest:
+            case QueueItemCancellationReason.UserCancelRequest:
                 request.Status = new ModelDownloadStatus(DownloadState.Downloadable);
                 request.DownloadedBytes = 0;
                 request.TotalBytes = 0;
                 request.DownloadPartCount = 0;
                 break;
-            case CancellationReason.SystemScaling:
+            case QueueItemCancellationReason.SystemScaling:
                 request.Status = new ModelDownloadStatus(DownloadState.Queued);
-                request.CancellationReason = CancellationReason.Unknown;
+                request.QueueItemCancellationReason = QueueItemCancellationReason.Unknown;
                 request.ResetToken();
                 Enqueue(request);
                 break;
-            case CancellationReason.UserPauseRequest:
+            case QueueItemCancellationReason.UserPauseRequest:
             default:
                 request.Status = new ModelDownloadStatus(DownloadState.Paused);
                 break;
