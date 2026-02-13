@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using avallama.Constants;
+using avallama.Constants.Keys;
 using avallama.Models.Ollama;
 using avallama.Utilities;
 using Microsoft.Data.Sqlite;

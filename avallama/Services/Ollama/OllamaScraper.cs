@@ -21,12 +21,12 @@ public sealed class OllamaScraperResult
     public required IList<OllamaModelFamily> Families { get; init; }
 }
 
-public interface IOllamaScraperService
+public interface IOllamaScraper
 {
     Task<OllamaScraperResult> GetAllOllamaModelsAsync(CancellationToken cancellationToken);
 }
 
-public class OllamaScraperService(HttpClient httpClient) : IOllamaScraperService
+public class OllamaScraper(HttpClient httpClient) : IOllamaScraper
 {
     public async Task<OllamaScraperResult> GetAllOllamaModelsAsync(
         CancellationToken cancellationToken)

@@ -1,12 +1,9 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using avallama.Constants;
-using avallama.Utilities.Render;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace avallama.Controls;

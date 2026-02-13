@@ -1,7 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using avallama.Constants;
+using avallama.Constants.States;
 
 namespace avallama.Models.Download;
 

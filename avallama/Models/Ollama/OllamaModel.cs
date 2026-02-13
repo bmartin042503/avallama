@@ -6,19 +6,50 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace avallama.Models.Ollama;
 
-// NoConnection would indicate that there is no internet connection and the model cannot be downloaded.
-// This seems obvious, and it might even be unnecessary to set this state separately for each model block,
-// but I thought it would remain this way in case later on models could be downloaded from multiple sources (not just Ollama)
-// and if the server is not reachable for downloading then at least they can be chosen separately
-// so what it can download it can download, what it can't, it can't (but this will be later)
-
+/// <summary>
+/// Represents a specific Ollama model with observable properties for UI data binding.
+/// </summary>
 public partial class OllamaModel : ObservableObject
 {
-    [ObservableProperty] private string _name = string.Empty;
-    [ObservableProperty] private long _parameters;
-    [ObservableProperty] private IDictionary<string, string> _info = new Dictionary<string, string>();
-    [ObservableProperty] private OllamaModelFamily? _family;
-    [ObservableProperty] private long _size; // in bytes
-    [ObservableProperty] private bool _runsSlow;
-    [ObservableProperty] private bool _isDownloaded;
+    /// <summary>
+    /// The unique name or identifier of the model (e.g., 'qwen3:4b').
+    /// </summary>
+    [ObservableProperty]
+    private string _name = string.Empty;
+
+    /// <summary>
+    /// The number of parameters in the model.
+    /// </summary>
+    [ObservableProperty]
+    private long _parameters;
+
+    /// <summary>
+    /// A dictionary containing additional metadata about the model (e.g., quantization, format, block count).
+    /// </summary>
+    [ObservableProperty]
+    private IDictionary<string, string> _info = new Dictionary<string, string>();
+
+    /// <summary>
+    /// The family to which this model belongs.
+    /// </summary>
+    [ObservableProperty]
+    private OllamaModelFamily? _family;
+
+    /// <summary>
+    /// The size of the model on disk in bytes.
+    /// </summary>
+    [ObservableProperty]
+    private long _size;
+
+    /// <summary>
+    /// Indicates whether the model is expected to run slowly on the current hardware (e.g., due to VRAM limitations).
+    /// </summary>
+    [ObservableProperty]
+    private bool _runsSlow;
+
+    /// <summary>
+    /// Indicates whether the model is fully downloaded and available for use.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isDownloaded;
 }

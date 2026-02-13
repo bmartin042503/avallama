@@ -3,6 +3,8 @@
 
 using System.Threading.Tasks;
 using avallama.Constants;
+using avallama.Constants.Application;
+using avallama.Constants.States;
 using avallama.Models.Download;
 using avallama.Models.Ollama;
 using avallama.Services;
@@ -94,7 +96,7 @@ public partial class ModelItemViewModel : ViewModelBase
             DownloadRequest.Status.DownloadState == DownloadState.Paused) return;
 
         DownloadRequest?.Cancel();
-        DownloadRequest?.CancellationReason = CancellationReason.UserPauseRequest;
+        DownloadRequest?.QueueItemCancellationReason = QueueItemCancellationReason.UserPauseRequest;
         DownloadRequest?.Status = new ModelDownloadStatus(DownloadState.Paused);
         _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
     }
@@ -106,7 +108,7 @@ public partial class ModelItemViewModel : ViewModelBase
             DownloadRequest.Status == null ||
             DownloadRequest.Status.DownloadState != DownloadState.Paused) return;
 
-        DownloadRequest.CancellationReason = CancellationReason.Unknown;
+        DownloadRequest.QueueItemCancellationReason = QueueItemCancellationReason.Unknown;
         DownloadRequest.ResetToken();
         _modelDownloadQueueService.Enqueue(DownloadRequest);
         DownloadRequest.Status = new ModelDownloadStatus(DownloadState.Queued);
@@ -118,7 +120,7 @@ public partial class ModelItemViewModel : ViewModelBase
     {
         if (DownloadRequest == null) return;
         DownloadRequest.Cancel();
-        DownloadRequest.CancellationReason = CancellationReason.UserCancelRequest;
+        DownloadRequest.QueueItemCancellationReason = QueueItemCancellationReason.UserCancelRequest;
         DownloadRequest = null;
         OnPropertyChanged(nameof(CurrentStatus));
         _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));

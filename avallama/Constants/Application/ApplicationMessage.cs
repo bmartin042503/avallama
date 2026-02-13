@@ -1,9 +1,7 @@
 // Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
-using CommunityToolkit.Mvvm.Messaging.Messages;
-
-namespace avallama.Constants;
+namespace avallama.Constants.Application;
 
 public static class ApplicationMessage
 {
