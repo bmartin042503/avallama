@@ -48,6 +48,9 @@ public static class ServiceCollectionExtensions
             collection.AddSingleton<ConversationService>();
             collection.AddSingleton<IConversationService>(sp => sp.GetRequiredService<ConversationService>());
 
+            collection.AddSingleton<OllamaProcessManager>();
+            collection.AddSingleton<IOllamaProcessManager>(sp => sp.GetRequiredService<OllamaProcessManager>());
+
             collection.AddSingleton<OllamaService>();
             collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
 
