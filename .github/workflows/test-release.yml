@@ -1,10 +1,12 @@
-name: Release Avallama
+﻿name: Release Avallama (Test)
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (without v prefix)'
+        required: true
+        default: '0.0.1'
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -71,8 +73,7 @@ jobs:
 
       - name: Set version var
         run: |
-          $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "VERSION=${{ github.event.inputs.version }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Restore & Publish
         run: dotnet publish avallama/avallama.csproj -c Release -r win-x64 --self-contained true -o win-dist /p:PublishSingleFile=true
@@ -89,12 +90,6 @@ jobs:
             /DAppVersion="${env:VERSION}" `
             scripts\installer.iss
 
-      - name: Upload .exe Artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: avallama-setup-${{ env.VERSION }}.exe
-          path: scripts\avallama-setup-${{ env.VERSION }}.exe
-
   build-debian:
     name: Build Debian Package (.deb)
     needs: test
@@ -109,19 +104,12 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Set version var
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Run Debian packaging script
         run: |
           chmod +x scripts/package-debian.sh
           ./scripts/package-debian.sh "${{ env.VERSION }}"
-
-      - name: Upload Debian Artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: debian-package
-          path: |
-            avallama_${{ env.VERSION }}_amd64.deb
 
   build-arch:
     name: Build Arch Package (.pkg.tar.zst)
@@ -141,7 +129,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set version var
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Run Arch packaging script
         run: |
@@ -151,12 +139,6 @@ jobs:
           cp -r scripts /tmp/build/
           chown -R builder:builder /tmp/build
           sudo -u builder bash -c "cd /tmp/build && chmod +x scripts/package-arch.sh && scripts/package-arch.sh '${{ env.VERSION }}'"
-
-      - name: Upload Arch Package
-        uses: actions/upload-artifact@v6
-        with:
-          name: arch-package
-          path: /tmp/build/*.pkg.tar.zst
 
 
   build-macos:
@@ -176,62 +158,9 @@ jobs:
         run: brew install create-dmg
 
       - name: Set version var
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Run macOS packaging script
         run: |
           chmod +x scripts/package-macos.sh
           ./scripts/package-macos.sh "${{ env.VERSION }}"
-
-      - name: Upload macOS x64 Artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: macos-x64-package
-          path: avallama_${{ env.VERSION }}_osx_x64.dmg
-
-      - name: Upload macOS arm64 Artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: macos-arm64-package
-          path: avallama_${{ env.VERSION }}_osx_arm64.dmg
-
-  release:
-    name: Publish GitHub Release
-    needs: [ build-windows, build-debian, build-arch, build-macos ]
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v7
-        with:
-          path: artifacts
-
-      - name: Get tag message
-        id: tag_message
-        run: |
-          git fetch --tags --force
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          TAG_MESSAGE=$(git for-each-ref refs/tags/$TAG_NAME --format='%(contents)')
-          echo "tag_message<<EOF" >> $GITHUB_OUTPUT
-          echo "$TAG_MESSAGE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Flatten artifact directory
-        run: |
-          mkdir release-assets
-          find artifacts -type f -exec cp {} release-assets/ \;
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body: ${{ steps.tag_message.outputs.tag_message }}
-          files: release-assets/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
