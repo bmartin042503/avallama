@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using avallama.Constants.Keys;
 using avallama.Constants.States;
 using avallama.Exceptions;
+using avallama.Extensions;
 using avallama.Models;
 using avallama.Models.Dtos;
 using avallama.Models.Ollama;
@@ -219,9 +220,8 @@ public class OllamaApiClient(
         if (modelDto == null) return;
         var modelShowResponse = await FetchModelInfoAsync(model.Name);
 
-        // TODO: add missing enrich logic
-        // model.EnrichWith(modelDto);
-        // model.EnrichWith(modelShowResponse);
+        model.EnrichWith(modelDto);
+        model.EnrichWith(modelShowResponse);
     }
 
     public async IAsyncEnumerable<DownloadResponse> PullModelAsync(
