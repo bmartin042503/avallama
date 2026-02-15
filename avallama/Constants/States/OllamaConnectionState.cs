@@ -6,7 +6,7 @@ namespace avallama.Constants.States;
 /// <summary>
 /// Defines the possible connection states for the Ollama API client.
 /// </summary>
-public enum OllamaApiState
+public enum OllamaConnectionState
 {
     /// <summary>
     /// The client is currently attempting to establish a connection.

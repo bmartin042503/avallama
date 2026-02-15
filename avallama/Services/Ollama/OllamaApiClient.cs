@@ -59,7 +59,7 @@ public interface IOllamaApiClient
     Task RetryConnectionAsync();
 
     /// <summary>
-    /// Enriches the specified model with detailed information from the API (/api/tags, /api/show).
+    /// Enriches the specified model with detailed information from the API using the /api/tags and /api/show endpoints.
     /// </summary>
     /// <param name="model">The model to enrich.</param>
     Task EnrichModelAsync(OllamaModel model);
@@ -132,8 +132,10 @@ public class OllamaApiClient(
 
     #region Event & Status
 
+    /// <inheritdoc/>
     public event OllamaApiStatusChangedHandler? StatusChanged;
 
+    /// <inheritdoc/>
     public OllamaApiStatus Status
     {
         get;
@@ -143,18 +145,19 @@ public class OllamaApiClient(
             field = value;
             StatusChanged?.Invoke(value);
         }
-    } = new(OllamaApiState.Disconnected);
+    } = new(OllamaConnectionState.Disconnected);
 
     #endregion
 
     #region Public Methods
 
+    /// <inheritdoc/>
     public async Task CheckConnectionAsync()
     {
-        Status = new OllamaApiStatus(OllamaApiState.Connecting);
+        Status = new OllamaApiStatus(OllamaConnectionState.Connecting);
         if (await IsOllamaReachable())
         {
-            Status = new OllamaApiStatus(OllamaApiState.Connected);
+            Status = new OllamaApiStatus(OllamaConnectionState.Connected);
         }
         else
         {
@@ -162,9 +165,10 @@ public class OllamaApiClient(
         }
     }
 
+    /// <inheritdoc/>
     public async Task RetryConnectionAsync()
     {
-        Status = new OllamaApiStatus(OllamaApiState.Reconnecting);
+        Status = new OllamaApiStatus(OllamaConnectionState.Reconnecting);
         _timeProvider.Start();
 
         var loopStartTime = _timeProvider.Elapsed;
@@ -172,7 +176,7 @@ public class OllamaApiClient(
         {
             if (await IsOllamaReachable())
             {
-                Status = new OllamaApiStatus(OllamaApiState.Connected);
+                Status = new OllamaApiStatus(OllamaConnectionState.Connected);
                 return;
             }
 
@@ -182,6 +186,7 @@ public class OllamaApiClient(
         SetUnreachableStatus();
     }
 
+    /// <inheritdoc/>
     public async Task<IList<OllamaModel>> GetDownloadedModelsAsync()
     {
         if (!await IsOllamaReachable())
@@ -203,6 +208,7 @@ public class OllamaApiClient(
         return downloadedModels ?? [];
     }
 
+    /// <inheritdoc/>
     public async Task EnrichModelAsync(OllamaModel model)
     {
         if (string.IsNullOrEmpty(model.Name)) return;
@@ -224,6 +230,7 @@ public class OllamaApiClient(
         model.EnrichWith(modelShowResponse);
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<DownloadResponse> PullModelAsync(
         string modelName,
         [EnumeratorCancellation] CancellationToken ct = default)
@@ -256,7 +263,7 @@ public class OllamaApiClient(
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            Status = new OllamaApiStatus(OllamaApiState.Connected);
+            Status = new OllamaApiStatus(OllamaConnectionState.Connected);
         }
         else
         {
@@ -309,6 +316,7 @@ public class OllamaApiClient(
         }
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<OllamaResponse> GenerateMessageAsync(
         List<Message> messageHistory,
         string modelName,
@@ -336,7 +344,7 @@ public class OllamaApiClient(
             response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                Status = new OllamaApiStatus(OllamaApiState.Connected);
+                Status = new OllamaApiStatus(OllamaConnectionState.Connected);
             }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
@@ -364,6 +372,7 @@ public class OllamaApiClient(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<bool> DeleteModelAsync(string modelName)
     {
         if (!await IsOllamaReachable())
@@ -415,16 +424,19 @@ public class OllamaApiClient(
         return new OllamaLocalServerUnreachableException(innerException);
     }
 
+    /// <summary>
+    /// Sets an unreachable status according to the type of the connection (local or remote).
+    /// </summary>
     private void SetUnreachableStatus()
     {
         if (IsConnectionRemote(configurationService.ReadSetting(ConfigurationKey.ApiHost)))
         {
-            Status = new OllamaApiStatus(OllamaApiState.Faulted,
+            Status = new OllamaApiStatus(OllamaConnectionState.Faulted,
                 LocalizationService.GetString("OLLAMA_REMOTE_UNREACHABLE"));
         }
         else
         {
-            Status = new OllamaApiStatus(OllamaApiState.Faulted,
+            Status = new OllamaApiStatus(OllamaConnectionState.Faulted,
                 LocalizationService.GetString("OLLAMA_LOCAL_UNREACHABLE"));
         }
     }
@@ -449,6 +461,10 @@ public class OllamaApiClient(
         return new HttpRequestMessage(method, builder.Uri);
     }
 
+    /// <summary>
+    /// Fetches the list of available models from the Ollama API using the /api/tags endpoint.
+    /// </summary>
+    /// <returns>A <see cref="OllamaTagsResponse"/> containing the model list, or null if the request fails.</returns>
     private async Task<OllamaTagsResponse?> FetchOllamaTagsAsync()
     {
         try
@@ -465,6 +481,11 @@ public class OllamaApiClient(
         }
     }
 
+    /// <summary>
+    /// Fetches detailed information about a specific model from the Ollama API using the /api/show endpoint.
+    /// </summary>
+    /// <param name="modelName">The name of the model to retrieve information for.</param>
+    /// <returns>A <see cref="OllamaShowResponse"/> containing model details, or null if the request fails.</returns>
     private async Task<OllamaShowResponse?> FetchModelInfoAsync(string modelName)
     {
         try
@@ -489,6 +510,10 @@ public class OllamaApiClient(
         }
     }
 
+    /// <summary>
+    /// Checks if the Ollama API is reachable by attempting a request to the /api/version endpoint.
+    /// </summary>
+    /// <returns>True if the server responds with a success status code; otherwise, false.</returns>
     private async Task<bool> IsOllamaReachable()
     {
         try

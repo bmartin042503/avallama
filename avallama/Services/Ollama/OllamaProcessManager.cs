@@ -115,7 +115,7 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
             field = value;
             StatusChanged?.Invoke(value);
         }
-    } = new(OllamaProcessState.Stopped);
+    } = new(OllamaProcessLifecycle.Stopped);
 
     #endregion
 
@@ -127,7 +127,7 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
 
         try
         {
-            Status = new OllamaProcessStatus(OllamaProcessState.Starting);
+            Status = new OllamaProcessStatus(OllamaProcessLifecycle.Starting);
 
             ConfigureOllamaPath();
 
@@ -150,7 +150,7 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
                     _ollamaProcess.Exited += OnOllamaProcessExited;
                 }
 
-                Status = new OllamaProcessStatus(OllamaProcessState.Running,
+                Status = new OllamaProcessStatus(OllamaProcessLifecycle.Running,
                     LocalizationService.GetString("OLLAMA_ALREADY_RUNNING"));
                 return;
             }
@@ -158,7 +158,7 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
             {
                 _isProcessStartedByAvallama = false;
                 // multiple instances found, report failure rather than attempting to kill them
-                Status = new OllamaProcessStatus(OllamaProcessState.Failed,
+                Status = new OllamaProcessStatus(OllamaProcessLifecycle.Failed,
                     LocalizationService.GetString("MULTIPLE_INSTANCES_ERROR"));
                 return;
             }
@@ -185,21 +185,21 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
                     // Only set newly started process if everything ran correctly without exceptions
                     _ollamaProcess = tempProcess;
                     _isProcessStartedByAvallama = true;
-                    Status = new OllamaProcessStatus(OllamaProcessState.Running);
+                    Status = new OllamaProcessStatus(OllamaProcessLifecycle.Running);
                     return;
                 }
 
-                Status = new OllamaProcessStatus(OllamaProcessState.NotInstalled);
+                Status = new OllamaProcessStatus(OllamaProcessLifecycle.NotInstalled);
             }
             catch (Win32Exception)
             {
-                Status = new OllamaProcessStatus(OllamaProcessState.NotInstalled);
+                Status = new OllamaProcessStatus(OllamaProcessLifecycle.NotInstalled);
                 try { tempProcess?.Kill(); } catch { /* ignore */ }
                 tempProcess?.Dispose();
             }
             catch (Exception ex)
             {
-                Status = new OllamaProcessStatus(OllamaProcessState.Failed,
+                Status = new OllamaProcessStatus(OllamaProcessLifecycle.Failed,
                     string.Format(LocalizationService.GetString("OLLAMA_FAILED"), ex.Message));
                 try { tempProcess?.Kill(); } catch { /* ignore */ }
                 tempProcess?.Dispose();
@@ -247,7 +247,7 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
         }
 
         _ollamaProcess = null;
-        Status = new OllamaProcessStatus(OllamaProcessState.Stopped);
+        Status = new OllamaProcessStatus(OllamaProcessLifecycle.Stopped);
     }
 
     #endregion
@@ -257,10 +257,10 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
     private void OnOllamaProcessExited(object? sender, EventArgs e)
     {
         // ignore process exit if the user stopped the process intentionally via the app
-        if (Status.ProcessState == OllamaProcessState.Stopped) return;
+        if (Status.ProcessLifecycle == OllamaProcessLifecycle.Stopped) return;
 
         string? message = null;
-        var newState = OllamaProcessState.Stopped;
+        var newState = OllamaProcessLifecycle.Stopped;
 
         if (sender is IOllamaProcess process)
         {
@@ -268,14 +268,14 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
             {
                 if (process.ExitCode != 0)
                 {
-                    newState = OllamaProcessState.Failed;
+                    newState = OllamaProcessLifecycle.Failed;
                     message = LocalizationService.GetString("OLLAMA_STOPPED_UNEXPECTEDLY")
                               + $" ({LocalizationService.GetString("EXIT_CODE")}: {process.ExitCode})";
                 }
             }
             catch (Exception)
             {
-                newState = OllamaProcessState.Failed;
+                newState = OllamaProcessLifecycle.Failed;
                 message = LocalizationService.GetString("OLLAMA_STOPPED_UNEXPECTEDLY");
             }
         }
