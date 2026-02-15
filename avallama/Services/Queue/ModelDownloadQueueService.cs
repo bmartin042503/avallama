@@ -37,11 +37,12 @@ public class ModelDownloadQueueService : QueueService<ModelDownloadRequest>, IMo
         }
 
         request.DownloadPartCount = 1;
-        await foreach (var chunk in _ollamaService.PullModelAsync(request.ModelName, ct))
+        await foreach (var chunk in _ollamaService.DownloadModelAsync(request.ModelName, ct))
         {
             if (!DiskManager.IsEnoughDiskSpaceAvailable(request.TotalBytes))
             {
-                throw new InsufficientDiskSpaceException(request.TotalBytes, DiskManager.GetAvailableDiskSpaceBytes());
+                throw new InsufficientDiskSpaceException(request.TotalBytes,
+                    DiskManager.GetAvailableDiskSpaceBytes());
             }
 
             if (chunk is { Total: not null, Completed: not null })
@@ -82,6 +83,7 @@ public class ModelDownloadQueueService : QueueService<ModelDownloadRequest>, IMo
 
             case LostInternetConnectionException:
                 errorKey = "LOST_INTERNET_CONNECTION";
+                Console.WriteLine("Failed download status sending..");
                 break;
 
             case OllamaLocalServerUnreachableException:

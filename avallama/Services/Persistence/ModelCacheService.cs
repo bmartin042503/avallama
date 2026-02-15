@@ -16,11 +16,14 @@ namespace avallama.Services.Persistence;
 
 public interface IModelCacheService
 {
-    public Task CacheModelFamilyAsync(IList<OllamaModelFamily> modelFamilies);
-    public Task CacheModelsAsync(IList<OllamaModel> models);
-    public Task UpdateModelAsync(OllamaModel model);
-    public Task<IList<OllamaModel>> GetCachedModelsAsync();
-    public Task<IList<OllamaModelFamily>> GetCachedModelFamiliesAsync();
+    Task CacheModelFamilyAsync(IList<OllamaModelFamily> modelFamilies);
+    Task CacheModelsAsync(IList<OllamaModel> models);
+    Task UpdateModelAsync(OllamaModel model);
+    Task InsertModelAsync(OllamaModel model);
+    Task<bool> ContainsModelAsync(OllamaModel model);
+    Task<IList<OllamaModel>> GetDownloadedModelsAsync();
+    Task<IList<OllamaModel>> GetCachedModelsAsync();
+    Task<IList<OllamaModelFamily>> GetCachedModelFamiliesAsync();
 }
 
 public class ModelCacheService : IModelCacheService
@@ -420,8 +423,10 @@ public class ModelCacheService : IModelCacheService
             : (int?)null;
 
         var additionalDetails = info
-            .Where(kvp => kvp.Key is not (ModelInfoKey.Format or ModelInfoKey.QuantizationLevel or ModelInfoKey.Architecture or ModelInfoKey.BlockCount
-                or ModelInfoKey.ContextLength or ModelInfoKey.EmbeddingLength or ModelInfoKey.PullCount or ModelInfoKey.LastUpdated))
+            .Where(kvp => kvp.Key is not (ModelInfoKey.Format or ModelInfoKey.QuantizationLevel
+                or ModelInfoKey.Architecture or ModelInfoKey.BlockCount
+                or ModelInfoKey.ContextLength or ModelInfoKey.EmbeddingLength or ModelInfoKey.PullCount
+                or ModelInfoKey.LastUpdated))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         var additionalInfo = additionalDetails.Count > 0 ? JsonSerializer.Serialize(additionalDetails) : null;
@@ -473,7 +478,6 @@ public class ModelCacheService : IModelCacheService
 
         return false;
     }
-
 
     public async Task UpdateModelAsync(OllamaModel model)
     {
@@ -582,6 +586,126 @@ public class ModelCacheService : IModelCacheService
         }
 
         return models;
+    }
+
+    public async Task InsertModelAsync(OllamaModel model)
+    {
+        var now = DateTime.Now;
+
+        var familyName = ExtractFamilyName(model.Name);
+
+        using (DatabaseLock.Instance.AcquireWriteLock())
+        {
+            await using var transaction = _connection.BeginTransaction();
+
+            // insert model family (or ignore if it already exits)
+            // this is necessary since models can't exist in the db without a family, so lovely
+            await using var familyCmd = _connection.CreateCommand();
+            familyCmd.CommandText = """
+                                    INSERT OR IGNORE INTO model_families
+                                        (name, description, pull_count, labels,
+                                         tag_count, last_updated, cached_at)
+                                    VALUES
+                                        (@familyName, @description, @pullCount, @labels,
+                                         @tagCount, @lastUpdated, @cachedAt)
+                                    """;
+
+            // family data from the model parameter, if it's null we use a default value
+            var description = model.Family?.Description ?? string.Empty;
+            var pullCount = model.Family?.PullCount ?? 0;
+            var labels = model.Family?.Labels ?? new List<string>();
+            var tagCount = model.Family?.TagCount ?? 0;
+            var lastUpdated = model.Family?.LastUpdated ?? DateTime.MinValue;
+
+            familyCmd.Parameters.AddWithValue("@familyName", familyName);
+            familyCmd.Parameters.AddWithValue("@description", description);
+            familyCmd.Parameters.AddWithValue("@pullCount", pullCount);
+            familyCmd.Parameters.AddWithValue("@labels", JsonSerializer.Serialize(labels));
+            familyCmd.Parameters.AddWithValue("@tagCount", tagCount);
+            familyCmd.Parameters.AddWithValue("@lastUpdated", lastUpdated);
+            familyCmd.Parameters.AddWithValue("@cachedAt", now);
+
+            await familyCmd.ExecuteNonQueryAsync();
+
+            // insert the actual model
+            await using var cmd = _connection.CreateCommand();
+
+            cmd.CommandText = """
+                              INSERT INTO ollama_models
+                                  (name, family_name, parameters, size, format,
+                                   quantization, architecture, block_count,
+                                   context_length, embedding_length, additional_info,
+                                   is_downloaded, cached_at)
+                              VALUES
+                                  (@name, @familyName, @parameters, @size, @format,
+                                   @quantization, @architecture, @blockCount,
+                                   @contextLength, @embeddingLength, @additionalInfo,
+                                   @isDownloaded, @cachedAt)
+                              """;
+
+            var (format, quantization, architecture, blockCount, contextLength, embeddingLength, additionalInfo) =
+                ExtractModelInfo(model.Info);
+
+            cmd.Parameters.AddWithValue("@name", model.Name);
+            cmd.Parameters.AddWithValue("@familyName", familyName);
+            cmd.Parameters.AddWithValue("@parameters", model.Parameters);
+            cmd.Parameters.AddWithValue("@size", model.Size);
+            cmd.Parameters.AddWithValue("@format", format ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@quantization", quantization ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@architecture", architecture ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@blockCount", blockCount ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@contextLength", contextLength ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@embeddingLength", embeddingLength ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@additionalInfo", additionalInfo ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@isDownloaded", model.IsDownloaded ? 1 : 0);
+            cmd.Parameters.AddWithValue("@cachedAt", now);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            transaction.Commit();
+        }
+    }
+
+    // lightweight operation to get which models are downloaded according to the cache database, nothing else
+    public async Task<IList<OllamaModel>> GetDownloadedModelsAsync()
+    {
+        var models = new List<OllamaModel>();
+
+        using (DatabaseLock.Instance.AcquireReadLock())
+        {
+            await using var cmd = _connection.CreateCommand();
+
+            cmd.CommandText = "SELECT name FROM ollama_models WHERE is_downloaded = 1 ORDER BY name";
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var name = reader.GetString(0);
+
+                var model = new OllamaModel
+                {
+                    Name = name,
+                    IsDownloaded = true
+                };
+
+                models.Add(model);
+            }
+        }
+
+        return models;
+    }
+
+    public async Task<bool> ContainsModelAsync(OllamaModel model)
+    {
+        using (DatabaseLock.Instance.AcquireReadLock())
+        {
+            await using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "SELECT 1 FROM ollama_models WHERE name = @name LIMIT 1";
+            cmd.Parameters.AddWithValue("@name", model.Name);
+
+            var result = await cmd.ExecuteScalarAsync();
+            return result != null;
+        }
     }
 
     private async Task<Dictionary<string, OllamaModelFamily>> GetModelFamiliesByNameAsync()

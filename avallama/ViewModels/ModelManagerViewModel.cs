@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Constants.Application;
 using avallama.Constants.Keys;
+using avallama.Constants.States;
 using avallama.Models.Ollama;
 using avallama.Services;
 using avallama.Services.Ollama;
@@ -105,7 +106,8 @@ public partial class ModelManagerViewModel : PageViewModel
             });
         });
 
-        _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
+        _ollamaService.ProcessStatusChanged += OllamaProcessStatusChanged;
+        _ollamaService.ApiStatusChanged += OllamaApiStatusChanged;
     }
 
     [RelayCommand]
@@ -132,7 +134,6 @@ public partial class ModelManagerViewModel : PageViewModel
     private async Task LoadModelsData()
     {
         // Get models data from cache excluding cloud models
-        // TODO: extract cloud models that has "cloud" in their names or "cloud" among their labels
         var rawModels = (await _modelCacheService.GetCachedModelsAsync())
             .Where(m => !m.Name.EndsWith("-cloud", StringComparison.OrdinalIgnoreCase));
 
@@ -166,6 +167,7 @@ public partial class ModelManagerViewModel : PageViewModel
             _ollamaService,
             _modelDownloadQueueService,
             _dialogService,
+            _modelCacheService,
             _messenger
         );
         return vm;
@@ -343,17 +345,52 @@ public partial class ModelManagerViewModel : PageViewModel
         _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
     }
 
-    // TODO: proper logging and implementation of status changes
-    private void OllamaServiceStateChanged(ServiceState? state)
+    // TODO: react to status changes with beautifully written code when the time comes
+
+    /// <summary>
+    /// Handles changes when Ollama API status changes and updates UI elements accordingly.
+    /// </summary>
+    private void OllamaApiStatusChanged(OllamaApiStatus status)
     {
-        if (state == null) return;
-        switch (state.Status)
+        switch (status.ConnectionState)
         {
-            case ServiceStatus.Running:
+            case OllamaConnectionState.Connecting:
                 break;
-            case ServiceStatus.Retrying:
+
+            case OllamaConnectionState.Connected:
                 break;
-            case ServiceStatus.Stopped or ServiceStatus.Failed:
+
+            case OllamaConnectionState.Disconnected:
+                break;
+
+            case OllamaConnectionState.Reconnecting:
+                break;
+
+            case OllamaConnectionState.Faulted:
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles changes when Ollama process status changes and updates UI elements accordingly.
+    /// </summary>
+    private void OllamaProcessStatusChanged(OllamaProcessStatus status)
+    {
+        switch (status.ProcessLifecycle)
+        {
+            case OllamaProcessLifecycle.Running:
+                break;
+
+            case OllamaProcessLifecycle.NotInstalled:
+                break;
+
+            case OllamaProcessLifecycle.Starting:
+                break;
+
+            case OllamaProcessLifecycle.Stopped:
+                break;
+
+            case OllamaProcessLifecycle.Failed:
                 break;
         }
     }

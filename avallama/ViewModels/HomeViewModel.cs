@@ -11,7 +11,9 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using avallama.Constants.Application;
 using avallama.Constants.Keys;
+using avallama.Constants.States;
 using avallama.Models;
+using avallama.Models.Ollama;
 using avallama.Services;
 using avallama.Services.Ollama;
 using avallama.Services.Persistence;
@@ -38,15 +40,20 @@ public partial class HomeViewModel : PageViewModel
     private readonly IConfigurationService _configurationService;
     private readonly IConversationService _conversationService;
     private readonly IUpdateService _updateService;
+    private readonly IModelCacheService _modelCacheService;
     private readonly IMessenger _messenger;
 
     // Internal State
     private readonly ConditionalWeakTable<Conversation, ConversationState> _conversationStates = new();
     private bool _isInitializedAsync;
+    private IList<OllamaModel> _previousDownloadedModels = [];
 
     // Backing fields for manual properties
     private ObservableStack<Conversation>? _conversations;
     private ObservableCollection<string> _availableModels;
+
+    private TaskCompletionSource<bool> _connectedToOllamaApi = new();
+    private bool _checkForApiStatus;
 
     #endregion
 
@@ -144,6 +151,7 @@ public partial class HomeViewModel : PageViewModel
     /// <param name="configurationService">Service for application settings.</param>
     /// <param name="conversationService">Service for conversation interactions.</param>
     /// <param name="updateService">Service for checking application updates.</param>
+    /// <param name="modelCacheService">Service for caching models.</param>
     /// <param name="messenger">Messenger for cross-component communication.</param>
     public HomeViewModel(
         IOllamaService ollamaService,
@@ -151,6 +159,7 @@ public partial class HomeViewModel : PageViewModel
         IConfigurationService configurationService,
         IConversationService conversationService,
         IUpdateService updateService,
+        IModelCacheService modelCacheService,
         IMessenger messenger
     )
     {
@@ -161,6 +170,7 @@ public partial class HomeViewModel : PageViewModel
         _configurationService = configurationService;
         _conversationService = conversationService;
         _updateService = updateService;
+        _modelCacheService = modelCacheService;
         _messenger = messenger;
         _availableModels = [];
 
@@ -168,7 +178,8 @@ public partial class HomeViewModel : PageViewModel
 
         LoadSettings();
 
-        _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
+        _ollamaService.ProcessStatusChanged += OllamaProcessStatusChanged;
+        _ollamaService.ApiStatusChanged += OllamaApiStatusChanged;
     }
 
     #endregion
@@ -187,8 +198,13 @@ public partial class HomeViewModel : PageViewModel
             if (!_isInitializedAsync)
             {
                 await InitializeConversations();
+
                 if (_configurationService.ReadSetting(ConfigurationKey.IsUpdateCheckEnabled) == "True")
                     await CheckForUpdatesAsync();
+
+                // get all downloaded models from cache database (with only their names, lightweight operation)
+                if (_previousDownloadedModels.Count == 0)
+                    _previousDownloadedModels = await _modelCacheService.GetDownloadedModelsAsync();
             }
 
             await InitializeModels();
@@ -329,11 +345,40 @@ public partial class HomeViewModel : PageViewModel
     [RelayCommand]
     public async Task RetryOllamaConnection()
     {
-        await _ollamaService.Retry();
-
-        if (_ollamaService.OllamaServiceState?.Status == ServiceStatus.Running)
+        if (OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
         {
-            await InitializeModels();
+            await _ollamaService.RetryOllamaApiConnectionAsync();
+        }
+        else
+        {
+            switch (_ollamaService.CurrentProcessStatus.ProcessLifecycle)
+            {
+                case OllamaProcessLifecycle.NotInstalled:
+                    // TODO: change this to not shutdown and add new localization key
+                    // localized text should explain that ollama is not installed and to use the app it needs a remote connection
+
+                    _dialogService.ShowActionDialog(
+                        title: LocalizationService.GetString("OLLAMA_NOT_INSTALLED"),
+                        actionButtonText: LocalizationService.GetString("DOWNLOAD"),
+                        action: () =>
+                        {
+                            RedirectToOllamaDownload();
+                            // Message to AppService to shut down the app
+                            _messenger.Send(new ApplicationMessage.Shutdown());
+                        },
+                        closeAction: () => { _messenger.Send(new ApplicationMessage.Shutdown()); },
+                        description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC"),
+                        false
+                    );
+                    break;
+                case OllamaProcessLifecycle.Failed or OllamaProcessLifecycle.Stopped:
+                    await _ollamaService.StartOllamaProcessAsync();
+                    await _ollamaService.RetryOllamaApiConnectionAsync();
+                    break;
+                case OllamaProcessLifecycle.Running:
+                    await _ollamaService.RetryOllamaApiConnectionAsync();
+                    break;
+            }
         }
     }
 
@@ -356,7 +401,7 @@ public partial class HomeViewModel : PageViewModel
         // Remove failed messages from history before generation
         messageHistory.RemoveAll(message => message is FailedMessage);
 
-        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, SelectedModelName))
+        await foreach (var chunk in _ollamaService.GenerateMessageAsync(messageHistory, SelectedModelName))
         {
             if (chunk.Message != null) generatedMessage.Content += chunk.Message.Content;
 
@@ -370,7 +415,6 @@ public partial class HomeViewModel : PageViewModel
                 // Regenerate title after the first 2 messages and then every 6 messages (1 & 3 exchanges)
                 if ((conversation.Messages.Count - 2) % 6 == 0 || conversation.Messages.Count == 2)
                 {
-                    Console.WriteLine(2 % 6);
                     await RegenerateConversationTitle(conversation);
                 }
 
@@ -404,7 +448,7 @@ public partial class HomeViewModel : PageViewModel
 
         var tmpMessage = new Message(request);
         var messageHistory = new List<Message>(conversation.Messages.ToList()) { tmpMessage };
-        await foreach (var chunk in _ollamaService.GenerateMessage(messageHistory, SelectedModelName))
+        await foreach (var chunk in _ollamaService.GenerateMessageAsync(messageHistory, SelectedModelName))
         {
             if (chunk.Message != null) conversation.Title += chunk.Message.Content;
         }
@@ -436,44 +480,100 @@ public partial class HomeViewModel : PageViewModel
     /// </summary>
     private async Task InitializeModels()
     {
-        // Wait for ollama to start
-        await _ollamaService.WaitForRunningAsync();
+        // cancel the previous connection waiting Task and initialize a new one if it's completed/API was connected
+        if (_connectedToOllamaApi.Task.IsCompleted || _ollamaService.CurrentApiStatus.ConnectionState == OllamaConnectionState.Connected)
+        {
+            _connectedToOllamaApi.TrySetCanceled();
+            _connectedToOllamaApi = new TaskCompletionSource<bool>();
+        }
+        else
+        {
+            // waits for the Ollama API connection
+            await _connectedToOllamaApi.Task;
+        }
 
         // caches the previously selected model name
         var tmpName = string.Empty;
         if (_isInitializedAsync) tmpName = SelectedModelName;
 
-        AvailableModels.Clear();
+        // get all downloaded models from Ollama API (with only their names)
+        var downloadedModels = await _ollamaService.GetDownloadedModelsAsync();
 
-        // check if there are available downloaded models from Ollama
-        var downloadedModels = await _ollamaService.GetDownloadedModels();
+        // we compare model names that were set in the previous initialization and model names coming from the API
+        var currentNames = downloadedModels.Select(m => m.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var previousNames = _previousDownloadedModels.Select(m => m.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var hasChanges = !currentNames.SetEquals(previousNames);
+
+        // if the names differ we set deleted models to deleted in cache db and upsert downloaded models with all info
+        if (hasChanges)
+        {
+            // deleted models
+            var deletedModels = _previousDownloadedModels.Where(m => !currentNames.Contains(m.Name)).ToList();
+
+            foreach (var deletedModel in deletedModels)
+            {
+                deletedModel.IsDownloaded = false;
+                await _modelCacheService.UpdateModelAsync(deletedModel);
+            }
+
+            // newly downloaded models (either downloaded from the app or outside with Ollama CLI)
+            var newModels = downloadedModels.Where(m => !previousNames.Contains(m.Name)).ToList();
+
+            foreach (var newModel in newModels)
+            {
+                newModel.IsDownloaded = true;
+
+                // enriches the model with info coming from '/api/tags' and '/api/show'
+                await _ollamaService.EnrichModelAsync(newModel);
+
+                // maybe change this later to an upsert operation, but not important atm
+                if (await _modelCacheService.ContainsModelAsync(newModel))
+                {
+                    await _modelCacheService.UpdateModelAsync(newModel);
+                }
+                else
+                {
+                    await _modelCacheService.InsertModelAsync(newModel);
+                }
+            }
+        }
+
+        _previousDownloadedModels = downloadedModels;
+
+        // refresh UI and set status correctly based on downloaded models
+        AvailableModels.Clear();
         if (downloadedModels.Count == 0)
         {
-            IsModelsDropdownEnabled = false;
             IsNoModelsWarningVisible = true;
             IsMessageBoxEnabled = false;
-            return;
+            SelectedModelName = string.Empty;
+            IsModelsDropdownEnabled = false;
         }
-
-        // adds downloaded models to the ComboBox
-        foreach (var model in downloadedModels)
+        else
         {
-            AvailableModels.Add(model.Name);
-        }
+            // add downloaded models to the ComboBox
+            foreach (var model in downloadedModels)
+            {
+                AvailableModels.Add(model.Name);
+            }
 
-        IsModelsDropdownEnabled = true;
-        IsNoModelsWarningVisible = false;
-        IsMessageBoxEnabled = true;
+            IsModelsDropdownEnabled = true;
+            IsNoModelsWarningVisible = false;
+            IsMessageBoxEnabled = true;
 
-        if (!_isInitializedAsync)
-        {
-            // selects the first model
-            SelectedModelName = AvailableModels[0];
-        }
-        else if (_isInitializedAsync && !string.IsNullOrEmpty(tmpName))
-        {
-            // sets the previously selected model
-            SelectedModelName = tmpName;
+            if (!_isInitializedAsync)
+            {
+                // selects the first model
+                SelectedModelName = AvailableModels[0];
+            }
+            else if (_isInitializedAsync && !string.IsNullOrEmpty(tmpName))
+            {
+                // sets the previously selected model
+                SelectedModelName = AvailableModels.Contains(tmpName)
+                    ? tmpName
+                    : AvailableModels.FirstOrDefault() ?? string.Empty;
+            }
         }
     }
 
@@ -535,19 +635,27 @@ public partial class HomeViewModel : PageViewModel
     }
 
     /// <summary>
-    /// Handles changes in the Ollama service state and updates UI elements accordingly.
+    /// Handles changes when Ollama API status changes and updates UI elements accordingly.
     /// </summary>
-    private void OllamaServiceStateChanged(ServiceState? state)
+    private void OllamaApiStatusChanged(OllamaApiStatus status)
     {
-        if (state == null) return;
-        switch (state.Status)
+        // TODO: clean this code
+        if (!_checkForApiStatus) return;
+        switch (status.ConnectionState)
         {
-            case ServiceStatus.Running:
+            case OllamaConnectionState.Reconnecting or OllamaConnectionState.Connecting:
+                RetryInfoText = LocalizationService.GetString("CONNECTING");
+                IsRetryPanelVisible = true;
+                IsRetryButtonVisible = false;
+                IsMessageBoxEnabled = false;
+                break;
+
+            case OllamaConnectionState.Connected:
+                _connectedToOllamaApi.TrySetResult(true);
                 var apiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
                 var apiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
 
-                // "Remote connection" message if the app isn't connected to local ollama server
-                if (!string.IsNullOrEmpty(apiHost) && apiHost != "localhost" && apiHost != "127.0.0.1")
+                if (OllamaApiClient.IsConnectionRemote(apiHost))
                 {
                     RemoteConnectionText = string.Format(LocalizationService.GetString("REMOTE_CONNECTION"),
                         apiHost + ":" + apiPort);
@@ -558,12 +666,43 @@ public partial class HomeViewModel : PageViewModel
                     IsRemoteConnectionTextVisible = false;
                 }
 
-                if (IsRetryPanelVisible) IsRetryPanelVisible = false;
-                if (IsRetryButtonVisible) IsRetryButtonVisible = false;
-                if (AvailableModels.Any() && !IsModelsDropdownEnabled) IsModelsDropdownEnabled = true;
+                IsRetryPanelVisible = false;
+                IsRetryButtonVisible = false;
+                IsModelsDropdownEnabled = true;
+                IsMessageBoxEnabled = !string.IsNullOrEmpty(SelectedModelName);
                 break;
 
-            case ServiceStatus.NotInstalled:
+            case OllamaConnectionState.Faulted or OllamaConnectionState.Disconnected:
+                ReplaceGeneratedMessageToFailed();
+                RetryInfoText = status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR");
+                IsRemoteConnectionTextVisible = false;
+                IsRetryPanelVisible = true;
+                IsRetryButtonVisible = true;
+                IsMessageBoxEnabled = false;
+                IsModelsDropdownEnabled = false;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles changes when Ollama process status changes and updates UI elements accordingly.
+    /// </summary>
+    private void OllamaProcessStatusChanged(OllamaProcessStatus status)
+    {
+        // TODO: clean this code
+        switch (status.ProcessLifecycle)
+        {
+            case OllamaProcessLifecycle.Running:
+                _checkForApiStatus = true;
+                break;
+
+            case OllamaProcessLifecycle.NotInstalled:
+                if (OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
+                {
+                    _checkForApiStatus = true;
+                    return;
+                }
+
                 _dialogService.ShowActionDialog(
                     title: LocalizationService.GetString("OLLAMA_NOT_INSTALLED"),
                     actionButtonText: LocalizationService.GetString("DOWNLOAD"),
@@ -579,26 +718,27 @@ public partial class HomeViewModel : PageViewModel
                 );
                 break;
 
-            case ServiceStatus.Retrying:
+            case OllamaProcessLifecycle.Starting:
+                if (OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
+                {
+                    _checkForApiStatus = true;
+                    return;
+                }
+                _checkForApiStatus = false;
                 RetryInfoText = LocalizationService.GetString("CONNECTING");
                 IsRetryPanelVisible = true;
                 IsRetryButtonVisible = false;
                 break;
 
-            // Stopped event is raised only (as a default value) when OllamaService is initialized or the Stop() method is called
-            case ServiceStatus.Stopped:
+            case OllamaProcessLifecycle.Failed or OllamaProcessLifecycle.Stopped:
+                if (OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
+                {
+                    _checkForApiStatus = true;
+                    return;
+                }
+                _checkForApiStatus = false;
                 ReplaceGeneratedMessageToFailed();
-                IsRemoteConnectionTextVisible = false;
-                IsRetryPanelVisible = false;
-                IsRetryButtonVisible = false;
-                IsMessageBoxEnabled = false;
-                IsModelsDropdownEnabled = false;
-                break;
-
-            case ServiceStatus.Failed:
-                // If the last message meant to be a generated one, replace it with a FailedMessage
-                ReplaceGeneratedMessageToFailed();
-                RetryInfoText = state.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR");
+                RetryInfoText = status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR");
                 IsRemoteConnectionTextVisible = false;
                 IsRetryPanelVisible = true;
                 IsRetryButtonVisible = true;

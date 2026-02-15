@@ -20,6 +20,12 @@ Licensed under the MIT License. See LICENSE file for details.
         <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
         <ThemeVariantScope RequestedThemeVariant="Light">
             <Border Background="{DynamicResource Surface}">
+
+                <!--
+                If you want to test other states change the DownloadStatus accordingly.
+                There are only 2 sample items to keep this code short.
+                -->
+
                 <WrapPanel Orientation="Horizontal">
                     <!-- Sample item 1 - deepseek-r1:8b - Queued download state -->
                     <templatedControls:ModelItem
@@ -128,7 +134,7 @@ Licensed under the MIT License. See LICENSE file for details.
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                         <!-- Queued text -->
                         <TextBlock Text="{services:LocalizationService Key='QUEUED'}"
-                                   VerticalAlignment="Center"/>
+                                   VerticalAlignment="Center" />
 
                         <!-- Cancel button -->
                         <Button Grid.Column="2" Cursor="Hand"
@@ -142,7 +148,17 @@ Licensed under the MIT License. See LICENSE file for details.
 
                 <!-- Failed template -->
                 <DataTemplate x:Key="Failed" DataType="download:ModelDownloadStatus">
-                    <TextBlock Text="{Binding Message}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <TextBlock Grid.Column="0" Text="{Binding Message}"
+                                   VerticalAlignment="Center" />
+                        <!-- Retry button -->
+                        <Button Grid.Column="1" Cursor="Hand"
+                                Padding="8"
+                                Command="{Binding $parent[templatedControls:ModelItem].RetryCommand}">
+                            <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="16"
+                                                 FillColor="{DynamicResource OnPrimary}" />
+                        </Button>
+                    </Grid>
                 </DataTemplate>
 
                 <!-- Downloadable template -->

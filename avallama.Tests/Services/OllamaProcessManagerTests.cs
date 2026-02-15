@@ -10,7 +10,7 @@ using Xunit;
 
 namespace avallama.Tests.Services;
 
-public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
+public class OllamaProcessManagerTests(TestServicesFixture fixture) : IClassFixture<TestServicesFixture>
 {
     [Fact]
     public async Task StartAsync_SetsStartingState()

@@ -191,7 +191,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                 <Run Text="Copyright" FontWeight="Bold" />
                                 <Run Text="© 2025 Márk Csörgő and Martin Bartos" />
                             </TextBlock>
-                            <TextBlock Text="{services:LocalizationService Key='FROM_ORG'}"
+                            <TextBlock Text="{services:LocalizationService Key='FROM_TEAM'}"
                                        HorizontalAlignment="Center"
                                        FontStyle="Italic" ClipToBounds="False" />
                         </StackPanel>

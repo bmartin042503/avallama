@@ -51,6 +51,9 @@ public static class ServiceCollectionExtensions
             collection.AddSingleton<OllamaProcessManager>();
             collection.AddSingleton<IOllamaProcessManager>(sp => sp.GetRequiredService<OllamaProcessManager>());
 
+            collection.AddSingleton<OllamaApiClient>();
+            collection.AddSingleton<IOllamaApiClient>(sp => sp.GetRequiredService<OllamaApiClient>());
+
             collection.AddSingleton<OllamaService>();
             collection.AddSingleton<IOllamaService>(sp => sp.GetRequiredService<OllamaService>());
 
