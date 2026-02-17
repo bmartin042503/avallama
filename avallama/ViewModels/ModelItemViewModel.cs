@@ -165,19 +165,11 @@ public partial class ModelItemViewModel : ViewModelBase
         }
     }
 
-    // basically the same as the 'Download' command, but it's better to keep it separated
     [RelayCommand]
     public void Retry()
     {
         if (DownloadRequest?.Status?.DownloadState != DownloadState.Failed) return;
-
-        DownloadRequest = new ModelDownloadRequest
-        {
-            ModelName = Model.Name,
-            Status = new ModelDownloadStatus(DownloadState.Queued),
-        };
-        _modelDownloadQueueService.Enqueue(DownloadRequest);
-        _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
+        DownloadCommand.Execute(null);
     }
 
     // this is called inside the active download request's setter (which is generated automatically)
@@ -206,50 +198,60 @@ public partial class ModelItemViewModel : ViewModelBase
     // https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types#void-return-type
     private async void OnDownloadRequestPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        switch (e.PropertyName)
+        if (e.PropertyName is null) return;
+
+        // download status changes
+        if (e.PropertyName.Equals(nameof(DownloadRequest.Status)))
         {
-            case nameof(DownloadRequest.Status):
+            if (DownloadRequest?.Status == null) return;
+            OnPropertyChanged(nameof(CurrentStatus));
+
+            switch (DownloadRequest.Status.DownloadState)
             {
-                if (DownloadRequest?.Status == null) return;
-                OnPropertyChanged(nameof(CurrentStatus));
+                case DownloadState.Downloaded:
+                    try
+                    {
+                        Model.IsDownloaded = true;
+                        DownloadRequest = null;
+                        _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
 
-                switch (DownloadRequest.Status.DownloadState)
-                {
-                    case DownloadState.Downloaded:
-                        try
+                        // enrich the selected model with the information available from Ollama API
+                        await _ollamaService.EnrichModelAsync(Model);
+
+                        // update model in the db with all the new info, or insert it if it's non-existent
+                        if (await _modelCacheService.ContainsModelAsync(Model))
                         {
-                            Model.IsDownloaded = true;
-                            DownloadRequest = null;
-                            _messenger.Send(new ApplicationMessage.ModelStatusChanged(Model.Name));
-
-                            // enrich the selected model with the information available from Ollama API
-                            await _ollamaService.EnrichModelAsync(Model);
-
-                            // save the model to the db with all the new info
                             await _modelCacheService.UpdateModelAsync(Model);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            // TODO: proper logging
-                            _dialogService.ShowErrorDialog(
-                                string.Format(LocalizationService.GetString("ERROR_UPDATING_MODEL"), ex.Message),
-                                false);
+                            await _modelCacheService.InsertModelAsync(Model);
                         }
-                        break;
-                    case DownloadState.Failed:
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO: proper logging
                         _dialogService.ShowErrorDialog(
-                            DownloadRequest.Status.Message ?? LocalizationService.GetString("UNKNOWN_ERROR"),
+                            string.Format(LocalizationService.GetString("ERROR_UPDATING_MODEL"), ex.Message),
                             false);
-                        break;
-                }
+                    }
 
-                break;
+                    break;
+                case DownloadState.Failed:
+                    _dialogService.ShowErrorDialog(
+                        DownloadRequest.Status.Message ?? LocalizationService.GetString("UNKNOWN_ERROR"),
+                        false);
+                    break;
             }
-            case nameof(DownloadRequest.DownloadedBytes) or nameof(DownloadRequest.DownloadSpeed):
-                // TODO: optimize status text updating to reduce UI rendering
-                // currently UI renders status texts approximately 1k-2k times when downloading a model with a size of 2.33 GB
-                UpdateStatusTexts();
-                break;
+        }
+        // downloaded bytes or download speed changes
+        else if (e.PropertyName.Equals(nameof(DownloadRequest.DownloadedBytes)) ||
+                 e.PropertyName.Equals(nameof(DownloadRequest.DownloadSpeed)))
+        {
+            // TODO: optimize status text updating to reduce UI rendering
+            // currently UI renders status texts approximately 1k-2k times when downloading a model with a size of 2.33 GB
+            // this needs to be reduced to update status texts every 500-1000 ms
+            UpdateStatusTexts();
         }
     }
 
@@ -277,6 +279,7 @@ public partial class ModelItemViewModel : ViewModelBase
                 {
                     ShortDownloadStatusText = "0%";
                 }
+
                 LongDownloadStatusText = LocalizationService.GetString("DOWNLOADING");
                 LongDownloadStatusText +=
                     $" - {ConversionHelper.BytesToReadableSize(downloadedBytes)}/{ConversionHelper.BytesToReadableSize(totalBytes)}";

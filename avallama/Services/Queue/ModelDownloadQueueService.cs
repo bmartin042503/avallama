@@ -83,7 +83,6 @@ public class ModelDownloadQueueService : QueueService<ModelDownloadRequest>, IMo
 
             case LostInternetConnectionException:
                 errorKey = "LOST_INTERNET_CONNECTION";
-                Console.WriteLine("Failed download status sending..");
                 break;
 
             case OllamaLocalServerUnreachableException:

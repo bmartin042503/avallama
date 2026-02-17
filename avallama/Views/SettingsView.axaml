@@ -9,6 +9,7 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:avallama.ViewModels"
              xmlns:services="clr-namespace:avallama.Services"
+             xmlns:avallama="clr-namespace:avallama"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
              x:Class="avallama.Views.SettingsView"
@@ -164,7 +165,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             <TextBlock Text="{services:LocalizationService Key='SHORT_DESC'}" FontStyle="Italic" />
                             <TextBlock Margin="0,16,0,0">
                                 <Run Text="{services:LocalizationService Key='VERSION_LABEL'}" FontWeight="Bold" />
-                                <Run Text="{services:LocalizationService Key='VERSION'}" />
+                                <Run Text="{x:Static avallama:App.Version}" />
                             </TextBlock>
                             <TextBlock>
                                 <Run Text="{services:LocalizationService Key='DEVELOPERS'}" FontWeight="Bold" />

@@ -326,7 +326,7 @@ public partial class HomeViewModel : PageViewModel
     /// <summary>
     /// Deletes the specified message.
     /// </summary>
-    /// <param name="parameter">???</param>
+    /// <param name="parameter">Message to delete</param>
     [RelayCommand]
     public async Task DeleteMessage(object parameter)
     {
@@ -336,6 +336,7 @@ public partial class HomeViewModel : PageViewModel
         {
             await _conversationService.DeleteMessage(messageToDelete.Id);
         }
+
         SelectedConversation?.Messages.Remove(messageToDelete);
     }
 
@@ -368,7 +369,7 @@ public partial class HomeViewModel : PageViewModel
                         },
                         closeAction: () => { _messenger.Send(new ApplicationMessage.Shutdown()); },
                         description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC"),
-                        false
+                        actionButtonOnly: false
                     );
                     break;
                 case OllamaProcessLifecycle.Failed or OllamaProcessLifecycle.Stopped:
@@ -476,12 +477,13 @@ public partial class HomeViewModel : PageViewModel
     }
 
     /// <summary>
-    /// Initializes available models by querying the Ollama service (it can be called multiple times).
+    /// Initializes available models by querying the Ollama service (called when the View is initialized).
     /// </summary>
     private async Task InitializeModels()
     {
         // cancel the previous connection waiting Task and initialize a new one if it's completed/API was connected
-        if (_connectedToOllamaApi.Task.IsCompleted || _ollamaService.CurrentApiStatus.ConnectionState == OllamaConnectionState.Connected)
+        if (_connectedToOllamaApi.Task.IsCompleted ||
+            _ollamaService.CurrentApiStatus.ConnectionState == OllamaConnectionState.Connected)
         {
             _connectedToOllamaApi.TrySetCanceled();
             _connectedToOllamaApi = new TaskCompletionSource<bool>();
@@ -639,15 +641,12 @@ public partial class HomeViewModel : PageViewModel
     /// </summary>
     private void OllamaApiStatusChanged(OllamaApiStatus status)
     {
-        // TODO: clean this code
         if (!_checkForApiStatus) return;
         switch (status.ConnectionState)
         {
             case OllamaConnectionState.Reconnecting or OllamaConnectionState.Connecting:
-                RetryInfoText = LocalizationService.GetString("CONNECTING");
-                IsRetryPanelVisible = true;
-                IsRetryButtonVisible = false;
-                IsMessageBoxEnabled = false;
+                SetViewState(true, false, false,
+                    false, RetryInfoText = LocalizationService.GetString("CONNECTING"));
                 break;
 
             case OllamaConnectionState.Connected:
@@ -666,20 +665,15 @@ public partial class HomeViewModel : PageViewModel
                     IsRemoteConnectionTextVisible = false;
                 }
 
-                IsRetryPanelVisible = false;
-                IsRetryButtonVisible = false;
-                IsModelsDropdownEnabled = true;
-                IsMessageBoxEnabled = !string.IsNullOrEmpty(SelectedModelName);
+                SetViewState(false, false,
+                    !string.IsNullOrEmpty(SelectedModelName), true);
                 break;
 
             case OllamaConnectionState.Faulted or OllamaConnectionState.Disconnected:
                 ReplaceGeneratedMessageToFailed();
-                RetryInfoText = status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR");
                 IsRemoteConnectionTextVisible = false;
-                IsRetryPanelVisible = true;
-                IsRetryButtonVisible = true;
-                IsMessageBoxEnabled = false;
-                IsModelsDropdownEnabled = false;
+                SetViewState(true, true, false, false,
+                    status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
                 break;
         }
     }
@@ -689,7 +683,6 @@ public partial class HomeViewModel : PageViewModel
     /// </summary>
     private void OllamaProcessStatusChanged(OllamaProcessStatus status)
     {
-        // TODO: clean this code
         switch (status.ProcessLifecycle)
         {
             case OllamaProcessLifecycle.Running:
@@ -724,10 +717,10 @@ public partial class HomeViewModel : PageViewModel
                     _checkForApiStatus = true;
                     return;
                 }
+
                 _checkForApiStatus = false;
-                RetryInfoText = LocalizationService.GetString("CONNECTING");
-                IsRetryPanelVisible = true;
-                IsRetryButtonVisible = false;
+                SetViewState(true, false, false,
+                    false, RetryInfoText = LocalizationService.GetString("CONNECTING"));
                 break;
 
             case OllamaProcessLifecycle.Failed or OllamaProcessLifecycle.Stopped:
@@ -736,18 +729,42 @@ public partial class HomeViewModel : PageViewModel
                     _checkForApiStatus = true;
                     return;
                 }
+
                 _checkForApiStatus = false;
                 ReplaceGeneratedMessageToFailed();
-                RetryInfoText = status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR");
-                IsRemoteConnectionTextVisible = false;
-                IsRetryPanelVisible = true;
-                IsRetryButtonVisible = true;
-                IsMessageBoxEnabled = false;
-                IsModelsDropdownEnabled = false;
+                SetViewState(true, true, false, false,
+                    status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
                 break;
         }
     }
 
+    /// <summary>
+    /// Updates the visibility and state of the view's elements based on the provided parameters.
+    /// This method provides a centralized way to manage the UI state during connection and process lifecycle changes.
+    /// </summary>
+    /// <param name="isRetryPanelVisible">Determines whether the retry panel is visible to the user.</param>
+    /// <param name="isRetryButtonVisible">Determines whether the retry button within the panel is displayed.</param>
+    /// <param name="isMessageBoxEnabled">Controls whether the message text box is enabled.</param>
+    /// <param name="isModelsDropdownEnabled">Controls whether the model selection dropdown menu is enabled.</param>
+    /// <param name="retryInfoText">The status or error message to display. If null, an empty string is used.</param>
+    private void SetViewState(
+        bool isRetryPanelVisible,
+        bool isRetryButtonVisible,
+        bool isMessageBoxEnabled,
+        bool isModelsDropdownEnabled,
+        string? retryInfoText = null
+    )
+    {
+        IsRetryPanelVisible = isRetryPanelVisible;
+        IsRetryButtonVisible = isRetryButtonVisible;
+        IsMessageBoxEnabled = isMessageBoxEnabled;
+        IsModelsDropdownEnabled = isModelsDropdownEnabled;
+        RetryInfoText = retryInfoText ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Replaces the last generated message to a Failed message (used when an error occurs during generation).
+    /// </summary>
     private void ReplaceGeneratedMessageToFailed()
     {
         // If the last message meant to be a generated one, replace it with a FailedMessage
@@ -769,6 +786,9 @@ public partial class HomeViewModel : PageViewModel
         return _conversationStates.GetOrCreateValue(conversation);
     }
 
+    /// <summary>
+    /// Redirects to Ollama's download website based on the running operating system.
+    /// </summary>
     private static void RedirectToOllamaDownload()
     {
         var processUrl = OllamaDownloadUrl;

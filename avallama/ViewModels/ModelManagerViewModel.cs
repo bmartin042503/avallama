@@ -105,9 +105,6 @@ public partial class ModelManagerViewModel : PageViewModel
                 SortModels();
             });
         });
-
-        _ollamaService.ProcessStatusChanged += OllamaProcessStatusChanged;
-        _ollamaService.ApiStatusChanged += OllamaApiStatusChanged;
     }
 
     [RelayCommand]
@@ -345,53 +342,8 @@ public partial class ModelManagerViewModel : PageViewModel
         _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
     }
 
-    // TODO: react to status changes with beautifully written code when the time comes
-
-    /// <summary>
-    /// Handles changes when Ollama API status changes and updates UI elements accordingly.
-    /// </summary>
-    private void OllamaApiStatusChanged(OllamaApiStatus status)
-    {
-        switch (status.ConnectionState)
-        {
-            case OllamaConnectionState.Connecting:
-                break;
-
-            case OllamaConnectionState.Connected:
-                break;
-
-            case OllamaConnectionState.Disconnected:
-                break;
-
-            case OllamaConnectionState.Reconnecting:
-                break;
-
-            case OllamaConnectionState.Faulted:
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Handles changes when Ollama process status changes and updates UI elements accordingly.
-    /// </summary>
-    private void OllamaProcessStatusChanged(OllamaProcessStatus status)
-    {
-        switch (status.ProcessLifecycle)
-        {
-            case OllamaProcessLifecycle.Running:
-                break;
-
-            case OllamaProcessLifecycle.NotInstalled:
-                break;
-
-            case OllamaProcessLifecycle.Starting:
-                break;
-
-            case OllamaProcessLifecycle.Stopped:
-                break;
-
-            case OllamaProcessLifecycle.Failed:
-                break;
-        }
-    }
+    // TODO:
+    // add missing API & Process status handling, possibly with IMessenger, make it generalized
+    // so ViewModels doesn't have to subscribe to them one by one
+    // this is necessary so Model Manager can also notify the user if the process or API fails/stops unexpectedly
 }
