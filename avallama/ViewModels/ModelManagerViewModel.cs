@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using avallama.Constants;
 using avallama.Constants.Application;
 using avallama.Constants.Keys;
+using avallama.Constants.States;
 using avallama.Models.Ollama;
 using avallama.Services;
 using avallama.Services.Ollama;
@@ -104,8 +105,6 @@ public partial class ModelManagerViewModel : PageViewModel
                 SortModels();
             });
         });
-
-        _ollamaService.ServiceStateChanged += OllamaServiceStateChanged;
     }
 
     [RelayCommand]
@@ -132,7 +131,6 @@ public partial class ModelManagerViewModel : PageViewModel
     private async Task LoadModelsData()
     {
         // Get models data from cache excluding cloud models
-        // TODO: extract cloud models that has "cloud" in their names or "cloud" among their labels
         var rawModels = (await _modelCacheService.GetCachedModelsAsync())
             .Where(m => !m.Name.EndsWith("-cloud", StringComparison.OrdinalIgnoreCase));
 
@@ -166,6 +164,7 @@ public partial class ModelManagerViewModel : PageViewModel
             _ollamaService,
             _modelDownloadQueueService,
             _dialogService,
+            _modelCacheService,
             _messenger
         );
         return vm;
@@ -343,18 +342,8 @@ public partial class ModelManagerViewModel : PageViewModel
         _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
     }
 
-    // TODO: proper logging and implementation of status changes
-    private void OllamaServiceStateChanged(ServiceState? state)
-    {
-        if (state == null) return;
-        switch (state.Status)
-        {
-            case ServiceStatus.Running:
-                break;
-            case ServiceStatus.Retrying:
-                break;
-            case ServiceStatus.Stopped or ServiceStatus.Failed:
-                break;
-        }
-    }
+    // TODO:
+    // add missing API & Process status handling, possibly with IMessenger, make it generalized
+    // so ViewModels doesn't have to subscribe to them one by one
+    // this is necessary so Model Manager can also notify the user if the process or API fails/stops unexpectedly
 }

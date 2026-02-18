@@ -66,7 +66,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Ismeretlen hiba történt</value>
     </data>
     <data name="MULTIPLE_INSTANCES_ERROR" xml:space="preserve">
-        <value>Több Ollama példány fut. Zárd be az összeset, majd indítsd újra az alkalmazást.</value>
+        <value>Több Ollama példány fut. Kérlek győzödj meg róla, hogy csak egy legyen aktív.</value>
     </data>
     <data name="OLLAMA_NOT_INSTALLED" xml:space="preserve">
         <value>Az Ollama nincs telepítve</value>
@@ -116,7 +116,7 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="GITHUB_BUTTON" xml:space="preserve">
         <value>GitHub</value>
     </data>
-    <data name="FROM_ORG" xml:space="preserve">
+    <data name="FROM_TEAM" xml:space="preserve">
         <value>A 4foureyes csapattól</value>
     </data>
     <data name="CLOSE" xml:space="preserve">
@@ -243,7 +243,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Érvénytelen Ollama API port! A portnak 1 és 65535 között kell lennie.</value>
     </data>
     <data name="OLLAMA_CONNECTION_ERROR" xml:space="preserve">
-        <value>Nem sikerült kapcsolatot teremteni az Ollama host számítógéppel. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
+        <value>Nem sikerült kapcsolatot teremteni az Ollamával.</value>
     </data>
     <data name="POPULAR_MODELS" xml:space="preserve">
         <value>Kiemelt modellek</value>
@@ -468,10 +468,10 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Nincs elegendő tárhely ezen a meghajtón a modell letöltéséhez.</value>
     </data>
     <data name="OLLAMA_LOCAL_UNREACHABLE" xml:space="preserve">
-        <value>A lokális Ollama szerver nem elérhető.</value>
+        <value>A lokális Ollama szerver nem elérhető. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
     </data>
     <data name="OLLAMA_REMOTE_UNREACHABLE" xml:space="preserve">
-        <value>A távoli Ollama szerver nem elérhető.</value>
+        <value>A távoli Ollama szerver nem elérhető. Elképzelhető, hogy a host beállítások nincsenek megfelelően konfigurálva.</value>
     </data>
     <data name="DISK_FULL_DURING_DOWNLOAD" xml:space="preserve">
         <value>A letöltés megszakadt, mert elfogyott a tárhely.</value>
@@ -523,5 +523,17 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="OPEN_GITHUB" xml:space="preserve">
         <value>GitHub Megnyitása</value>
+    </data>
+    <data name="OLLAMA_STOPPED_UNEXPECTEDLY" xml:space="preserve">
+        <value>Az Ollama váratlanul leállt.</value>
+    </data>
+    <data name="EXIT_CODE" xml:space="preserve">
+        <value>Kilépési kód</value>
+    </data>
+    <data name="ERROR_UPDATING_MODEL" xml:space="preserve">
+        <value>Hiba történt a modell metaadatainak frissítése során: {0}</value>
+    </data>
+    <data name="LLM_RESPONSE_WARNING" xml:space="preserve">
+        <value>A modellek hibázhatnak. Mindig ellenőrizd a fontosabb információkat.</value>
     </data>
 </root>

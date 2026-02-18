@@ -14,6 +14,8 @@ namespace avallama.Tests.Fixtures;
 public class TestServicesFixture
 {
     public Mock<IOllamaService> OllamaMock { get; } = new();
+    public Mock<IOllamaApiClient> OllamaApiClientMock { get; } = new();
+    public Mock<IOllamaProcessManager> OllamaProcessManagerMock { get; } = new();
     public Mock<IDialogService> DialogMock { get; } = new();
     public Mock<IConfigurationService> ConfigMock { get; } = new();
     public Mock<IConversationService> DbMock { get; } = new();

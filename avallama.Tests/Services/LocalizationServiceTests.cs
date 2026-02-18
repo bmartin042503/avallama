@@ -41,4 +41,6 @@ public class LocalizationServiceTests
         Assert.Equal("[UNDEFINED_LOCALIZATION_KEY]", hungarianLocalizedText);
         Assert.Equal("[UNDEFINED_LOCALIZATION_KEY]", defaultLocalizedText);
     }
+
+    // TODO: add a test that make sures there are no undefined localization keys (i think it's possible)
 }

@@ -83,6 +83,9 @@ public class ModelItem : TemplatedControl
     public static readonly StyledProperty<ICommand> CancelCommandProperty =
         AvaloniaProperty.Register<ModelItem, ICommand>(nameof(CancelCommand));
 
+    public static readonly StyledProperty<ICommand> RetryCommandProperty =
+        AvaloniaProperty.Register<ModelItem, ICommand>(nameof(RetryCommand));
+
     public string? Title
     {
         get => GetValue(TitleProperty);
@@ -171,6 +174,12 @@ public class ModelItem : TemplatedControl
     {
         get => GetValue(CancelCommandProperty);
         set => SetValue(CancelCommandProperty, value);
+    }
+
+    public ICommand RetryCommand
+    {
+        get => GetValue(RetryCommandProperty);
+        set => SetValue(RetryCommandProperty, value);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

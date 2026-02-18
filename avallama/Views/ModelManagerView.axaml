@@ -38,7 +38,7 @@ Licensed under the MIT License. See LICENSE file for details.
             <TextBlock
                 Text="{services:LocalizationService Key='MODEL_MANAGER'}" Classes="H1"
                 Foreground="{DynamicResource OnSurface}" VerticalAlignment="Center" />
-            <Button Command="{Binding ShowInfo}" Classes="clearButton">
+            <Button Command="{Binding ShowInfo}" Classes="clearButton" Cursor="Hand">
                 <controls:DynamicSvg Path="/Assets/Svg/info.svg" FillColor="{DynamicResource OnSurfaceVariant}"
                                      Width="20" VerticalAlignment="Center" />
             </Button>
@@ -143,6 +143,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                      DeleteCommand="{Binding DeleteCommand}"
                                      CancelCommand="{Binding CancelCommand}"
                                      ResumeCommand="{Binding ResumeCommand}"
+                                     RetryCommand="{Binding RetryCommand}"
                                      StatusText="{Binding LongDownloadStatusText}"
                                      SpeedText="{Binding DownloadSpeedText}"/>
 

@@ -98,6 +98,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    // TODO: find a better solution to start ollama process automatically
     private void OnStartup(object? sender, ControlledApplicationLifetimeStartupEventArgs e)
     {
         // runs on a separate thread, asynchronously in theory
@@ -108,8 +109,8 @@ public partial class App : Application
         {
             try
             {
-                await _ollamaService!.StartAsync();
-                // TODO: init connection check
+                await _ollamaService!.StartOllamaProcessAsync();
+                await _ollamaService!.CheckOllamaApiConnectionAsync();
             }
             catch (Exception)
             {
@@ -118,6 +119,7 @@ public partial class App : Application
         });
     }
 
+    // TODO: find a better solution to stop ollama process automatically
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
         // we force the main thread to wait for ollama process shutdown
@@ -125,7 +127,7 @@ public partial class App : Application
         // previous logic might cause stuck Ollama instances in memory, however I still think there is a better solution
         try
         {
-            var shutdownTask = _ollamaService!.StopAsync();
+            var shutdownTask = _ollamaService!.StopOllamaProcessAsync();
             if (!shutdownTask.Wait(TimeSpan.FromSeconds(2)))
             {
                 // TODO: proper logging
@@ -158,7 +160,7 @@ public partial class App : Application
             "Avallama - " + Version
                           + "\n\nCopyright (c) " + LocalizationService.GetString("DEVELOPER_NAMES")
                           + "\n\n" + LocalizationService.GetString("LICENSE_DETAILS")
-                          + "\n\n" + LocalizationService.GetString("FROM_ORG") + " (github.com/4foureyes/avallama)"
+                          + "\n\n" + LocalizationService.GetString("FROM_TEAM") + " (github.com/4foureyes/avallama)"
         );
     }
 }
