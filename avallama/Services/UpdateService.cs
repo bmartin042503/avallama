@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Márk Csörgő and Martin Bartos
 // Licensed under the MIT License. See LICENSE file for details.
 
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using avallama.Utilities.Network;
 
 namespace avallama.Services;
@@ -25,7 +25,7 @@ public interface IUpdateService
 
 public class UpdateService : IUpdateService
 {
-    private readonly string _version;
+    private readonly Version _version;
     private readonly HttpClient _httpClient;
     private readonly INetworkManager _networkManager;
 
@@ -34,7 +34,7 @@ public class UpdateService : IUpdateService
         _version = App.Version;
         _httpClient = httpClient;
         _httpClient.DefaultRequestHeaders.UserAgent.Add(
-            new ProductInfoHeaderValue("avallama", _version));
+            new ProductInfoHeaderValue("avallama", _version.ToString(3)));
         _httpClient.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         _networkManager = networkManager;
@@ -54,7 +54,11 @@ public class UpdateService : IUpdateService
 
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
-        var latestVersion = doc.RootElement.GetProperty("tag_name").GetString();
-        return latestVersion != _version;
+        var remoteVersion = doc.RootElement.GetProperty("tag_name").GetString()?.TrimStart('v', 'V');
+
+        if (!Version.TryParse(remoteVersion, out var remoteParsedVersion)) return false;
+
+        return remoteParsedVersion > _version;
+
     }
 }

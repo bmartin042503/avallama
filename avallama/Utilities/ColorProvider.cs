@@ -7,7 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 
-namespace avallama.Utilities.Render;
+namespace avallama.Utilities;
 
 // returns the color for the given color key based on the current theme
 public static class ColorProvider

@@ -35,7 +35,7 @@ Licensed under the MIT License. See LICENSE file for details.
             </StackPanel>
         </StackPanel>
 
-        <TextBlock Text="{x:Static avallama:App.Version}"
+        <TextBlock Text="{Binding AppVersion}"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Bottom"
                    Margin="10"
