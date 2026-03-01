@@ -4,7 +4,7 @@
 using avallama.Tests.Fixtures;
 using Xunit;
 
-namespace avallama.Tests.Services;
+namespace avallama.Tests.Services.Ollama;
 
 public class OllamaServiceTests : IClassFixture<TestServicesFixture>
 {

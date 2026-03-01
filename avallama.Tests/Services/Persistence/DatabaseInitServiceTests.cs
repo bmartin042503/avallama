@@ -9,7 +9,7 @@ using avallama.Services.Persistence;
 using avallama.Tests.Extensions;
 using Xunit;
 
-namespace avallama.Tests.Services;
+namespace avallama.Tests.Services.Persistence;
 
 [Collection("Database Tests")]
 public class DatabaseInitServiceTests

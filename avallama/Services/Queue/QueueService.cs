@@ -13,6 +13,8 @@ using avallama.Models.Download;
 
 namespace avallama.Services.Queue;
 
+// TODO: optimize queue processing for better stability and testing (possibly without fire and forget calls)
+
 /// <summary>
 /// Defines a contract for a service that manages a queue of items to be processed concurrently.
 /// </summary>
@@ -238,7 +240,7 @@ public abstract class QueueService<T> : IQueueService<T>
         }
         catch (OperationCanceledException)
         {
-            OnItemCancelled(item);
+            OnItemCanceled(item);
         }
         catch (Exception ex)
         {
@@ -258,7 +260,7 @@ public abstract class QueueService<T> : IQueueService<T>
     /// Invoked when an item's processing is canceled via an <see cref="OperationCanceledException"/>.
     /// </summary>
     /// <param name="item">The item that was canceled.</param>
-    protected virtual void OnItemCancelled(T item) {}
+    protected virtual void OnItemCanceled(T item) {}
 
     /// <summary>
     /// Invoked when an item's processing throws an unhandled exception.
@@ -276,6 +278,13 @@ public abstract class QueueService<T> : IQueueService<T>
             _serviceCts.Dispose();
             _serviceCts = new CancellationTokenSource();
         }
+
+        while (_queue.TryDequeue(out var item))
+        {
+            item.Cancel();
+            OnItemCanceled(item);
+        }
+
         _queue.Clear();
     }
 
