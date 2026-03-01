@@ -152,7 +152,7 @@ public partial class SettingsViewModel : PageViewModel
         }
     }
 
-    public string AppVersion => App.Version;
+    public string AppVersion => $"v{App.Version.ToString(3)}";
 
     public SettingsViewModel(DialogService dialogService, ConfigurationService configurationService,
         IMessenger messenger, INetworkManager networkManager)

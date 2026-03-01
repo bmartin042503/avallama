@@ -27,7 +27,7 @@ public partial class App : Application
     private DialogService? _dialogService;
     private DatabaseInitService? _databaseInitService;
     public static SqliteConnection SharedDbConnection { get; private set; } = null!;
-    public const string Version = "v0.3.0";
+    public static readonly Version Version = new (0, 3, 1);
 
     public override void Initialize()
     {

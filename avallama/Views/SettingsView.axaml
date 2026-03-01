@@ -165,7 +165,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             <TextBlock Text="{services:LocalizationService Key='SHORT_DESC'}" FontStyle="Italic" />
                             <TextBlock Margin="0,16,0,0">
                                 <Run Text="{services:LocalizationService Key='VERSION_LABEL'}" FontWeight="Bold" />
-                                <Run Text="{x:Static avallama:App.Version}" />
+                                <Run Text="{Binding AppVersion}" />
                             </TextBlock>
                             <TextBlock>
                                 <Run Text="{services:LocalizationService Key='DEVELOPERS'}" FontWeight="Bold" />

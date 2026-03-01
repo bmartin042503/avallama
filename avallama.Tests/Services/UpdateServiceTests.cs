@@ -84,7 +84,7 @@ public class UpdateServiceTests
     public async Task IsUpdateAvailableAsync_SameVersion_ReturnsFalse()
     {
         _networkManagerMock.Setup(x => x.IsInternetAvailableAsync()).ReturnsAsync(true);
-        const string currentVersion = App.Version;
+        var currentVersion = App.Version;
         var json = JsonSerializer.Serialize(new { tag_name = currentVersion });
         SetupHttpResponse(HttpStatusCode.OK, json);
         var service = CreateService();
