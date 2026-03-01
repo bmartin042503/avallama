@@ -51,10 +51,10 @@ cd ~/Downloads
 3. Install the package using the following command:
 
 ```bash
-sudo apt install ./avallama_0.2.0_amd64.deb
+sudo apt install ./avallama_0.3.0_amd64.deb
 ```
 
-*Replace `./avallama_0.2.0_amd64.deb` with the correct filename of the latest package*
+*Replace `./avallama_0.3.0_amd64.deb` with the correct filename of the latest package*
 
 4. After that, you can run the application from the application menu or with the `avallama` command
 
@@ -71,10 +71,10 @@ sudo apt remove avallama
 3. Install the package using the following command:
 
 ```bash
-sudo pacman -U avallama-0.2.0-1-x86_64.pkg.tar.zst
+sudo pacman -U avallama-0.3.0-1-x86_64.pkg.tar.zst
 ```
 
-*Replace `avallama-0.2.0-1-x86_64.pkg.tar.zst` with the correct filename of the latest package*
+*Replace `avallama-0.3.0-1-x86_64.pkg.tar.zst` with the correct filename of the latest package*
 
 To uninstall run:
 
