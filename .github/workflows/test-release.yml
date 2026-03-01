@@ -1,6 +1,8 @@
 ﻿name: Release Avallama (Test)
 
 on:
+  schedule:
+    - cron: '30 18 * * 5'
   workflow_dispatch:
     inputs:
       version:
@@ -59,7 +61,7 @@ jobs:
           -v n
 
   build-windows:
-    name: Build Windows Installer (.exe)
+    name: (Release Test) Build Windows Installer
     needs: test
     runs-on: windows-latest
 
@@ -91,7 +93,7 @@ jobs:
             scripts\installer.iss
 
   build-debian:
-    name: Build Debian Package (.deb)
+    name: (Release Test) Build Debian Package
     needs: test
     runs-on: ubuntu-latest
 
@@ -112,7 +114,7 @@ jobs:
           ./scripts/package-debian.sh "${{ env.VERSION }}"
 
   build-arch:
-    name: Build Arch Package (.pkg.tar.zst)
+    name: (Release Test) Build Arch Package
     needs: test
     runs-on: ubuntu-latest
     container:
@@ -142,7 +144,7 @@ jobs:
 
 
   build-macos:
-    name: Build macOS Packages (.dmg for x64 and arm64)
+    name: (Release Test) Build macOS Packages
     needs: test
     runs-on: macos-latest
 
