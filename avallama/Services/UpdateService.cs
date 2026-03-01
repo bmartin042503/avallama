@@ -34,7 +34,7 @@ public class UpdateService : IUpdateService
         _version = App.Version;
         _httpClient = httpClient;
         _httpClient.DefaultRequestHeaders.UserAgent.Add(
-            new ProductInfoHeaderValue("avallama", _version.ToString(3)));
+            new ProductInfoHeaderValue("avallama", $"v{_version.ToString(3)}"));
         _httpClient.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         _networkManager = networkManager;

@@ -125,7 +125,6 @@ public abstract class QueueService<T> : IQueueService<T>
     /// <returns>A task representing the asynchronous queue processing loop.</returns>
     private async Task ProcessQueueAsync()
     {
-        // ensures that only one instance of the processing loop is running at a time
         if (!await _semaphore.WaitAsync(0)) return;
 
         try
@@ -174,7 +173,6 @@ public abstract class QueueService<T> : IQueueService<T>
                     continue;
                 }
 
-                // try to take an item from the queue, if empty we break from the loop
                 if (!_queue.TryDequeue(out var item))
                 {
                     break;
@@ -183,7 +181,7 @@ public abstract class QueueService<T> : IQueueService<T>
                 var internalCts = CancellationTokenSource.CreateLinkedTokenSource(_serviceCts.Token, item.Token);
 
                 // do not pass the cancellation token since we continue with a cleaning code which has to run always
-                // this is necessary in case the cleaning is not executed if we breaked the loop already
+                // this is necessary in case the cleaning is not executed if we have broken the loop
                 var processingTask = TryProcessItemAsync(item, internalCts).ContinueWith(_ =>
                 {
                     lock (_lock)
@@ -281,9 +279,6 @@ public abstract class QueueService<T> : IQueueService<T>
         _queue.Clear();
     }
 
-    /// <summary>
-    /// Releases all resources used by the <see cref="QueueService{T}"/>.
-    /// </summary>
     public void Dispose()
     {
         lock (_lock)

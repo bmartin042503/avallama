@@ -23,53 +23,61 @@ This project is currently being developed by Márk Csörgő and Martin Bartos.
 
 ## Features
 
--  **Seamless Local LLMs** - Chat seamlessly with LLMs hosted locally on your machine
--  **Your Data Stays With You** - Chats are saved to your machine, ensuring your data privacy
--  **Ollama On The Network** – Connect the app to an Ollama instance on your network to easily use your AI workstation on any device
--  **Multi-Platform Support** – Runs on Windows, Linux and macOS utilizing the Avalonia framework
--  **Lightweight and Efficient** – Designed to be minimal while providing a smooth experience
--  **Automatic Ollama Process Management** – Ensures Ollama runs efficiently in the background without manual intervention
+- **Seamless Local LLMs** - Chat seamlessly with LLMs hosted locally on your machine
+- **Your Data Stays With You** - Chats are saved to your machine, ensuring your data privacy
+- **Ollama On The Network** – Connect the app to an Ollama instance on your network to easily use your AI workstation on
+  any device
+- **Multi-Platform Support** – Runs on Windows, Linux and macOS utilizing the Avalonia framework
+- **Lightweight and Efficient** – Designed to be minimal while providing a smooth experience
+- **Automatic Ollama Process Management** – Ensures Ollama runs efficiently in the background without manual
+  intervention
 
 ## Contributions
 
-We are currently not accepting outside contributions, however we encourage users to report bugs, crashes or any unexpected behaviour. Please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
-
+We are currently not accepting outside contributions, however we encourage users to report bugs, crashes or any
+unexpected behaviour. Please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
 
 ## Installation
 
-**Important notice**: a working installation of Ollama is required for Avallama to work properly. Before installing Avallama on any platform, please download and install Ollama from [this link](https://ollama.com/download).
+**Important notice**: a working installation of Ollama is required for Avallama to work properly. Before installing
+Avallama on any platform, please download and install Ollama from [this link](https://ollama.com/download).
 
-### Linux
+### Debian/Ubuntu (x64)
 
-#### Debian/Ubuntu (x64)
 1. Download the latest .deb package from the [releases](https://github.com/4foureyes/avallama/releases) page.
 2. Open a terminal and navigate to the directory where the file was downloaded, for example:
+
 ```bash
 cd ~/Downloads
 ```
+
 3. Install the package using the following command:
+
 ```bash
 sudo apt install ./avallama_0.2.0_amd64.deb
 ```
+
 *Replace `./avallama_0.2.0_amd64.deb` with the correct filename of the latest package*
 
 4. After that, you can run the application from the application menu or with the `avallama` command
 
 To uninstall, run:
+
 ```bash
 sudo apt remove avallama
 ```
 
-#### Arch Linux (x64)
+### Arch Linux (x64)
 
 1. Download the latest .pkg.tar.zst from the Releases tab
 2. Open a terminal and navigate to the directory where the file was downloaded.
 3. Install the package using the following command:
+
 ```bash
 sudo pacman -U avallama-0.2.0-1-x86_64.pkg.tar.zst
 ```
-*Replace `avallama-0.2.0-1-x86_64.pkg.tar.zst` with the correct filename of the latest package*
 
+*Replace `avallama-0.2.0-1-x86_64.pkg.tar.zst` with the correct filename of the latest package*
 
 To uninstall run:
 
@@ -78,52 +86,60 @@ sudo pacman -R avallama
 ```
 
 To uninstall and remove config files
+
 ```bash
 sudo pacman -Rns avallama
 ```
 
 ### Windows (x64)
 
-The Windows installer is **not signed with a trusted code-signing certificate**, so Windows SmartScreen may prevent it from running. If you wish to circumvent this, click `More info -> Run anyway`.
+The Windows installer is **not signed with a trusted code-signing certificate**, so Windows SmartScreen may prevent it
+from running. If you wish to circumvent this, click `More info -> Run anyway`.
 
-1. Download the latest Windows installer from the [releases](https://github.com/4foureyes/avallama/releases) page, e.g. `avallama-setup-0.2.0.exe`.
+1. Download the latest Windows installer from the [releases](https://github.com/4foureyes/avallama/releases) page, e.g.
+   `avallama-setup-0.3.0.exe`.
 2. Open the installer and go through the setup steps.
 3. Once installed, you can run the application from the Start Menu.
 
-To uninstall, remove it through the `Apps > Installed apps` page in Settings, or navigate to the installation directory and run unins000.exe.
+To uninstall, remove it through the `Apps > Installed apps` page in Settings, or navigate to the installation directory
+and run unins000.exe.
 
-### Windows (arm64)
-
-Windows on Arm is not currently supported.
-
-### macOS
+### macOS (x64 and arm64)
 
 This application is **not signed nor notarized**. MacOS may prevent it from running by default.
 
-1. Download the latest `.dmg` file from the [releases](https://github.com/4foureyes/avallama/releases) page. (for Intel use *osx_x64*, for Apple Silicon use *osx_arm64*)
+1. Download the latest `.dmg` file from the [releases](https://github.com/4foureyes/avallama/releases) page. (for Intel
+   use *osx_x64*, for Apple Silicon use *osx_arm64*)
 2. Open the downloaded `.dmg` file.
 3. Drag **Avallama** into the **Applications** folder.
 
-If the '*app is damaged or can't be opened*' error occurs, make sure you remove the quarantine flag using the following command in the Terminal:
+If the '*app is damaged or can't be opened*' error occurs, make sure you remove the quarantine flag using the following
+command in the Terminal:
+
 ```bash
 xattr -cr /Applications/Avallama.app
 ```
 
 ### Building from source
 
-If you are comfortable building the app from source, feel free to clone the repository and build the application to test out the newest features we are actively implementing.
+If you are comfortable building the app from source, feel free to clone the repository and build the application to test
+out the newest features we are actively implementing.
 
 1. Install the [.NET SDK](https://dotnet.microsoft.com/en-us/download) (version 10.0 or later).
 2. Clone the repository: `git clone https://github.com/4foureyes/avallama.git`
 3. Navigate to the project directory: `cd avallama`
 4. Restore dependencies: `dotnet restore`
 5. Build the project: `dotnet build -c Release`
-6. Run the application: `dotnet run -c Release --project avallama/avallama.csproj`
-7. (Optional) To create a self-contained publish for your platform, run:
+6. (macOS only) Build native dependencies:
+   `clang -dynamiclib -framework Cocoa -arch x86_64 -arch arm64 -o avallama/bin/Release/net10.0/libFullScreenCheck.dylib native/macos/FullScreenCheck.m`
+7. Run the application: `dotnet run -c Release --project avallama/avallama.csproj`
+8. (Optional) To create a self-contained publish for your platform, run:
+
 ```bash
 dotnet publish -c Release -r <RID> --self-contained true
 ```
-The output executable will be located in the `avallama/bin/Release/net9.0/<RID>/publish/` directory.
+
+The output executable will be located in the `avallama/bin/Release/net10.0/<RID>/publish/` directory.
 
 *Replace `<RID>` with your platform's Runtime Identifier, e.g. `win-x64`, `linux-x64`, `osx-arm64`, `osx-x64`*
 

@@ -47,7 +47,6 @@ public class ModelDownloadQueueService(
 
         await foreach (var chunk in ollamaService.DownloadModelAsync(request.ModelName, ct))
         {
-            // fail early if disk space runs out during download
             if (!DiskManager.IsEnoughDiskSpaceAvailable(request.TotalBytes))
             {
                 throw new InsufficientDiskSpaceException(request.TotalBytes,
@@ -74,7 +73,6 @@ public class ModelDownloadQueueService(
                 request.DownloadSpeed = speed;
             }
 
-            // if Ollama API indicates successful completion we set the status to Downloaded
             if (chunk.Status == "success")
             {
                 request.Status = new ModelDownloadStatus(DownloadState.Downloaded);
@@ -92,7 +90,6 @@ public class ModelDownloadQueueService(
         string errorKey;
         string? arg = null;
 
-        // map exception types to localization keys
         switch (ex)
         {
             case NoInternetConnectionException:
@@ -156,7 +153,6 @@ public class ModelDownloadQueueService(
     /// <param name="request">The request that was canceled.</param>
     protected override void OnItemCancelled(ModelDownloadRequest request)
     {
-        // reset speed metrics
         request.DownloadSpeed = 0.0;
         request.SpeedCalculator.Reset();
 
