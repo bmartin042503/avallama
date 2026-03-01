@@ -182,6 +182,98 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             Times.Never);
     }
 
+    [Fact]
+    public async Task DeleteMessage_WhenValidMessage_DeletesFromDatabaseAndRemovesFromCollection()
+    {
+        fixture.DbMock.Reset();
+        var vm = CreateViewModel();
+
+        var conversation = new Conversation("A", "model-1:1b") { ConversationId = Guid.NewGuid() };
+        var message = new Message("Test message") { Id = 10 };
+        conversation.Messages.Add(message);
+
+        vm.SelectedConversation = conversation;
+
+        await vm.DeleteMessageCommand.ExecuteAsync(message);
+
+        fixture.DbMock.Verify(db => db.DeleteMessage(10), Times.Once);
+        Assert.DoesNotContain(message, conversation.Messages);
+    }
+
+    [Fact]
+    public async Task DeleteMessage_WhenFailedMessage_RemovesFromCollectionButDoesNotCallDatabase()
+    {
+        fixture.DbMock.Reset();
+        var vm = CreateViewModel();
+
+        var conversation = new Conversation("A", "model-1:1b") { ConversationId = Guid.NewGuid() };
+        var failedMessage = new FailedMessage { Id = -1 };
+        conversation.Messages.Add(failedMessage);
+
+        vm.SelectedConversation = conversation;
+
+        await vm.DeleteMessageCommand.ExecuteAsync(failedMessage);
+
+        fixture.DbMock.Verify(db => db.DeleteMessage(It.IsAny<long>()), Times.Never);
+
+        Assert.DoesNotContain(failedMessage, conversation.Messages);
+    }
+
+    [Fact]
+    public async Task SearchBoxText_WhenChanged_FiltersConversationsCorrectly()
+    {
+        fixture.DbMock.Reset();
+        fixture.OllamaMock.Reset();
+
+        var conv1 = new Conversation("C# Programming", string.Empty) { ConversationId = Guid.NewGuid() };
+        var conv2 = new Conversation("Python Scripts", string.Empty) { ConversationId = Guid.NewGuid() };
+        var conv3 = new Conversation("Avalonia UI Design", string.Empty) { ConversationId = Guid.NewGuid() };
+
+        fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([conv1, conv2, conv3]);
+
+        var vm = CreateViewModel();
+
+        fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+
+        await vm.InitializeAsync();
+
+        Assert.Equal(3, vm.Conversations?.Count);
+
+        vm.SearchBoxText = "Python";
+
+        Assert.NotNull(vm.Conversations);
+        Assert.Single(vm.Conversations);
+        Assert.Contains(conv2, vm.Conversations);
+    }
+
+    [Fact]
+    public async Task SearchBoxText_WhenCleared_RestoresAllConversations()
+    {
+        fixture.DbMock.Reset();
+        fixture.OllamaMock.Reset();
+
+        var conv1 = new Conversation("C# Programming", string.Empty) { ConversationId = Guid.NewGuid() };
+        var conv2 = new Conversation("Python Scripts", string.Empty) { ConversationId = Guid.NewGuid() };
+
+        fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([conv1, conv2]);
+
+        var vm = CreateViewModel();
+
+        fixture.OllamaMock.Raise(x =>
+            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+
+        await vm.InitializeAsync();
+
+        vm.SearchBoxText = "C#";
+        vm.SearchBoxText = string.Empty;
+
+        Assert.NotNull(vm.Conversations);
+        Assert.Equal(2, vm.Conversations.Count);
+        Assert.Contains(conv1, vm.Conversations);
+        Assert.Contains(conv2, vm.Conversations);
+    }
+
     private static async IAsyncEnumerable<OllamaResponse> MainStreamAsync()
     {
         yield return new OllamaResponse

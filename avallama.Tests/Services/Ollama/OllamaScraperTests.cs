@@ -17,7 +17,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace avallama.Tests.Services;
+namespace avallama.Tests.Services.Ollama;
 
 public class OllamaScraperTests
 {

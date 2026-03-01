@@ -151,7 +151,7 @@ public class ModelDownloadQueueService(
     /// based on the explicit reason for cancellation.
     /// </summary>
     /// <param name="request">The request that was canceled.</param>
-    protected override void OnItemCancelled(ModelDownloadRequest request)
+    protected override void OnItemCanceled(ModelDownloadRequest request)
     {
         request.DownloadSpeed = 0.0;
         request.SpeedCalculator.Reset();
