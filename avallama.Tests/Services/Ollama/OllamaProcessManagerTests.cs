@@ -8,7 +8,7 @@ using avallama.Tests.Fixtures;
 using avallama.Tests.Mocks;
 using Xunit;
 
-namespace avallama.Tests.Services;
+namespace avallama.Tests.Services.Ollama;
 
 public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
 {

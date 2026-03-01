@@ -13,7 +13,7 @@ using avallama.Services.Persistence;
 using Microsoft.Data.Sqlite;
 using Xunit;
 
-namespace avallama.Tests.Services;
+namespace avallama.Tests.Services.Persistence;
 
 [Collection("Database Tests")]
 public class ConversationServiceTests : IDisposable
