@@ -51,10 +51,10 @@ cd ~/Downloads
 3. Install the package using the following command:
 
 ```bash
-sudo apt install ./avallama_0.3.0_amd64.deb
+sudo apt install ./avallama_0.3.1_amd64.deb
 ```
 
-*Replace `./avallama_0.3.0_amd64.deb` with the correct filename of the latest package*
+*Replace `./avallama_0.3.1_amd64.deb` with the correct filename of the latest package*
 
 4. After that, you can run the application from the application menu or with the `avallama` command
 
@@ -71,10 +71,10 @@ sudo apt remove avallama
 3. Install the package using the following command:
 
 ```bash
-sudo pacman -U avallama-0.3.0-1-x86_64.pkg.tar.zst
+sudo pacman -U avallama-0.3.1-1-x86_64.pkg.tar.zst
 ```
 
-*Replace `avallama-0.3.0-1-x86_64.pkg.tar.zst` with the correct filename of the latest package*
+*Replace `avallama-0.3.1-1-x86_64.pkg.tar.zst` with the correct filename of the latest package*
 
 To uninstall run:
 
@@ -92,7 +92,7 @@ sudo pacman -Rns avallama
 
 The Windows installer is **not signed with a trusted code-signing certificate**, so Windows SmartScreen may prevent it from running. If you wish to circumvent this, click `More info -> Run anyway`.
 
-1. Download the latest Windows installer from the [releases](https://github.com/4foureyes/avallama/releases) page, e.g. `avallama-setup-0.3.0.exe`.
+1. Download the latest Windows installer from the [releases](https://github.com/4foureyes/avallama/releases) page, e.g. `avallama-setup-0.3.1.exe`.
 2. Open the installer and go through the setup steps.
 3. Once installed, you can run the application from the Start Menu.
 
@@ -114,7 +114,7 @@ xattr -cr /Applications/Avallama.app
 
 ## Building from source
 
-Build instructions are available [here](https://github.com/4foureyes/avallama/wiki/Building-from-source).
+Build instructions are available [here](./docs/Building.md).
 
 ## Known issues
 
