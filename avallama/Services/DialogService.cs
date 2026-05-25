@@ -13,6 +13,7 @@ using avallama.Views.Dialogs;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.Services;
@@ -82,7 +83,7 @@ public interface IDialogService
         bool actionButtonOnly
     );
 
-    Task<DialogResult> ShowConfirmationDialog(
+    Task<DialogResult> ShowConfirmationDialogAsync(
         string title,
         string description,
         string positiveButtonText,
@@ -90,7 +91,7 @@ public interface IDialogService
         ConfirmationType highlight
     );
 
-    Task<DialogResult> ShowInputDialog(
+    Task<DialogResult> ShowInputDialogAsync(
         string title,
         IEnumerable<InputField> fields,
         string description
@@ -134,53 +135,57 @@ public class DialogService(
         double maxHeight = double.NaN
     )
     {
-        if (dialog is ApplicationDialog.Information
-            or ApplicationDialog.Error
-            or ApplicationDialog.Confirmation
-            or ApplicationDialog.Input
-            or ApplicationDialog.Action)
+        Dispatcher.UIThread.Post(() =>
         {
-            throw new InvalidOperationException($"{dialog} dialog can not be used with ShowDialog.");
-        }
+            if (dialog is ApplicationDialog.Information
+                or ApplicationDialog.Error
+                or ApplicationDialog.Confirmation
+                or ApplicationDialog.Input
+                or ApplicationDialog.Action)
+            {
+                throw new InvalidOperationException($"{dialog} dialog can not be used with ShowDialog.");
+            }
 
-        var dialogWindow = new DialogWindow();
-        var dialogName = dialog + "View";
-        var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.{dialogName}");
-        if (type is null) return;
-        var control = (Control)Activator.CreateInstance(type)!;
-        control.DataContext = dialogViewModelFactory.GetDialogViewModel(dialog);
-        dialogWindow.DataContext = new DialogViewModel { DialogType = dialog };
-        dialogWindow.Content = control;
-        dialogWindow.CanResize = resizable;
+            var dialogWindow = new DialogWindow();
+            var dialogName = dialog + "View";
+            var type = typeof(DialogWindow).Assembly.GetType($"avallama.Views.Dialogs.{dialogName}");
+            if (type is null) return;
+            var control = (Control)Activator.CreateInstance(type)!;
+            control.DataContext = dialogViewModelFactory.GetDialogViewModel(dialog);
+            dialogWindow.DataContext = new DialogViewModel { DialogType = dialog };
+            dialogWindow.Content = control;
+            dialogWindow.CanResize = resizable;
 
-        // if we provide a height or width value, it will set the resizing accordingly
-        // so if we only provide width, it will adjust the height to the content and vice versa
-        if (double.IsNaN(width) && !double.IsNaN(height))
-        {
-            dialogWindow.SizeToContent = SizeToContent.Width;
-            dialogWindow.Height = height;
-        }
-        else if (!double.IsNaN(width) && double.IsNaN(height))
-        {
-            dialogWindow.SizeToContent = SizeToContent.Height;
-            dialogWindow.Width = width;
-        }
-        else if (!double.IsNaN(height) && !double.IsNaN(width))
-        {
-            dialogWindow.SizeToContent = SizeToContent.Manual;
-            dialogWindow.Height = height;
-            dialogWindow.Width = width;
-        }
+            // if we provide a height or width value, it will set the resizing accordingly
+            // so if we only provide width, it will adjust the height to the content and vice versa
+            if (double.IsNaN(width) && !double.IsNaN(height))
+            {
+                dialogWindow.SizeToContent = SizeToContent.Width;
+                dialogWindow.Height = height;
+            }
+            else if (!double.IsNaN(width) && double.IsNaN(height))
+            {
+                dialogWindow.SizeToContent = SizeToContent.Height;
+                dialogWindow.Width = width;
+            }
+            else if (!double.IsNaN(height) && !double.IsNaN(width))
+            {
+                dialogWindow.SizeToContent = SizeToContent.Manual;
+                dialogWindow.Height = height;
+                dialogWindow.Width = width;
+            }
 
-        if (resizable)
-        {
-            if (!double.IsNaN(minWidth)) dialogWindow.MinWidth = minWidth;
-            if (!double.IsNaN(minHeight)) dialogWindow.MinHeight = minHeight;
-            if (!double.IsNaN(maxWidth)) dialogWindow.MaxWidth = maxWidth;
-            if (!double.IsNaN(maxHeight)) dialogWindow.MaxHeight = maxHeight;
-        }
-        dialogWindow.InvalidateMeasure();
-        ShowDialogWindow(dialogWindow);
+            if (resizable)
+            {
+                if (!double.IsNaN(minWidth)) dialogWindow.MinWidth = minWidth;
+                if (!double.IsNaN(minHeight)) dialogWindow.MinHeight = minHeight;
+                if (!double.IsNaN(maxWidth)) dialogWindow.MaxWidth = maxWidth;
+                if (!double.IsNaN(maxHeight)) dialogWindow.MaxHeight = maxHeight;
+            }
+
+            dialogWindow.InvalidateMeasure();
+            ShowDialogWindow(dialogWindow);
+        });
     }
 
     /// <summary>
@@ -189,17 +194,20 @@ public class DialogService(
     /// <param name="informationMessage">The informational message to be shown.</param>
     public void ShowInfoDialog(string informationMessage)
     {
-        var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InformationView");
-        if (type is null) return;
-        var control = (Control)Activator.CreateInstance(type)! as InformationView;
-        control!.DialogMessage.Text = informationMessage.Replace(@"\n", Environment.NewLine);
-        dialogWindow.Content = control;
-        dialogWindow.DataContext = new DialogViewModel
+        Dispatcher.UIThread.Post(() =>
         {
-            DialogType = ApplicationDialog.Information
-        };
-        ShowDialogWindow(dialogWindow);
+            var dialogWindow = new DialogWindow();
+            var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InformationView");
+            if (type is null) return;
+            var control = (Control)Activator.CreateInstance(type)! as InformationView;
+            control!.DialogMessage.Text = informationMessage.Replace(@"\n", Environment.NewLine);
+            dialogWindow.Content = control;
+            dialogWindow.DataContext = new DialogViewModel
+            {
+                DialogType = ApplicationDialog.Information
+            };
+            ShowDialogWindow(dialogWindow);
+        });
     }
 
     /// <summary>
@@ -212,26 +220,29 @@ public class DialogService(
         bool shutdownApp = false
     )
     {
-        var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ErrorView");
-        if (type is null) return;
-        var control = (Control)Activator.CreateInstance(type)! as ErrorView;
-        control!.DialogMessage.Text = errorMessage.Replace(@"\n", Environment.NewLine);
-        control.CloseButton.Click += (_, _) =>
+        Dispatcher.UIThread.Post(() =>
         {
-            CloseDialog(ApplicationDialog.Error);
-            if (shutdownApp)
+            var dialogWindow = new DialogWindow();
+            var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ErrorView");
+            if (type is null) return;
+            var control = (Control)Activator.CreateInstance(type)! as ErrorView;
+            control!.DialogMessage.Text = errorMessage.Replace(@"\n", Environment.NewLine);
+            control.CloseButton.Click += (_, _) =>
             {
-                messenger.Send(new ApplicationMessage.Shutdown());
-            }
-        };
+                CloseDialog(ApplicationDialog.Error);
+                if (shutdownApp)
+                {
+                    messenger.Send(new ApplicationMessage.Shutdown());
+                }
+            };
 
-        dialogWindow.Content = control;
-        dialogWindow.DataContext = new DialogViewModel
-        {
-            DialogType = ApplicationDialog.Error
-        };
-        ShowDialogWindow(dialogWindow);
+            dialogWindow.Content = control;
+            dialogWindow.DataContext = new DialogViewModel
+            {
+                DialogType = ApplicationDialog.Error
+            };
+            ShowDialogWindow(dialogWindow);
+        });
     }
 
     /// <summary>
@@ -277,51 +288,54 @@ public class DialogService(
         bool actionButtonOnly = false
     )
     {
-        var dialogWindow = new DialogWindow();
-        // ConfirmationView on purpose, as its View is reusable
-        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ConfirmationView");
-        if (type is null) return;
-        var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
+        Dispatcher.UIThread.Post(() =>
+        {
+            var dialogWindow = new DialogWindow();
+            // ConfirmationView on purpose, as its View is reusable
+            var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ConfirmationView");
+            if (type is null) return;
+            var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
 
-        control!.DialogTitle.Text = title;
-        if (!string.IsNullOrEmpty(description))
-        {
-            control.DialogDescription.Text = description;
-        }
-        else
-        {
-            control.DialogDescription.IsVisible = false;
-        }
+            control!.DialogTitle.Text = title;
+            if (!string.IsNullOrEmpty(description))
+            {
+                control.DialogDescription.Text = description;
+            }
+            else
+            {
+                control.DialogDescription.IsVisible = false;
+            }
 
-        control.PositiveButton.Content = actionButtonText;
-        if (actionButtonOnly)
-        {
-            control.NegativeButton.IsVisible = false;
-        }
-        else
-        {
-            control.NegativeButton.Content = LocalizationService.GetString("CLOSE");
-            control.NegativeButton.Classes.Add("secondaryButton");
-            control.NegativeButton.Click += (_, _) =>
+            control.PositiveButton.Content = actionButtonText;
+            if (actionButtonOnly)
+            {
+                control.NegativeButton.IsVisible = false;
+            }
+            else
+            {
+                control.NegativeButton.Content = LocalizationService.GetString("CLOSE");
+                control.NegativeButton.Classes.Add("secondaryButton");
+                control.NegativeButton.Click += (_, _) =>
+                {
+                    CloseDialog(ApplicationDialog.Action);
+                    closeAction?.Invoke();
+                };
+            }
+
+            control.PositiveButton.Click += (_, _) =>
             {
                 CloseDialog(ApplicationDialog.Action);
-                closeAction?.Invoke();
+                action();
             };
-        }
 
-        control.PositiveButton.Click += (_, _) =>
-        {
-            CloseDialog(ApplicationDialog.Action);
-            action();
-        };
+            dialogWindow.Content = control;
+            dialogWindow.DataContext = new DialogViewModel
+            {
+                DialogType = ApplicationDialog.Action
+            };
 
-        dialogWindow.Content = control;
-        dialogWindow.DataContext = new DialogViewModel
-        {
-            DialogType = ApplicationDialog.Action
-        };
-
-        ShowDialogWindow(dialogWindow);
+            ShowDialogWindow(dialogWindow);
+        });
     }
     // these methods have to be async because they have results that need to be awaited properly
     // if they were not async, they would try to await the result on the UI thread, causing it to freeze and preventing the result from being set with TrySetResult as the UI thread would already be busy
@@ -363,7 +377,7 @@ public class DialogService(
     /// }
     /// </code>
     /// </example>
-    public async Task<DialogResult> ShowConfirmationDialog(
+    public async Task<DialogResult> ShowConfirmationDialogAsync(
         string title,
         string positiveButtonText,
         string negativeButtonText,
@@ -371,65 +385,68 @@ public class DialogService(
         ConfirmationType highlight = ConfirmationType.Positive
     )
     {
-        var dialogResult = new TaskCompletionSource<DialogResult>();
-        var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ConfirmationView");
-        if (type is null) return new NullResult("View type is null");
-        var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
+        return await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            var dialogResult = new TaskCompletionSource<DialogResult>();
+            var dialogWindow = new DialogWindow();
+            var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.ConfirmationView");
+            if (type is null) return new NullResult("View type is null");
+            var control = (Control)Activator.CreateInstance(type)! as ConfirmationView;
 
-        control!.DialogTitle.Text = title;
-        if (!string.IsNullOrEmpty(description))
-        {
-            control.DialogDescription.Text = description;
-        }
-        else
-        {
-            control.DialogDescription.IsVisible = false;
-        }
-
-        control.PositiveButton.Content = positiveButtonText;
-        control.NegativeButton.Content = negativeButtonText;
-
-        // if we want to highlight the positive button, then we give the negative button a less prominent appearance, and vice versa
-        // this class is already defined in styles
-        if (highlight == ConfirmationType.Positive)
-        {
-            control.NegativeButton.Classes.Add("secondaryButton");
-        }
-        else if (highlight == ConfirmationType.Negative)
-        {
-            control.PositiveButton.Classes.Add("secondaryButton");
-        }
-
-        control.PositiveButton.Click += (_, _) =>
-        {
-            dialogResult.TrySetResult(new ConfirmationResult(ConfirmationType.Positive));
-            CloseDialog(ApplicationDialog.Confirmation);
-        };
-
-        control.NegativeButton.Click += (_, _) =>
-        {
-            dialogResult.TrySetResult(new ConfirmationResult(ConfirmationType.Negative));
-            CloseDialog(ApplicationDialog.Confirmation);
-        };
-
-        dialogWindow.Content = control;
-        dialogWindow.DataContext = new DialogViewModel
-        {
-            DialogType = ApplicationDialog.Confirmation
-        };
-
-        // if a user closes the dialog in some other way, we handle the task
-        dialogWindow.Closing += (_, _) =>
-        {
-            if (!dialogResult.Task.IsCompleted)
+            control!.DialogTitle.Text = title;
+            if (!string.IsNullOrEmpty(description))
             {
-                dialogResult.TrySetResult(new NullResult("DialogWindow closed before returning result"));
+                control.DialogDescription.Text = description;
             }
-        };
-        await ShowDialogWindowAsync(dialogWindow);
-        var result = await dialogResult.Task;
-        return result;
+            else
+            {
+                control.DialogDescription.IsVisible = false;
+            }
+
+            control.PositiveButton.Content = positiveButtonText;
+            control.NegativeButton.Content = negativeButtonText;
+
+            // if we want to highlight the positive button, then we give the negative button a less prominent appearance, and vice versa
+            // this class is already defined in styles
+            if (highlight == ConfirmationType.Positive)
+            {
+                control.NegativeButton.Classes.Add("secondaryButton");
+            }
+            else if (highlight == ConfirmationType.Negative)
+            {
+                control.PositiveButton.Classes.Add("secondaryButton");
+            }
+
+            control.PositiveButton.Click += (_, _) =>
+            {
+                dialogResult.TrySetResult(new ConfirmationResult(ConfirmationType.Positive));
+                CloseDialog(ApplicationDialog.Confirmation);
+            };
+
+            control.NegativeButton.Click += (_, _) =>
+            {
+                dialogResult.TrySetResult(new ConfirmationResult(ConfirmationType.Negative));
+                CloseDialog(ApplicationDialog.Confirmation);
+            };
+
+            dialogWindow.Content = control;
+            dialogWindow.DataContext = new DialogViewModel
+            {
+                DialogType = ApplicationDialog.Confirmation
+            };
+
+            // if a user closes the dialog in some other way, we handle the task
+            dialogWindow.Closing += (_, _) =>
+            {
+                if (!dialogResult.Task.IsCompleted)
+                {
+                    dialogResult.TrySetResult(new NullResult("DialogWindow closed before returning result"));
+                }
+            };
+            await ShowDialogWindowAsync(dialogWindow);
+            var result = await dialogResult.Task;
+            return result;
+        });
     }
 
     /// <summary>
@@ -470,112 +487,115 @@ public class DialogService(
     /// }
     /// </code>
     /// </example>
-    public async Task<DialogResult> ShowInputDialog(
+    public async Task<DialogResult> ShowInputDialogAsync(
         string title,
         IEnumerable<InputField> inputFields,
         string description = ""
     )
     {
-        var fields = inputFields.ToList();
-        if (fields.Count == 0) return new NullResult("Empty input fields");
-
-        var dialogResult = new TaskCompletionSource<DialogResult>();
-        var dialogWindow = new DialogWindow();
-        var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InputView");
-        if (type is null) return new NullResult("View type is null");
-        var control = (Control)Activator.CreateInstance(type)! as InputView;
-
-        control!.DialogTitle.Text = title;
-        if (!string.IsNullOrEmpty(description))
+        return await Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            control.DialogDescription.Text = description;
-        }
-        else
-        {
-            control.DialogDescription.IsVisible = false;
-        }
+            var fields = inputFields.ToList();
+            if (fields.Count == 0) return new NullResult("Empty input fields");
 
-        control.InputFieldsStackPanel.Children.Clear();
-        control.ErrorMessage.IsVisible = false;
+            var dialogResult = new TaskCompletionSource<DialogResult>();
+            var dialogWindow = new DialogWindow();
+            var type = typeof(DialogWindow).Assembly.GetType("avallama.Views.Dialogs.InputView");
+            if (type is null) return new NullResult("View type is null");
+            var control = (Control)Activator.CreateInstance(type)! as InputView;
 
-        foreach (var field in fields)
-        {
-            var inputTextBox = new TextBox();
-            inputTextBox.Classes.Add("settingTextBox");
-
-            if (field.IsPassword)
+            control!.DialogTitle.Text = title;
+            if (!string.IsNullOrEmpty(description))
             {
-                inputTextBox.PasswordChar = '*';
+                control.DialogDescription.Text = description;
+            }
+            else
+            {
+                control.DialogDescription.IsVisible = false;
             }
 
-            if (!string.IsNullOrEmpty(field.Placeholder))
-                inputTextBox.Watermark = field.Placeholder;
-
-            if (!string.IsNullOrEmpty(field.InputValue))
-                inputTextBox.Text = field.InputValue;
-
-            inputTextBox.MaxLength = field.MaxLength;
-            control.InputFieldsStackPanel.Children.Add(inputTextBox);
-        }
-
-        control.CloseButton.Click += (_, _) =>
-        {
-            // when closing the dialog without saving it does not return a result, as the user did not want to save anything
-            dialogResult.TrySetResult(new NullResult());
-            CloseDialog(ApplicationDialog.Input);
-        };
-
-        control.SaveButton.Click += (_, _) =>
-        {
+            control.InputFieldsStackPanel.Children.Clear();
             control.ErrorMessage.IsVisible = false;
-            control.ErrorMessage.Text = string.Empty;
 
-            // validation check
-            for (var i = 0; i < fields.Count; i++)
+            foreach (var field in fields)
             {
-                if (control.InputFieldsStackPanel.Children[i] is TextBox fieldTextBox)
+                var inputTextBox = new TextBox();
+                inputTextBox.Classes.Add("settingTextBox");
+
+                if (field.IsPassword)
                 {
-                    // we update the content of the input fields, so we can revalidate them
-                    fields[i].InputValue = fieldTextBox.Text ?? string.Empty;
+                    inputTextBox.PasswordChar = '*';
                 }
 
-                if (!fields[i].IsValid)
-                {
-                    control.ErrorMessage.IsVisible = true;
-                    control.ErrorMessage.Text = fields[i].ValidationErrorMessage;
-                    return;
-                }
+                if (!string.IsNullOrEmpty(field.Placeholder))
+                    inputTextBox.Watermark = field.Placeholder;
+
+                if (!string.IsNullOrEmpty(field.InputValue))
+                    inputTextBox.Text = field.InputValue;
+
+                inputTextBox.MaxLength = field.MaxLength;
+                control.InputFieldsStackPanel.Children.Add(inputTextBox);
             }
 
-            // the textboxes, or the input fields' texts are combined into a List<string>
-            var inputList = control.InputFieldsStackPanel.Children.Select(item =>
-                    item as TextBox
-                )
-                .OfType<TextBox>()
-                .Select(textBoxItem => textBoxItem.Text)
-                .ToList();
-
-            dialogResult.TrySetResult(new InputResult(inputList));
-            CloseDialog(ApplicationDialog.Input);
-        };
-
-        dialogWindow.Content = control;
-        dialogWindow.DataContext = new DialogViewModel
-        {
-            DialogType = ApplicationDialog.Input
-        };
-
-        // if the user closes the dialog in some other way, we handle the task
-        dialogWindow.Closing += (_, _) =>
-        {
-            if (!dialogResult.Task.IsCompleted)
+            control.CloseButton.Click += (_, _) =>
             {
-                dialogResult.TrySetResult(new NullResult("DialogWindow closed before returning result"));
-            }
-        };
-        await ShowDialogWindowAsync(dialogWindow);
-        var result = await dialogResult.Task;
-        return result;
+                // when closing the dialog without saving it does not return a result, as the user did not want to save anything
+                dialogResult.TrySetResult(new NullResult());
+                CloseDialog(ApplicationDialog.Input);
+            };
+
+            control.SaveButton.Click += (_, _) =>
+            {
+                control.ErrorMessage.IsVisible = false;
+                control.ErrorMessage.Text = string.Empty;
+
+                // validation check
+                for (var i = 0; i < fields.Count; i++)
+                {
+                    if (control.InputFieldsStackPanel.Children[i] is TextBox fieldTextBox)
+                    {
+                        // we update the content of the input fields, so we can revalidate them
+                        fields[i].InputValue = fieldTextBox.Text ?? string.Empty;
+                    }
+
+                    if (!fields[i].IsValid)
+                    {
+                        control.ErrorMessage.IsVisible = true;
+                        control.ErrorMessage.Text = fields[i].ValidationErrorMessage;
+                        return;
+                    }
+                }
+
+                // the textboxes, or the input fields' texts are combined into a List<string>
+                var inputList = control.InputFieldsStackPanel.Children.Select(item =>
+                        item as TextBox
+                    )
+                    .OfType<TextBox>()
+                    .Select(textBoxItem => textBoxItem.Text)
+                    .ToList();
+
+                dialogResult.TrySetResult(new InputResult(inputList));
+                CloseDialog(ApplicationDialog.Input);
+            };
+
+            dialogWindow.Content = control;
+            dialogWindow.DataContext = new DialogViewModel
+            {
+                DialogType = ApplicationDialog.Input
+            };
+
+            // if the user closes the dialog in some other way, we handle the task
+            dialogWindow.Closing += (_, _) =>
+            {
+                if (!dialogResult.Task.IsCompleted)
+                {
+                    dialogResult.TrySetResult(new NullResult("DialogWindow closed before returning result"));
+                }
+            };
+            await ShowDialogWindowAsync(dialogWindow);
+            var result = await dialogResult.Task;
+            return result;
+        });
     }
 
     /// <summary>
@@ -585,28 +605,31 @@ public class DialogService(
     /// <param name="dialogWindow">The dialog window to be displayed.</param>
     private void ShowDialogWindow(DialogWindow dialogWindow)
     {
-        var parent = _dialogStack.Count > 0
-            ? _dialogStack.Peek()
-            : Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-        if (parent == null)
+        Dispatcher.UIThread.Post(() =>
         {
-            dialogWindow.Show();
-        }
-        else
-        {
-            dialogWindow.ShowDialog(parent);
-        }
-
-        _dialogStack.Push(dialogWindow);
-        dialogWindow.Closing += (_, _) =>
-        {
-            if (_dialogStack.Peek() == dialogWindow)
-                _dialogStack.Pop();
+            var parent = _dialogStack.Count > 0
+                ? _dialogStack.Peek()
+                : Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+            if (parent == null)
+            {
+                dialogWindow.Show();
+            }
             else
-                _dialogStack = new Stack<DialogWindow>(_dialogStack.Where(w => w != dialogWindow));
-        };
+            {
+                dialogWindow.ShowDialog(parent);
+            }
+
+            _dialogStack.Push(dialogWindow);
+            dialogWindow.Closing += (_, _) =>
+            {
+                if (_dialogStack.Peek() == dialogWindow)
+                    _dialogStack.Pop();
+                else
+                    _dialogStack = new Stack<DialogWindow>(_dialogStack.Where(w => w != dialogWindow));
+            };
+        });
     }
 
     /// <summary>
@@ -619,30 +642,33 @@ public class DialogService(
     /// </returns>
     private async Task ShowDialogWindowAsync(DialogWindow dialogWindow)
     {
-        var parent = _dialogStack.Count > 0
-            ? _dialogStack.Peek()
-            : Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            var parent = _dialogStack.Count > 0
+                ? _dialogStack.Peek()
+                : Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
 
-        _dialogStack.Push(dialogWindow);
-        dialogWindow.Closing += (_, _) =>
-        {
-            if (_dialogStack.Peek() == dialogWindow)
-                _dialogStack.Pop();
+            _dialogStack.Push(dialogWindow);
+            dialogWindow.Closing += (_, _) =>
+            {
+                if (_dialogStack.Peek() == dialogWindow)
+                    _dialogStack.Pop();
+                else
+                    _dialogStack = new Stack<DialogWindow>(_dialogStack.Where(w => w != dialogWindow));
+            };
+            // it's important that the dialog display with await is the last thing, because with await it will wait until the dialog is closed
+            // and if we do not set up the dialog before (adding to stack, adding closing operations) then it cannot be closed
+            if (parent == null)
+            {
+                dialogWindow.Show();
+            }
             else
-                _dialogStack = new Stack<DialogWindow>(_dialogStack.Where(w => w != dialogWindow));
-        };
-        // it's important that the dialog display with await is the last thing, because with await it will wait until the dialog is closed
-        // and if we do not set up the dialog before (adding to stack, adding closing operations) then it cannot be closed
-        if (parent == null)
-        {
-            dialogWindow.Show();
-        }
-        else
-        {
-            await dialogWindow.ShowDialog(parent);
-        }
+            {
+                await dialogWindow.ShowDialog(parent);
+            }
+        });
     }
 
     /// <summary>
@@ -651,11 +677,14 @@ public class DialogService(
     /// <param name="dialog">The type of dialog to close.</param>
     public void CloseDialog(ApplicationDialog dialog)
     {
-        var dialogWindow = _dialogStack.FirstOrDefault(d => d.DataContext is DialogViewModel viewModel
-                                                            && viewModel.DialogType == dialog);
-        if (dialogWindow == null) return;
-        dialogWindow.Close();
-        _dialogStack = new Stack<DialogWindow>(_dialogStack.Where(w => w != dialogWindow));
+        Dispatcher.UIThread.Post(() =>
+        {
+            var dialogWindow = _dialogStack.FirstOrDefault(d => d.DataContext is DialogViewModel viewModel
+                                                                && viewModel.DialogType == dialog);
+            if (dialogWindow == null) return;
+            dialogWindow.Close();
+            _dialogStack = new Stack<DialogWindow>(_dialogStack.Where(w => w != dialogWindow));
+        });
     }
 
     /// <summary>
@@ -663,9 +692,12 @@ public class DialogService(
     /// </summary>
     public void CloseDialog()
     {
-        if (_dialogStack.Count <= 0) return;
-        var dialogWindow = _dialogStack.Pop();
-        dialogWindow.Close();
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_dialogStack.Count <= 0) return;
+            var dialogWindow = _dialogStack.Pop();
+            dialogWindow.Close();
+        });
     }
 
     /// <summary>
@@ -673,11 +705,14 @@ public class DialogService(
     /// </summary>
     public void CloseAllDialogs()
     {
-        foreach (var dialogWindow in _dialogStack.ToList())
+        Dispatcher.UIThread.Post(() =>
         {
-            dialogWindow.Close();
-        }
+            foreach (var dialogWindow in _dialogStack.ToList())
+            {
+                dialogWindow.Close();
+            }
 
-        _dialogStack.Clear();
+            _dialogStack.Clear();
+        });
     }
 }

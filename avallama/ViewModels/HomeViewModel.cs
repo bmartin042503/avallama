@@ -18,6 +18,7 @@ using avallama.Services;
 using avallama.Services.Ollama;
 using avallama.Services.Persistence;
 using avallama.Utilities;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -300,7 +301,7 @@ public partial class HomeViewModel : PageViewModel
     {
         if (parameter is not Guid guid || SelectedConversation == null || Conversations == null) return;
 
-        var res = await _dialogService.ShowConfirmationDialog(
+        var res = await _dialogService.ShowConfirmationDialogAsync(
             LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
             LocalizationService.GetString("DELETE"),
             LocalizationService.GetString("CANCEL"),
@@ -695,7 +696,6 @@ public partial class HomeViewModel : PageViewModel
                     _checkForApiStatus = true;
                     return;
                 }
-
                 _dialogService.ShowActionDialog(
                     title: LocalizationService.GetString("OLLAMA_NOT_INSTALLED"),
                     actionButtonText: LocalizationService.GetString("DOWNLOAD"),

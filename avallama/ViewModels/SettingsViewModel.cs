@@ -43,7 +43,7 @@ public partial class SettingsViewModel : PageViewModel
                 // asynchronously show restart dialog on the UI thread
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    var dialogResult = await _dialogService.ShowConfirmationDialog(
+                    var dialogResult = await _dialogService.ShowConfirmationDialogAsync(
                         title: LocalizationService.GetString("RESTART_NEEDED_DIALOG_TITLE"),
                         positiveButtonText: LocalizationService.GetString("RESTART_NOW"),
                         negativeButtonText: LocalizationService.GetString("LATER"),
