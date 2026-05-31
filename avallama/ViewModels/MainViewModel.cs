@@ -94,7 +94,7 @@ public partial class MainViewModel : ViewModelBase
         if (models.Count == 0 && (string.IsNullOrEmpty(isScrapeDialogHandled) || isScrapeDialogHandled == "False"))
         {
             // ask the user if they want to fetch all models from ollama's website if they haven't been asked before
-            var dialogResult = await _dialogService.ShowConfirmationDialog(
+            var dialogResult = await _dialogService.ShowConfirmationDialogAsync(
                 LocalizationService.GetString("SCRAPE_ASK_DIALOG_TITLE"),
                 LocalizationService.GetString("SCRAPE_ASK_DIALOG_POSITIVE"),
                 LocalizationService.GetString("NOT_NOW"),

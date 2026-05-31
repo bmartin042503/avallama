@@ -18,7 +18,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <Setter Property="Foreground" Value="{DynamicResource OnSurface}" />
         <Setter Property="OffContent" Value="{services:LocalizationService Key='OFF'}"/>
         <Setter Property="OnContent" Value="{services:LocalizationService Key='ON'}"/>
-        <Setter Property="FlowDirection" Value="RightToLeft"/>
+        <Setter Property="FlowDirection" Value="LeftToRight"/>
 
         <!-- Checked styles -->
         <Style Selector="^:checked  /template/ Border#SwitchKnobBounds">
