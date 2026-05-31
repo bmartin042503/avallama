@@ -65,7 +65,7 @@ public class ApplicationService : IApplicationService
     public async Task AskOllamaStart()
     {
         // show ollama start confirmation dialog
-        var result = await _dialogService.ShowConfirmationDialog(
+        var result = await _dialogService.ShowConfirmationDialogAsync(
             title: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_TITLE"),
             positiveButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_LOCAL"),
             negativeButtonText: LocalizationService.GetString("OLLAMA_RUN_FROM_DIALOG_REMOTE"),
@@ -76,7 +76,7 @@ public class ApplicationService : IApplicationService
         if (result is ConfirmationResult { Confirmation: ConfirmationType.Negative })
         {
             // show input dialog with input fields specified
-            var dialogResult = await _dialogService.ShowInputDialog(
+            var dialogResult = await _dialogService.ShowInputDialogAsync(
                 title: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_TITLE"),
                 description: LocalizationService.GetString("OLLAMA_REMOTE_DIALOG_DESC"),
                 inputFields: new List<InputField>

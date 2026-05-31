@@ -129,7 +129,7 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
         {
             Status = new OllamaProcessStatus(OllamaProcessLifecycle.Starting);
 
-            ConfigureOllamaPath();
+            OllamaPath = GetOllamaExecutablePath();
 
             // check for existing instances (real server processes).
             // we get all processes named "ollama" and ensure they don't have a window handle
@@ -286,18 +286,29 @@ public class OllamaProcessManager : IOllamaProcessManager, IDisposable
         _ollamaProcess = null;
     }
 
-    private void ConfigureOllamaPath()
+    private string GetOllamaExecutablePath()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ollama.exe" : "ollama";
+
+        var pathVariable = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+
+        if (string.IsNullOrEmpty(pathVariable)) return string.Empty;
+
+        var paths = pathVariable.Split(Path.PathSeparator);
+
+        foreach (var path in paths)
         {
-            OllamaPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Programs\Ollama\ollama");
+            if (string.IsNullOrWhiteSpace(path)) continue;
+
+            var fullPath = Path.Combine(path.Trim(), executableName);
+
+            if (File.Exists(fullPath))
+            {
+                return fullPath;
+            }
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            OllamaPath = @"/usr/local/bin/ollama";
-        }
+
+        return string.Empty;
     }
 
     private static bool IsOllamaRunningAsSystemdService()

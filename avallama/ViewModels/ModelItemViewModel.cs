@@ -138,7 +138,7 @@ public partial class ModelItemViewModel : ViewModelBase
         // TODO: add a force delete option in case data is somehow corrupted and throws error while deleting
 
         if (!Model.IsDownloaded) return;
-        var dialogResult = await _dialogService.ShowConfirmationDialog(
+        var dialogResult = await _dialogService.ShowConfirmationDialogAsync(
             LocalizationService.GetString("CONFIRM_DELETION_DIALOG_TITLE"),
             LocalizationService.GetString("DELETE"),
             LocalizationService.GetString("CANCEL"),
