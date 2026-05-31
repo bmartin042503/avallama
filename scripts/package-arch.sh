@@ -6,11 +6,8 @@ log()    { printf '%s [INFO] %s\n' "$(log_ts)" "$*"; }
 
 log "Starting Arch package script"
 
-VERSION="${1:-}"
-if [ -z "$VERSION" ]; then
-  echo "Usage: $0 <version>"
-  exit 1
-fi
+VERSION="${1:-0.0.0}"
+log "Using version: $VERSION"
 
 PROJECT="./avallama/avallama.csproj"
 

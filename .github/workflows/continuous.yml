@@ -1,20 +1,15 @@
-﻿name: Release Avallama (Test)
+﻿name: Continuous Test and Package Build
 
 on:
+  push:
+    branches: [ main ]
   schedule:
-    - cron: '30 18 * * 5'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number (without v prefix)'
-        required: true
-        default: '0.0.1'
+    - cron: '30 18 * * 5' # Every Friday at 18:30 UTC
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_NOLOGO: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
-  RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.0' }}
 
 permissions:
   contents: read
@@ -86,7 +81,6 @@ jobs:
       - name: Build Installer
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
-            /DAppVersion="${{ env.RELEASE_VERSION }}" `
             scripts\installer.iss
 
   build-debian:
@@ -105,7 +99,7 @@ jobs:
       - name: Run Debian packaging script
         run: |
           chmod +x scripts/package-debian.sh
-          ./scripts/package-debian.sh "${{ env.RELEASE_VERSION }}"
+          ./scripts/package-debian.sh
 
   build-arch:
     name: (Release Test) Build Arch Package
@@ -131,7 +125,7 @@ jobs:
           cp -r avallama /tmp/build/
           cp -r scripts /tmp/build/
           chown -R builder:builder /tmp/build
-          sudo -u builder bash -c "cd /tmp/build && chmod +x scripts/package-arch.sh && scripts/package-arch.sh '${{ env.RELEASE_VERSION }}'"
+          sudo -u builder bash -c "cd /tmp/build && chmod +x scripts/package-arch.sh && scripts/package-arch.sh"
 
 
   build-macos:
@@ -153,4 +147,4 @@ jobs:
       - name: Run macOS packaging script
         run: |
           chmod +x scripts/package-macos.sh
-          ./scripts/package-macos.sh "${{ env.RELEASE_VERSION }}"
+          ./scripts/package-macos.sh

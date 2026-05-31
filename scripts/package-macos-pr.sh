@@ -1,5 +1,8 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 set -euo pipefail
+
+# macOS packaging script that only builds for arm64 for use in PRs.
+# Do not use to release! It does not build for x86_64.
 
 log_ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 log()    { printf '%s [INFO] %s\n' "$(log_ts)" "$*"; }
@@ -21,11 +24,9 @@ if [ ! -f "$NATIVE_SRC" ]; then
 fi
 
 log "Compiling native macOS source code"
-# compiles native macOS source code to create a universal dylib binary
-clang -dynamiclib -framework Cocoa -arch x86_64 -arch arm64 -o "$DYLIB_OUTPUT" "$NATIVE_SRC"
+# compiles native macOS source code to create a dylib binary
+clang -dynamiclib -framework Cocoa -arch arm64 -o "$DYLIB_OUTPUT" "$NATIVE_SRC"
 
-log "Running dotnet publish for osx-x64"
-dotnet publish "$PROJECT" -v n -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
 log "Running dotnet publish for osx-arm64"
 dotnet publish "$PROJECT" -v n -c Release -r osx-arm64 --self-contained true -o mac-dist-arm64 /p:PublishSingleFile=true
 
@@ -38,7 +39,7 @@ create_app_structure() {
   cp avallama/Assets/Avallama.icns "$output_app/Contents/Resources"
 
   log "[create_app_structure()] Adding universal dylib to .app for ${arch_dir}"
-  # includes the compiled universal dylib in the .app
+  # includes the compiled dylib in the .app
   cp "$DYLIB_OUTPUT" "$output_app/Contents/MacOS/"
   chmod +x "$output_app/Contents/MacOS/libFullScreenCheck.dylib"
 
@@ -107,14 +108,6 @@ create_installer_dmg() {
       "$app_name"
 }
 
-# x64
-rm -rf Avallama.app
-log "Creating .app structure for x64"
-create_app_structure "mac-dist-x64" "Avallama.app"
-# zip -r "avallama_${VERSION}_osx_x64.zip" Avallama.app
-log "Creating DMG installer for x64"
-create_installer_dmg "x64"
-
 # arm64
 rm -rf Avallama.app
 log "Creating .app structure for arm64"
@@ -129,4 +122,4 @@ rm -rf Avallama.app
 rm -rf mac-dist-*
 rm -rf $DYLIB_OUTPUT
 
-log "Done: Created avallama_${VERSION}_osx_x64.dmg and avallama_${VERSION}_osx_arm64.dmg"
+log "Done: Created avallama_${VERSION}_osx_arm64.dmg"
