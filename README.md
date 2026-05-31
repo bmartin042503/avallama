@@ -4,11 +4,17 @@
 <h1 align="center">Avallama</h1>
 
 <p align="center">
-  <a href="https://github.com/4foureyes/avallama/actions/workflows/pr.yml">
-    <img alt="Build" src="https://github.com/4foureyes/avallama/actions/workflows/pr.yml/badge.svg?branch=main">
+  <a href="https://github.com/4foureyes/avallama/actions/workflows/pr-build.yml">
+    <img alt="PR Build Badge" src="https://github.com/4foureyes/avallama/actions/workflows/pr-build.yml/badge.svg?branch=main">
+  </a>
+  <a href="https://github.com/4foureyes/avallama/actions/workflows/pr-test.yml">
+    <img alt="PR Test Badge" src="https://github.com/4foureyes/avallama/actions/workflows/pr-test.yml/badge.svg?branch=main">
+  </a>
+  <a href="https://github.com/4foureyes/avallama/actions/workflows/continuous.yml">
+    <img alt="Continuous Build Badge" src="https://github.com/4foureyes/avallama/actions/workflows/continuous.yml/badge.svg?branch=main">
   </a>
   <a href="https://codecov.io/gh/4foureyes/avallama">
-    <img alt="Coverage" src="https://codecov.io/gh/4foureyes/avallama/branch/main/graph/badge.svg">
+    <img alt="Coverage Badge" src="https://codecov.io/gh/4foureyes/avallama/branch/main/graph/badge.svg">
   </a>
 </p>
 

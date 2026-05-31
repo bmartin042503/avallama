@@ -1,0 +1,110 @@
+﻿name: PR Package Build
+
+on:
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    name: Windows Installer (PR, x64)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore & Publish
+        run: dotnet publish avallama/avallama.csproj -c Release -r win-x64 --self-contained true -o win-dist /p:PublishSingleFile=true
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://jrsoftware.org/download.php/is.exe -OutFile is.exe
+          Start-Process -FilePath .\is.exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -Wait
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+
+      - name: Build Installer
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            scripts\installer.iss
+
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: avallama-windows-x64-pr-${{ github.event.pull_request.number }}
+          path: |
+            scripts/avallama-*.exe
+          retention-days: 7
+          if-no-files-found: error
+
+  build-debian:
+    name: Debian Package (PR, x64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Run Debian packaging script
+        run: |
+          chmod +x scripts/package-debian.sh
+          ./scripts/package-debian.sh
+
+      - name: Upload Debian package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: avallama-debian-x64-pr-${{ github.event.pull_request.number }}
+          path: |
+            *.deb
+          retention-days: 7
+          if-no-files-found: error
+
+  build-macos:
+    name: macOS Package (PR, arm64)
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Install create-dmg tool
+        run: brew install create-dmg
+
+      - name: Run macOS packaging script
+        run: |
+          chmod +x scripts/package-macos-pr.sh
+          ./scripts/package-macos-pr.sh
+
+      - name: Upload macOS package artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: avallama-macos-arm64-pr-${{ github.event.pull_request.number }}
+          path: |
+            *.dmg
+          retention-days: 7
+          if-no-files-found: error
