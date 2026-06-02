@@ -9,7 +9,6 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:avallama.ViewModels"
              xmlns:services="clr-namespace:avallama.Services"
-             xmlns:avallama="clr-namespace:avallama"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
              x:Class="avallama.Views.SettingsView"
@@ -151,7 +150,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                 Command="{Binding Path=((vm:MainViewModel)DataContext).StartScraper, RelativeSource={RelativeSource AncestorType=Window}}" />
                         <TextBlock Text="{Binding LastModelUpdate}"
                                    FontSize="14"
-                                   VerticalAlignment="Center"/>
+                                   VerticalAlignment="Center" />
                     </StackPanel>
                 </Grid>
 
@@ -176,7 +175,7 @@ Licensed under the MIT License. See LICENSE file for details.
                                 <Run Text="Ollama API, Avalonia framework" />
                             </TextBlock>
                             <TextBlock Margin="0,16,0,0">
-                                <Run Text="{services:LocalizationService Key='LICENSE'}" />
+                                <Run Text="{services:LocalizationService Key='LICENSE_DETAILS'}" />
                             </TextBlock>
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="{services:LocalizationService Key='GITHUB_BUTTON'}"
@@ -190,7 +189,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             <Separator Margin="0,16,0,0" Opacity="0.3" />
                             <TextBlock HorizontalAlignment="Center" Margin="0,16,0,0" VerticalAlignment="Bottom">
                                 <Run Text="Copyright" FontWeight="Bold" />
-                                <Run Text="© 2025 Márk Csörgő and Martin Bartos" />
+                                <Run Text="© 2026 Márk Csörgő and Martin Bartos" />
                             </TextBlock>
                             <TextBlock Text="{services:LocalizationService Key='FROM_TEAM'}"
                                        HorizontalAlignment="Center"

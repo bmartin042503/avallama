@@ -18,22 +18,23 @@ public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
         var opm = new OllamaProcessManager
         {
             StartProcessFunc = _ => new OllamaProcessMock(),
-            GetProcessesFunc = () => []
+            GetProcessesFunc = () => [],
+            GetExecutablePathFunc = () => "/fake/path/to/ollama"
         };
 
         var stateChanged = false;
-        var processState = OllamaProcessLifecycle.Stopped;
+        var processState = OllamaProcessState.Stopped;
 
         opm.StatusChanged += status =>
         {
             if (stateChanged) return;
-            processState = status.ProcessLifecycle;
+            processState = status.ProcessState;
             stateChanged = true;
         };
 
         await opm.StartAsync();
 
-        Assert.Equal(OllamaProcessLifecycle.Starting, processState);
+        Assert.Equal(OllamaProcessState.Starting, processState);
     }
 
     [Fact]
@@ -45,11 +46,11 @@ public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
             GetProcessesFunc = () => []
         };
 
-        var processState = OllamaProcessLifecycle.Stopped;
-        opm.StatusChanged += status => processState = status.ProcessLifecycle;
+        var processState = OllamaProcessState.Stopped;
+        opm.StatusChanged += status => processState = status.ProcessState;
         await opm.StartAsync();
 
-        Assert.Equal(OllamaProcessLifecycle.NotInstalled, processState);
+        Assert.Equal(OllamaProcessState.NotInstalled, processState);
     }
 
     [Fact]
@@ -58,13 +59,14 @@ public class OllamaProcessManagerTests : IClassFixture<TestServicesFixture>
         var opm = new OllamaProcessManager
         {
             StartProcessFunc = _ => new OllamaProcessMock(),
-            GetProcessesFunc = () => [ new OllamaProcessMock() ]
+            GetProcessesFunc = () => [ new OllamaProcessMock() ],
+            GetExecutablePathFunc = () => "/fake/path/to/ollama"
         };
 
-        var processState = OllamaProcessLifecycle.Stopped;
-        opm.StatusChanged += status => processState = status.ProcessLifecycle;
+        var processState = OllamaProcessState.Stopped;
+        opm.StatusChanged += status => processState = status.ProcessState;
         await opm.StartAsync();
 
-        Assert.Equal(OllamaProcessLifecycle.Running, processState);
+        Assert.Equal(OllamaProcessState.Running, processState);
     }
 }

@@ -54,13 +54,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
             "model2"
         };
 
-        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
         fixture.OllamaMock.Raise(x =>
-            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessLifecycle.Running));
-
-        // raises Connected API status so the ViewModel doesn't wait indefinitely for connection
-        fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
         await vm.InitializeAsync();
 
@@ -93,9 +88,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         var vm = CreateViewModel();
 
-        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
         fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
         await vm.InitializeAsync();
 
@@ -153,9 +147,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         var vm = CreateViewModel();
 
-        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
         fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
         await vm.InitializeAsync();
 
@@ -234,7 +227,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         var vm = CreateViewModel();
 
         fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
         await vm.InitializeAsync();
 
@@ -261,7 +254,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         var vm = CreateViewModel();
 
         fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
         await vm.InitializeAsync();
 

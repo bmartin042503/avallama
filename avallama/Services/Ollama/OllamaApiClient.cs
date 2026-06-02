@@ -28,13 +28,13 @@ namespace avallama.Services.Ollama;
 /// <summary>
 /// Delegate for handling changes in the Ollama API connection status.
 /// </summary>
-public delegate void OllamaApiStatusChangedHandler(OllamaApiStatus status);
+internal delegate void OllamaApiStatusChangedHandler(OllamaApiStatus status);
 
 /// <summary>
 /// Defines the contract for interacting with the Ollama API, including connection management,
 /// model retrieval, generation, and deletion.
 /// </summary>
-public interface IOllamaApiClient
+internal interface IOllamaApiClient
 {
     #region Interface
 
@@ -101,7 +101,7 @@ public interface IOllamaApiClient
 /// <summary>
 /// Implementation of the Ollama API client, handling HTTP communication with the Ollama server.
 /// </summary>
-public class OllamaApiClient(
+internal class OllamaApiClient(
     IConfigurationService configurationService,
     INetworkManager networkManager,
     IHttpClientFactory httpClientFactory,
@@ -145,7 +145,7 @@ public class OllamaApiClient(
             field = value;
             StatusChanged?.Invoke(value);
         }
-    } = new(OllamaConnectionState.Disconnected);
+    } = new(OllamaApiState.Disconnected);
 
     #endregion
 
@@ -154,10 +154,10 @@ public class OllamaApiClient(
     /// <inheritdoc/>
     public async Task CheckConnectionAsync()
     {
-        Status = new OllamaApiStatus(OllamaConnectionState.Connecting);
+        Status = new OllamaApiStatus(OllamaApiState.Connecting);
         if (await IsOllamaReachable())
         {
-            Status = new OllamaApiStatus(OllamaConnectionState.Connected);
+            Status = new OllamaApiStatus(OllamaApiState.Connected);
         }
         else
         {
@@ -168,7 +168,7 @@ public class OllamaApiClient(
     /// <inheritdoc/>
     public async Task RetryConnectionAsync()
     {
-        Status = new OllamaApiStatus(OllamaConnectionState.Reconnecting);
+        Status = new OllamaApiStatus(OllamaApiState.Reconnecting);
         _timeProvider.Start();
 
         var loopStartTime = _timeProvider.Elapsed;
@@ -176,7 +176,7 @@ public class OllamaApiClient(
         {
             if (await IsOllamaReachable())
             {
-                Status = new OllamaApiStatus(OllamaConnectionState.Connected);
+                Status = new OllamaApiStatus(OllamaApiState.Connected);
                 return;
             }
 
@@ -263,7 +263,7 @@ public class OllamaApiClient(
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            Status = new OllamaApiStatus(OllamaConnectionState.Connected);
+            Status = new OllamaApiStatus(OllamaApiState.Connected);
         }
         else
         {
@@ -344,7 +344,7 @@ public class OllamaApiClient(
             response = await _heavyHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                Status = new OllamaApiStatus(OllamaConnectionState.Connected);
+                Status = new OllamaApiStatus(OllamaApiState.Connected);
             }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
@@ -431,12 +431,12 @@ public class OllamaApiClient(
     {
         if (IsConnectionRemote(configurationService.ReadSetting(ConfigurationKey.ApiHost)))
         {
-            Status = new OllamaApiStatus(OllamaConnectionState.Faulted,
+            Status = new OllamaApiStatus(OllamaApiState.Failed,
                 LocalizationService.GetString("OLLAMA_REMOTE_UNREACHABLE"));
         }
         else
         {
-            Status = new OllamaApiStatus(OllamaConnectionState.Faulted,
+            Status = new OllamaApiStatus(OllamaApiState.Failed,
                 LocalizationService.GetString("OLLAMA_LOCAL_UNREACHABLE"));
         }
     }

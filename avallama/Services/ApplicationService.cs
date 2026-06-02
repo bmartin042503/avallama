@@ -114,8 +114,9 @@ public class ApplicationService : IApplicationService
     public void Shutdown()
     {
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
-        desktop.Shutdown();
+        Dispatcher.UIThread.Post(() => { desktop.Shutdown(); });
     }
+
 
     // TODO:
     // This is currently hard to test, what worked for me was to open avallama from the bin/Debug/net10.0 folder
