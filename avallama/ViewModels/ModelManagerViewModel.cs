@@ -25,6 +25,8 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
 
+// TODO: handle OllamaService status changes and update UI accordingly
+
 public partial class ModelManagerViewModel : PageViewModel
 {
     private readonly IDialogService _dialogService;
@@ -341,9 +343,4 @@ public partial class ModelManagerViewModel : PageViewModel
     {
         _dialogService.ShowInfoDialog(LocalizationService.GetString("MODEL_MANAGER_GUIDE"));
     }
-
-    // TODO:
-    // add missing API & Process status handling, possibly with IMessenger, make it generalized
-    // so ViewModels doesn't have to subscribe to them one by one
-    // this is necessary so Model Manager can also notify the user if the process or API fails/stops unexpectedly
 }

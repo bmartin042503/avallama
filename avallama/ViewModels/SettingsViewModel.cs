@@ -40,6 +40,7 @@ public partial class SettingsViewModel : PageViewModel
             field = value;
             if (value)
             {
+                /*
                 // asynchronously show restart dialog on the UI thread
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
@@ -56,6 +57,10 @@ public partial class SettingsViewModel : PageViewModel
                         _messenger.Send(new ApplicationMessage.Restart());
                     }
                 });
+                */
+
+                // TODO: replace this with the confirmation dialog if app restart is fixed
+                _dialogService.ShowInfoDialog(LocalizationService.GetString("RESTART_NEEDED_DIALOG_TITLE"));
             }
 
             OnPropertyChanged();

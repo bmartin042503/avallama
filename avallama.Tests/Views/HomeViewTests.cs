@@ -45,13 +45,8 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
             .Setup(x => x.ReadSetting(It.IsAny<string>()))
             .Returns("");
 
-        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
         _fixture.OllamaMock.Raise(x =>
-            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessLifecycle.Running));
-
-        // raises Connected status so the ViewModel doesn't wait indefinitely for connection
-        _fixture.OllamaApiClientMock.Raise(x =>
-            x.StatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
         _fixture.OllamaMock
             .Setup(x => x.GetDownloadedModelsAsync())
@@ -101,13 +96,8 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
 
         var (window, view, viewModel) = CreateAndShowHomeView();
 
-        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
         _fixture.OllamaMock.Raise(x =>
-            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessLifecycle.Running));
-
-        // Raise Connected status so the ViewModel doesn't wait indefinitely for connection
-        _fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
         await viewModel.InitializeAsync();
 
@@ -163,13 +153,12 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
         Assert.NotNull(retryPanel);
         Assert.NotNull(retryInfoText);
 
-        // raises Running process status so the ViewModel can also listen for API states (it's local connection by default)
         _fixture.OllamaMock.Raise(x =>
-            x.ProcessStatusChanged += null, new OllamaProcessStatus(OllamaProcessLifecycle.Running));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
-        // set status to Faulted
         _fixture.OllamaMock.Raise(x =>
-            x.ApiStatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Faulted));
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Failed));
+
         Assert.True(viewModel.IsRetryPanelVisible);
         Assert.True(viewModel.IsRetryButtonVisible);
         Assert.True(retryButton.IsEnabled);
@@ -210,16 +199,16 @@ public class HomeViewTests : IClassFixture<TestServicesFixture>
 
         Assert.NotNull(messageTextBox);
 
-        _fixture.OllamaApiClientMock.Raise(x =>
-            x.StatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Disconnected));
+        _fixture.OllamaMock.Raise(x =>
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Stopped));
         Assert.False(viewModel.IsMessageBoxEnabled);
         Assert.False(messageTextBox.IsEnabled);
 
-        _fixture.OllamaApiClientMock.Raise(x =>
-            x.StatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Connected));
+        _fixture.OllamaMock.Raise(x =>
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Ready));
 
-        _fixture.OllamaApiClientMock.Raise(x =>
-            x.StatusChanged += null, new OllamaApiStatus(OllamaConnectionState.Faulted));
+        _fixture.OllamaMock.Raise(x =>
+            x.StatusChanged += null, new OllamaServiceStatus(OllamaServiceState.Failed));
         Assert.False(viewModel.IsMessageBoxEnabled);
         Assert.False(messageTextBox.IsEnabled);
     }

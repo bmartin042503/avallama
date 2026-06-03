@@ -3,6 +3,9 @@
 
 using Avalonia;
 using System;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("avallama.Tests")]
 
 namespace avallama;
 

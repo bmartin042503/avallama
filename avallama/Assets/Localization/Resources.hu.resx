@@ -449,9 +449,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="TEST" xml:space="preserve">
         <value>Lokalizált értékek tesztelése</value>
     </data>
-    <data name="LICENSE" xml:space="preserve">
-        <value>Licensz</value>
-    </data>
     <data name="PARAMETERS" xml:space="preserve">
         <value>Paraméterek</value>
     </data>

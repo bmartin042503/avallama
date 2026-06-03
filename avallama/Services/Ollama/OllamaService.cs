@@ -5,11 +5,16 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using avallama.Constants.Keys;
+using avallama.Constants.States;
 using avallama.Models;
 using avallama.Models.Dtos;
 using avallama.Models.Ollama;
+using avallama.Services.Persistence;
 
 namespace avallama.Services.Ollama;
+
+public delegate void OllamaServiceStatusChangedHandler(OllamaServiceStatus serviceStatus);
 
 /// <summary>
 /// Defines a high-level service for interacting with the Ollama ecosystem.
@@ -20,24 +25,14 @@ public interface IOllamaService
     #region Interface
 
     /// <summary>
-    /// Gets the current status of the local Ollama process.
+    /// Gets the unified current status of Ollama.
     /// </summary>
-    OllamaProcessStatus CurrentProcessStatus { get; }
+    OllamaServiceStatus CurrentServiceStatus { get; }
 
     /// <summary>
-    /// Gets the current status of the Ollama API connection.
+    /// Event raised when the unified status of Ollama changes.
     /// </summary>
-    OllamaApiStatus CurrentApiStatus { get; }
-
-    /// <summary>
-    /// Event raised when the status of the local Ollama process changes.
-    /// </summary>
-    event OllamaProcessStatusChangedHandler? ProcessStatusChanged;
-
-    /// <summary>
-    /// Event raised when the status of the Ollama API connection changes.
-    /// </summary>
-    event OllamaApiStatusChangedHandler? ApiStatusChanged;
+    event OllamaServiceStatusChangedHandler? StatusChanged;
 
     /// <summary>
     /// Starts the local Ollama process asynchronously.
@@ -114,54 +109,75 @@ public interface IOllamaService
 /// <summary>
 /// Implementation of the IOllamaService facade, orchestrating process management, API calls, and scraping.
 /// </summary>
-public class OllamaService(
-    IOllamaProcessManager processManager,
-    IOllamaApiClient apiClient,
-    IOllamaScraper ollamaScraper)
-    : IOllamaService
+internal class OllamaService : IOllamaService
 {
+    #region Fields
+
+    private IOllamaProcessManager _processManager;
+    private IOllamaApiClient _apiClient;
+    private IOllamaScraper _scraper;
+    private IConfigurationService _configurationService;
+
     private OllamaScraperResult? _currentScrapeSession;
+
+    #endregion
+
+    #region Constructor
+
+    public OllamaService(
+        IOllamaProcessManager processManager,
+        IOllamaApiClient apiClient,
+        IOllamaScraper scraper,
+        IConfigurationService configurationService)
+    {
+        _processManager = processManager;
+        _apiClient = apiClient;
+        _scraper = scraper;
+        _configurationService = configurationService;
+
+        _processManager.StatusChanged += _ => EvaluateServiceStatus();
+        _apiClient.StatusChanged += _ => EvaluateServiceStatus();
+    }
+
+    #endregion
 
     #region Events & Status
 
-    public event OllamaProcessStatusChangedHandler? ProcessStatusChanged
+    public event OllamaServiceStatusChangedHandler? StatusChanged;
+
+    public OllamaServiceStatus CurrentServiceStatus
     {
-        add => processManager.StatusChanged += value;
-        remove => processManager.StatusChanged -= value;
-    }
-
-    public event OllamaApiStatusChangedHandler? ApiStatusChanged
-    {
-        add => apiClient.StatusChanged += value;
-        remove => apiClient.StatusChanged -= value;
-    }
-
-    public OllamaApiStatus CurrentApiStatus => apiClient.Status;
-
-    public OllamaProcessStatus CurrentProcessStatus => processManager.Status;
+        get;
+        private set
+        {
+            if (field.ServiceState == value.ServiceState && field.Message == value.Message) return;
+            field = value;
+            StatusChanged?.Invoke(value);
+        }
+    } = new(OllamaServiceState.Stopped);
 
     #endregion
 
     #region Process Management
 
-    public async Task StartOllamaProcessAsync() => await processManager.StartAsync();
-    public async Task StopOllamaProcessAsync() => await processManager.StopAsync();
+    public async Task StartOllamaProcessAsync() => await _processManager.StartAsync();
+    public async Task StopOllamaProcessAsync() => await _processManager.StopAsync();
 
     #endregion
 
     #region API
 
-    public async Task CheckOllamaApiConnectionAsync() => await apiClient.CheckConnectionAsync();
-    public async Task RetryOllamaApiConnectionAsync() => await apiClient.RetryConnectionAsync();
-    public async Task EnrichModelAsync(OllamaModel model) => await apiClient.EnrichModelAsync(model);
-    public async Task<IList<OllamaModel>> GetDownloadedModelsAsync() => await apiClient.GetDownloadedModelsAsync();
-    public async Task<bool> DeleteModelAsync(string modelName) => await apiClient.DeleteModelAsync(modelName);
+    public async Task CheckOllamaApiConnectionAsync() => await _apiClient.CheckConnectionAsync();
+    public async Task RetryOllamaApiConnectionAsync() => await _apiClient.RetryConnectionAsync();
+    public async Task EnrichModelAsync(OllamaModel model) => await _apiClient.EnrichModelAsync(model);
+    public async Task<IList<OllamaModel>> GetDownloadedModelsAsync() => await _apiClient.GetDownloadedModelsAsync();
+    public async Task<bool> DeleteModelAsync(string modelName) => await _apiClient.DeleteModelAsync(modelName);
 
     public async IAsyncEnumerable<DownloadResponse> DownloadModelAsync(
         string modelName,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await foreach (var response in apiClient.PullModelAsync(modelName, ct))
+        await foreach (var response in _apiClient.PullModelAsync(modelName, ct))
         {
             yield return response;
         }
@@ -172,7 +188,7 @@ public class OllamaService(
         string modelName,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await foreach (var response in apiClient.GenerateMessageAsync(messageHistory, modelName, ct))
+        await foreach (var response in _apiClient.GenerateMessageAsync(messageHistory, modelName, ct))
         {
             yield return response;
         }
@@ -196,13 +212,98 @@ public class OllamaService(
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         _currentScrapeSession = null;
-        var result = await ollamaScraper.GetAllOllamaModelsAsync(cancellationToken);
+        var result = await _scraper.GetAllOllamaModelsAsync(cancellationToken);
         _currentScrapeSession = result;
 
         await foreach (var model in result.Models.WithCancellation(cancellationToken))
         {
             yield return model;
         }
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    /// <summary>
+    /// Aggregates the internal Process and API statuses into a single public state.
+    /// </summary>
+    private void EvaluateServiceStatus()
+    {
+        var isRemote = OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost));
+
+        OllamaServiceState newServiceState;
+        string? message = null;
+
+        if (isRemote)
+        {
+            // if it's remote we only check for the API state
+            switch (_apiClient.Status.ApiState)
+            {
+                case OllamaApiState.Connecting:
+                case OllamaApiState.Reconnecting:
+                    newServiceState = OllamaServiceState.Starting;
+                    break;
+
+                case OllamaApiState.Connected:
+                    newServiceState = OllamaServiceState.Ready;
+                    break;
+
+                case OllamaApiState.Failed:
+                    newServiceState = OllamaServiceState.Failed;
+                    message = _apiClient.Status.Message;
+                    break;
+
+                case OllamaApiState.Disconnected:
+                default:
+                    newServiceState = OllamaServiceState.Stopped;
+                    break;
+            }
+        }
+        else
+        {
+            // if it's local we check for both the Process and API states
+            var procState = _processManager.Status.ProcessState;
+            var apiState = _apiClient.Status.ApiState;
+
+            switch (procState)
+            {
+                case OllamaProcessState.NotInstalled:
+                    newServiceState = OllamaServiceState.NotInstalled;
+                    message = _processManager.Status.Message;
+                    break;
+
+                case OllamaProcessState.Failed:
+                    newServiceState = OllamaServiceState.Failed;
+                    message = _processManager.Status.Message;
+                    break;
+
+                case OllamaProcessState.Stopped:
+                    newServiceState = OllamaServiceState.Stopped;
+                    break;
+
+                case OllamaProcessState.Starting:
+                case OllamaProcessState.Running when apiState is OllamaApiState.Connecting or OllamaApiState.Reconnecting:
+                    // if the process starts, or the process is already running but the client is still connecting to API
+                    newServiceState = OllamaServiceState.Starting;
+                    break;
+
+                case OllamaProcessState.Running when apiState == OllamaApiState.Connected:
+                    newServiceState = OllamaServiceState.Ready;
+                    break;
+
+                case OllamaProcessState.Running when apiState == OllamaApiState.Failed:
+                    newServiceState = OllamaServiceState.Failed;
+                    message = _apiClient.Status.Message;
+                    break;
+
+                default:
+                    newServiceState = OllamaServiceState.Stopped;
+                    break;
+            }
+        }
+
+        CurrentServiceStatus = new OllamaServiceStatus(newServiceState, message);
     }
 
     #endregion

@@ -18,12 +18,13 @@ using avallama.Services;
 using avallama.Services.Ollama;
 using avallama.Services.Persistence;
 using avallama.Utilities;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
 namespace avallama.ViewModels;
+
+// TODO: extract conversation logic into ConversationViewModel as the current implementation is not optimal
 
 /// <summary>
 /// ViewModel for the Home page, managing chat conversations, model selection,
@@ -53,8 +54,7 @@ public partial class HomeViewModel : PageViewModel
     private ObservableStack<Conversation>? _conversations;
     private ObservableCollection<string> _availableModels;
 
-    private TaskCompletionSource<bool> _connectedToOllamaApi = new();
-    private bool _checkForApiStatus;
+    private TaskCompletionSource<bool> _isOllamaReady = new();
 
     #endregion
 
@@ -179,8 +179,7 @@ public partial class HomeViewModel : PageViewModel
 
         LoadSettings();
 
-        _ollamaService.ProcessStatusChanged += OllamaProcessStatusChanged;
-        _ollamaService.ApiStatusChanged += OllamaApiStatusChanged;
+        _ollamaService.StatusChanged += OllamaServiceStatusChanged;
     }
 
     #endregion
@@ -353,34 +352,8 @@ public partial class HomeViewModel : PageViewModel
         }
         else
         {
-            switch (_ollamaService.CurrentProcessStatus.ProcessLifecycle)
-            {
-                case OllamaProcessLifecycle.NotInstalled:
-                    // TODO: change this to not shutdown and add new localization key
-                    // localized text should explain that ollama is not installed and to use the app it needs a remote connection
-
-                    _dialogService.ShowActionDialog(
-                        title: LocalizationService.GetString("OLLAMA_NOT_INSTALLED"),
-                        actionButtonText: LocalizationService.GetString("DOWNLOAD"),
-                        action: () =>
-                        {
-                            RedirectToOllamaDownload();
-                            // Message to AppService to shut down the app
-                            _messenger.Send(new ApplicationMessage.Shutdown());
-                        },
-                        closeAction: () => { _messenger.Send(new ApplicationMessage.Shutdown()); },
-                        description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC"),
-                        actionButtonOnly: false
-                    );
-                    break;
-                case OllamaProcessLifecycle.Failed or OllamaProcessLifecycle.Stopped:
-                    await _ollamaService.StartOllamaProcessAsync();
-                    await _ollamaService.RetryOllamaApiConnectionAsync();
-                    break;
-                case OllamaProcessLifecycle.Running:
-                    await _ollamaService.RetryOllamaApiConnectionAsync();
-                    break;
-            }
+            await _ollamaService.StartOllamaProcessAsync();
+            await _ollamaService.RetryOllamaApiConnectionAsync();
         }
     }
 
@@ -483,16 +456,16 @@ public partial class HomeViewModel : PageViewModel
     private async Task InitializeModels()
     {
         // cancel the previous connection waiting Task and initialize a new one if it's completed/API was connected
-        if (_connectedToOllamaApi.Task.IsCompleted ||
-            _ollamaService.CurrentApiStatus.ConnectionState == OllamaConnectionState.Connected)
+        if (_isOllamaReady.Task.IsCompleted ||
+            _ollamaService.CurrentServiceStatus.ServiceState == OllamaServiceState.Ready)
         {
-            _connectedToOllamaApi.TrySetCanceled();
-            _connectedToOllamaApi = new TaskCompletionSource<bool>();
+            _isOllamaReady.TrySetCanceled();
+            _isOllamaReady = new TaskCompletionSource<bool>();
         }
         else
         {
             // waits for the Ollama API connection
-            await _connectedToOllamaApi.Task;
+            await _isOllamaReady.Task;
         }
 
         // caches the previously selected model name
@@ -638,20 +611,19 @@ public partial class HomeViewModel : PageViewModel
     }
 
     /// <summary>
-    /// Handles changes when Ollama API status changes and updates UI elements accordingly.
+    /// Handles changes in the unified Ollama status and updates UI elements accordingly.
     /// </summary>
-    private void OllamaApiStatusChanged(OllamaApiStatus status)
+    private void OllamaServiceStatusChanged(OllamaServiceStatus status)
     {
-        if (!_checkForApiStatus) return;
-        switch (status.ConnectionState)
+        switch (status.ServiceState)
         {
-            case OllamaConnectionState.Reconnecting or OllamaConnectionState.Connecting:
-                SetViewState(true, false, false,
-                    false, RetryInfoText = LocalizationService.GetString("CONNECTING"));
+            case OllamaServiceState.Starting:
+                SetViewState(true, false, false, false,
+                    LocalizationService.GetString("CONNECTING"));
                 break;
 
-            case OllamaConnectionState.Connected:
-                _connectedToOllamaApi.TrySetResult(true);
+            case OllamaServiceState.Ready:
+                _isOllamaReady.TrySetResult(true);
                 var apiHost = _configurationService.ReadSetting(ConfigurationKey.ApiHost);
                 var apiPort = _configurationService.ReadSetting(ConfigurationKey.ApiPort);
 
@@ -666,74 +638,33 @@ public partial class HomeViewModel : PageViewModel
                     IsRemoteConnectionTextVisible = false;
                 }
 
-                SetViewState(false, false,
-                    !string.IsNullOrEmpty(SelectedModelName), true);
+                SetViewState(false, false, !string.IsNullOrEmpty(SelectedModelName), true);
                 break;
 
-            case OllamaConnectionState.Faulted or OllamaConnectionState.Disconnected:
+            case OllamaServiceState.Failed:
+            case OllamaServiceState.Stopped:
                 ReplaceGeneratedMessageToFailed();
                 IsRemoteConnectionTextVisible = false;
                 SetViewState(true, true, false, false,
                     status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
                 break;
-        }
-    }
 
-    /// <summary>
-    /// Handles changes when Ollama process status changes and updates UI elements accordingly.
-    /// </summary>
-    private void OllamaProcessStatusChanged(OllamaProcessStatus status)
-    {
-        switch (status.ProcessLifecycle)
-        {
-            case OllamaProcessLifecycle.Running:
-                _checkForApiStatus = true;
-                break;
-
-            case OllamaProcessLifecycle.NotInstalled:
-                if (OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
-                {
-                    _checkForApiStatus = true;
-                    return;
-                }
+            case OllamaServiceState.NotInstalled:
+                // TODO:
+                // change this later to not shutdown
+                // so the user still can use the app (browse conversations, fetch model metadata from Ollama website etc.)
                 _dialogService.ShowActionDialog(
                     title: LocalizationService.GetString("OLLAMA_NOT_INSTALLED"),
                     actionButtonText: LocalizationService.GetString("DOWNLOAD"),
                     action: () =>
                     {
                         RedirectToOllamaDownload();
-                        // Message to AppService to shut down the app
                         _messenger.Send(new ApplicationMessage.Shutdown());
                     },
                     closeAction: () => { _messenger.Send(new ApplicationMessage.Shutdown()); },
                     description: LocalizationService.GetString("OLLAMA_NOT_INSTALLED_DESC"),
-                    false
+                    actionButtonOnly: false
                 );
-                break;
-
-            case OllamaProcessLifecycle.Starting:
-                if (OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
-                {
-                    _checkForApiStatus = true;
-                    return;
-                }
-
-                _checkForApiStatus = false;
-                SetViewState(true, false, false,
-                    false, RetryInfoText = LocalizationService.GetString("CONNECTING"));
-                break;
-
-            case OllamaProcessLifecycle.Failed or OllamaProcessLifecycle.Stopped:
-                if (OllamaApiClient.IsConnectionRemote(_configurationService.ReadSetting(ConfigurationKey.ApiHost)))
-                {
-                    _checkForApiStatus = true;
-                    return;
-                }
-
-                _checkForApiStatus = false;
-                ReplaceGeneratedMessageToFailed();
-                SetViewState(true, true, false, false,
-                    status.Message ?? LocalizationService.GetString("OLLAMA_CONNECTION_ERROR"));
                 break;
         }
     }

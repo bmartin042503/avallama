@@ -457,9 +457,6 @@ Licensed under the MIT License. See LICENSE file for details.
     <data name="TEST" xml:space="preserve">
         <value>Testing localization values</value>
     </data>
-    <data name="LICENSE" xml:space="preserve">
-        <value>License</value>
-    </data>
     <data name="PARAMETERS" xml:space="preserve">
         <value>Parameters</value>
     </data>

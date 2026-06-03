@@ -86,7 +86,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         var delayerMock = new TaskDelayerMock(timeMock);
 
         var callCount = 0;
-        var stateEvents = new List<OllamaConnectionState?>();
+        var stateEvents = new List<OllamaApiState?>();
 
         _handlerMock
             .Protected()
@@ -116,12 +116,12 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
 
         var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
-        oac.StatusChanged += status => { stateEvents.Add(status.ConnectionState); };
+        oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
 
         await oac.CheckConnectionAsync();
 
-        Assert.Equal(1, stateEvents.Count(e => e == OllamaConnectionState.Connected));
-        Assert.Equal(1, stateEvents.Count(e => e == OllamaConnectionState.Reconnecting));
+        Assert.Equal(1, stateEvents.Count(e => e == OllamaApiState.Connected));
+        Assert.Equal(1, stateEvents.Count(e => e == OllamaApiState.Reconnecting));
         Assert.Equal(4, callCount);
         Assert.True(timeMock.Elapsed.TotalMilliseconds >= 100);
     }
@@ -152,14 +152,14 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
 
         var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
-        var stateEvents = new List<OllamaConnectionState?>();
-        oac.StatusChanged += status => { stateEvents.Add(status.ConnectionState); };
+        var stateEvents = new List<OllamaApiState?>();
+        oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
 
         await oac.CheckConnectionAsync();
 
-        Assert.Equal(OllamaConnectionState.Connecting, stateEvents[0]);
-        Assert.Equal(OllamaConnectionState.Reconnecting, stateEvents[1]);
-        Assert.Equal(OllamaConnectionState.Faulted, stateEvents[2]);
+        Assert.Equal(OllamaApiState.Connecting, stateEvents[0]);
+        Assert.Equal(OllamaApiState.Reconnecting, stateEvents[1]);
+        Assert.Equal(OllamaApiState.Failed, stateEvents[2]);
         Assert.Equal(3, stateEvents.Count);
         Assert.True(callCount > 1, $"Expected multiple calls, but got {callCount}");
     }
@@ -204,15 +204,15 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
 
         var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
-        var stateEvents = new List<OllamaConnectionState?>();
-        oac.StatusChanged += status => { stateEvents.Add(status.ConnectionState); };
+        var stateEvents = new List<OllamaApiState?>();
+        oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
 
         await oac.CheckConnectionAsync();
 
         Assert.Equal(2, callCount);
-        Assert.Equal(OllamaConnectionState.Connecting, stateEvents[0]);
-        Assert.Equal(OllamaConnectionState.Reconnecting, stateEvents[1]);
-        Assert.Equal(OllamaConnectionState.Connected, oac.Status.ConnectionState);
+        Assert.Equal(OllamaApiState.Connecting, stateEvents[0]);
+        Assert.Equal(OllamaApiState.Reconnecting, stateEvents[1]);
+        Assert.Equal(OllamaApiState.Connected, oac.Status.ApiState);
     }
 
     [Fact]
@@ -272,8 +272,8 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
 
         var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
-        var stateEvents = new List<OllamaConnectionState?>();
-        oac.StatusChanged += status => { stateEvents.Add(status.ConnectionState); };
+        var stateEvents = new List<OllamaApiState?>();
+        oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
 
         await oac.CheckConnectionAsync();
 
@@ -287,7 +287,7 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
         Assert.Equal("Hello", results[0].Message?.Content);
         Assert.Equal("World!", results[1].Message?.Content);
 
-        Assert.Contains(stateEvents, state => state == OllamaConnectionState.Connected);
+        Assert.Contains(stateEvents, state => state == OllamaApiState.Connected);
     }
 
     [Fact]
@@ -369,15 +369,15 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
 
         var oac = CreateOllamaApiClient(mockHttpClientFactory.Object, timeMock, delayerMock);
 
-        var stateEvents = new List<OllamaConnectionState?>();
-        oac.StatusChanged += status => { stateEvents.Add(status.ConnectionState); };
+        var stateEvents = new List<OllamaApiState?>();
+        oac.StatusChanged += status => { stateEvents.Add(status.ApiState); };
 
         await foreach (var _ in oac.GenerateMessageAsync([], "model"))
         {
         }
 
-        Assert.Equal(OllamaConnectionState.Faulted, oac.Status.ConnectionState);
-        Assert.Contains(OllamaConnectionState.Faulted, stateEvents);
+        Assert.Equal(OllamaApiState.Failed, oac.Status.ApiState);
+        Assert.Contains(OllamaApiState.Failed, stateEvents);
     }
 
     [Fact]
@@ -451,8 +451,8 @@ public class OllamaApiClientTests : IClassFixture<TestServicesFixture>
 
         Assert.Single(results);
         Assert.Equal("Finally loaded!", results[0].Message?.Content);
-        Assert.NotEqual(OllamaConnectionState.Disconnected, oac.Status.ConnectionState);
-        Assert.NotEqual(OllamaConnectionState.Faulted, oac.Status.ConnectionState);
+        Assert.NotEqual(OllamaApiState.Disconnected, oac.Status.ApiState);
+        Assert.NotEqual(OllamaApiState.Failed, oac.Status.ApiState);
     }
 
     private OllamaApiClient CreateOllamaApiClient(

@@ -37,7 +37,7 @@ public static class DiskManager
                 return driveInfo.AvailableFreeSpace >= requiredBytes + reserveBytes;
             }
         }
-        catch (IOException ex)
+        catch (IOException)
         {
             // TODO: InterruptService
         }
@@ -57,7 +57,7 @@ public static class DiskManager
                 return driveInfo.AvailableFreeSpace;
             }
         }
-        catch (IOException ex)
+        catch (IOException)
         {
             // TODO: InterruptService
         }
