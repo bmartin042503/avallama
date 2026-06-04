@@ -75,7 +75,13 @@ jobs:
           "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Restore & Publish
-        run: dotnet publish avallama/avallama.csproj -v n -c Release -r win-x64 --self-contained true -o win-dist /p:PublishSingleFile=true
+        run: dotnet publish avallama/avallama.csproj -v n -c Release -r win-x64 --self-contained true -o win-dist
+
+      - name: Remove debug symbol files from installer payload
+        shell: pwsh
+        run: |
+          Get-ChildItem win-dist -Recurse -Include *.pdb,*.dbg -File | Remove-Item -Force
+          Get-ChildItem win-dist -Recurse -Directory -Filter *.dSYM | Remove-Item -Recurse -Force
 
       - name: Install Inno Setup
         run: |

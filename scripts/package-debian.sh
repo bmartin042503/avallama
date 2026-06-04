@@ -3,6 +3,11 @@ set -euo pipefail
 
 log_ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 log()    { printf '%s [INFO] %s\n' "$(log_ts)" "$*"; }
+remove_debug_symbols() {
+  local dir="$1"
+  find "$dir" -type f \( -name "*.pdb" -o -name "*.dbg" \) -delete
+  find "$dir" -type d -name "*.dSYM" -prune -exec rm -rf {} +
+}
 
 log "Starting Debian package script"
 
@@ -19,6 +24,9 @@ dotnet publish "${PROJECT}" \
   --self-contained true \
   --runtime linux-x64 \
   --output "./out/linux-x64"
+
+log "Removing debug symbols"
+remove_debug_symbols "./out/linux-x64"
 
 log "Preparing staging directory"
 rm -rf staging_folder
