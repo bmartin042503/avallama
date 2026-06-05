@@ -3,6 +3,11 @@ set -euo pipefail
 
 log_ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 log()    { printf '%s [INFO] %s\n' "$(log_ts)" "$*"; }
+remove_debug_symbols() {
+  local dir="$1"
+  find "$dir" -type f \( -name "*.pdb" -o -name "*.dbg" \) -delete
+  find "$dir" -type d -name "*.dSYM" -prune -exec rm -rf {} +
+}
 
 log "Starting macOS package script"
 
@@ -25,9 +30,13 @@ log "Compiling native macOS source code"
 clang -dynamiclib -framework Cocoa -arch x86_64 -arch arm64 -o "$DYLIB_OUTPUT" "$NATIVE_SRC"
 
 log "Running dotnet publish for osx-x64"
-dotnet publish "$PROJECT" -v n -c Release -r osx-x64 --self-contained true -o mac-dist-x64 /p:PublishSingleFile=true
+dotnet publish "$PROJECT" -v n -c Release -r osx-x64 --self-contained true -o mac-dist-x64
 log "Running dotnet publish for osx-arm64"
-dotnet publish "$PROJECT" -v n -c Release -r osx-arm64 --self-contained true -o mac-dist-arm64 /p:PublishSingleFile=true
+dotnet publish "$PROJECT" -v n -c Release -r osx-arm64 --self-contained true -o mac-dist-arm64
+
+log "Removing debug symbols"
+remove_debug_symbols "mac-dist-x64"
+remove_debug_symbols "mac-dist-arm64"
 
 create_app_structure() {
   local arch_dir="$1"

@@ -36,6 +36,18 @@ dotnet run -c Release --project avallama/avallama.csproj
 
 ## Compiling a self-contained executable
 
+### Prerequisites
+
+Avallama is AOT (Ahead-of-Time) compiled, because of this, ensure you have the correct toolchain installed for your platform (alongside .NET), otherwise compilation will fail. Depending on your platform, you need:
+
+| Platform | Toolchain |
+|----------| --- |
+| Windows  | Visual Studio 2026 with the "Desktop development with C++" workload |
+| macOS    | Command Line Tools for Xcode |
+| Linux    | clang, zlib-dev |
+
+For more information on AOT compilation, see the official .NET documentation: [Native AOT deployment](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/).
+
 To compile the application to a self-contained executable file, run:
 
 ```bash
