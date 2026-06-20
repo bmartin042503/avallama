@@ -166,6 +166,20 @@ public class ConversationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetConversations_WithAssistantMessage_ShouldPopulateModelField()
+    {
+        var id = await _conversationService.CreateConversation(
+            new Conversation(Guid.Empty, "Model Test", new List<Message>()));
+        const string model = "test";
+        await _conversationService.InsertMessage(id, new GeneratedMessage("test", 0.0), model, 0.0);
+
+        var conversations = await _conversationService.GetConversations();
+
+        Assert.Equal(id, conversations.First().ConversationId);
+        Assert.Equal(model, conversations.First().Model);
+    }
+
+    [Fact]
     public async Task CreateConversation_WithSpecialCharactersInTitle_ShouldSucceed()
     {
         const string title = "Test's \"Conversation\" with <special> & chars!";
