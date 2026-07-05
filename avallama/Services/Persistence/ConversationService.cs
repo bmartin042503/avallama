@@ -220,8 +220,7 @@ public class ConversationService : IConversationService, IDisposable
             foreach (var conv in conversations)
             {
                 conv.Model =
-                    lastModels.GetValueOrDefault(conv.ConversationId,
-                        "llama3.2:2b"); // this default could be set in settings?
+                    lastModels.GetValueOrDefault(conv.ConversationId, "");
             }
         }
 
@@ -241,28 +240,34 @@ public class ConversationService : IConversationService, IDisposable
         var idsParam = string.Join(",", enumerable.Select((_, i) => $"@id{i}"));
         await using var cmd = _connection.CreateCommand();
         cmd.CommandText = $"""
-                               SELECT conversation_id, model_name
-                               FROM (
-                                   SELECT conversation_id, model_name,
-                                          ROW_NUMBER() OVER (PARTITION BY conversation_id ORDER BY timestamp DESC) AS rn
-                                   FROM messages
-                                   WHERE conversation_id IN ({idsParam})
-                               )
-                               WHERE rn = 1
-                           """;
-
+                                SELECT conversation_id, model_name
+                                   FROM (
+                                       SELECT
+                                           conversation_id,
+                                           model_name,
+                                           ROW_NUMBER() OVER (
+                                               PARTITION BY conversation_id
+                                               ORDER BY timestamp DESC, id DESC
+                                           ) AS rn
+                                       FROM messages
+                                       WHERE conversation_id IN ({idsParam})
+                                         AND role = 'assistant'
+                                         AND model_name IS NOT NULL
+                                   )
+                                   WHERE rn = 1;
+                            """;
 
         var index = 0;
         foreach (var id in enumerable)
-            cmd.Parameters.AddWithValue($"@id{index++}", id.ToString());
+            cmd.Parameters.AddWithValue($"@id{index++}", id.ToString().ToUpper());
 
         try
         {
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                var convId = Guid.Parse((string)reader["conversation_id"]);
-                var model = reader.IsDBNull(1) ? "llama3.2:2b" : (string)reader["model_name"];
+                var convId = Guid.Parse(reader.GetString(0));
+                var model = reader.GetString(1);
                 lastModels[convId] = model;
             }
         }
