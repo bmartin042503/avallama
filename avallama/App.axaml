@@ -14,34 +14,53 @@ Licensed under the MIT License. See LICENSE file for details.
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <MergeResourceInclude Source="/Styles/AppColors.axaml" />
+
+                <!-- Themes -->
+                <MergeResourceInclude Source="/Resources/Themes/LightTheme.axaml" />
+                <MergeResourceInclude Source="/Resources/Themes/DarkTheme.axaml" />
+
+                <!-- Template selectors -->
+                <MergeResourceInclude Source="/Resources/DataTemplates/ModelItemStatusSelector.axaml" />
+                <MergeResourceInclude Source="/Resources/DataTemplates/ModelListItemSelector.axaml" />
+
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
         <FontFamily x:Key="Manrope">avares://avallama/Assets/Fonts#Manrope</FontFamily>
     </Application.Resources>
 
     <Application.Styles>
-        <!-- Styles to use -->
+
+        <!-- Shared styles -->
+        <StyleInclude Source="Styles/Shared.axaml" />
+
+        <!-- Control styles -->
         <StyleInclude Source="Styles/Button.axaml" />
         <StyleInclude Source="Styles/TextBox.axaml" />
         <StyleInclude Source="Styles/TextBlock.axaml" />
         <StyleInclude Source="Styles/ComboBox.axaml" />
         <StyleInclude Source="Styles/ToggleSwitch.axaml" />
         <StyleInclude Source="Styles/DeletePopup.axaml" />
-
-        <!-- Global styles -->
-        <StyleInclude Source="Styles/Global.axaml" />
-        <FluentTheme />
+        <StyleInclude Source="Styles/Ellipse.axaml" />
 
         <!-- Templated controls -->
         <StyleInclude Source="Styles/TemplatedControls/ModelItem.axaml" />
         <StyleInclude Source="Styles/TemplatedControls/ModelListItem.axaml" />
         <StyleInclude Source="Styles/TemplatedControls/MessageItem.axaml" />
         <StyleInclude Source="Styles/TemplatedControls/ConversationItem.axaml" />
+
+        <!-- Avalonia Fluent theme -->
+        <FluentTheme />
+
     </Application.Styles>
 
     <Application.DataTemplates>
+
+        <!-- View locator -->
         <dataTemplates:ViewLocator />
+
+        <!-- Stateful template selector -->
+        <dataTemplates:StatefulTemplateSelector />
+
     </Application.DataTemplates>
 
     <!-- Menu for macOS -->

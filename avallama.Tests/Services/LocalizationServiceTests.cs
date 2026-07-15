@@ -38,8 +38,8 @@ public class LocalizationServiceTests
         LocalizationService.ChangeLanguage(_defaultCultureInfo);
         var defaultLocalizedText = LocalizationService.GetString(key);
 
-        Assert.Equal("[UNDEFINED_LOCALIZATION_KEY]", hungarianLocalizedText);
-        Assert.Equal("[UNDEFINED_LOCALIZATION_KEY]", defaultLocalizedText);
+        Assert.Equal($"[{key}]", hungarianLocalizedText);
+        Assert.Equal($"[{key}]", defaultLocalizedText);
     }
 
     // TODO: add a test that make sures there are no undefined localization keys (i think it's possible)

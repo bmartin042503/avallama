@@ -1,0 +1,67 @@
+<!--
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:download="clr-namespace:avallama.Models.Download"
+                    xmlns:controls="clr-namespace:avallama.Controls"
+                    xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
+                    xmlns:services="clr-namespace:avallama.Services"
+                    xmlns:dataTemplates="clr-namespace:avallama.DataTemplates">
+
+    <!-- ModelListItem template selection -->
+    <dataTemplates:StatefulTemplateSelector x:Key="ModelListItemSelector">
+
+        <!-- Downloaded template -->
+        <DataTemplate x:Key="Downloaded" DataType="download:ModelDownloadStatus">
+            <controls:DynamicSvg
+                Path="/Assets/Svg/download.svg"
+                Height="16"
+                Classes="downloadedSvg"
+                StrokeColor="{DynamicResource OnSurface}" />
+        </DataTemplate>
+
+        <!-- Downloading template -->
+        <DataTemplate x:Key="Downloading" DataType="download:ModelDownloadStatus">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding $parent[templatedControls:ModelListItem].StatusText}"
+                           FontSize="12"
+                           Classes="downloadStatusText" />
+                <controls:DynamicSvg Grid.Column="1" Path="/Assets/Svg/spinner.svg"
+                                     Height="16"
+                                     FillColor="{DynamicResource OnSurface}"
+                                     Classes="spinnerAnimation">
+                    <controls:DynamicSvg.RenderTransform>
+                        <RotateTransform Angle="0" />
+                    </controls:DynamicSvg.RenderTransform>
+                </controls:DynamicSvg>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Paused template -->
+        <DataTemplate x:Key="Paused" DataType="download:ModelDownloadStatus">
+            <controls:DynamicSvg
+                Path="/Assets/Svg/pause.svg"
+                Height="12"
+                Margin="4,0"
+                FillColor="{DynamicResource OnSurface}" />
+        </DataTemplate>
+
+        <!-- Downloadable and Failed templates (empty for now) -->
+        <DataTemplate x:Key="Downloadable" DataType="download:ModelDownloadStatus" />
+        <DataTemplate x:Key="Failed" DataType="download:ModelDownloadStatus" />
+
+        <!-- Queued template -->
+        <DataTemplate x:Key="Queued">
+            <TextBlock
+                Classes="downloadStatusText"
+                Text="{services:LocalizationService Key='QUEUED'}"
+                FontSize="12" />
+        </DataTemplate>
+
+    </dataTemplates:StatefulTemplateSelector>
+
+</ResourceDictionary>

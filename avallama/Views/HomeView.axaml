@@ -63,13 +63,13 @@ Licensed under the MIT License. See LICENSE file for details.
                     <ItemsControl.DataTemplates>
                         <DataTemplate DataType="models:Conversation">
                             <templatedControls:ConversationItem
-                                Id="{Binding ConversationId}"
-                                SelectedId="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectedConversation.ConversationId}"
+                                Id="{Binding Id}"
+                                SelectedId="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectedConversation.Id}"
                                 SelectCommand="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=((vm:HomeViewModel)DataContext).SelectConversation}"
                                 Text="{Binding Title}"
                                 SubText="{Binding Model}"
                                 DeleteCommand="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).DeleteConversation}"
-                                DeleteCommandParameter="{Binding ConversationId}"
+                                DeleteCommandParameter="{Binding Id}"
                                 Margin="0,0,0,14"/>
                         </DataTemplate>
                     </ItemsControl.DataTemplates>

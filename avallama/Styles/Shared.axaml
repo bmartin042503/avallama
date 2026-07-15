@@ -7,19 +7,10 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:avallama.Controls">
 
-    <!-- General style definitions for which it makes no sense to create a separate file -->
-
-    <!-- This specifies that the IndexedItemsControl should display elements similarly to the ItemsControl -->
-    <Style Selector="controls|IndexedItemsControl">
-        <Setter Property="Template">
-            <ControlTemplate>
-                <ItemsPresenter/>
-            </ControlTemplate>
-        </Setter>
-    </Style>
+    <!-- Shared style definitions for which it makes no sense to create a separate file -->
 
     <Style Selector="SelectableTextBlock">
-        <Setter Property="SelectionBrush" Value="{DynamicResource Selection}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource Selection}" />
     </Style>
 
     <!-- Hyperlink Pointerover style -->
@@ -36,13 +27,14 @@ Licensed under the MIT License. See LICENSE file for details.
                        PlaybackDirection="Normal">
 
                 <KeyFrame Cue="0%">
-                    <Setter Property="RotateTransform.Angle" Value="0"/>
+                    <Setter Property="RotateTransform.Angle" Value="0" />
                 </KeyFrame>
 
                 <KeyFrame Cue="100%">
-                    <Setter Property="RotateTransform.Angle" Value="360"/>
+                    <Setter Property="RotateTransform.Angle" Value="360" />
                 </KeyFrame>
             </Animation>
         </Style.Animations>
     </Style>
+
 </Styles>

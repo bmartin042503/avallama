@@ -1,0 +1,214 @@
+<!--
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="avallama.Views.ConversationView"
+             xmlns:vm="clr-namespace:avallama.ViewModels"
+             xmlns:controls="clr-namespace:avallama.Controls"
+             xmlns:services="clr-namespace:avallama.Services"
+             xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
+             xmlns:models="clr-namespace:avallama.Models"
+             xmlns:converters="clr-namespace:avallama.Converters"
+             x:DataType="vm:ConversationViewModel">
+
+    <UserControl.Resources>
+        <converters:GenerationSpeedConverter x:Key="GenerationSpeedConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+
+        <!-- TODO: change IsVisible's value to bind to ConversationVM's IsInitializing property -->
+
+        <!-- Initializing spinner -->
+        <StackPanel Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsVisible="False">
+
+            <controls:DynamicSvg Path="/Assets/Svg/spinner.svg"
+                                 FillColor="{DynamicResource Primary}"
+                                 Height="64" Margin="0,0,0,30"
+                                 Classes="spinnerAnimation" />
+
+            <TextBlock Text="{services:LocalizationService Key='LOADING_MESSAGES'}"
+                       FontSize="18" />
+
+        </StackPanel>
+
+        <!-- View after initialization -->
+        <Grid RowDefinitions="Auto,*,Auto" IsVisible="True">
+
+            <!-- Top section (ComboBox + Info messages - ROW 1) -->
+            <StackPanel Grid.Row="0">
+
+                <!-- Available models ComboBox -->
+                <ComboBox x:Name="ModelsComboBox"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          MinWidth="175"
+                          ItemsSource="{Binding AvailableModels}"
+                          SelectedItem="{Binding SelectedModelName, Mode=TwoWay}" />
+
+                <!-- Informational messages -->
+                <StackPanel Orientation="Vertical" Margin="18,10,18,0"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="6"
+                            IsVisible="{Binding ShowInformationalMessages}">
+
+                    <!-- Remote connection info -->
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" HorizontalAlignment="Center"
+                          IsVisible="{Binding IsRemoteTextVisible}">
+                        <Ellipse Grid.Column="0" Width="12" Height="12" Fill="{DynamicResource Success}" />
+
+                        <TextBlock Grid.Column="1" Text="{Binding RemoteText}"
+                                   Foreground="{DynamicResource Success}"
+                                   TextAlignment="Left"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Grid>
+
+                    <!-- Running slow warning -->
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
+                          IsVisible="{Binding IsRunningSlowTextVisible}">
+                        <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
+                                             FillColor="{DynamicResource Error}"
+                                             Width="18" />
+
+                        <TextBlock Grid.Column="1" Text="{Binding RunningSlowText}"
+                                   Foreground="{DynamicResource Error}"
+                                   TextAlignment="Left"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Grid>
+
+                    <!-- No available models warning -->
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4" HorizontalAlignment="Center"
+                          IsVisible="{Binding IsNoModelsTextVisible}">
+                        <controls:DynamicSvg Grid.Column="0" Path="/Assets/Svg/info.svg"
+                                             FillColor="{DynamicResource Error}"
+                                             Width="18" />
+
+                        <TextBlock Grid.Column="1" Text="{Binding NoModelsText}"
+                                   Foreground="{DynamicResource Error}"
+                                   TextAlignment="Left"
+                                   TextWrapping="Wrap"
+                                   x:Name="NoModelsWarningTextBlock" />
+                    </Grid>
+
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Bottom section (Messages + Scroll to bottom button - ROW 2) -->
+            <Grid Grid.Row="0" x:Name="ConversationGrid" HorizontalAlignment="Stretch"
+                  Margin="0,15,0,0">
+
+                <ScrollViewer x:Name="MessagesScrollViewer"
+                              ScrollChanged="ScrollViewer_OnScrollChanged">
+
+                    <ItemsControl ItemsSource="{Binding Conversation.Messages}">
+
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="20" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.DataTemplates>
+
+                            <!-- Specific message types need to be defined first, so the base Message type won't catch all -->
+
+                            <!-- Failed message -->
+                            <DataTemplate DataType="models:FailedMessage">
+                                <templatedControls:MessageItem
+                                    DeleteCommand="{Binding $parent[UserControl].((vm:ConversationViewModel)DataContext).DeleteMessageCommand}"
+                                    DeleteCommandParameter="{Binding .}" />
+                            </DataTemplate>
+
+                            <!-- Typing indicator message -->
+                            <DataTemplate DataType="models:TypingIndicatorMessage">
+                                <Border CornerRadius="20" Padding="16,8"
+                                        Background="{DynamicResource SurfaceContainerHighest}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Classes="typing-dot" Fill="{DynamicResource OnSurfaceVariant}" />
+                                        <Ellipse Classes="typing-dot" Fill="{DynamicResource OnSurfaceVariant}" />
+                                        <Ellipse Classes="typing-dot" Fill="{DynamicResource OnSurfaceVariant}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+
+                            <!-- Generated message -->
+                            <DataTemplate DataType="models:GeneratedMessage">
+                                <templatedControls:MessageItem
+                                    Classes="generatedMessage"
+                                    Text="{Binding Content}"
+                                    SubText="{Binding Path=GenerationSpeed, Converter={StaticResource GenerationSpeedConverter}}"
+                                    DeleteCommand="{Binding $parent[UserControl].((vm:ConversationViewModel)DataContext).DeleteMessageCommand}"
+                                    DeleteCommandParameter="{Binding .}" />
+                            </DataTemplate>
+
+                            <!-- User message -->
+                            <DataTemplate DataType="models:Message">
+                                <templatedControls:MessageItem
+                                    Classes="userMessage"
+                                    Text="{Binding Content}"
+                                    DeleteCommand="{Binding $parent[UserControl].((vm:ConversationViewModel)DataContext).DeleteMessageCommand}"
+                                    DeleteCommandParameter="{Binding .}" />
+                            </DataTemplate>
+
+                        </ItemsControl.DataTemplates>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Scroll to bottom button with a shadow -->
+                <!-- TODO: add scroll to bottom button functionality via .axaml.cs -->
+                <Border Width="40" Height="40" x:Name="ScrollToBottomBtnShadow"
+                        Background="Transparent"
+                        CornerRadius="24"
+                        IsVisible="False"
+                        HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-3" />
+                <Button x:Name="ScrollToBottomBtn" IsVisible="False" Classes="clearButton" Cursor="Hand"
+                        HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                        Margin="0,0,0,-5">
+                    <Border Padding="4" Background="{DynamicResource Primary}" CornerRadius="24">
+                        <controls:DynamicSvg
+                            Path="/Assets/Svg/arrow-down.svg" Width="40" FillColor="{DynamicResource OnPrimary}" />
+                    </Border>
+                </Button>
+            </Grid>
+
+            <!-- Bottom section (Message textbox + LLM warning - ROW 3) -->
+            <StackPanel Grid.Row="2" Orientation="Vertical">
+
+                <!-- Send message TextBox -->
+                <TextBox x:Name="MessageTextBox"
+                         Height="64"
+                         Watermark="{services:LocalizationService Key='SEND_MESSAGE'}"
+                         Margin="0,30,0,0"
+                         Padding="14, 10"
+                         CornerRadius="14"
+                         Text="{Binding NewMessageText, Mode=TwoWay}">
+                    <TextBox.KeyBindings>
+                        <KeyBinding Gesture="Enter"
+                                    Command="{Binding SendMessageCommand}" />
+                    </TextBox.KeyBindings>
+                </TextBox>
+
+                <!-- LLM response warning text -->
+                <TextBlock Text="{services:LocalizationService Key='LLM_RESPONSE_WARNING'}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,8"
+                           Opacity="0.7"
+                           Foreground="{DynamicResource OnSurface}"
+                           FontSize="11" />
+
+            </StackPanel>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>

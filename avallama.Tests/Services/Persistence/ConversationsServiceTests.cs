@@ -161,8 +161,8 @@ public class ConversationServiceTests : IDisposable
 
         var conversations = await _conversationService.GetConversations();
 
-        Assert.Equal(id1, conversations.First().ConversationId);
-        Assert.Equal(id2, conversations.ElementAt(1).ConversationId);
+        Assert.Equal(id1, conversations.First().Id);
+        Assert.Equal(id2, conversations.ElementAt(1).Id);
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class ConversationServiceTests : IDisposable
 
         var conversations = await _conversationService.GetConversations();
 
-        Assert.Equal(id, conversations.First().ConversationId);
+        Assert.Equal(id, conversations.First().Id);
         Assert.Equal(model, conversations.First().Model);
     }
 
@@ -187,7 +187,7 @@ public class ConversationServiceTests : IDisposable
             new Conversation(Guid.Empty, title, new List<Message>()));
 
         var conversations = await _conversationService.GetConversations();
-        var found = conversations.FirstOrDefault(c => c.ConversationId == id);
+        var found = conversations.FirstOrDefault(c => c.Id == id);
 
         Assert.NotNull(found);
         Assert.Equal(title, found.Title);
@@ -247,7 +247,7 @@ public class ConversationServiceTests : IDisposable
         Assert.True(result);
 
         var conversations = await _conversationService.GetConversations();
-        var found = conversations.FirstOrDefault(c => c.ConversationId == id);
+        var found = conversations.FirstOrDefault(c => c.Id == id);
         Assert.NotNull(found);
         Assert.Equal("Updated Title", found.Title);
     }
@@ -434,7 +434,7 @@ public class ConversationServiceTests : IDisposable
             new Conversation(Guid.Empty, "Test", new List<Message>()));
         await _conversationService.DeleteConversation(id);
         var conversations = await _conversationService.GetConversations();
-        Assert.DoesNotContain(conversations, c => c.ConversationId == id);
+        Assert.DoesNotContain(conversations, c => c.Id == id);
     }
 
     [Fact]

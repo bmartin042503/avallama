@@ -33,8 +33,7 @@ public class LocalizationService : MarkupExtension
     // Requesting localized text by key
     public static string GetString(string key)
     {
-        // big, muscular undefined text xd just to stand out if a ui element has a wrong key
-        return ResourceManager.GetString(key, _resourceCulture) ?? "[UNDEFINED_LOCALIZATION_KEY]";
+        return ResourceManager.GetString(key, _resourceCulture) ?? $"[{key}]";
     }
 
     // MarkupExtension

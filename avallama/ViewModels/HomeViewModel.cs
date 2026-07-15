@@ -230,7 +230,7 @@ public partial class HomeViewModel : PageViewModel
 
         SelectedConversation.AddMessage(message);
         var newMessageId =
-            await _conversationService.InsertMessage(SelectedConversation.ConversationId, message, null, null);
+            await _conversationService.InsertMessage(SelectedConversation.Id, message, null, null);
         message.Id = newMessageId;
 
         NewMessageText = string.Empty;
@@ -261,7 +261,7 @@ public partial class HomeViewModel : PageViewModel
             LocalizationService.GetString("NEW_CONVERSATION"),
             string.Empty
         );
-        newConversation.ConversationId = await _conversationService.CreateConversation(newConversation);
+        newConversation.Id = await _conversationService.CreateConversation(newConversation);
         Conversations.Push(newConversation);
         _conversationsData.Insert(0, newConversation);
         SelectedConversation = newConversation;
@@ -276,9 +276,9 @@ public partial class HomeViewModel : PageViewModel
     {
         if (parameter is not Guid guid || Conversations == null) return;
 
-        if (guid == SelectedConversation?.ConversationId) return;
+        if (guid == SelectedConversation?.Id) return;
 
-        var selectedConversation = Conversations.FirstOrDefault(x => x.ConversationId == guid);
+        var selectedConversation = Conversations.FirstOrDefault(x => x.Id == guid);
         if (selectedConversation == null) return;
 
         SelectedConversation = selectedConversation;
@@ -331,8 +331,9 @@ public partial class HomeViewModel : PageViewModel
     public async Task DeleteMessage(object parameter)
     {
         if (parameter is not Message messageToDelete) return;
+
         // id: -1 is a failed message
-        if (messageToDelete.Id >= 0 && messageToDelete is not FailedMessage)
+        if (messageToDelete.Id >= 0 && messageToDelete is not FailedMessage or TypingIndicatorMessage)
         {
             await _conversationService.DeleteMessage(messageToDelete.Id);
         }
@@ -373,8 +374,8 @@ public partial class HomeViewModel : PageViewModel
         var messageHistory = new List<Message>(conversation.Messages.ToList());
         messageHistory.RemoveAt(messageHistory.Count - 1);
 
-        // Remove failed messages from history before generation
-        messageHistory.RemoveAll(message => message is FailedMessage);
+        // Remove failed/typing messages from history before generation
+        messageHistory.RemoveAll(message => message is FailedMessage or TypingIndicatorMessage);
 
         await foreach (var chunk in _ollamaService.GenerateMessageAsync(messageHistory, SelectedModelName))
         {
@@ -404,7 +405,7 @@ public partial class HomeViewModel : PageViewModel
             }
         }
 
-        var generatedMessageId = await _conversationService.InsertMessage(conversation.ConversationId, generatedMessage,
+        var generatedMessageId = await _conversationService.InsertMessage(conversation.Id, generatedMessage,
             SelectedModelName, generatedMessage.GenerationSpeed);
         generatedMessage.Id = generatedMessageId;
         conversation.Model = SelectedModelName;
@@ -702,7 +703,7 @@ public partial class HomeViewModel : PageViewModel
         if (SelectedConversation is not { Messages.Count: > 0 }) return;
         if (SelectedConversation.Messages.Last() is not GeneratedMessage generatedMessage) return;
         SelectedConversation.Messages.Remove(generatedMessage);
-        SelectedConversation.Messages.Add(new FailedMessage());
+        SelectedConversation.Messages.Add(new FailedMessage(LocalizationService.GetString("MESSAGE_GENERATION_FAILED")));
     }
 
     private void LoadSettings()

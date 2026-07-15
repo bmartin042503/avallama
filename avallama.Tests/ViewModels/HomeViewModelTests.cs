@@ -70,7 +70,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.OllamaMock.Reset();
         fixture.DbMock.Reset();
 
-        var conv = new Conversation("A", string.Empty) { ConversationId = Guid.NewGuid() };
+        var conv = new Conversation("A", string.Empty) { Id = Guid.NewGuid() };
 
         fixture.OllamaMock
             .Setup(o => o.GenerateMessageAsync(
@@ -83,7 +83,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([conv]);
         fixture.DbMock
             .Setup(db => db.UpdateConversationTitle(It.IsAny<Conversation>()))
-            .Callback<Conversation>(c => updatedConversationIds.Add(c.ConversationId))
+            .Callback<Conversation>(c => updatedConversationIds.Add(c.Id))
             .ReturnsAsync(true);
 
         var vm = CreateViewModel();
@@ -98,9 +98,9 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
 
         await vm.SendMessageCommand.ExecuteAsync(null);
 
-        Assert.Contains(conv.ConversationId, updatedConversationIds);
+        Assert.Contains(conv.Id, updatedConversationIds);
         fixture.DbMock.Verify(
-            db => db.UpdateConversationTitle(It.Is<Conversation>(c => c.ConversationId == conv.ConversationId)),
+            db => db.UpdateConversationTitle(It.Is<Conversation>(c => c.Id == conv.Id)),
             Times.AtLeastOnce);
     }
 
@@ -110,8 +110,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.OllamaMock.Reset();
         fixture.DbMock.Reset();
 
-        var convA = new Conversation("A", string.Empty) { ConversationId = Guid.NewGuid() };
-        var convB = new Conversation("B", string.Empty) { ConversationId = Guid.NewGuid() };
+        var convA = new Conversation("A", string.Empty) { Id = Guid.NewGuid() };
+        var convB = new Conversation("B", string.Empty) { Id = Guid.NewGuid() };
 
         fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([convA, convB]);
         fixture.DbMock.Setup(db => db.GetMessagesForConversation(It.IsAny<Conversation>())).ReturnsAsync([]);
@@ -142,7 +142,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         var updatedConversationIds = new List<Guid>();
         fixture.DbMock
             .Setup(db => db.UpdateConversationTitle(It.IsAny<Conversation>()))
-            .Callback<Conversation>(c => updatedConversationIds.Add(c.ConversationId))
+            .Callback<Conversation>(c => updatedConversationIds.Add(c.Id))
             .ReturnsAsync(true);
 
         var vm = CreateViewModel();
@@ -163,15 +163,15 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         allowTitleToFinish.SetResult();
         await generateTask;
 
-        Assert.Contains(convA.ConversationId, updatedConversationIds);
-        Assert.DoesNotContain(convB.ConversationId, updatedConversationIds);
+        Assert.Contains(convA.Id, updatedConversationIds);
+        Assert.DoesNotContain(convB.Id, updatedConversationIds);
 
         fixture.DbMock.Verify(
-            db => db.UpdateConversationTitle(It.Is<Conversation>(c => c.ConversationId == convA.ConversationId)),
+            db => db.UpdateConversationTitle(It.Is<Conversation>(c => c.Id == convA.Id)),
             Times.AtLeastOnce);
 
         fixture.DbMock.Verify(
-            db => db.UpdateConversationTitle(It.Is<Conversation>(c => c.ConversationId == convB.ConversationId)),
+            db => db.UpdateConversationTitle(It.Is<Conversation>(c => c.Id == convB.Id)),
             Times.Never);
     }
 
@@ -181,7 +181,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.DbMock.Reset();
         var vm = CreateViewModel();
 
-        var conversation = new Conversation("A", "model-1:1b") { ConversationId = Guid.NewGuid() };
+        var conversation = new Conversation("A", "model-1:1b") { Id = Guid.NewGuid() };
         var message = new Message("Test message") { Id = 10 };
         conversation.Messages.Add(message);
 
@@ -199,7 +199,7 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.DbMock.Reset();
         var vm = CreateViewModel();
 
-        var conversation = new Conversation("A", "model-1:1b") { ConversationId = Guid.NewGuid() };
+        var conversation = new Conversation("A", "model-1:1b") { Id = Guid.NewGuid() };
         var failedMessage = new FailedMessage { Id = -1 };
         conversation.Messages.Add(failedMessage);
 
@@ -218,9 +218,9 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.DbMock.Reset();
         fixture.OllamaMock.Reset();
 
-        var conv1 = new Conversation("C# Programming", string.Empty) { ConversationId = Guid.NewGuid() };
-        var conv2 = new Conversation("Python Scripts", string.Empty) { ConversationId = Guid.NewGuid() };
-        var conv3 = new Conversation("Avalonia UI Design", string.Empty) { ConversationId = Guid.NewGuid() };
+        var conv1 = new Conversation("C# Programming", string.Empty) { Id = Guid.NewGuid() };
+        var conv2 = new Conversation("Python Scripts", string.Empty) { Id = Guid.NewGuid() };
+        var conv3 = new Conversation("Avalonia UI Design", string.Empty) { Id = Guid.NewGuid() };
 
         fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([conv1, conv2, conv3]);
 
@@ -246,8 +246,8 @@ public class HomeViewModelTests(TestServicesFixture fixture) : IClassFixture<Tes
         fixture.DbMock.Reset();
         fixture.OllamaMock.Reset();
 
-        var conv1 = new Conversation("C# Programming", string.Empty) { ConversationId = Guid.NewGuid() };
-        var conv2 = new Conversation("Python Scripts", string.Empty) { ConversationId = Guid.NewGuid() };
+        var conv1 = new Conversation("C# Programming", string.Empty) { Id = Guid.NewGuid() };
+        var conv2 = new Conversation("Python Scripts", string.Empty) { Id = Guid.NewGuid() };
 
         fixture.DbMock.Setup(db => db.GetConversations()).ReturnsAsync([conv1, conv2]);
 
