@@ -9,7 +9,6 @@ Licensed under the MIT License. See LICENSE file for details.
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:localization="clr-namespace:avallama.Services"
-             xmlns:avallama="clr-namespace:avallama"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              Background="{DynamicResource Surface}"
              x:Class="avallama.Views.GreetingView"

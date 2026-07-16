@@ -4,12 +4,25 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using avallama.Constants.States;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace avallama.Models;
 
 public class Conversation : ObservableObject
 {
+    public Guid Id
+    {
+        get;
+        set => SetProperty(ref field, value);
+    } = Guid.Empty;
+
+    public ConversationStatus Status
+    {
+        get;
+        set => SetProperty(ref field, value);
+    } = new (ConversationState.Initializing);
+
     public string Title
     {
         get;
@@ -28,12 +41,6 @@ public class Conversation : ObservableObject
         set => SetProperty(ref field, value);
     } = [];
 
-    public Guid ConversationId
-    {
-        get;
-        set => SetProperty(ref field, value);
-    } = Guid.Empty;
-
     public Conversation(string title, string model)
     {
         Title = title;
@@ -42,7 +49,7 @@ public class Conversation : ObservableObject
 
     public Conversation(Guid guid, string title, IList<Message> messages)
     {
-        ConversationId = guid;
+        Id = guid;
         Title = title;
         Messages = new ObservableCollection<Message>(messages);
     }

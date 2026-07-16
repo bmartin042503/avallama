@@ -78,7 +78,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <value>Nincs letöltött modell</value>
     </data>
     <data name="LOADING_MODELS" xml:space="preserve">
-        <value>Modellek töltése...</value>
+        <value>Modellek betöltése..</value>
     </data>
     <data name="STARTING_DOWNLOAD" xml:space="preserve">
         <value>Letöltés indítása...</value>
@@ -532,5 +532,11 @@ Licensed under the MIT License. See LICENSE file for details.
     </data>
     <data name="LLM_RESPONSE_WARNING" xml:space="preserve">
         <value>A modellek hibázhatnak. Mindig ellenőrizd a fontosabb információkat.</value>
+    </data>
+    <data name="LICENSE" xml:space="preserve">
+        <value>Licensz</value>
+    </data>
+    <data name="LOADING_MESSAGES" xml:space="preserve">
+        <value>Üzenetek betöltése..</value>
     </data>
 </root>

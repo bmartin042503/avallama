@@ -37,10 +37,23 @@ public class GeneratedMessage : Message
     }
 }
 
+// These message types are inevitable as UI needs to know what message to render and how
+// must be excluded from saving into DB or sending as context to Ollama
+
 public class FailedMessage : Message
 {
-    public FailedMessage() : base(LocalizationService.GetString("MESSAGE_GENERATION_FAILED"))
+    public FailedMessage(string content = "") : base(content)
     {
         Id = -1;
     }
 }
+
+public class TypingIndicatorMessage : Message
+{
+    public TypingIndicatorMessage() : base(string.Empty)
+    {
+        Id = -1;
+    }
+}
+
+

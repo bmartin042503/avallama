@@ -8,7 +8,6 @@ Licensed under the MIT License. See LICENSE file for details.
         <OutputType>WinExe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <PublishAot>true</PublishAot>
         <IsAotCompatible>true</IsAotCompatible>
         <IsTrimmable>true</IsTrimmable>
         <PublishTrimmed>true</PublishTrimmed>
@@ -30,6 +29,7 @@ Licensed under the MIT License. See LICENSE file for details.
         <EventSourceSupport>false</EventSourceSupport>
         <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
         <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+        <PublishAot>true</PublishAot>
     </PropertyGroup>
 
     <ItemGroup>

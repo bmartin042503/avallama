@@ -2,13 +2,14 @@
 // Licensed under the MIT License. See LICENSE file for details.
 
 using avallama.Constants.States;
+using avallama.DataTemplates;
 
 namespace avallama.Models.Download;
 
 /// <summary>
 /// Represents the current status and accompanying message of a model download operation.
 /// </summary>
-public class ModelDownloadStatus
+public class ModelDownloadStatus : IStatefulTemplateItem
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ModelDownloadStatus"/> class.
@@ -36,4 +37,9 @@ public class ModelDownloadStatus
     /// Gets or sets the descriptive message associated with the current state.
     /// </summary>
     public string? Message { get; set; }
+
+    /// <summary>
+    /// Gets the DownloadState as a key for StatefulTemplateSelector
+    /// </summary>
+    public string GetCurrentStateKey() => DownloadState.ToString();
 }

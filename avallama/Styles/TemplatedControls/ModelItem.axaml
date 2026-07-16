@@ -10,8 +10,6 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:collections="clr-namespace:System.Collections.Generic;assembly=System.Collections"
         xmlns:converters="clr-namespace:avallama.Converters"
         xmlns:vm="clr-namespace:avallama.ViewModels"
-        xmlns:dataTemplates="clr-namespace:avallama.DataTemplates"
-        xmlns:controls="clr-namespace:avallama.Controls"
         xmlns:ollama="clr-namespace:avallama.Models.Ollama"
         xmlns:download="clr-namespace:avallama.Models.Download"
         x:DataType="vm:ModelItemViewModel">
@@ -124,119 +122,6 @@ Licensed under the MIT License. See LICENSE file for details.
 
         <Style.Resources>
             <converters:ModelSizeConverter x:Key="ModelSizeConverter" />
-
-            <!-- ModelDownloadStatus templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
-            <!-- Template creation logic found at: /DataTemplates/ModelDownloadStatusTemplateSelector.cs -->
-            <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelDownloadStatusTemplateSelector">
-
-                <!-- Queued template -->
-                <DataTemplate x:Key="Queued" DataType="download:ModelDownloadStatus">
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                        <!-- Queued text -->
-                        <TextBlock Text="{services:LocalizationService Key='QUEUED'}"
-                                   VerticalAlignment="Center" />
-
-                        <!-- Cancel button -->
-                        <Button Grid.Column="2" Cursor="Hand"
-                                Padding="10"
-                                Command="{Binding $parent[templatedControls:ModelItem].CancelCommand}">
-                            <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
-                                                 StrokeColor="{DynamicResource OnPrimary}" />
-                        </Button>
-                    </Grid>
-                </DataTemplate>
-
-                <!-- Failed template -->
-                <DataTemplate x:Key="Failed" DataType="download:ModelDownloadStatus">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <TextBlock Grid.Column="0" Text="{Binding Message}"
-                                   VerticalAlignment="Center" />
-                        <!-- Retry button -->
-                        <Button Grid.Column="1" Cursor="Hand"
-                                Padding="8"
-                                Command="{Binding $parent[templatedControls:ModelItem].RetryCommand}">
-                            <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="16"
-                                                 FillColor="{DynamicResource OnPrimary}" />
-                        </Button>
-                    </Grid>
-                </DataTemplate>
-
-                <!-- Downloadable template -->
-                <DataTemplate x:Key="Downloadable" DataType="download:ModelDownloadStatus">
-                    <Button Content="{services:LocalizationService Key='DOWNLOAD'}"
-                            Cursor="Hand"
-                            Command="{Binding $parent[templatedControls:ModelItem].DownloadCommand}">
-                    </Button>
-                </DataTemplate>
-
-                <!-- Downloading template -->
-                <DataTemplate x:Key="Downloading" DataType="download:ModelDownloadStatus">
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                        <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" Margin="0,0,8,0">
-                            <TextBlock
-                                Text="{Binding $parent[templatedControls:ModelItem].StatusText}"
-                                FontFamily="{StaticResource Manrope}"
-                                VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
-
-                            <TextBlock
-                                Text="{Binding $parent[templatedControls:ModelItem].SpeedText}"
-                                FontFamily="{StaticResource Manrope}"
-                                VerticalAlignment="Center" FontSize="12" FontWeight="Medium"
-                                HorizontalAlignment="Right" />
-                        </StackPanel>
-
-                        <!-- Pause button -->
-                        <Button Grid.Column="1" Cursor="Hand"
-                                Padding="10"
-                                Command="{Binding $parent[templatedControls:ModelItem].PauseCommand}">
-                            <controls:DynamicSvg Path="/Assets/Svg/pause.svg" Height="12"
-                                                 FillColor="{DynamicResource OnPrimary}" />
-                        </Button>
-
-                        <!-- Cancel button -->
-                        <Button Grid.Column="2" Cursor="Hand"
-                                Padding="10"
-                                Command="{Binding $parent[templatedControls:ModelItem].CancelCommand}">
-                            <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
-                                                 StrokeColor="{DynamicResource OnPrimary}" />
-                        </Button>
-                    </Grid>
-                </DataTemplate>
-
-                <!-- Paused template -->
-                <DataTemplate x:Key="Paused" DataType="download:ModelDownloadStatus">
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                        <TextBlock Grid.Column="0"
-                                   Text="{services:LocalizationService Key='DOWNLOAD_PAUSED'}"
-                                   VerticalAlignment="Center" Margin="0,0,8,0" />
-
-                        <!-- Resume button -->
-                        <Button Grid.Column="1" Cursor="Hand"
-                                Padding="8"
-                                Command="{Binding $parent[templatedControls:ModelItem].ResumeCommand}">
-                            <controls:DynamicSvg Path="/Assets/Svg/resume.svg" Height="16"
-                                                 FillColor="{DynamicResource OnPrimary}" />
-                        </Button>
-
-                        <!-- Cancel button -->
-                        <Button Grid.Column="2" Cursor="Hand"
-                                Padding="10"
-                                Command="{Binding $parent[templatedControls:ModelItem].CancelCommand}">
-                            <controls:DynamicSvg Path="/Assets/Svg/close.svg" Height="12"
-                                                 StrokeColor="{DynamicResource OnPrimary}" />
-                        </Button>
-                    </Grid>
-                </DataTemplate>
-
-                <!-- Downloaded template -->
-                <DataTemplate x:Key="Downloaded">
-                    <Button Cursor="Hand" Classes="errorButton"
-                            Content="{services:LocalizationService Key='DELETE'}"
-                            Command="{Binding $parent[templatedControls:ModelItem].DeleteCommand}">
-                    </Button>
-                </DataTemplate>
-
-            </dataTemplates:ModelDownloadStatusTemplateSelector>
         </Style.Resources>
 
         <Setter Property="Template">
@@ -355,7 +240,7 @@ Licensed under the MIT License. See LICENSE file for details.
                             <ContentControl
                                 Grid.Column="1"
                                 Content="{TemplateBinding DownloadStatus}"
-                                ContentTemplate="{StaticResource ModelDownloadStatusTemplateSelector}"
+                                ContentTemplate="{StaticResource ModelItemStatusSelector}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center" />
                         </Grid>

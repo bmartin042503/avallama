@@ -7,7 +7,6 @@ Licensed under the MIT License. See LICENSE file for details.
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:templatedControls="clr-namespace:avallama.Styles.TemplatedControls"
         xmlns:controls="clr-namespace:avallama.Controls"
-        xmlns:dataTemplates="clr-namespace:avallama.DataTemplates"
         xmlns:download="clr-namespace:avallama.Models.Download"
         xmlns:services="clr-namespace:avallama.Services"
         xmlns:vm="clr-namespace:avallama.ViewModels"
@@ -98,7 +97,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         </templatedControls:ModelListItem.DownloadStatus>
                     </templatedControls:ModelListItem>
 
-                    <!-- Sample item 7 - Queued ModelListItem -->
+                    <!-- Sample item 9 - Queued ModelListItem -->
                     <templatedControls:ModelListItem
                         Title="qwen3-coder:480b-a35b-q4_K_M">
                         <templatedControls:ModelListItem.DownloadStatus>
@@ -141,61 +140,6 @@ Licensed under the MIT License. See LICENSE file for details.
 
     <!-- Build of ModelListItem -->
     <Style Selector="templatedControls|ModelListItem">
-        <Style.Resources>
-            <!-- Downloaded state templates using ModelDownloadStatusTemplateSelector which derives from IDataTemplate -->
-            <!-- Template creation logic found at: /DataTemplates/ModelDownloadStatusTemplateSelector.cs -->
-            <dataTemplates:ModelDownloadStatusTemplateSelector x:Key="ModelListItemDownloadStatusTemplateSelector">
-
-                <!-- Downloaded template -->
-                <DataTemplate x:Key="Downloaded" DataType="download:ModelDownloadStatus">
-                    <controls:DynamicSvg
-                        Path="/Assets/Svg/download.svg"
-                        Height="16"
-                        Classes="downloadedSvg"
-                        StrokeColor="{DynamicResource OnSurface}" />
-                </DataTemplate>
-
-                <!-- Downloading template -->
-                <DataTemplate x:Key="Downloading" DataType="download:ModelDownloadStatus">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <TextBlock Grid.Column="0"
-                                   Text="{Binding $parent[templatedControls:ModelListItem].StatusText}"
-                                   FontSize="12"
-                                   Classes="downloadStatusText"/>
-                        <controls:DynamicSvg Grid.Column="1" Path="/Assets/Svg/spinner.svg"
-                                             Height="16"
-                                             FillColor="{DynamicResource OnSurface}"
-                                             Classes="spinnerAnimation">
-                            <controls:DynamicSvg.RenderTransform>
-                                <RotateTransform Angle="0" />
-                            </controls:DynamicSvg.RenderTransform>
-                        </controls:DynamicSvg>
-                    </Grid>
-                </DataTemplate>
-
-                <!-- Paused template -->
-                <DataTemplate x:Key="Paused" DataType="download:ModelDownloadStatus">
-                    <controls:DynamicSvg
-                        Path="/Assets/Svg/pause.svg"
-                        Height="12"
-                        Margin="4,0"
-                        FillColor="{DynamicResource OnSurface}" />
-                </DataTemplate>
-
-                <!-- Downloadable and Failed templates (empty for now) -->
-                <DataTemplate x:Key="Downloadable" DataType="download:ModelDownloadStatus" />
-                <DataTemplate x:Key="Failed" DataType="download:ModelDownloadStatus" />
-
-                <!-- Queued template -->
-                <DataTemplate x:Key="Queued">
-                    <TextBlock
-                        Classes="downloadStatusText"
-                        Text="{services:LocalizationService Key='QUEUED'}"
-                        FontSize="12"/>
-                </DataTemplate>
-
-            </dataTemplates:ModelDownloadStatusTemplateSelector>
-        </Style.Resources>
 
         <Setter Property="Template">
             <ControlTemplate>
@@ -223,7 +167,7 @@ Licensed under the MIT License. See LICENSE file for details.
                         <ContentControl
                             Grid.Column="1"
                             Content="{TemplateBinding DownloadStatus}"
-                            ContentTemplate="{StaticResource ModelListItemDownloadStatusTemplateSelector}"
+                            ContentTemplate="{StaticResource ModelListItemSelector}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center" />
                     </Grid>

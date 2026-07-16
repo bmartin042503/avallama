@@ -1,0 +1,94 @@
+<!--
+Copyright (c) Márk Csörgő and Martin Bartos
+Licensed under the MIT License. See LICENSE file for details.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Design.PreviewWith>
+        <!-- To preview the items in Light/Dark theme change the RequestedThemeVariant to "Light" or to "Dark" -->
+        <ThemeVariantScope RequestedThemeVariant="Light">
+            <Border Background="{DynamicResource Surface}" Padding="20">
+
+                <!-- Sample typing dots -->
+                <Border CornerRadius="20" Padding="14"
+                        Background="{DynamicResource SurfaceContainerHighest}">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Classes="typing-dot" />
+                        <Ellipse Classes="typing-dot" />
+                        <Ellipse Classes="typing-dot" />
+                    </StackPanel>
+                </Border>
+
+            </Border>
+        </ThemeVariantScope>
+    </Design.PreviewWith>
+
+    <!-- Typing dots styling & animation -->
+    <Style Selector="Ellipse.typing-dot">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Height" Value="8" />
+        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="Opacity" Value="0.6" />
+        <Setter Property="Fill" Value="{DynamicResource OnSurfaceVariant}" />
+
+        <Style Selector="^:nth-child(1)">
+            <Style.Animations>
+                <Animation Duration="0:0:1.2" Delay="0:0:0.0" IterationCount="Infinite" Easing="CubicEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="TranslateTransform.Y" Value="-8" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="^:nth-child(2)">
+            <Style.Animations>
+                <Animation Duration="0:0:1.2" Delay="0:0:0.25" IterationCount="Infinite" Easing="CubicEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="TranslateTransform.Y" Value="-8" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="^:nth-child(3)">
+            <Style.Animations>
+                <Animation Duration="0:0:1.2" Delay="0:0:0.5" IterationCount="Infinite" Easing="CubicEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="TranslateTransform.Y" Value="-8" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+    </Style>
+</Styles>

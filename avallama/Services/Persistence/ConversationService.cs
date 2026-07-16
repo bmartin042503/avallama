@@ -83,8 +83,8 @@ public class ConversationService : IConversationService, IDisposable
 
     public async Task<long> InsertMessage(Guid conversationId, Message message, string? modelName, double? tokenPerSec)
     {
-        if (message is FailedMessage) return -1;
-        long newId = 0;
+        if (message is FailedMessage or TypingIndicatorMessage) return -1;
+        long newId;
 
         using (DatabaseLock.Instance.AcquireWriteLock())
         {
@@ -220,7 +220,7 @@ public class ConversationService : IConversationService, IDisposable
             foreach (var conv in conversations)
             {
                 conv.Model =
-                    lastModels.GetValueOrDefault(conv.ConversationId, "");
+                    lastModels.GetValueOrDefault(conv.Id, "");
             }
         }
 
@@ -288,7 +288,7 @@ public class ConversationService : IConversationService, IDisposable
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText = "UPDATE conversations SET title = @title WHERE id = @ConversationId";
             cmd.Parameters.AddWithValue("@title", conversation.Title);
-            cmd.Parameters.AddWithValue("@ConversationId", conversation.ConversationId);
+            cmd.Parameters.AddWithValue("@ConversationId", conversation.Id);
             try
             {
                 var res = await cmd.ExecuteNonQueryAsync();
@@ -310,7 +310,7 @@ public class ConversationService : IConversationService, IDisposable
             messages = [];
             await using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT * FROM messages WHERE conversation_id = @ConversationId ORDER BY timestamp";
-            cmd.Parameters.AddWithValue("@ConversationId", conversation.ConversationId);
+            cmd.Parameters.AddWithValue("@ConversationId", conversation.Id);
             await using var reader = await cmd.ExecuteReaderAsync();
             try
             {
