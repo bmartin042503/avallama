@@ -39,7 +39,6 @@ Licensed under the MIT License. See LICENSE file for details.
         <StyleInclude Source="Styles/TextBlock.axaml" />
         <StyleInclude Source="Styles/ComboBox.axaml" />
         <StyleInclude Source="Styles/ToggleSwitch.axaml" />
-        <StyleInclude Source="Styles/DeletePopup.axaml" />
         <StyleInclude Source="Styles/Ellipse.axaml" />
         <StyleInclude Source="Styles/ListBox.axaml" />
 
